@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DXTR | SlizZe - Официальный сайт</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        body {
+            background-color: #0d0d0d;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% 0%, #2a0845 0%, #0d0d0d 60%);
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px 20px;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #ff007f, #7000ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        header p {
+            font-size: 1rem;
+            color: #bbb;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .section-title {
+            margin: 30px 0 15px;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #7000ff;
+        }
+
+        /* Особенный блок для Night City Lights */
+        .featured-track {
+            width: 100%;
+            max-width: 550px;
+            padding: 3px; /* Отступ для контура */
+            background: linear-gradient(45deg, #ff007f, #7000ff, #00c6ff, #ff007f);
+            background-size: 400% 400%;
+            border-radius: 20px;
+            animation: gradient-border 8s ease infinite;
+            margin-bottom: 40px;
+        }
+
+        @keyframes gradient-border {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .featured-content {
+            background: #1a1a1a;
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .featured-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .platform-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Цвета платформ */
+        .yt { border: 1px solid #ff0000; }
+        .yt:hover { background: #ff0000; }
+        .yam { border: 1px solid #ffcc00; }
+        .yam:hover { background: #ffcc00; color: #000; }
+        .spot { border: 1px solid #1DB954; }
+        .spot:hover { background: #1DB954; }
+        .vkm { border: 1px solid #0077FF; }
+        .vkm:hover { background: #0077FF; }
+
+        /* Обычные треки */
+        .tracks-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .track-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .track-btn:hover {
+            border-color: #7000ff;
+            transform: translateX(5px);
+            background: rgba(112, 0, 255, 0.1);
+        }
+
+        footer {
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .footer-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .support-btn { background: #ff416c; }
+        .contact-btn { background: #0088cc; }
+
+        @media (max-width: 500px) {
+            .platform-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>DXTR | SlizZe</h1>
+        <p>Музыкальная коллаборация: DXTR и SlizZe. Исследуй наш звук.</p>
+    </header>
+
+    <main>
+        <div class="section-title">Главный релиз</div>
+        
+        <div class="featured-track">
+            <div class="featured-content">
+                <h2>Night City Lights</h2>
+                <div class="platform-grid">
+                    <a href="https://youtu.be/M9TwVLCdEiM" target="_blank" class="platform-link yt">
+                        <i class="fa-brands fa-youtube"></i> YouTube
+                    </a>
+                    <a href="https://music.yandex.ru/album/41053328/track/149038623" target="_blank" class="platform-link yam">
+                        <i class="fa-solid fa-music"></i> Yandex
+                    </a>
+                    <a href="https://open.spotify.com/track/5mvN7HfEXmxy1wH8V2r216" target="_blank" class="platform-link spot">
+                        <i class="fa-brands fa-spotify"></i> Spotify
+                    </a>
+                    <a href="https://vk.ru/audio-2001553364_147553364_69b1b8413dbf4d1f2e" target="_blank" class="platform-link vkm">
+                        <i class="fa-brands fa-vk"></i> VK Music
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">Другие треки</div>
+        
+        <div class="tracks-container">
+            <a href="https://www.youtube.com/watch?v=gyPCJrQGeKg" target="_blank" class="track-btn">
+                <span>Dying Light</span>
+                <i class="fa-brands fa-youtube"></i>
+            </a>
+
+            <a href="https://www.youtube.com/watch?v=NX0QOM2-OKE" target="_blank" class="track-btn">
+                <span>Minecraft</span>
+                <i class="fa-brands fa-youtube"></i>
+            </a>
+
+            <a href="https://youtu.be/Q0fGWdL3DBs" target="_blank" class="track-btn">
+                <span>РЭПАК</span>
+                <i class="fa-brands fa-youtube"></i>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-buttons">
+            <a href="mailto:slizzedxtr@gmail.com" class="action-btn support-btn">
+                <i class="fa-solid fa-phone"></i> Поддержка
+            </a>
+            <a href="https://t.me/DX77TR" target="_blank" class="action-btn contact-btn">
+                <i class="fa-brands fa-telegram"></i> Telegram
+            </a>
+        </div>
+    </footer>
+
+</body>
+</html>
