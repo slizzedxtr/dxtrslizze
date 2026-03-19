@@ -4,14 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DXTR | SlizZe - Музыкальный каталог</title>
-    <meta name="description" content="Официальный каталог треков DXTR и SlizZe. Скачивай музыку в высоком качестве (MP3 и WAV).">
+    <meta name="description" content="Официальный каталог треков DXTR и SlizZe. Слушай и скачивай музыку в высоком качестве (MP3 и WAV).">
     <link rel="icon" type="image.png" href="../dslogo.png">
-    <link rel="apple-touch-icon" href="../dslogo.png">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://dxtrslizze.xyz/muzcatalog/">
-    <meta property="og:title" content="DXTR | SlizZe - Скачать треки">
-    <meta property="og:description" content="Скачивай оригинальные треки в MP3 и WAV.">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -21,7 +15,6 @@
             --neon-pink: #ff007f;
             --neon-purple: #7000ff;
             --neon-cyan: #00c6ff;
-            --neon-green: #00ff66;
             --bg-dark: #050507;
             --glass-bg: rgba(20, 20, 25, 0.6);
             --glass-border: rgba(255, 255, 255, 0.08);
@@ -29,406 +22,302 @@
             --text-muted: #a1a1aa;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
+            background-color: var(--bg-dark); color: var(--text-main);
+            display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden;
         }
 
-        /* Анимированный фон (Сферы) */
-        .bg-blobs {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1;
-            overflow: hidden;
-            background: #050507;
-        }
-        .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.4;
-            animation: float 20s infinite alternate ease-in-out;
-        }
+        /* Анимированный фон */
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; overflow: hidden; background: #050507; }
+        .blob { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.4; animation: float 20s infinite alternate ease-in-out; }
         .blob-1 { width: 400px; height: 400px; background: var(--neon-purple); top: -10%; left: -10%; }
         .blob-2 { width: 500px; height: 500px; background: var(--neon-pink); bottom: -20%; right: -10%; animation-delay: -5s; }
         .blob-3 { width: 300px; height: 300px; background: var(--neon-cyan); top: 40%; left: 50%; transform: translateX(-50%); opacity: 0.2; animation-delay: -10s; }
 
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(50px, 50px) scale(1.1); }
-        }
-
-        .fade-in {
-            animation: fadeIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            opacity: 0;
-            transform: translateY(30px);
-        }
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
+        .fade-in { animation: fadeIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(30px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
         /* Шапка */
-        header {
-            text-align: center;
-            padding: 8vh 20px 4vh;
-            position: relative;
-            z-index: 10;
-        }
-
+        header { text-align: center; padding: 6vh 20px 3vh; position: relative; z-index: 10; }
         header h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 5px;
+            font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 5px;
             background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient-shift 4s linear infinite;
-            margin-bottom: 10px;
-            text-shadow: 0 0 30px rgba(112, 0, 255, 0.3);
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: gradient-shift 4s linear infinite; margin-bottom: 10px;
         }
+        @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+        header p { color: var(--text-muted); font-weight: 500; }
 
-        @keyframes gradient-shift {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
-
-        header p {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin: 0 auto;
-            font-weight: 500;
-            letter-spacing: 1px;
-        }
-
-        /* Главный контент - Список треков */
-        main {
-            flex: 1;
-            width: 100%;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 20px 60px;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        /* Список треков */
+        main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; z-index: 10; display: flex; flex-direction: column; gap: 20px; }
 
         .track-item {
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 15px 25px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.4s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border); border-radius: 20px; padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 20px;
+            transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-
-        .track-item:hover {
-            border-color: var(--neon-cyan);
-            box-shadow: 0 10px 30px rgba(0, 198, 255, 0.15);
-            transform: translateY(-5px);
-        }
-
-        .track-info-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex: 1;
-        }
+        .track-item:hover { border-color: var(--neon-purple); transform: translateY(-3px); }
 
         .track-cover {
-            width: 70px;
-            height: 70px;
-            border-radius: 12px;
-            object-fit: cover;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+            width: 80px; height: 80px; border-radius: 12px; object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); flex-shrink: 0;
         }
 
-        .track-title {
-            font-size: 1.3rem;
-            font-weight: 800;
-            letter-spacing: 1px;
-        }
+        .track-main-info { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+        .track-title { font-size: 1.2rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+        /* Аудиоплеер внутри списка */
+        .audio-player { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 12px; }
+        .play-pause-btn {
+            background: var(--neon-purple); color: white; border: none; width: 35px; height: 35px;
+            border-radius: 50%; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: 0.3s; box-shadow: 0 0 10px rgba(112,0,255,0.4); flex-shrink: 0;
+        }
+        .play-pause-btn:hover { transform: scale(1.1); background: var(--neon-pink); }
+        .progress-container { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 5px; cursor: pointer; position: relative; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan)); border-radius: 5px; position: relative; pointer-events: none; }
+        .progress-bar::after {
+            content: ''; position: absolute; right: -5px; top: -3px; width: 12px; height: 12px;
+            background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(255,255,255,0.8);
+        }
+        .time-display { font-size: 0.8rem; color: var(--text-muted); font-variant-numeric: tabular-nums; flex-shrink: 0; min-width: 40px; text-align: right; }
+
+        /* Кнопка скачать */
         .dl-btn {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: transparent;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-            border: 1px solid var(--neon-purple);
-            font-size: 0.95rem;
+            display: flex; align-items: center; gap: 10px; background: transparent; color: white;
+            padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
+            border: 1px solid var(--neon-cyan); flex-shrink: 0;
         }
-
-        .dl-btn:hover {
-            background: var(--neon-purple);
-            box-shadow: 0 0 20px rgba(112, 0, 255, 0.6);
-            transform: scale(1.05);
-        }
+        .dl-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0, 198, 255, 0.6); }
 
         /* Модалка скачивания */
-        .modal {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(15px);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: var(--glass-bg);
-            border: 1px solid var(--neon-pink);
-            border-radius: 24px;
-            padding: 40px;
-            text-align: center;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: 0 0 50px rgba(255, 0, 127, 0.3);
-            position: relative;
-            animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes modalPop {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .close-btn {
-            position: absolute; top: 15px; right: 25px;
-            color: var(--text-muted); font-size: 2.5rem; cursor: pointer; transition: 0.3s; line-height: 1;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-content { background: var(--glass-bg); border: 1px solid var(--neon-pink); border-radius: 24px; padding: 40px; text-align: center; width: 90%; max-width: 400px; position: relative; }
+        .close-btn { position: absolute; top: 15px; right: 25px; color: var(--text-muted); font-size: 2.5rem; cursor: pointer; transition: 0.3s; line-height: 1; }
         .close-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 900;
-            margin-bottom: 30px;
-            background: linear-gradient(to right, #fff, #ccc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .format-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .format-btn {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            padding: 15px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-weight: 800;
-            color: white;
-            transition: 0.3s;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .format-btn.mp3:hover {
-            background: rgba(0, 198, 255, 0.2);
-            border-color: var(--neon-cyan);
-            box-shadow: 0 0 20px rgba(0, 198, 255, 0.4);
-        }
-
-        .format-btn.wav:hover {
-            background: rgba(255, 0, 127, 0.2);
-            border-color: var(--neon-pink);
-            box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
-        }
+        .modal-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 30px; }
+        .format-btn { display: flex; justify-content: center; gap: 10px; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 800; color: white; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; transition: 0.3s; }
+        .format-btn.mp3:hover { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 198, 255, 0.4); }
+        .format-btn.wav:hover { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 127, 0.4); }
 
         /* Подвал */
-        footer {
-            padding: 40px 20px;
-            text-align: center;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            position: relative;
-            z-index: 10;
-        }
+        footer { padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
+        .back-btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: 800; color: white; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; }
+        .back-btn:hover { background: #fff; color: #000; }
 
-        .footer-buttons {
-            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;
-        }
-
-        .action-btn {
-            display: flex; align-items: center; gap: 10px;
-            padding: 15px 35px; border-radius: 50px; text-decoration: none;
-            font-weight: 800; color: white; transition: 0.3s;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-        }
-        .action-btn:hover { transform: scale(1.05) translateY(-3px); }
-        .back-btn { background: rgba(0, 198, 255, 0.1); border-color: var(--neon-cyan); }
-        .back-btn:hover { background: var(--neon-cyan); box-shadow: 0 0 20px rgba(0,198,255,0.5); color: #000; }
-
-        @media (max-width: 600px) {
-            .track-item { flex-direction: column; text-align: center; gap: 20px; padding: 25px; }
-            .track-info-wrapper { flex-direction: column; }
-            .dl-btn { width: 100%; justify-content: center; }
+        @media (max-width: 768px) {
+            .track-item { flex-direction: column; align-items: stretch; text-align: center; }
+            .track-cover { align-self: center; width: 120px; height: 120px; }
+            .audio-player { flex-direction: column; padding: 15px; }
+            .progress-container { width: 100%; margin: 10px 0; }
+            .play-pause-btn { width: 50px; height: 50px; font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
 
     <div class="bg-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
+        <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
     </div>
 
     <div class="modal" id="downloadModal">
         <div class="modal-content">
             <div class="close-btn" onclick="closeModal()">×</div>
-            <div class="modal-title" id="modalTitle">Night City Lights</div>
-            <div class="format-buttons">
-                <a href="#" class="format-btn mp3" id="linkMp3" download>
-                    <i class="fa-solid fa-file-audio"></i> Скачать MP3 (320 kbps)
-                </a>
-                <a href="#" class="format-btn wav" id="linkWav" download>
-                    <i class="fa-solid fa-compact-disc"></i> Скачать WAV (Lossless)
-                </a>
-            </div>
+            <div class="modal-title" id="modalTitle">Название трека</div>
+            <a href="#" class="format-btn mp3" id="linkMp3" download><i class="fa-solid fa-file-audio"></i> MP3 (320 kbps)</a>
+            <a href="#" class="format-btn wav" id="linkWav" download><i class="fa-solid fa-compact-disc"></i> WAV (Lossless)</a>
         </div>
     </div>
 
     <header class="fade-in">
-        <h1>MUZ CATALOG</h1>
-        <p>Архив треков DXTR | SlizZe. Выбери релиз и скачай в нужном формате.</p>
+        <h1>HQ CATALOG</h1>
+        <p>Слушай и скачивай оригинальные треки</p>
     </header>
 
-    <main>
-        <div class="track-item fade-in" style="animation-delay: 0.1s;">
-            <div class="track-info-wrapper">
-                <img src="https://img.youtube.com/vi/M9TwVLCdEiM/maxresdefault.jpg" alt="Night City Lights" class="track-cover">
-                <div class="track-title">Night City Lights</div>
-            </div>
-            <button class="dl-btn" onclick="openModal('Night City Lights', '../audio/night_city_lights.mp3', '../audio/night_city_lights.wav')">
-                <i class="fa-solid fa-download"></i> Скачать
-            </button>
-        </div>
+    <main id="track-list" class="fade-in">
+        </main>
 
-        <div class="track-item fade-in" style="animation-delay: 0.2s;">
-            <div class="track-info-wrapper">
-                <img src="https://img.youtube.com/vi/_bT2_wmJ6tc/maxresdefault.jpg" alt="Brawl Stars" class="track-cover">
-                <div class="track-title">Brawl Stars</div>
-            </div>
-            <button class="dl-btn" onclick="openModal('Brawl Stars', '../audio/brawl_stars.mp3', '../audio/brawl_stars.wav')">
-                <i class="fa-solid fa-download"></i> Скачать
-            </button>
-        </div>
-
-        <div class="track-item fade-in" style="animation-delay: 0.3s;">
-            <div class="track-info-wrapper">
-                <img src="https://img.youtube.com/vi/TMn7k7XM4I0/maxresdefault.jpg" alt="Cefiro Reload" class="track-cover">
-                <div class="track-title">Cefiro Reload</div>
-            </div>
-            <button class="dl-btn" onclick="openModal('Cefiro Reload', '../audio/cefiro_reload.mp3', '../audio/cefiro_reload.wav')">
-                <i class="fa-solid fa-download"></i> Скачать
-            </button>
-        </div>
-
-        <div class="track-item fade-in" style="animation-delay: 0.4s;">
-            <div class="track-info-wrapper">
-                <img src="https://img.youtube.com/vi/RyRbNoU2nPc/maxresdefault.jpg" alt="Friday" class="track-cover">
-                <div class="track-title">Friday</div>
-            </div>
-            <button class="dl-btn" onclick="openModal('Friday', '../audio/friday.mp3', '../audio/friday.wav')">
-                <i class="fa-solid fa-download"></i> Скачать
-            </button>
-        </div>
-
-        <div class="track-item fade-in" style="animation-delay: 0.5s;">
-            <div class="track-info-wrapper">
-                <img src="https://img.youtube.com/vi/1YC9JlxU-zg/hqdefault.jpg" alt="F90" class="track-cover">
-                <div class="track-title">F90</div>
-            </div>
-            <button class="dl-btn" onclick="openModal('F90', '../audio/f90.mp3', '../audio/f90.wav')">
-                <i class="fa-solid fa-download"></i> Скачать
-            </button>
-        </div>
-
-        <div class="track-item fade-in" style="animation-delay: 0.6s;">
-            <div class="track-info-wrapper">
-                <img src="https://img.youtube.com/vi/k7QO9_nLI5A/hqdefault.jpg" alt="Выход из Сна" class="track-cover">
-                <div class="track-title">Выход из Сна</div>
-            </div>
-            <button class="dl-btn" onclick="openModal('Выход из Сна', '../audio/vyhod_iz_sna.mp3', '../audio/vyhod_iz_sna.wav')">
-                <i class="fa-solid fa-download"></i> Скачать
-            </button>
-        </div>
-    </main>
-
-    <footer class="fade-in" style="animation-delay: 0.7s;">
-        <div class="footer-buttons">
-            <a href="../" class="action-btn back-btn">
-                <i class="fa-solid fa-arrow-left"></i> На главную
-            </a>
-        </div>
+    <footer class="fade-in">
+        <a href="../" class="back-btn"><i class="fa-solid fa-arrow-left"></i> На главную</a>
     </footer>
 
     <script>
+        // СПИСОК ВСЕХ ТРЕКОВ (Вставь сюда свои ссылки)
+        const tracks = [
+            { title: "Music", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Mafia", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Night City Lights", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "FastRap", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Brawl Stars", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Night Club", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Minecraft", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Friday", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "F90", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Dying Light", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Cefiro Reload", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Casino", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "New Year", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Выход из Сна", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Carnaval", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Life Simulator", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" },
+            { title: "Amazing Online", cover: "ССЫЛКА_НА_ОБЛОЖКУ", mp3: "ССЫЛКА_НА_MP3", wav: "ССЫЛКА_НА_WAV" }
+        ];
+
+        const trackListContainer = document.getElementById('track-list');
+        let currentAudio = null; // Хранит текущий играющий трек
+        let currentPlayBtn = null; // Хранит иконку текущего играющего трека
+
+        // Генерация HTML для каждого трека
+        tracks.forEach((track, index) => {
+            const trackHTML = `
+                <div class="track-item">
+                    <img src="${track.cover}" alt="${track.title}" class="track-cover" onerror="this.src='https://via.placeholder.com/80/1a1a1a/ffffff?text=DXTR'">
+                    
+                    <div class="track-main-info">
+                        <div class="track-title">${track.title}</div>
+                        <div class="audio-player">
+                            <audio id="audio-${index}" src="${track.mp3}"></audio>
+                            <button class="play-pause-btn" onclick="togglePlay(${index})">
+                                <i id="icon-${index}" class="fa-solid fa-play"></i>
+                            </button>
+                            <div class="progress-container" id="prog-cont-${index}">
+                                <div class="progress-bar" id="prog-bar-${index}"></div>
+                            </div>
+                            <span class="time-display" id="time-${index}">0:00</span>
+                        </div>
+                    </div>
+
+                    <button class="dl-btn" onclick="openModal('${track.title}', '${track.mp3}', '${track.wav}')">
+                        <i class="fa-solid fa-download"></i> Скачать
+                    </button>
+                </div>
+            `;
+            trackListContainer.insertAdjacentHTML('beforeend', trackHTML);
+        });
+
+        // ЛОГИКА АУДИОПЛЕЕРОВ
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function togglePlay(index) {
+            const audio = document.getElementById(`audio-${index}`);
+            const icon = document.getElementById(`icon-${index}`);
+
+            // Если нажимаем плей на новом треке, ставим на паузу старый
+            if (currentAudio && currentAudio !== audio) {
+                currentAudio.pause();
+                if (currentPlayBtn) currentPlayBtn.className = 'fa-solid fa-play';
+            }
+
+            if (audio.paused) {
+                audio.play();
+                icon.className = 'fa-solid fa-pause';
+                currentAudio = audio;
+                currentPlayBtn = icon;
+            } else {
+                audio.pause();
+                icon.className = 'fa-solid fa-play';
+                currentAudio = null;
+                currentPlayBtn = null;
+            }
+        }
+
+        // Привязываем события обновления времени и перемотки ко всем плеерам
+        tracks.forEach((_, index) => {
+            const audio = document.getElementById(`audio-${index}`);
+            const progBar = document.getElementById(`prog-bar-${index}`);
+            const progCont = document.getElementById(`prog-cont-${index}`);
+            const timeDisp = document.getElementById(`time-${index}`);
+            const icon = document.getElementById(`icon-${index}`);
+
+            let isDragging = false;
+
+            // Обновление ползунка при проигрывании
+            audio.addEventListener('timeupdate', () => {
+                if (audio.duration && !isDragging) {
+                    const progressPercent = (audio.currentTime / audio.duration) * 100;
+                    progBar.style.width = `${progressPercent}%`;
+                    timeDisp.textContent = formatTime(audio.currentTime);
+                }
+            });
+
+            // Сброс иконки, когда трек закончился
+            audio.addEventListener('ended', () => {
+                icon.className = 'fa-solid fa-play';
+                progBar.style.width = '0%';
+                audio.currentTime = 0;
+            });
+
+            // Функция перемотки
+            function updateProgress(clientX) {
+                const rect = progCont.getBoundingClientRect();
+                let offsetX = clientX - rect.left;
+                if (offsetX < 0) offsetX = 0;
+                if (offsetX > rect.width) offsetX = rect.width;
+                
+                const percentage = offsetX / rect.width;
+                progBar.style.width = (percentage * 100) + '%';
+                
+                if (audio.duration) {
+                    const targetTime = percentage * audio.duration;
+                    timeDisp.textContent = formatTime(targetTime);
+                    audio.currentTime = targetTime;
+                }
+            }
+
+            // Управление перемоткой (Мышь)
+            progCont.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                updateProgress(e.clientX);
+            });
+            window.addEventListener('mousemove', (e) => { if (isDragging) updateProgress(e.clientX); });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+
+            // Управление перемоткой (Тачскрин)
+            progCont.addEventListener('touchstart', (e) => {
+                isDragging = true;
+                updateProgress(e.touches[0].clientX);
+            }, { passive: false });
+            window.addEventListener('touchmove', (e) => {
+                if (isDragging) {
+                    updateProgress(e.touches[0].clientX);
+                    e.preventDefault(); // отключаем скролл страницы при перемотке
+                }
+            }, { passive: false });
+            window.addEventListener('touchend', () => { isDragging = false; });
+        });
+
+        // ЛОГИКА МОДАЛЬНОГО ОКНА СКАЧИВАНИЯ
         const modal = document.getElementById('downloadModal');
         const modalTitle = document.getElementById('modalTitle');
         const linkMp3 = document.getElementById('linkMp3');
         const linkWav = document.getElementById('linkWav');
 
-        // Открытие модального окна и подстановка ссылок
         function openModal(trackName, mp3Url, wavUrl) {
             modalTitle.textContent = trackName;
-            
-            linkMp3.href = mp3Url;
-            linkMp3.setAttribute('download', `${trackName}.mp3`);
-            
-            linkWav.href = wavUrl;
-            linkWav.setAttribute('download', `${trackName}.wav`);
-            
+            linkMp3.href = mp3Url; linkMp3.setAttribute('download', `${trackName}.mp3`);
+            linkWav.href = wavUrl; linkWav.setAttribute('download', `${trackName}.wav`);
             modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Убираем скролл фона
+            document.body.style.overflow = 'hidden';
         }
 
-        // Закрытие модального окна
         function closeModal() {
             modal.style.display = 'none';
-            document.body.style.overflow = 'auto'; // Возвращаем скролл
+            document.body.style.overflow = 'auto';
         }
 
-        // Закрытие при клике по темному фону вне контента
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-
-        // Закрытие модального окна после клика по кнопке скачивания
+        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
         linkMp3.addEventListener('click', closeModal);
         linkWav.addEventListener('click', closeModal);
+
     </script>
 </body>
 </html>
