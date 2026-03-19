@@ -247,7 +247,7 @@
         
         <div id="chat-window" style="display: none; width: 320px; height: 420px; background: rgba(10,10,15,0.95); border: 2px solid var(--neon-cyan); border-radius: 20px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,198,255,0.3); backdrop-filter: blur(15px); margin-bottom: 20px; transform-origin: bottom right; animation: chatPop 0.3s ease-out;">
             <div style="background: var(--neon-cyan); color: #000; padding: 15px; font-weight: 900; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center;">
-                <span>D&S Support</span>
+                <span>DXTR Support</span>
                 <i class="fa-solid fa-xmark" id="chat-close" style="cursor: pointer; font-size: 1.4rem; transition: 0.3s;"></i>
             </div>
             <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
@@ -406,9 +406,22 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА (С ПАМЯТЬЮ) ===
+        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА (С ПАМЯТЬЮ И ПОСТОЯННЫМ ID) ===
         const SERVER_URL = "https://dxtrslizze.onrender.com/"; 
         const socket = io(SERVER_URL);
+        
+        // 1. ГЕНЕРИРУЕМ ИЛИ ДОСТАЕМ ПОСТОЯННЫЙ ID КЛИЕНТА
+        let clientId = localStorage.getItem('dxtrClientId');
+        if (!clientId) {
+            // Если юзер зашел впервые, даем ему уникальный ID
+            clientId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('dxtrClientId', clientId);
+        }
+
+        // 2. РЕГИСТРИРУЕМСЯ НА СЕРВЕРЕ ПРИ ПОДКЛЮЧЕНИИ
+        socket.on('connect', () => {
+            socket.emit('register_client', clientId);
+        });
         
         const chatToggle = document.getElementById('chat-toggle');
         const chatClose = document.getElementById('chat-close');
@@ -417,18 +430,17 @@
         const chatSendBtn = document.getElementById('chat-send');
         const chatMessages = document.getElementById('chat-messages');
 
-        // Открытие/закрытие окна чата
+        // Открытие/закрытие
         chatToggle.onclick = () => {
             chatWindow.style.display = 'flex';
-            chatMessages.scrollTop = chatMessages.scrollHeight; // Скроллим вниз при открытии
+            chatMessages.scrollTop = chatMessages.scrollHeight; 
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        // ЗАГРУЗКА ИСТОРИИ ИЗ ПАМЯТИ БРАУЗЕРА
+        // Загрузка истории
         function loadChatHistory() {
             const history = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
             history.forEach(msg => {
-                // Отрисовываем, но не сохраняем заново (save = false)
                 addChatMessage(msg.sender, msg.text, msg.color, msg.align, false);
             });
         }
@@ -446,15 +458,14 @@
             const text = chatInput.value.trim();
             if (!text) return;
             
-            // Отправляем на сервер Render
-            socket.emit('send_message', { text: text });
+            // 3. ОТПРАВЛЯЕМ СООБЩЕНИЕ И ПРИКРЕПЛЯЕМ СВОЙ ID
+            socket.emit('send_message', { text: text, clientId: clientId });
             
-            // Добавляем в UI и сохраняем
             addChatMessage('Вы', text, 'var(--neon-cyan)', 'flex-end', true);
             chatInput.value = '';
         }
 
-        // Прием сообщения от админа
+        // Прием ответа
         socket.on('receive_message', (data) => {
             if (chatWindow.style.display === 'none') {
                 chatWindow.style.display = 'flex';
@@ -462,7 +473,7 @@
             addChatMessage('Support', data.text, 'var(--neon-purple)', 'flex-start', true);
         });
 
-        // Функция отрисовки (и сохранения) сообщений
+        // Отрисовка
         function addChatMessage(sender, text, color, align, save = true) {
             const wrapper = document.createElement('div');
             wrapper.style.display = 'flex';
@@ -492,7 +503,6 @@
             
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // СОХРАНЕНИЕ В LOCALSTORAGE
             if (save) {
                 const history = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
                 history.push({ sender, text, color, align });
@@ -501,10 +511,9 @@
             }
         }
 
-        // Загружаем историю при старте страницы
         loadChatHistory();
 
-        // === ЛОГИКА ТАЙМЕРА ДО ВЫХОДА АЛЬБОМА GUSTO ===
+        // === ЛОГИКА ТАЙМЕРА ДО ВЫХОДА АЛЬБОМА GUSTO (01.04.2026) ===
         const countDownDate = new Date("April 1, 2026 00:00:00").getTime();
         const countdownTimer = setInterval(function() {
             const now = new Date().getTime();
