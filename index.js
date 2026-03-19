@@ -9,36 +9,69 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
+// Данные из настроек Render
 const token = process.env.BOT_TOKEN;
 const adminId = process.env.ADMIN_CHAT_ID;
 const bot = new TelegramBot(token, { polling: true });
 
-// Теперь храним: ID сообщения в ТГ -> Постоянный ID клиента
+// Храним: ID сообщения в ТГ -> Постоянный ID клиента
 const messageMap = new Map();
 
 io.on('connection', (socket) => {
-    // 1. Юзер заходит (или обновляет страницу) и говорит свой постоянный ID
+    // Регистрация клиента
     socket.on('register_client', (clientId) => {
-        socket.join(clientId); // Добавляем сокет в персональную комнату
+        socket.join(clientId); // Создаем персональную комнату связи
         console.log(`User registered: ${clientId}`);
     });
 
+    // Прием сообщения с сайта
     socket.on('send_message', (data) => {
-        // Шлем в ТГ с пометкой
-        bot.sendMessage(adminId, `🌐 Сообщение с сайта:\n\n${data.text}\n\n(Ответь на это сообщение)`)
+        // КРАСИВОЕ ОФОРМЛЕНИЕ СООБЩЕНИЯ В TELEGRAM
+        const tgMessage = `
+🌐 <b>Новый запрос с сайта!</b>
+
+💬 <i>«${data.text}»</i>
+
+👤 ID: <code>${data.clientId}</code>
+➖➖➖➖➖➖➖➖➖
+💡 <i>Сделай Reply (Ответить) на это сообщение.</i>
+        `;
+
+        bot.sendMessage(adminId, tgMessage, { parse_mode: 'HTML' })
         .then((msg) => {
-            // Запоминаем, какому Client ID принадлежит сообщение
+            // Связываем это сообщение с ID юзера на сайте
             messageMap.set(msg.message_id, data.clientId);
-        });
+        })
+        .catch(err => console.error('Ошибка отправки в ТГ:', err));
     });
 });
 
-// Когда админ (ты) отвечает в Telegram
+// Когда ты отвечаешь в Telegram
 bot.on('message', (msg) => {
+    // Проверяем, что это ответ (Reply) на сообщение от бота
     if (msg.reply_to_message && messageMap.has(msg.reply_to_message.message_id)) {
         const clientId = messageMap.get(msg.reply_to_message.message_id);
-        // Отправляем ответ конкретно в "комнату" этого Client ID
-        io.to(clientId).emit('receive_message', { text: msg.text });
+        
+        // ПРОВЕРКА: ОНЛАЙН ЛИ ЮЗЕР?
+        // Смотрим, есть ли активное подключение (сокет) с таким ID
+        const room = io.sockets.adapter.rooms.get(clientId);
+        
+        if (room && room.size > 0) {
+            // Юзер на сайте! Отправляем ответ
+            io.to(clientId).emit('receive_message', { text: msg.text });
+            
+            // Отчет об успехе
+            bot.sendMessage(adminId, `✅ <b>Ответ доставлен!</b>\nПользователь сейчас на сайте и прочитал сообщение.`, { 
+                parse_mode: 'HTML',
+                reply_to_message_id: msg.message_id 
+            });
+        } else {
+            // Юзер закрыл вкладку
+            bot.sendMessage(adminId, `⚠️ <b>Пользователь оффлайн!</b>\nОн уже ушел с сайта (закрыл вкладку). Ответ не доставлен.`, { 
+                parse_mode: 'HTML',
+                reply_to_message_id: msg.message_id 
+            });
+        }
     }
 });
 
