@@ -324,12 +324,11 @@
 
         // Генерация HTML
         function renderTracks() {
-            trackListContainer.innerHTML = ''; // Очищаем список перед рендером
+            trackListContainer.innerHTML = ''; 
             
             tracks.forEach((track, index) => {
                 const num = index + 1 < 10 ? `0${index + 1}` : index + 1;
                 
-                // Проверяем, нужно ли добавить кнопку площадок (Только для Night City Lights)
                 const isNCL = track.title === "Night City Lights";
                 const platformsBtnHTML = isNCL 
                     ? `<button class="action-btn-sm plt-btn" onclick="openPlatformsModal()"><i class="fa-solid fa-compact-disc"></i> Площадки</button>` 
@@ -384,7 +383,6 @@
                 trackListContainer.insertAdjacentHTML('beforeend', trackHTML);
             });
 
-            // Инициализация плееров после генерации HTML
             initPlayers();
             trackCountEl.textContent = tracks.length;
         }
@@ -395,11 +393,22 @@
             const btn = document.getElementById(`btn-${index}`);
             const card = document.getElementById(`card-${index}`);
 
+            // === ЛОГИКА СБРОСА ПРЕДЫДУЩЕГО ТРЕКА ===
             if (currentAudio && currentAudio !== audio) {
                 currentAudio.pause();
+                currentAudio.currentTime = 0; // Сбрасываем время на 0
+                
+                // Находим элементы старого трека и скидываем ползунок
+                const oldIndex = currentAudio.id.split('-')[1];
+                const oldProgBar = document.getElementById(`prog-bar-${oldIndex}`);
+                const oldTimeDisp = document.getElementById(`time-${oldIndex}`);
+                
+                if (oldProgBar) oldProgBar.style.width = '0%';
+                if (oldTimeDisp) oldTimeDisp.textContent = `00:00 / ${formatTime(currentAudio.duration)}`;
+
                 if (currentPlayBtn) {
                     currentPlayBtn.className = 'fa-solid fa-play';
-                    document.getElementById(`btn-${currentAudio.id.split('-')[1]}`).classList.remove('active');
+                    document.getElementById(`btn-${oldIndex}`).classList.remove('active');
                 }
                 if (currentCard) { currentCard.classList.remove('playing'); }
             }
@@ -522,7 +531,6 @@
             document.body.style.overflow = 'auto';
         }
 
-        // Закрытие при клике по фону
         window.onclick = function(e) {
             if (e.target === dlModal) closeModal('downloadModal');
             if (e.target === plModal) closeModal('platformsModal');
