@@ -597,13 +597,11 @@
         const player = document.getElementById('ytPlayer');
         const closeBtn = document.getElementById('closeBtn');
         const fallbackLink = document.getElementById('ytFallbackLink');
-        const localAudio = document.getElementById('localAudio'); // Ссылка на наш аудиоплеер
+        const localAudio = document.getElementById('localAudio');
         const playBtnIcon = document.querySelector('#playBtn i');
 
         function openVideo(videoId) {
-            // Если играет музыка на сайте - ставим на паузу
             if (!localAudio.paused) { togglePlay(); }
-
             player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
             fallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
             modal.style.display = 'flex';
@@ -626,6 +624,8 @@
         const progressContainer = document.getElementById('progressContainer');
         const timeDisplay = document.getElementById('timeDisplay');
 
+        let isDragging = false;
+
         function togglePlay() {
             if (localAudio.paused) {
                 localAudio.play();
@@ -636,28 +636,68 @@
             }
         }
 
-        // Обновление полосы прокрутки и времени
-        localAudio.addEventListener('timeupdate', () => {
+        // Функция для расчета и установки времени по координате X
+        function updateProgress(clientX) {
+            const rect = progressContainer.getBoundingClientRect();
+            let offsetX = clientX - rect.left;
+            const width = rect.width;
+            
+            // Ограничиваем в пределах контейнера
+            if (offsetX < 0) offsetX = 0;
+            if (offsetX > width) offsetX = width;
+            
+            const percentage = offsetX / width;
+            progressBar.style.width = (percentage * 100) + '%';
+            
             if (localAudio.duration) {
+                localAudio.currentTime = percentage * localAudio.duration;
+            }
+        }
+
+        // События для перетаскивания
+        progressContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            updateProgress(e.clientX);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                updateProgress(e.clientX);
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Поддержка сенсорных экранов (телефонов)
+        progressContainer.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            updateProgress(e.touches[0].clientX);
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                updateProgress(e.touches[0].clientX);
+            }
+        });
+
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Обновление прогресса во время воспроизведения (только если не тянем)
+        localAudio.addEventListener('timeupdate', () => {
+            if (localAudio.duration && !isDragging) {
                 const progressPercent = (localAudio.currentTime / localAudio.duration) * 100;
                 progressBar.style.width = `${progressPercent}%`;
                 
-                // Форматирование времени
                 const currentMinutes = Math.floor(localAudio.currentTime / 60);
                 const currentSeconds = Math.floor(localAudio.currentTime % 60);
                 timeDisplay.textContent = `${currentMinutes}:${currentSeconds < 10 ? '0' : ''}${currentSeconds}`;
             }
         });
 
-        // Клик по полосе для перемотки
-        function seek(e) {
-            const width = progressContainer.clientWidth;
-            const clickX = e.offsetX;
-            const duration = localAudio.duration;
-            localAudio.currentTime = (clickX / width) * duration;
-        }
-
-        // Когда трек заканчивается - возвращаем кнопку Play
         localAudio.addEventListener('ended', () => {
             playBtnIcon.className = 'fa-solid fa-play';
             progressBar.style.width = '0%';
