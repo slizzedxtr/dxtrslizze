@@ -406,8 +406,8 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА ===
-        const SERVER_URL = "https://dxtrslizze.onrender.com/"; // ТВОЯ ССЫЛКА НА БЭКЕНД ИЗ RENDER
+        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА (С ПАМЯТЬЮ) ===
+        const SERVER_URL = "https://dxtrslizze.onrender.com/"; 
         const socket = io(SERVER_URL);
         
         const chatToggle = document.getElementById('chat-toggle');
@@ -418,12 +418,23 @@
         const chatMessages = document.getElementById('chat-messages');
 
         // Открытие/закрытие окна чата
-        chatToggle.onclick = () => chatWindow.style.display = 'flex';
+        chatToggle.onclick = () => {
+            chatWindow.style.display = 'flex';
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Скроллим вниз при открытии
+        };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        // Отправка сообщения (по кнопке)
+        // ЗАГРУЗКА ИСТОРИИ ИЗ ПАМЯТИ БРАУЗЕРА
+        function loadChatHistory() {
+            const history = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
+            history.forEach(msg => {
+                // Отрисовываем, но не сохраняем заново (save = false)
+                addChatMessage(msg.sender, msg.text, msg.color, msg.align, false);
+            });
+        }
+
+        // Отправка сообщения
         chatSendBtn.onclick = sendMessageToBot;
-        // Отправка сообщения (по клавише Enter)
         chatInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -438,22 +449,21 @@
             // Отправляем на сервер Render
             socket.emit('send_message', { text: text });
             
-            // Добавляем сообщение пользователя в UI
-            addChatMessage('Вы', text, 'var(--neon-cyan)', 'flex-end');
+            // Добавляем в UI и сохраняем
+            addChatMessage('Вы', text, 'var(--neon-cyan)', 'flex-end', true);
             chatInput.value = '';
         }
 
-        // Прием сообщения от админа из Telegram
+        // Прием сообщения от админа
         socket.on('receive_message', (data) => {
-            // Если чат закрыт - открываем его, чтобы юзер увидел ответ
             if (chatWindow.style.display === 'none') {
                 chatWindow.style.display = 'flex';
             }
-            addChatMessage('Support', data.text, 'var(--neon-purple)', 'flex-start');
+            addChatMessage('Support', data.text, 'var(--neon-purple)', 'flex-start', true);
         });
 
-        // Функция отрисовки сообщений
-        function addChatMessage(sender, text, color, align) {
+        // Функция отрисовки (и сохранения) сообщений
+        function addChatMessage(sender, text, color, align, save = true) {
             const wrapper = document.createElement('div');
             wrapper.style.display = 'flex';
             wrapper.style.flexDirection = 'column';
@@ -480,11 +490,21 @@
             wrapper.appendChild(bubble);
             chatMessages.appendChild(wrapper);
             
-            // Авто-прокрутка вниз
             chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            // СОХРАНЕНИЕ В LOCALSTORAGE
+            if (save) {
+                const history = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
+                history.push({ sender, text, color, align });
+                if (history.length > 50) history.shift(); 
+                localStorage.setItem('dxtrChatHistory', JSON.stringify(history));
+            }
         }
 
-        // === ЛОГИКА ТАЙМЕРА ДО ВЫХОДА АЛЬБОМА GUSTO (01.04.2026) ===
+        // Загружаем историю при старте страницы
+        loadChatHistory();
+
+        // === ЛОГИКА ТАЙМЕРА ДО ВЫХОДА АЛЬБОМА GUSTO ===
         const countDownDate = new Date("April 1, 2026 00:00:00").getTime();
         const countdownTimer = setInterval(function() {
             const now = new Date().getTime();
