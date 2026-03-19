@@ -636,25 +636,40 @@
             }
         }
 
-        // Функция для расчета и установки времени по координате X
+        // Вспомогательная функция для красивого форматирования времени
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        // Функция обновления прогресса (визуал + аудио)
         function updateProgress(clientX) {
             const rect = progressContainer.getBoundingClientRect();
             let offsetX = clientX - rect.left;
             const width = rect.width;
             
-            // Ограничиваем в пределах контейнера
+            // Ограничение в пределах шкалы
             if (offsetX < 0) offsetX = 0;
             if (offsetX > width) offsetX = width;
             
             const percentage = offsetX / width;
+            
+            // 1. Мгновенно обновляем ширину полоски (визуал)
             progressBar.style.width = (percentage * 100) + '%';
             
             if (localAudio.duration) {
-                localAudio.currentTime = percentage * localAudio.duration;
+                const targetTime = percentage * localAudio.duration;
+                
+                // 2. Мгновенно обновляем цифры времени (визуал)
+                timeDisplay.textContent = formatTime(targetTime);
+                
+                // 3. Перематываем само аудио
+                localAudio.currentTime = targetTime;
             }
         }
 
-        // События для перетаскивания
+        // Обработка мыши
         progressContainer.addEventListener('mousedown', (e) => {
             isDragging = true;
             updateProgress(e.clientX);
@@ -670,31 +685,29 @@
             isDragging = false;
         });
 
-        // Поддержка сенсорных экранов (телефонов)
+        // Поддержка Touch-устройств
         progressContainer.addEventListener('touchstart', (e) => {
             isDragging = true;
             updateProgress(e.touches[0].clientX);
-        });
+        }, { passive: false });
 
         window.addEventListener('touchmove', (e) => {
             if (isDragging) {
                 updateProgress(e.touches[0].clientX);
+                e.preventDefault(); // Чтобы страница не дергалась при перемотке
             }
-        });
+        }, { passive: false });
 
         window.addEventListener('touchend', () => {
             isDragging = false;
         });
 
-        // Обновление прогресса во время воспроизведения (только если не тянем)
+        // Автоматическое обновление при проигрывании (только если не тянем)
         localAudio.addEventListener('timeupdate', () => {
             if (localAudio.duration && !isDragging) {
                 const progressPercent = (localAudio.currentTime / localAudio.duration) * 100;
                 progressBar.style.width = `${progressPercent}%`;
-                
-                const currentMinutes = Math.floor(localAudio.currentTime / 60);
-                const currentSeconds = Math.floor(localAudio.currentTime % 60);
-                timeDisplay.textContent = `${currentMinutes}:${currentSeconds < 10 ? '0' : ''}${currentSeconds}`;
+                timeDisplay.textContent = formatTime(localAudio.currentTime);
             }
         });
 
