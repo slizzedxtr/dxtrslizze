@@ -22,6 +22,7 @@
             --neon-pink: #ff007f;
             --neon-purple: #7000ff;
             --neon-cyan: #00c6ff;
+            --neon-green: #00ff66;
             --bg-dark: #050507;
             --glass-bg: rgba(20, 20, 25, 0.6);
             --glass-border: rgba(255, 255, 255, 0.08);
@@ -200,15 +201,15 @@
 
         .hero-badge {
             display: inline-block;
-            background: rgba(255,0,127,0.2);
-            color: var(--neon-pink);
+            background: rgba(0, 255, 102, 0.15);
+            color: var(--neon-green);
             padding: 5px 15px;
             border-radius: 50px;
             font-size: 0.8rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
-            border: 1px solid var(--neon-pink);
+            border: 1px solid var(--neon-green);
             align-self: flex-start;
         }
 
@@ -428,6 +429,12 @@
             backdrop-filter: blur(10px);
         }
         .action-btn:hover { transform: scale(1.05) translateY(-3px); }
+        
+        /* Кнопка сотрудничества */
+        .coop-btn { background: rgba(112, 0, 255, 0.2); border-color: var(--neon-purple); }
+        .coop-btn:hover { background: var(--neon-purple); box-shadow: 0 0 20px rgba(112,0,255,0.5); }
+        
+        /* Кнопка телеграм */
         .contact-btn { background: rgba(0, 136, 204, 0.2); border-color: #0088cc; }
         .contact-btn:hover { background: #0088cc; box-shadow: 0 0 20px rgba(0,136,204,0.5); }
 
@@ -566,7 +573,7 @@
             </div>
 
             <div class="track-card" onclick="openVideo('k7QO9_nLI5A')">
-                <div class="track-thumb" style="background-image: url(''https://img.youtube.com/vi/k7QO9_nLI5A/hqdefault.jpg');"></div>
+                <div class="track-thumb" style="background-image: url('https://img.youtube.com/vi/k7QO9_nLI5A/hqdefault.jpg');"></div>
                 <div class="track-info-card"><span>Выход из Сна</span><i class="fa-brands fa-youtube"></i></div>
             </div>
 
@@ -575,7 +582,7 @@
 
     <footer class="fade-in" style="animation-delay: 0.6s;">
         <div class="footer-buttons">
-            <a href="mailto:slizzedxtr@gmail.com" class="action-btn">
+            <a href="mailto:slizzedxtr@gmail.com" class="action-btn coop-btn">
                 <i class="fa-solid fa-envelope"></i> Сотрудничество
             </a>
             <a href="https://t.me/DX77TR" target="_blank" class="action-btn contact-btn">
