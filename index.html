@@ -207,8 +207,14 @@
             .platform-grid { grid-template-columns: 1fr; }
             header h1 { font-size: 2.5rem; }
             .top-nav { flex-direction: column; gap: 15px; align-items: center; padding-top: 15px; }
-            .cd-box { min-width: 60px; padding: 8px 10px; }
-            .cd-num { font-size: 1.5rem; }
+            
+            /* ФИКС ТАЙМЕРА ДЛЯ ТЕЛЕФОНОВ */
+            .promo-banner { padding: 25px 10px; } /* Даем чуть больше ширины контенту */
+            .countdown { gap: 5px; width: 100%; justify-content: center; }
+            .cd-box { min-width: 0; flex: 1; padding: 8px 2px; } /* flex:1 заставит блоки ровно поделить место */
+            .cd-num { font-size: 1.3rem; }
+            .cd-label { font-size: 0.55rem; letter-spacing: 0; }
+            .cd-colon { font-size: 1.3rem; margin: -10px -2px 0; } /* Ужимаем двоеточия по бокам */
         }
     </style>
 </head>
