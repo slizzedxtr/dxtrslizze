@@ -175,7 +175,7 @@
         tracks.forEach((track, index) => {
             const trackHTML = `
                 <div class="track-item">
-                    <img src="${track.cover}" alt="${track.title}" class="track-cover" onerror="this.src='https://via.placeholder.com/80/1a1a1a/ffffff?text=DXTR'">
+                    <img src="${track.cover}" alt="${track.title}" class="track-cover" onerror="this.src='../dslogo.png'">
                     
                     <div class="track-main-info">
                         <div class="track-title">${track.title}</div>
@@ -303,8 +303,8 @@
 
         function openModal(trackName, mp3Url, wavUrl) {
             modalTitle.textContent = trackName;
-            linkMp3.href = mp3Url; linkMp3.setAttribute('download', `${trackName}.mp3`);
-            linkWav.href = wavUrl; linkWav.setAttribute('download', `${trackName}.wav`);
+            linkMp3.href = mp3Url; linkMp3.setAttribute('download', `mp3_${trackName}.mp3`);
+            linkWav.href = wavUrl; linkWav.setAttribute('download', `wav_${trackName}.wav`);
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
         }
