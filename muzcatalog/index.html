@@ -312,14 +312,41 @@
         const searchInput = document.getElementById('searchInput');
 
         let currentAudio = null;
-        let currentPlayBtn = null;
-        let currentCard = null;
 
         function formatTime(seconds) {
-            if (!seconds || isNaN(seconds)) return "0:00";
+            if (!seconds || isNaN(seconds)) return "00:00";
             const min = Math.floor(seconds / 60);
             const sec = Math.floor(seconds % 60);
             return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        // --- НОВАЯ ЖЕЛЕЗОБЕТОННАЯ ФУНКЦИЯ СБРОСА ---
+        function resetOtherTracks(activeIndex) {
+            tracks.forEach((_, i) => {
+                if (i !== activeIndex) {
+                    const audio = document.getElementById(`audio-${i}`);
+                    const icon = document.getElementById(`icon-${i}`);
+                    const btn = document.getElementById(`btn-${i}`);
+                    const card = document.getElementById(`card-${i}`);
+                    const progBar = document.getElementById(`prog-bar-${i}`);
+                    const timeDisp = document.getElementById(`time-${i}`);
+
+                    if (audio) {
+                        audio.pause();
+                        audio.currentTime = 0; // Сброс времени в 0
+                    }
+                    if (icon) icon.className = 'fa-solid fa-play';
+                    if (btn) btn.classList.remove('active');
+                    if (card) card.classList.remove('playing');
+                    if (progBar) progBar.style.width = '0%'; // Сброс ползунка
+                    
+                    if (timeDisp && audio && !isNaN(audio.duration)) {
+                        timeDisp.textContent = `00:00 / ${formatTime(audio.duration)}`;
+                    } else if (timeDisp) {
+                        timeDisp.textContent = `00:00 / 00:00`;
+                    }
+                }
+            });
         }
 
         // Генерация HTML
@@ -388,30 +415,13 @@
         }
 
         function togglePlay(index) {
+            // При любом клике на Play/Pause сначала сбрасываем всё, кроме того трека, куда кликнули
+            resetOtherTracks(index);
+
             const audio = document.getElementById(`audio-${index}`);
             const icon = document.getElementById(`icon-${index}`);
             const btn = document.getElementById(`btn-${index}`);
             const card = document.getElementById(`card-${index}`);
-
-            // === ЛОГИКА СБРОСА ПРЕДЫДУЩЕГО ТРЕКА ===
-            if (currentAudio && currentAudio !== audio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0; // Сбрасываем время на 0
-                
-                // Находим элементы старого трека и скидываем ползунок
-                const oldIndex = currentAudio.id.split('-')[1];
-                const oldProgBar = document.getElementById(`prog-bar-${oldIndex}`);
-                const oldTimeDisp = document.getElementById(`time-${oldIndex}`);
-                
-                if (oldProgBar) oldProgBar.style.width = '0%';
-                if (oldTimeDisp) oldTimeDisp.textContent = `00:00 / ${formatTime(currentAudio.duration)}`;
-
-                if (currentPlayBtn) {
-                    currentPlayBtn.className = 'fa-solid fa-play';
-                    document.getElementById(`btn-${oldIndex}`).classList.remove('active');
-                }
-                if (currentCard) { currentCard.classList.remove('playing'); }
-            }
 
             if (audio.paused) {
                 audio.play();
@@ -419,16 +429,12 @@
                 btn.classList.add('active');
                 card.classList.add('playing'); 
                 currentAudio = audio;
-                currentPlayBtn = icon;
-                currentCard = card;
             } else {
                 audio.pause();
                 icon.className = 'fa-solid fa-play';
                 btn.classList.remove('active');
                 card.classList.remove('playing'); 
-                currentAudio = null;
-                currentPlayBtn = null;
-                currentCard = null;
+                // Время здесь НЕ сбрасывается, ползунок остаётся на месте паузы
             }
         }
 
@@ -466,6 +472,9 @@
                 });
 
                 function updateProgress(clientX) {
+                    // Если пользователь потянул ползунок у выключенного трека, сбрасываем остальные!
+                    resetOtherTracks(index); 
+                    
                     const rect = progCont.getBoundingClientRect();
                     let offsetX = clientX - rect.left;
                     if (offsetX < 0) offsetX = 0;
