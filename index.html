@@ -99,7 +99,7 @@
             position: relative; flex-shrink: 0; width: 250px; height: 250px; z-index: 1; 
             border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
             border: 1px solid rgba(255,255,255,0.1);
-            animation: float-cover 6s ease-in-out infinite; /* Применяем анимацию сюда */
+            animation: float-cover 6s ease-in-out infinite;
         }
         .promo-cover-wrap img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .promo-banner:hover .promo-cover-wrap img { transform: scale(1.05); }
@@ -133,7 +133,6 @@
         .hero-badge { display: inline-block; background: rgba(0, 255, 102, 0.15); color: var(--neon-green); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--neon-green); align-self: flex-start; }
         .hero-info h2 { font-size: 3rem; font-weight: 900; line-height: 1.1; background: linear-gradient(to right, #fff, #ccc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Кастомный Аудиоплеер (Обновленный) */
         .audio-player { background: rgba(0,0,0,0.5); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
         .play-pause-btn { background: var(--neon-purple); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.5); flex-shrink: 0; }
         .play-pause-btn:hover { transform: scale(1.1); background: var(--neon-pink); box-shadow: 0 0 20px rgba(255,0,127,0.6); }
@@ -192,6 +191,7 @@
         .close-btn { position: absolute; top: 25px; right: 40px; color: white; font-size: 3rem; cursor: pointer; z-index: 10000; transition: 0.3s; line-height: 1; }
         .close-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
 
+        /* Адаптация под мобильные (с фиксом таймера) */
         @media (max-width: 900px) {
             .hero-release, .promo-banner { flex-direction: column; text-align: center; padding: 30px 20px; }
             .hero-cover-wrap { width: 100%; max-width: 300px; }
@@ -201,20 +201,22 @@
             .promo-info h2 { font-size: 2.8rem; }
             .platform-grid { grid-template-columns: 1fr 1fr; }
             .download-btn { width: 100%; }
-            .countdown { justify-content: center; }
         }
         @media (max-width: 500px) {
             .platform-grid { grid-template-columns: 1fr; }
             header h1 { font-size: 2.5rem; }
             .top-nav { flex-direction: column; gap: 15px; align-items: center; padding-top: 15px; }
             
-            /* ФИКС ТАЙМЕРА ДЛЯ ТЕЛЕФОНОВ */
-            .promo-banner { padding: 25px 10px; } /* Даем чуть больше ширины контенту */
+            /* Фикс таймера */
+            .promo-banner { padding: 25px 10px; }
             .countdown { gap: 5px; width: 100%; justify-content: center; }
-            .cd-box { min-width: 0; flex: 1; padding: 8px 2px; } /* flex:1 заставит блоки ровно поделить место */
+            .cd-box { min-width: 0; flex: 1; padding: 8px 2px; } 
             .cd-num { font-size: 1.3rem; }
             .cd-label { font-size: 0.55rem; letter-spacing: 0; }
-            .cd-colon { font-size: 1.3rem; margin: -10px -2px 0; } /* Ужимаем двоеточия по бокам */
+            .cd-colon { font-size: 1.3rem; margin: -10px -2px 0; }
+            
+            /* Фикс виджета чата для мобилок */
+            #chat-window { max-width: calc(100vw - 40px); }
         }
     </style>
 </head>
@@ -240,6 +242,36 @@
             Не работает видео? <a href="#" id="ytFallbackLink" target="_blank">Открыть на YouTube</a>
         </div>
     </div>
+
+    <div id="chat-widget" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end;">
+        
+        <div id="chat-window" style="display: none; width: 320px; height: 420px; background: rgba(10,10,15,0.95); border: 2px solid var(--neon-cyan); border-radius: 20px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,198,255,0.3); backdrop-filter: blur(15px); margin-bottom: 20px; transform-origin: bottom right; animation: chatPop 0.3s ease-out;">
+            <div style="background: var(--neon-cyan); color: #000; padding: 15px; font-weight: 900; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center;">
+                <span>DXTR Support</span>
+                <i class="fa-solid fa-xmark" id="chat-close" style="cursor: pointer; font-size: 1.4rem; transition: 0.3s;"></i>
+            </div>
+            <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
+                <div style="color: var(--text-muted); text-align: center; font-size: 0.8rem; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 8px;">
+                    Оставьте сообщение, мы ответим вам в реальном времени!
+                </div>
+            </div>
+            <div style="padding: 15px; display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5);">
+                <input type="text" id="chat-input" placeholder="Ваш вопрос..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 15px; border-radius: 12px; outline: none; font-family: 'Montserrat', sans-serif;">
+                <button id="chat-send" style="background: var(--neon-purple); border: none; color: #fff; width: 45px; border-radius: 12px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4);"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+        
+        <button id="chat-toggle" style="background: var(--neon-cyan); border: none; width: 65px; height: 65px; border-radius: 50%; color: #000; cursor: pointer; box-shadow: 0 0 25px rgba(0,198,255,0.6); font-size: 1.8rem; transition: 0.3s; display: flex; justify-content: center; align-items: center;">
+            <i class="fa-solid fa-comment-dots"></i>
+        </button>
+    </div>
+
+    <style>
+        @keyframes chatPop { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        #chat-toggle:hover { transform: scale(1.1); background: #fff; box-shadow: 0 0 30px rgba(255,255,255,0.8); }
+        #chat-close:hover { color: var(--neon-pink); transform: rotate(90deg); }
+        #chat-send:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
+    </style>
 
     <header class="fade-in">
         <h1>DXTR SlizZe</h1>
@@ -371,8 +403,88 @@
         <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; margin-top: 30px;">© 2026 DXTR | SlizZe</p>
     </footer>
 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
     <script>
-        // ЛОГИКА ТАЙМЕРА ДО ВЫХОДА АЛЬБОМА GUSTO (01.04.2026)
+        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА ===
+        const SERVER_URL = "https://dxtrslizze.onrender.com/"; // ТВОЯ ССЫЛКА НА БЭКЕНД ИЗ RENDER
+        const socket = io(SERVER_URL);
+        
+        const chatToggle = document.getElementById('chat-toggle');
+        const chatClose = document.getElementById('chat-close');
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send');
+        const chatMessages = document.getElementById('chat-messages');
+
+        // Открытие/закрытие окна чата
+        chatToggle.onclick = () => chatWindow.style.display = 'flex';
+        chatClose.onclick = () => chatWindow.style.display = 'none';
+
+        // Отправка сообщения (по кнопке)
+        chatSendBtn.onclick = sendMessageToBot;
+        // Отправка сообщения (по клавише Enter)
+        chatInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendMessageToBot();
+            }
+        });
+
+        function sendMessageToBot() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            
+            // Отправляем на сервер Render
+            socket.emit('send_message', { text: text });
+            
+            // Добавляем сообщение пользователя в UI
+            addChatMessage('Вы', text, 'var(--neon-cyan)', 'flex-end');
+            chatInput.value = '';
+        }
+
+        // Прием сообщения от админа из Telegram
+        socket.on('receive_message', (data) => {
+            // Если чат закрыт - открываем его, чтобы юзер увидел ответ
+            if (chatWindow.style.display === 'none') {
+                chatWindow.style.display = 'flex';
+            }
+            addChatMessage('Support', data.text, 'var(--neon-purple)', 'flex-start');
+        });
+
+        // Функция отрисовки сообщений
+        function addChatMessage(sender, text, color, align) {
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.flexDirection = 'column';
+            wrapper.style.alignItems = align;
+
+            const nameLab = document.createElement('span');
+            nameLab.textContent = sender;
+            nameLab.style.fontSize = '0.7rem';
+            nameLab.style.color = color;
+            nameLab.style.marginBottom = '3px';
+            nameLab.style.fontWeight = 'bold';
+
+            const bubble = document.createElement('div');
+            bubble.style.background = 'rgba(255,255,255,0.1)';
+            bubble.style.padding = '8px 12px';
+            bubble.style.borderRadius = '12px';
+            bubble.style.color = '#fff';
+            bubble.style.maxWidth = '85%';
+            bubble.style.wordWrap = 'break-word';
+            bubble.style.border = `1px solid ${color}`;
+            bubble.textContent = text;
+
+            wrapper.appendChild(nameLab);
+            wrapper.appendChild(bubble);
+            chatMessages.appendChild(wrapper);
+            
+            // Авто-прокрутка вниз
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // === ЛОГИКА ТАЙМЕРА ДО ВЫХОДА АЛЬБОМА GUSTO (01.04.2026) ===
         const countDownDate = new Date("April 1, 2026 00:00:00").getTime();
         const countdownTimer = setInterval(function() {
             const now = new Date().getTime();
@@ -395,7 +507,7 @@
             document.getElementById("seconds").innerText = seconds < 10 ? '0' + seconds : seconds;
         }, 1000);
 
-        // ЛОГИКА МОДАЛЬНОГО ОКНА YOUTUBE
+        // === ЛОГИКА МОДАЛЬНОГО ОКНА YOUTUBE ===
         const modal = document.getElementById('videoModal');
         const player = document.getElementById('ytPlayer');
         const closeBtn = document.getElementById('closeBtn');
@@ -422,7 +534,7 @@
         closeBtn.onclick = closeModal;
         modal.onclick = function(e) { if (e.target === modal) { closeModal(); } }
 
-        // ЛОГИКА ВСТРОЕННОГО АУДИОПЛЕЕРА (NCL)
+        // === ЛОГИКА ВСТРОЕННОГО АУДИОПЛЕЕРА (NCL) ===
         const progressBar = document.getElementById('progressBar');
         const progressContainer = document.getElementById('progressContainer');
         const timeDisplay = document.getElementById('timeDisplay');
