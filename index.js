@@ -13,12 +13,13 @@ const token = process.env.BOT_TOKEN;
 const adminId = process.env.ADMIN_CHAT_ID;
 const bot = new TelegramBot(token, { polling: true });
 
-// Храним: ID сообщения в ТГ -> ID клиента
 const messageMap = new Map();
 
-// НОВАЯ ФИЧА: Очередь сообщений для тех, кто оффлайн
-// Храним: ID клиента -> [Массив ожидающих текстов]
-const pendingMessages = new Map(); 
+// Храним: ID клиента -> массив объектов { text: 'сообщение', timestamp: время_создания }
+const pendingMessages = new Map();
+
+// Срок годности сообщения (например, 1 час = 3600000 миллисекунд)
+const EXPIRATION_TIME = 60 * 60 * 1000; 
 
 io.on('connection', (socket) => {
     
@@ -26,20 +27,37 @@ io.on('connection', (socket) => {
         socket.join(clientId);
         console.log(`User registered: ${clientId}`);
 
-        // ПРОВЕРЯЕМ ОЧЕРЕДЬ: Есть ли для него непрочитанные ответы?
+        // Проверяем, есть ли для этого юзера ожидающие сообщения
         if (pendingMessages.has(clientId)) {
-            const msgs = pendingMessages.get(clientId);
+            const userQueue = pendingMessages.get(clientId);
+            const now = Date.now();
             
-            // Отправляем юзеру все накопленные сообщения
-            msgs.forEach(text => {
-                socket.emit('receive_message', { text: text });
-            });
-            
-            // Очищаем его ящик
-            pendingMessages.delete(clientId);
+            const validMessages = [];
+            let expiredCount = 0;
 
-            // Радуем админа в Телеге
-            bot.sendMessage(adminId, `🔔 <b>Юзер вернулся!</b>\nПользователь <code>${clientId}</code> снова зашел на сайт и получил твои отложенные сообщения.`, { parse_mode: 'HTML' });
+            // Сортируем сообщения на свежие и просроченные
+            userQueue.forEach(msgObj => {
+                if (now - msgObj.timestamp < EXPIRATION_TIME) {
+                    validMessages.push(msgObj.text);
+                } else {
+                    expiredCount++;
+                }
+            });
+
+            // Если есть свежие сообщения — отправляем
+            if (validMessages.length > 0) {
+                validMessages.forEach(text => {
+                    socket.emit('receive_message', { text: text });
+                });
+                bot.sendMessage(adminId, `🔔 <b>Юзер вернулся!</b>\nПользователь <code>${clientId}</code> только что зашёл на сайт и получил твои отложенные ответы.`, { parse_mode: 'HTML' });
+            } 
+            // Если все сообщения протухли
+            else if (expiredCount > 0) {
+                bot.sendMessage(adminId, `⚠️ <b>Юзер вернулся, но поздно.</b>\nПользователь <code>${clientId}</code> зашёл на сайт, но время ожидания ответа истекло. Сообщения сгорели.`, { parse_mode: 'HTML' });
+            }
+
+            // Очищаем ящик юзера в любом случае
+            pendingMessages.delete(clientId);
         }
     });
 
@@ -66,22 +84,23 @@ bot.on('message', (msg) => {
         const clientId = messageMap.get(msg.reply_to_message.message_id);
         const room = io.sockets.adapter.rooms.get(clientId);
         
+        // ЮЗЕР ОНЛАЙН
         if (room && room.size > 0) {
-            // Юзер онлайн -> шлем мгновенно
             io.to(clientId).emit('receive_message', { text: msg.text });
-            
-            bot.sendMessage(adminId, `✅ <b>Ответ доставлен!</b>\nПользователь сейчас на сайте.`, { 
+            bot.sendMessage(adminId, `✅ <b>Ответ доставлен!</b>\nПользователь прочитал сообщение прямо сейчас.`, { 
                 parse_mode: 'HTML',
                 reply_to_message_id: msg.message_id 
             });
-        } else {
-            // ЮЗЕР ОФФЛАЙН -> КЛАДЕМ В ОЧЕРЕДЬ
+        } 
+        // ЮЗЕР ОФФЛАЙН -> КЛАДЕМ В ОЧЕРЕДЬ
+        else {
             if (!pendingMessages.has(clientId)) {
                 pendingMessages.set(clientId, []);
             }
-            pendingMessages.get(clientId).push(msg.text);
+            // Добавляем текст и текущее время
+            pendingMessages.get(clientId).push({ text: msg.text, timestamp: Date.now() });
 
-            bot.sendMessage(adminId, `⏳ <b>Пользователь оффлайн.</b>\nОтвет сохранен в очередь! Как только он зайдет на сайт, бот всё ему передаст.`, { 
+            bot.sendMessage(adminId, `⏳ <b>Пользователь оффлайн.</b>\nОтвет положен в очередь. Если он вернётся на сайт в течение 1 часа, бот ему всё передаст.\n\n<i>(Важно: если бесплатный сервер уснёт, очередь сотрётся раньше).</i>`, { 
                 parse_mode: 'HTML',
                 reply_to_message_id: msg.message_id 
             });
