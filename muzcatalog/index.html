@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DXTR | SlizZe - Скачать треки</title>
+    <style>
+        :root {
+            --bg-color: #0d0e15;
+            --text-color: #e0e6ed;
+            --neon-pink: #ff007f;
+            --neon-blue: #00f0ff;
+            --border-radius: 8px;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px var(--neon-pink);
+            margin-bottom: 40px;
+        }
+
+        .track-list {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .track-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--neon-blue);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .track-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+            border-left: 4px solid var(--neon-pink);
+        }
+
+        .track-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .track-cover {
+            width: 60px;
+            height: 60px;
+            border-radius: 4px;
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+        }
+
+        .track-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .download-btn {
+            background: transparent;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: var(--neon-blue);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        /* Модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: #151821;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--neon-pink);
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+            text-align: center;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            color: #888;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--neon-pink);
+        }
+
+        .format-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .format-btn {
+            background: transparent;
+            color: var(--text-color);
+            border: 2px solid #555;
+            padding: 10px 30px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+        }
+
+        .format-btn.mp3:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+        }
+
+        .format-btn.wav:hover {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        @media (max-width: 600px) {
+            .track-item {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            .track-info {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>DXTR | SlizZe - HQ Downloads</h1>
+
+    <div class="track-list">
+        <div class="track-item">
+            <div class="track-info">
+                <img src="https://via.placeholder.com/60/ff007f/000000?text=NCL" alt="Night City Lights Cover" class="track-cover">
+                <div class="track-title">Night City Lights</div>
+            </div>
+            <button class="download-btn" onclick="openModal('Night City Lights', 'link_to_ncl.mp3', 'link_to_ncl.wav')">Скачать</button>
+        </div>
+
+        <div class="track-item">
+            <div class="track-info">
+                <img src="https://via.placeholder.com/60/00f0ff/000000?text=N/D" alt="Neon Dreams Cover" class="track-cover">
+                <div class="track-title">Neon Dreams</div>
+            </div>
+            <button class="download-btn" onclick="openModal('Neon Dreams', 'link_to_nd.mp3', 'link_to_nd.wav')">Скачать</button>
+        </div>
+
+        <div class="track-item">
+            <div class="track-info">
+                <img src="https://via.placeholder.com/60/800080/ffffff?text=C/P" alt="Cyberpunk Heart Cover" class="track-cover">
+                <div class="track-title">Cyberpunk Heart</div>
+            </div>
+            <button class="download-btn" onclick="openModal('Cyberpunk Heart', 'link_to_ch.mp3', 'link_to_ch.wav')">Скачать</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="downloadModal">
+        <div class="modal-content">
+            <div class="close-modal" onclick="closeModal()">×</div>
+            <h2 id="modalTrackTitle" style="margin-top: 0;">Выберите формат</h2>
+            <div class="format-buttons">
+                <button class="format-btn mp3" id="btnMp3">MP3 (320 kbps)</button>
+                <button class="format-btn wav" id="btnWav">WAV (Lossless)</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('downloadModal');
+        const modalTitle = document.getElementById('modalTrackTitle');
+        const btnMp3 = document.getElementById('btnMp3');
+        const btnWav = document.getElementById('btnWav');
+
+        // Закрытие модального окна при клике вне его области
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        function openModal(trackName, mp3Link, wavLink) {
+            modalTitle.textContent = `Скачать: ${trackName}`;
+            
+            // Назначаем ссылки для скачивания (установи аттрибут download для прямых ссылок)
+            btnMp3.onclick = () => downloadFile(mp3Link);
+            btnWav.onclick = () => downloadFile(wavLink);
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        function downloadFile(url) {
+            // Если файлы лежат в репозитории, создаем временную ссылку для скачивания
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = ''; // Браузер сам подхватит имя файла
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            closeModal();
+        }
+    </script>
+</body>
+</html>
