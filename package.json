@@ -1,0 +1,15 @@
+{
+  "name": "dxtr-support-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "express": "^4.18.2",
+    "http": "^0.0.1-security",
+    "node-telegram-bot-api": "^0.61.0",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
