@@ -15,8 +15,9 @@
             --neon-pink: #ff007f;
             --neon-purple: #7000ff;
             --neon-cyan: #00c6ff;
+            --neon-yellow: #ffcc00;
             --bg-dark: #050507;
-            --glass-bg: rgba(20, 20, 25, 0.6);
+            --glass-bg: rgba(20, 20, 25, 0.65);
             --glass-border: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff;
             --text-muted: #a1a1aa;
@@ -26,7 +27,7 @@
 
         body {
             background-color: var(--bg-dark); color: var(--text-main);
-            display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden;
+            display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative;
         }
 
         /* Анимированный фон */
@@ -37,62 +38,88 @@
         .blob-3 { width: 300px; height: 300px; background: var(--neon-cyan); top: 40%; left: 50%; transform: translateX(-50%); opacity: 0.2; animation-delay: -10s; }
 
         @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
-        .fade-in { animation: fadeIn 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(30px); }
+        .fade-in { animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
+        /* ВЕРХНЯЯ НАВИГАЦИЯ */
+        .top-nav { display: flex; justify-content: center; gap: 40px; padding: 25px 20px 0; position: relative; z-index: 20; }
+        .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 5px; border-bottom: 2px solid transparent; transition: 0.3s; }
+        .nav-link:hover, .nav-link.active { color: #fff; border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0, 198, 255, 0.6); }
+
         /* Шапка */
-        header { text-align: center; padding: 6vh 20px 3vh; position: relative; z-index: 10; }
-        header h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 5px;
-            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
-            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            animation: gradient-shift 4s linear infinite; margin-bottom: 10px;
-        }
+        header { text-align: center; padding: 6vh 20px 4vh; position: relative; z-index: 10; }
+        header h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; text-transform: uppercase; letter-spacing: 5px; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink)); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 4s linear infinite; margin-bottom: 10px; }
         @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
-        header p { color: var(--text-muted); font-weight: 500; }
+        header p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; font-weight: 500; }
 
-        /* Список треков */
-        main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; z-index: 10; display: flex; flex-direction: column; gap: 20px; }
+        /* КОНТЕЙНЕР КАТАЛОГА */
+        main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 20px 60px; z-index: 10; display: flex; flex-direction: column; gap: 20px; }
 
-        .track-item {
-            background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-            border: 1px solid var(--glass-border); border-radius: 20px; padding: 15px 20px;
-            display: flex; align-items: center; justify-content: space-between; gap: 20px;
-            transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        /* КАРТОЧКА ТРЕКА */
+        .catalog-item {
+            background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 20px; padding: 15px 25px;
+            display: flex; align-items: center; gap: 25px; transition: 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            position: relative; overflow: hidden;
         }
-        .track-item:hover { border-color: var(--neon-purple); transform: translateY(-3px); }
+        .catalog-item:hover { border-color: rgba(0, 198, 255, 0.4); box-shadow: 0 10px 40px rgba(0, 198, 255, 0.15); transform: translateY(-3px); }
 
-        .track-cover {
-            width: 80px; height: 80px; border-radius: 12px; object-fit: cover;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5); flex-shrink: 0;
+        /* Левая часть: Номер + Обложка */
+        .ci-left { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+        .ci-number { color: var(--neon-yellow); font-weight: 900; font-size: 1.2rem; width: 30px; text-align: center; opacity: 0.8; }
+        
+        .ci-cover-wrapper { position: relative; width: 75px; height: 75px; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+        .ci-cover-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 0.4s; }
+        .catalog-item:hover .ci-cover-wrapper img { transform: scale(1.1); filter: brightness(0.6); }
+
+        /* Желтая кнопка Play поверх обложки */
+        .ci-play-btn {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--neon-yellow); color: #000; border: none;
+            width: 40px; height: 40px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.1rem; cursor: pointer; opacity: 0; transition: 0.3s;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
         }
+        .catalog-item:hover .ci-play-btn { opacity: 1; }
+        .ci-play-btn:hover { background: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.8); transform: translate(-50%, -50%) scale(1.1); }
+        .ci-play-btn.active { opacity: 1; background: var(--neon-pink); color: white; box-shadow: 0 0 15px var(--neon-pink); }
 
-        .track-main-info { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-        .track-title { font-size: 1.2rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Центр: Название + Плеер */
+        .ci-center { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+        .ci-header { display: flex; flex-direction: column; }
+        .ci-title { font-size: 1.25rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ci-artist { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
 
-        /* Аудиоплеер внутри списка */
-        .audio-player { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 12px; }
-        .play-pause-btn {
-            background: var(--neon-purple); color: white; border: none; width: 35px; height: 35px;
-            border-radius: 50%; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: 0.3s; box-shadow: 0 0 10px rgba(112,0,255,0.4); flex-shrink: 0;
+        /* Визуальный Плеер */
+        .ci-player-controls { display: flex; align-items: center; gap: 15px; width: 100%; margin-top: 5px; }
+        
+        .progress-container {
+            flex: 1; height: 6px; background: rgba(255,255,255,0.05); /* Очень тонкая невидимая полоса */
+            border-radius: 10px; cursor: pointer; position: relative;
         }
-        .play-pause-btn:hover { transform: scale(1.1); background: var(--neon-pink); }
-        .progress-container { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 5px; cursor: pointer; position: relative; }
-        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan)); border-radius: 5px; position: relative; pointer-events: none; }
+        .progress-bar {
+            height: 100%; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple));
+            border-radius: 10px; position: relative; pointer-events: none;
+        }
+        /* Круглая движущаяся точка */
         .progress-bar::after {
-            content: ''; position: absolute; right: -5px; top: -3px; width: 12px; height: 12px;
-            background: #fff; border-radius: 50%; box-shadow: 0 0 10px rgba(255,255,255,0.8);
+            content: ''; position: absolute; right: -7px; top: -5px; width: 16px; height: 16px;
+            background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9);
+            transition: transform 0.1s;
         }
-        .time-display { font-size: 0.8rem; color: var(--text-muted); font-variant-numeric: tabular-nums; flex-shrink: 0; min-width: 40px; text-align: right; }
+        .progress-container:active .progress-bar::after { transform: scale(1.3); }
 
-        /* Кнопка скачать */
+        .time-display { font-size: 0.85rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 600; min-width: 85px; text-align: right; }
+
+        /* Правая часть: Скачать */
+        .ci-right { flex-shrink: 0; }
         .dl-btn {
-            display: flex; align-items: center; gap: 10px; background: transparent; color: white;
+            background: transparent; color: white; border: 1px solid var(--glass-border);
             padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s;
-            border: 1px solid var(--neon-cyan); flex-shrink: 0;
+            display: flex; align-items: center; gap: 8px;
         }
-        .dl-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px rgba(0, 198, 255, 0.6); }
+        .dl-btn:hover { border-color: var(--neon-pink); box-shadow: 0 0 20px rgba(255,0,127,0.3); background: rgba(255,0,127,0.1); color: var(--neon-pink); }
 
         /* Модалка скачивания */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 9999; justify-content: center; align-items: center; }
@@ -106,15 +133,20 @@
 
         /* Подвал */
         footer { padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
-        .back-btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: 800; color: white; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; }
-        .back-btn:hover { background: #fff; color: #000; }
 
+        /* Мобильная адаптация */
         @media (max-width: 768px) {
-            .track-item { flex-direction: column; align-items: stretch; text-align: center; }
-            .track-cover { align-self: center; width: 120px; height: 120px; }
-            .audio-player { flex-direction: column; padding: 15px; }
-            .progress-container { width: 100%; margin: 10px 0; }
-            .play-pause-btn { width: 50px; height: 50px; font-size: 1.5rem; }
+            .catalog-item { flex-wrap: wrap; padding: 20px; gap: 15px; }
+            .ci-left { width: 100%; justify-content: center; gap: 15px; }
+            .ci-number { display: none; } 
+            .ci-cover-wrapper { width: 120px; height: 120px; }
+            .ci-play-btn { opacity: 1; width: 50px; height: 50px; font-size: 1.3rem; }
+            .ci-center { width: 100%; align-items: center; text-align: center; }
+            .ci-player-controls { flex-direction: column; gap: 10px; }
+            .time-display { width: 100%; text-align: center; }
+            .ci-right { width: 100%; }
+            .dl-btn { width: 100%; justify-content: center; padding: 15px; }
+            .top-nav { flex-direction: column; gap: 15px; align-items: center; }
         }
     </style>
 </head>
@@ -123,6 +155,11 @@
     <div class="bg-blobs">
         <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
     </div>
+
+    <nav class="top-nav fade-in">
+        <a href="https://dxtrslizze.xyz/" class="nav-link">Главная</a>
+        <a href="https://dxtrslizze.xyz/muzcatalog/" class="nav-link active">Муз. каталог</a>
+    </nav>
 
     <div class="modal" id="downloadModal">
         <div class="modal-content">
@@ -138,15 +175,15 @@
         <p>Слушай и скачивай понравившиеся треки в удобном формате</p>
     </header>
 
-    <main id="track-list" class="fade-in">
+    <main id="track-list">
         </main>
 
-    <footer class="fade-in">
-        <a href="../" class="back-btn"><i class="fa-solid fa-arrow-left"></i> На главную</a>
+    <footer>
+        <p style="color: var(--text-muted); font-size: 0.9rem;">© 2026 DXTR | SlizZe</p>
     </footer>
 
     <script>
-        // СПИСОК ВСЕХ ТРЕКОВ (Вставь сюда свои ссылки)
+        // СПИСОК ВСЕХ ТРЕКОВ ИЗ ТВОЕГО КОДА
         const tracks = [
             { title: "Music", cover: "../logo_Music.png", mp3: "../mp3_Music.mp3", wav: "../wav_Music.wav" },
             { title: "FastRap", cover: "../logo_FastRap.jpeg", mp3: "../mp3_FastRap.mp3", wav: "../wav_FastRap.wav" },
@@ -168,95 +205,116 @@
         ];
 
         const trackListContainer = document.getElementById('track-list');
-        let currentAudio = null; // Хранит текущий играющий трек
-        let currentPlayBtn = null; // Хранит иконку текущего играющего трека
+        let currentAudio = null;
+        let currentPlayBtn = null;
 
-        // Генерация HTML для каждого трека
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return "0:00";
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        // Генерация HTML
         tracks.forEach((track, index) => {
+            const num = index + 1 < 10 ? `0${index + 1}` : index + 1;
+            
             const trackHTML = `
-                <div class="track-item">
-                    <img src="${track.cover}" alt="${track.title}" class="track-cover" onerror="this.src='../dslogo.png'">
-                    
-                    <div class="track-main-info">
-                        <div class="track-title">${track.title}</div>
-                        <div class="audio-player">
-                            <audio id="audio-${index}" src="${track.mp3}"></audio>
-                            <button class="play-pause-btn" onclick="togglePlay(${index})">
+                <div class="catalog-item fade-in" style="animation-delay: ${index * 0.05}s">
+                    <div class="ci-left">
+                        <div class="ci-number">${num}</div>
+                        <div class="ci-cover-wrapper">
+                            <img src="${track.cover}" alt="${track.title}" onerror="this.src='../dslogo.png'">
+                            <button class="ci-play-btn" id="btn-${index}" onclick="togglePlay(${index})">
                                 <i id="icon-${index}" class="fa-solid fa-play"></i>
                             </button>
+                        </div>
+                    </div>
+                    
+                    <div class="ci-center">
+                        <div class="ci-header">
+                            <div class="ci-title">${track.title}</div>
+                            <div class="ci-artist">DXTR | SlizZe</div>
+                        </div>
+                        <div class="ci-player-controls">
+                            <audio id="audio-${index}" src="${track.mp3}" preload="metadata"></audio>
                             <div class="progress-container" id="prog-cont-${index}">
                                 <div class="progress-bar" id="prog-bar-${index}"></div>
                             </div>
-                            <span class="time-display" id="time-${index}">0:00</span>
+                            <div class="time-display" id="time-${index}">00:00 / 00:00</div>
                         </div>
                     </div>
 
-                    <button class="dl-btn" onclick="openModal('${track.title}', '${track.mp3}', '${track.wav}')">
-                        <i class="fa-solid fa-download"></i> Скачать
-                    </button>
+                    <div class="ci-right">
+                        <button class="dl-btn" onclick="openModal('${track.title}', '${track.mp3}', '${track.wav}')">
+                            <i class="fa-solid fa-download"></i> <span class="dl-text">Скачать</span>
+                        </button>
+                    </div>
                 </div>
             `;
             trackListContainer.insertAdjacentHTML('beforeend', trackHTML);
         });
 
-        // ЛОГИКА АУДИОПЛЕЕРОВ
-        function formatTime(seconds) {
-            if (isNaN(seconds)) return "0:00";
-            const min = Math.floor(seconds / 60);
-            const sec = Math.floor(seconds % 60);
-            return `${min}:${sec < 10 ? '0' : ''}${sec}`;
-        }
-
         function togglePlay(index) {
             const audio = document.getElementById(`audio-${index}`);
             const icon = document.getElementById(`icon-${index}`);
+            const btn = document.getElementById(`btn-${index}`);
 
-            // Если нажимаем плей на новом треке, ставим на паузу старый
             if (currentAudio && currentAudio !== audio) {
                 currentAudio.pause();
-                if (currentPlayBtn) currentPlayBtn.className = 'fa-solid fa-play';
+                if (currentPlayBtn) {
+                    currentPlayBtn.className = 'fa-solid fa-play';
+                    document.getElementById(`btn-${currentAudio.id.split('-')[1]}`).classList.remove('active');
+                }
             }
 
             if (audio.paused) {
                 audio.play();
                 icon.className = 'fa-solid fa-pause';
+                btn.classList.add('active');
                 currentAudio = audio;
                 currentPlayBtn = icon;
             } else {
                 audio.pause();
                 icon.className = 'fa-solid fa-play';
+                btn.classList.remove('active');
                 currentAudio = null;
                 currentPlayBtn = null;
             }
         }
 
-        // Привязываем события обновления времени и перемотки ко всем плеерам
+        // Логика перемотки и времени
         tracks.forEach((_, index) => {
             const audio = document.getElementById(`audio-${index}`);
             const progBar = document.getElementById(`prog-bar-${index}`);
             const progCont = document.getElementById(`prog-cont-${index}`);
             const timeDisp = document.getElementById(`time-${index}`);
             const icon = document.getElementById(`icon-${index}`);
+            const btn = document.getElementById(`btn-${index}`);
 
             let isDragging = false;
 
-            // Обновление ползунка при проигрывании
+            // Как только подгрузятся данные трека - выводим время
+            audio.addEventListener('loadedmetadata', () => {
+                timeDisp.textContent = `00:00 / ${formatTime(audio.duration)}`;
+            });
+
             audio.addEventListener('timeupdate', () => {
                 if (audio.duration && !isDragging) {
                     const progressPercent = (audio.currentTime / audio.duration) * 100;
                     progBar.style.width = `${progressPercent}%`;
-                    timeDisp.textContent = formatTime(audio.currentTime);
+                    timeDisp.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
                 }
             });
 
-            // Сброс иконки, когда трек закончился
             audio.addEventListener('ended', () => {
                 icon.className = 'fa-solid fa-play';
+                btn.classList.remove('active');
                 progBar.style.width = '0%';
                 audio.currentTime = 0;
+                timeDisp.textContent = `00:00 / ${formatTime(audio.duration)}`;
             });
 
-            // Функция перемотки
             function updateProgress(clientX) {
                 const rect = progCont.getBoundingClientRect();
                 let offsetX = clientX - rect.left;
@@ -268,28 +326,20 @@
                 
                 if (audio.duration) {
                     const targetTime = percentage * audio.duration;
-                    timeDisp.textContent = formatTime(targetTime);
+                    timeDisp.textContent = `${formatTime(targetTime)} / ${formatTime(audio.duration)}`;
                     audio.currentTime = targetTime;
                 }
             }
 
-            // Управление перемоткой (Мышь)
-            progCont.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                updateProgress(e.clientX);
-            });
+            progCont.addEventListener('mousedown', (e) => { isDragging = true; updateProgress(e.clientX); });
             window.addEventListener('mousemove', (e) => { if (isDragging) updateProgress(e.clientX); });
             window.addEventListener('mouseup', () => { isDragging = false; });
 
-            // Управление перемоткой (Тачскрин)
-            progCont.addEventListener('touchstart', (e) => {
-                isDragging = true;
-                updateProgress(e.touches[0].clientX);
-            }, { passive: false });
+            progCont.addEventListener('touchstart', (e) => { isDragging = true; updateProgress(e.touches[0].clientX); }, { passive: false });
             window.addEventListener('touchmove', (e) => {
                 if (isDragging) {
                     updateProgress(e.touches[0].clientX);
-                    e.preventDefault(); // отключаем скролл страницы при перемотке
+                    e.preventDefault(); 
                 }
             }, { passive: false });
             window.addEventListener('touchend', () => { isDragging = false; });
