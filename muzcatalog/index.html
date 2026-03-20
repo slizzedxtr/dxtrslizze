@@ -811,10 +811,52 @@
         document.getElementById('sidebarSupportBtn').onclick = (e) => { e.preventDefault(); toggleSBar(); setTimeout(() => { chatWindow.style.display = 'flex'; if(!isMobile) { chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px'; } chatMessages.scrollTop = chatMessages.scrollHeight; }, 300); };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        let isDraggingChat = false, startX, startY, startLeft, startTop;
-        chatHeader.addEventListener('mousedown', (e) => { if(isMobile) return; isDraggingChat = true; const rect = chatWindow.getBoundingClientRect(); chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto'; chatWindow.style.left = rect.left + 'px'; chatWindow.style.top = rect.top + 'px'; chatWindow.style.margin = '0'; startX = e.clientX; startY = e.clientY; startLeft = rect.left; startTop = rect.top; });
-        document.addEventListener('mousemove', (e) => { if (!isDraggingChat) return; e.preventDefault(); chatWindow.style.left = `${startLeft + (e.clientX - startX)}px`; chatWindow.style.top = `${startTop + (e.clientY - startY)}px`; });
-        document.addEventListener('mouseup', () => { isDraggingChat = false; });
+        let isDraggingChat = false, chatOffsetX, chatOffsetY;
+
+        chatHeader.addEventListener('mousedown', (e) => {
+            // Отключаем перетаскивание на мобилках или если кликнули по крестику
+            if (window.innerWidth <= 800 || e.target.id === 'chat-close') return;
+            isDraggingChat = true;
+            
+            // Сбрасываем CSS-анимацию, чтобы она не ломала координаты
+            chatWindow.style.animation = 'none';
+            chatWindow.style.transform = 'none';
+            
+            const rect = chatWindow.getBoundingClientRect();
+            
+            // Вычисляем, где именно внутри шапки мы зажали мышь
+            chatOffsetX = e.clientX - rect.left;
+            chatOffsetY = e.clientY - rect.top;
+            
+            // Отвязываем окно от нижнего правого угла
+            chatWindow.style.right = 'auto';
+            chatWindow.style.bottom = 'auto';
+            chatWindow.style.margin = '0';
+            
+            // Фиксируем текущую позицию перед началом движения
+            chatWindow.style.left = rect.left + 'px';
+            chatWindow.style.top = rect.top + 'px';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingChat) return;
+            e.preventDefault();
+            
+            // Вычисляем новые координаты
+            let newX = e.clientX - chatOffsetX;
+            let newY = e.clientY - chatOffsetY;
+            
+            // Ограничители (чтобы окно не утащили за пределы монитора)
+            newX = Math.max(0, Math.min(newX, window.innerWidth - chatWindow.offsetWidth));
+            newY = Math.max(0, Math.min(newY, window.innerHeight - chatWindow.offsetHeight));
+            
+            chatWindow.style.left = `${newX}px`;
+            chatWindow.style.top = `${newY}px`;
+        });
+
+        document.addEventListener('mouseup', () => { 
+            isDraggingChat = false; 
+        });
 
         socket.on('connect', () => { socket.emit('register_client', clientId); }); socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
         socket.on('user_data', d => { if (d.nickname) { window.userNickname = d.nickname; document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; } });
