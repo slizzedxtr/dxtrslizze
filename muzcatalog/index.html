@@ -88,20 +88,25 @@
         .catalog-item:hover .ci-cover-wrapper img, .catalog-item.playing .ci-cover-wrapper img { transform: scale(1.15); filter: brightness(0.4); }
 
         .ci-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 204, 0, 0.9); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; opacity: 0; transition: 0.3s; backdrop-filter: blur(5px); }
-        .ci-play-btn i { width: 15px; text-align: center; display: block; } /* Жесткая фиксация иконки паузы/плей */
+        .ci-play-btn i { width: 14px; text-align: center; display: inline-block; } /* ИДЕАЛЬНАЯ ЦЕНТРОВКА ПАУЗЫ/ПЛЕЙ */
         .catalog-item:hover .ci-play-btn { opacity: 1; box-shadow: 0 0 20px rgba(255, 204, 0, 0.8); }
         .ci-play-btn:hover { background: #fff; transform: translate(-50%, -50%) scale(1.15); }
         .catalog-item.playing .ci-play-btn { opacity: 1; background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
 
         .ci-center { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-right: 15px; justify-content: center; }
+        .ci-title-wrap { display: flex; align-items: center; gap: 10px; }
         .ci-title { font-size: 1.2rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.3s; }
         .catalog-item.playing .ci-title { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0,198,255,0.3); }
+        
+        /* БЕЙДЖ 18+ */
+        .badge-18 { display: inline-flex; justify-content: center; align-items: center; background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.5); color: #ff3333; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 12px; backdrop-filter: blur(4px); box-shadow: 0 0 10px rgba(255,0,0,0.2); vertical-align: middle; flex-shrink: 0; }
+
         .ci-artist { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
         .ci-player-controls { display: flex; align-items: center; gap: 15px; width: 100%; margin-top: 5px; }
         .progress-container { width: 100%; height: 24px; display: flex; align-items: center; cursor: pointer; position: relative; }
         .progress-container::before { content: ''; position: absolute; left: 0; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-        .progress-bar { height: 6px; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: absolute; left: 0; top: 9px; pointer-events: none; z-index: 2; box-shadow: 0 0 10px rgba(0,198,255,0.5); }
+        .progress-bar { height: 6px; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: absolute; left: 0; top: 9px; pointer-events: none; z-index: 2; box-shadow: 0 0 10px rgba(0,198,255,0.5); transition: width 0.1s linear; }
         .progress-bar::after { content: ''; position: absolute; right: -8px; top: -5px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9); transition: transform 0.1s; }
         .progress-container:active .progress-bar::after { transform: scale(1.4); }
         .time-display-card { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; min-width: 85px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -138,18 +143,18 @@
         
         .gp-left { display: flex; align-items: center; gap: 15px; width: 280px; flex-shrink: 0; }
         .gp-cover { width: 65px; height: 65px; border-radius: 14px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
-        .gp-info { display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .gp-title-wrap { display: flex; align-items: center; gap: 10px; }
+        .gp-info { display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
+        .gp-title-wrap { display: flex; align-items: center; gap: 10px; width: 100%; }
         .gp-title { font-weight: 800; color: #fff; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
         
-        /* Живой визуализатор в плеере */
-        .gp-visualizer { display: flex; align-items: flex-end; gap: 3px; height: 14px; opacity: 0; transition: 0.3s; }
+        /* КРАСИВЫЙ ВИЗУАЛИЗАТОР В ПЛЕЕРЕ */
+        .gp-visualizer { display: flex; align-items: center; gap: 3px; height: 24px; opacity: 0; transition: 0.3s; margin-left: auto; flex-shrink: 0; }
         .global-player.active .gp-visualizer { opacity: 1; }
-        .vis-bar { width: 3px; background: var(--neon-cyan); border-radius: 2px; animation: eq 1s infinite ease-in-out alternate; box-shadow: 0 0 5px var(--neon-cyan); }
-        .vis-bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
-        .vis-bar:nth-child(2) { animation-delay: 0.4s; height: 100%; }
-        .vis-bar:nth-child(3) { animation-delay: 0.2s; height: 40%; }
-        .vis-bar:nth-child(4) { animation-delay: 0.5s; height: 80%; }
+        .vis-bar { width: 4px; background: var(--neon-cyan); border-radius: 2px; box-shadow: 0 0 5px var(--neon-cyan); animation: eq 0.5s ease-in-out infinite alternate; }
+        .vis-bar:nth-child(1) { height: 40%; animation-duration: 0.4s; }
+        .vis-bar:nth-child(2) { height: 100%; animation-duration: 0.7s; animation-delay: 0.1s; background: var(--neon-purple); box-shadow: 0 0 5px var(--neon-purple); }
+        .vis-bar:nth-child(3) { height: 60%; animation-duration: 0.5s; animation-delay: 0.3s; }
+        .vis-bar:nth-child(4) { height: 80%; animation-duration: 0.6s; animation-delay: 0.2s; background: var(--neon-pink); box-shadow: 0 0 5px var(--neon-pink); }
         @keyframes eq { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
 
         .gp-artist { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.5px; }
@@ -161,18 +166,17 @@
         
         /* Идеальная кнопка Play как на главной */
         #gpPlay { width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.6); }
-        #gpPlay i { display: block; width: 15px; text-align: center; } /* Фикс центровки паузы/плей */
+        #gpPlay i { width: 14px; text-align: center; display: inline-block; } /* Фикс центровки */
         #gpPlay:hover { background: var(--neon-pink); box-shadow: 0 0 25px rgba(255,0,127,0.8); transform: scale(1.1); color: #fff;}
         
         .gp-progress-area { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 500px; }
         .gp-progress-area .progress-container { flex: 1; height: 20px; }
         .gp-time { min-width: 45px; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
 
-        /* ГРОМКОСТЬ (Кастомная широкая полоса) */
+        /* ГРОМКОСТЬ */
         .gp-right { display: flex; align-items: center; justify-content: flex-end; gap: 20px; width: 280px; flex-shrink: 0; }
         .vol-container { display: flex; align-items: center; gap: 12px; width: 100%; justify-content: flex-end;}
         
-        /* Кнопка Mute */
         .vol-mute-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); font-size: 1.1rem; cursor: pointer; transition: 0.3s; width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; }
         .vol-mute-btn i { width: 20px; text-align: center; }
         .vol-mute-btn:hover { background: rgba(0,198,255,0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.3); }
@@ -266,32 +270,36 @@
             .ci-player-controls { flex-direction: column; gap: 10px; align-items: stretch; margin-top: 10px; }
             .time-display-card { width: 100%; text-align: center; margin-top: -5px; }
             .ci-right { width: 100%; margin-top: 5px; flex-direction: row; flex-wrap: wrap; }
-            .action-btn-sm { flex: 1; min-width: calc(33% - 10px); padding: 12px 10px; font-size: 0.75rem; }
-            .top-nav { flex-direction: column; gap: 15px; align-items: center; }
             
+            /* Фикс кнопок "Площадки" и тд */
+            .action-btn-sm { flex: 1; min-width: 0; padding: 10px 5px; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .plt-btn { font-size: 0.65rem; }
+            
+            .top-nav { flex-direction: column; gap: 15px; align-items: center; }
             .online-word { display: none; }
             .online-counter { top: 15px; right: 15px; padding: 8px 15px; }
             .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; }
             
-            /* МОБИЛЬНЫЙ ПЛЕЕР - ШТОРКА */
+            /* МОБИЛЬНЫЙ ПЛЕЕР - ШТОРКА (Исправлен layout) */
             .global-player {
                 position: fixed; width: 100%; height: auto; bottom: 0; left: 0; transform: translateY(150%);
-                border-radius: 30px 30px 0 0; flex-direction: column; gap: 15px; padding: 25px 20px;
+                border-radius: 30px 30px 0 0; flex-direction: column; gap: 15px; padding: 35px 20px 20px;
                 background: rgba(10,10,15,0.98); border: none; border-top: 1px solid var(--neon-cyan);
                 box-shadow: 0 -10px 40px rgba(0,0,0,0.9);
             }
             .global-player.active { transform: translateY(0); }
             .global-player::before { display: none; }
             
-            .gp-left { width: 100%; justify-content: flex-start; gap: 15px; }
+            .gp-mobile-top { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px;}
+            .gp-left { flex: 1; min-width: 0; gap: 15px; width: auto; }
             .gp-cover { width: 55px; height: 55px; }
             .gp-info { align-items: flex-start; }
             
-            /* Перенос кнопок управления наверх к обложке */
-            .gp-mobile-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-            .gp-controls { gap: 15px; }
-            .gp-btn { font-size: 1.5rem; }
-            #gpPlay { width: 45px; height: 45px; font-size: 1.1rem; }
+            /* Кнопки плеера на мобилке справа */
+            .gp-controls.mobile-only-controls { display: flex; gap: 12px; flex-shrink: 0; }
+            .gp-btn { font-size: 1.4rem; }
+            #gpPlayM { width: 45px; height: 45px; font-size: 1.1rem; background: var(--neon-purple); color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px rgba(112,0,255,0.6); }
+            #gpPlayM i { width: 14px; text-align: center; }
             
             .gp-center { width: 100%; order: 3; }
             .gp-progress-area { width: 100%; max-width: 100%; margin-top: 10px; }
@@ -301,8 +309,9 @@
             .vol-mute-btn { width: 45px; height: 45px; font-size: 1.3rem; }
             .vol-wrap { max-width: 100%; flex: 1; }
             
-            .gp-minimize { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 40px; height: 25px; border-radius: 20px; border-bottom: none; background: rgba(0,198,255,0.2); }
-            .gp-minimize i { transform: rotate(180deg); color: var(--neon-cyan); }
+            /* Идеальный ползунок сворачивания по центру */
+            .gp-minimize { position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 60px; height: 26px; border-radius: 0 0 15px 15px; border: 1px solid var(--neon-cyan); border-top: none; background: rgba(0,198,255,0.15); display: flex; justify-content: center; align-items: flex-end; padding-bottom: 2px; }
+            .gp-minimize i { color: var(--neon-cyan); font-size: 1rem; }
             
             .fixed-up-btn { bottom: 180px; left: 15px; width: 45px; height: 45px; font-size: 1rem; }
             .mini-player-orb { bottom: 20px; right: 20px; width: 60px; height: 60px; }
@@ -485,12 +494,13 @@
             { title: "Life Simulator", cover: "../logo_Life_Simulator.jpeg", mp3: "../mp3_Life_Simulator.mp3", wav: "../wav_Life_Simulator.wav", yt: "https://www.youtube.com/watch?v=ksahwYBQgrs" },
             { title: "Amazing Online", cover: "../logo_Amazing_Online.jpeg", mp3: "../mp3_Amazing_Online.mp3", wav: "../wav_Amazing_Online.wav", yt: "https://www.youtube.com/watch?v=qFm89V9JjFU" }
         ];
+        
+        const explicitTracks = ["Music", "FastRap", "Night Club", "Cefiro Reload"];
 
         const globalAudio = document.getElementById('globalAudio');
         let currentTrackIndex = -1, isMinimized = false, hasPlayed = false;
         const isMobile = window.innerWidth <= 800;
 
-        // Мобильные элементы управления
         if (isMobile) {
             document.querySelector('.desktop-only-controls').style.display = 'none';
             document.getElementById('gpMobileControls').style.display = 'flex';
@@ -506,6 +516,8 @@
         tracks.forEach((track, index) => {
             const num = index + 1 < 10 ? `0${index + 1}` : index + 1;
             const pltBtn = (track.title === "Night City Lights") ? `<button class="action-btn-sm plt-btn" onclick="event.stopPropagation(); openPlatformsModal()"><i class="fa-solid fa-compact-disc"></i> Площадки</button>` : '';
+            const explicitBadge = explicitTracks.includes(track.title) ? `<span class="badge-18">18+</span>` : '';
+            
             const trackHTML = `
                 <div class="catalog-item fade-in" id="card-${index}" style="animation-delay: ${index * 0.03}s" onclick="playTrack(${index})">
                     <div class="ci-left">
@@ -516,7 +528,10 @@
                         </div>
                     </div>
                     <div class="ci-center">
-                        <div class="ci-title">${track.title}</div>
+                        <div class="ci-title-wrap">
+                            <div class="ci-title">${track.title}</div>
+                            ${explicitBadge}
+                        </div>
                         <div class="ci-artist">DXTR | SlizZe</div>
                         <div class="ci-player-controls">
                             <div class="progress-container" onclick="event.stopPropagation(); seek(event, this, ${index})">
@@ -534,7 +549,6 @@
             `;
             trackListContainer.insertAdjacentHTML('beforeend', trackHTML);
 
-            // Асинхронная загрузка длительности
             const tempAudio = new Audio();
             tempAudio.preload = 'metadata';
             tempAudio.src = track.mp3;
@@ -567,18 +581,18 @@
             updateUI();
         }
 
+        // ПОЛНЫЙ СБРОС СТАРОГО ТРЕКА
         function resetCardUI(index) {
+            if(index === -1) return;
             const card = document.getElementById(`card-${index}`);
             const icon = document.getElementById(`cardIcon-${index}`);
+            const bar = document.getElementById(`cardBar-${index}`);
+            const timeEl = document.getElementById(`ci-time-${index}`);
+            
             if(card) card.classList.remove('playing');
             if(icon) icon.className = 'fa-solid fa-play';
-            // Не сбрасываем время и полоску, если это тот же трек (пауза). Если переключили - сбрасываем.
-            if(index !== currentTrackIndex) {
-                const bar = document.getElementById(`cardBar-${index}`);
-                const timeEl = document.getElementById(`ci-time-${index}`);
-                if(bar) bar.style.width = '0%';
-                if(timeEl) timeEl.textContent = tracks[index].durationStr || '--:--';
-            }
+            if(bar) bar.style.width = '0%';
+            if(timeEl && tracks[index].durationStr) timeEl.textContent = tracks[index].durationStr;
         }
 
         function updateUI() {
@@ -624,11 +638,17 @@
             gpBarFill.style.width = `${p}%`;
             const curTimeStr = formatTime(timeVal);
             gpTime.textContent = curTimeStr;
-            const cardBar = document.getElementById(`cardBar-${currentTrackIndex}`);
-            if(cardBar) cardBar.style.width = `${p}%`;
             
-            const cardTime = document.getElementById(`ci-time-${currentTrackIndex}`);
-            if(cardTime) cardTime.textContent = `${curTimeStr} / ${tracks[currentTrackIndex].durationStr}`;
+            // ЖИВОЕ ОБНОВЛЕНИЕ В КАТАЛОГЕ
+            if (currentTrackIndex !== -1) {
+                const cardBar = document.getElementById(`cardBar-${currentTrackIndex}`);
+                if(cardBar) cardBar.style.width = `${p}%`;
+                
+                const cardTime = document.getElementById(`ci-time-${currentTrackIndex}`);
+                if(cardTime && tracks[currentTrackIndex].durationStr) {
+                    cardTime.textContent = `${curTimeStr} / ${tracks[currentTrackIndex].durationStr}`;
+                }
+            }
         }
 
         function handleProgressScrub(e, container) {
@@ -645,7 +665,7 @@
             if (!isDraggingProgress) return; 
             const p = handleProgressScrub(e, gpProgCont); 
             const t = p * globalAudio.duration;
-            updateProgressBarUI(p * 100, t); // Моментальное визуальное обновление
+            updateProgressBarUI(p * 100, t);
             if(e.cancelable) e.preventDefault(); 
         }
         function onProgressDragEnd(e) { if (!isDraggingProgress) return; isDraggingProgress = false; const rect = gpProgCont.getBoundingClientRect(); let cX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX; let p = (cX - rect.left) / rect.width; p = Math.max(0, Math.min(1, p)); globalAudio.currentTime = p * globalAudio.duration; }
@@ -658,7 +678,7 @@
         window.addEventListener('touchend', onProgressDragEnd);
         function seek(e, container, index) { if(currentTrackIndex !== index) return; handleProgressScrub(e, container); }
 
-        // === ГРОМКОСТЬ (3 Стадии иконок) ===
+        // === ГРОМКОСТЬ (3 СТАДИИ ПО ПРОЦЕНТАМ) ===
         const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
         const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
         
@@ -672,9 +692,9 @@
             
             volNode.classList.remove('muted');
             if(v === 0) { volIcon.className = 'fa-solid fa-volume-xmark'; volNode.classList.add('muted');}
-            else if(v <= 0.35) { volIcon.className = 'fa-solid fa-volume-off'; } /* 1 stage (no waves visually but active) or volume-low */
-            else if(v <= 0.70) { volIcon.className = 'fa-solid fa-volume-low'; } /* 2 stages */
-            else { volIcon.className = 'fa-solid fa-volume-high'; } /* 3 stages */
+            else if(v <= 0.35) { volIcon.className = 'fa-solid fa-volume-off'; } /* 1 Волна (в FA это базовый динамик) */
+            else if(v <= 0.70) { volIcon.className = 'fa-solid fa-volume-low'; } /* 2 Волны */
+            else { volIcon.className = 'fa-solid fa-volume-high'; }              /* 3 Волны */
         }
 
         function setVolume(v) {
@@ -766,6 +786,9 @@
         function sendMessageToBot() { const t = chatInput.value.trim(); if (!t || chatInput.disabled) return; socket.emit('send_message', { text: t, clientId: clientId }); addChatMessage('Вы', t, 'flex-end', true, false, false); chatInput.value = ''; }
         function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { const wrapper = document.createElement('div'); wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; const nameLab = document.createElement('span'); nameLab.className = 'chat-msg-name'; nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; const bubble = document.createElement('div'); bubble.className = 'chat-msg-bubble'; bubble.textContent = text; if (isWarn) { nameLab.style.color = 'var(--neon-red)'; bubble.style.background = 'rgba(255,0,51,0.1)'; bubble.style.border = '1px solid var(--neon-red)'; } else if (isSucc) { nameLab.style.color = 'var(--neon-green)'; bubble.style.background = 'rgba(0,255,102,0.1)'; bubble.style.border = '1px solid var(--neon-green)'; } wrapper.appendChild(nameLab); wrapper.appendChild(bubble); chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight; if (save) { const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); if (h.length > 50) h.shift(); localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); } }
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
+        
+        // ИНИЦИАЛИЗАЦИЯ ГРОМКОСТИ ПРИ ЗАГРУЗКЕ
+        setVolume(1);
     </script>
 </body>
 </html>
