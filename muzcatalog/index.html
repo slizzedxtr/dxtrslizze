@@ -7,7 +7,7 @@
     <meta name="description" content="Официальный каталог треков DXTR и SlizZe. Слушай и скачивай музыку в высоком качестве (MP3 и WAV).">
     <link rel="icon" type="image.png" href="../dslogo.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -129,62 +129,71 @@
         /* --- ГЛОБАЛЬНЫЙ ПЛЕЕР (ИДЕАЛЬНЫЙ ДИЗАЙН) --- */
         /* ========================================= */
         .global-player {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(150px);
-            width: 95%; max-width: 1000px; height: 90px;
-            background: linear-gradient(135deg, rgba(15,15,20,0.95), rgba(5,5,10,0.98));
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(150px);
+            width: 95%; max-width: 1000px; height: 95px;
+            background: rgba(10, 10, 15, 0.85); /* Цвет фона под стилистику главной страницы */
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255,255,255,0.1); border-top: 1px solid var(--neon-cyan); border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.05); border-radius: 24px;
             z-index: 9000; display: flex; align-items: center; padding: 0 25px; gap: 20px;
             transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0, 198, 255, 0.2);
         }
         .global-player.active { transform: translateX(-50%) translateY(0); }
         
         .gp-left { display: flex; align-items: center; gap: 15px; width: 250px; flex-shrink: 0; }
-        .gp-cover { width: 60px; height: 60px; border-radius: 14px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
+        .gp-cover { width: 65px; height: 65px; border-radius: 14px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
         .gp-info { display: flex; flex-direction: column; overflow: hidden; }
-        .gp-title { font-weight: 800; color: #fff; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .gp-artist { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+        .gp-title { font-weight: 800; color: #fff; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+        .gp-artist { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.5px; }
 
         .gp-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
         .gp-controls { display: flex; align-items: center; gap: 25px; }
-        .gp-btn { background: none; border: none; color: var(--text-main); font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
-        .gp-btn:hover { color: var(--neon-cyan); transform: scale(1.1); text-shadow: 0 0 10px var(--neon-cyan); }
-        #gpPlay { width: 45px; height: 45px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        #gpPlay:hover { background: var(--neon-cyan); color: #000; border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0,198,255,0.5); }
+        .gp-btn { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; transition: 0.3s; }
+        .gp-btn:hover { color: #fff; transform: scale(1.15); text-shadow: 0 0 10px #fff; }
+        
+        /* Кнопка Play в стиле главной страницы */
+        #gpPlay { width: 50px; height: 50px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.5); }
+        #gpPlay:hover { background: var(--neon-pink); box-shadow: 0 0 20px rgba(255,0,127,0.6); transform: scale(1.1); color: #fff;}
         
         .gp-progress-area { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 500px; }
         .gp-progress-area .progress-container { flex: 1; height: 20px; }
-        .gp-progress-area .time-display { min-width: 40px; font-size: 0.75rem; }
+        .gp-progress-area .time-display { min-width: 45px; font-size: 0.8rem; }
 
+        /* ИДЕАЛЬНАЯ ГРОМКОСТЬ (Кастомная) */
         .gp-right { display: flex; align-items: center; justify-content: flex-end; gap: 20px; width: 250px; flex-shrink: 0; }
         .vol-container { display: flex; align-items: center; gap: 10px; position: relative; }
-        .vol-btn { background: none; border: none; color: var(--text-main); font-size: 1.1rem; cursor: pointer; transition: 0.3s; width: 25px; }
+        .vol-btn { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; transition: 0.3s; width: 25px; }
         .vol-btn:hover { color: var(--neon-cyan); }
         .vol-btn.muted { color: var(--neon-red); position: relative; }
         .vol-btn.muted::after { content: ''; position: absolute; top: 50%; left: -5px; width: calc(100% + 10px); height: 2px; background: var(--neon-red); transform: rotate(45deg); box-shadow: 0 0 5px var(--neon-red); }
         
-        .vol-slider-wrap { width: 0; overflow: hidden; opacity: 0; transition: 0.3s; display: flex; align-items: center; background: rgba(0,0,0,0.5); border-radius: 10px; padding: 0; }
-        .vol-container:hover .vol-slider-wrap, .vol-slider-wrap.active { width: 110px; opacity: 1; padding: 5px 10px; }
-        .vol-slider-wrap input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; outline: none; cursor: pointer; }
-        .vol-slider-wrap input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px var(--neon-cyan); transition: 0.2s; }
-        .vol-slider-wrap input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+        .vol-wrap { width: 0; overflow: hidden; opacity: 0; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.5); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 0; }
+        .vol-container:hover .vol-wrap, .vol-wrap.active { width: 145px; opacity: 1; padding: 8px 15px; }
         
-        .gp-minimize { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1rem; }
+        .vol-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.15); border-radius: 10px; position: relative; cursor: pointer; display: flex; align-items: center; }
+        .vol-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: absolute; left: 0; pointer-events: none; box-shadow: 0 0 10px rgba(0,198,255,0.5); }
+        .vol-thumb { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9); opacity: 0; transition: opacity 0.2s, transform 0.1s; }
+        .vol-bar-bg:hover .vol-thumb, .vol-wrap.dragging .vol-thumb { opacity: 1; }
+        .vol-bar-bg:active .vol-thumb { transform: translateY(-50%) scale(1.3); }
+        
+        .vol-text { font-size: 0.8rem; font-weight: 800; color: #fff; min-width: 32px; text-align: right; }
+        
+        .gp-minimize { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; }
         .gp-minimize:hover { background: rgba(255,255,255,0.1); border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 15px rgba(255,0,127,0.4); transform: translateY(2px); }
 
         /* ========================================= */
         /* --- СВЕРНУТЫЙ ПЛЕЕР (ВРАЩАЮЩИЙСЯ CD) --- */
         /* ========================================= */
         .mini-player-orb {
-            position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px;
+            position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px;
             border-radius: 50%; background: rgba(10,10,15,0.9); border: 2px solid var(--neon-cyan);
             display: none; justify-content: center; align-items: center; z-index: 10005; cursor: grab;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.8), 0 0 20px rgba(0, 198, 255, 0.4); backdrop-filter: blur(10px);
-            user-select: none; touch-action: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(0, 198, 255, 0.4); backdrop-filter: blur(10px);
+            user-select: none; touch-action: none; transition: 0.3s;
         }
-        .mini-player-orb:active { cursor: grabbing; transform: scale(0.95); }
-        .orb-icon { font-size: 2rem; color: #fff; text-shadow: 0 0 10px var(--neon-cyan); transition: 0.3s; }
+        .mini-player-orb:hover { transform: scale(1.1); }
+        .mini-player-orb:active { cursor: grabbing; transform: scale(0.95); transition: 0s; }
+        .orb-icon { font-size: 2.5rem; color: #fff; text-shadow: 0 0 15px var(--neon-cyan); transition: 0.3s; }
         .mini-player-orb:hover .orb-icon { color: var(--neon-cyan); }
         .mini-player-orb.playing .orb-icon { animation: spinCD 3s linear infinite; color: var(--neon-cyan); }
         @keyframes spinCD { 100% { transform: rotate(360deg); } }
@@ -197,7 +206,7 @@
         .vol-over-bar { width: 200px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; }
         .vol-over-fill { height: 100%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan)); width: 100%; border-radius: 3px; box-shadow: 0 0 10px var(--neon-cyan); transition: width 0.1s; }
 
-        /* МОДАЛКИ И ПОДВАЛ (БЕЗ ИЗМЕНЕНИЙ) */
+        /* МОДАЛКИ И ПОДВАЛ */
         footer { padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 9999; justify-content: center; align-items: center; }
         .modal-content { background: var(--bg-dark); border: 2px solid var(--neon-cyan); border-radius: 24px; padding: 40px; text-align: center; width: 90%; max-width: 400px; position: relative; box-shadow: 0 0 50px rgba(0,198,255,0.2); }
@@ -213,7 +222,7 @@
         .btn-spo { background: rgba(29, 185, 84, 0.1); border-color: rgba(29, 185, 84, 0.3); } .btn-spo:hover { background: #1DB954; box-shadow: 0 0 20px rgba(29, 185, 84, 0.6); transform: scale(1.05); }
         .btn-vk { background: rgba(0, 119, 255, 0.1); border-color: rgba(0, 119, 255, 0.3); } .btn-vk:hover { background: #0077FF; box-shadow: 0 0 20px rgba(0, 119, 255, 0.6); transform: scale(1.05); }
 
-        /* ЧАТ (БЕЗ ИЗМЕНЕНИЙ) */
+        /* ЧАТ ТЕХПОДДЕРЖКИ */
         #chat-window { display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden; background: rgba(8, 8, 12, 0.85); border: 1px solid rgba(0, 198, 255, 0.4); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0, 198, 255, 0.15), inset 0 0 20px rgba(112,0,255,0.1); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); z-index: 9999; animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .chat-header { background: linear-gradient(90deg, #0a0a0f, #151520); border-bottom: 2px solid var(--neon-purple); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2; cursor: grab; user-select: none; }
         .chat-header:active { cursor: grabbing; }
@@ -272,17 +281,18 @@
             .gp-progress-area { width: 100%; max-width: 100%; }
             .gp-right { position: absolute; top: 15px; right: 15px; width: auto; gap: 10px; }
             
-            /* Кнопка Mute на телефоне открывает модалку громкости */
-            .vol-slider-wrap { position: absolute; bottom: 40px; right: 0; background: rgba(0,0,0,0.9); border: 1px solid var(--neon-cyan); padding: 10px; border-radius: 10px; width: 150px; flex-direction: column; align-items: stretch; gap: 10px; }
-            .vol-slider-wrap input { width: 100%; }
+            /* Мобильная громкость */
+            .vol-wrap { position: absolute; bottom: 40px; right: 0; background: rgba(10,10,15,0.95); border: 1px solid var(--neon-cyan); padding: 15px; border-radius: 15px; width: 200px; flex-direction: column; align-items: stretch; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+            .vol-text { text-align: center; font-size: 1rem; }
             
-            .fixed-up-btn { bottom: 150px; left: 15px; width: 45px; height: 45px; font-size: 1rem; }
+            .fixed-up-btn { bottom: 170px; left: 15px; width: 45px; height: 45px; font-size: 1rem; }
+            .mini-player-orb { bottom: 20px; right: 20px; width: 60px; height: 60px; }
+            .orb-icon { font-size: 2rem; }
             
             #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
             .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
             .drag-handle { display: none; }
         }
-        @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -381,7 +391,7 @@
         <div class="gp-left">
             <img id="gpCover" class="gp-cover" src="../dslogo.png" alt="Cover">
             <div class="gp-info">
-                <div class="gp-title" id="gpTitle">Track Title</div>
+                <div class="gp-title" id="gpTitle">Загрузка...</div>
                 <div class="gp-artist">DXTR | SlizZe</div>
             </div>
         </div>
@@ -404,9 +414,13 @@
         <div class="gp-right">
             <div class="vol-container" id="volCont">
                 <button class="vol-btn" id="gpMute" title="Громкость"><i class="fa-solid fa-volume-high" id="volIcon"></i></button>
-                <div class="vol-slider-wrap" id="volWrap">
-                    <input type="range" id="volSlider" min="0" max="100" value="100" step="1">
-                    <button class="vol-btn" id="gpMuteMobile" style="display: none; margin: 0 auto; color: var(--neon-red);"><i class="fa-solid fa-volume-xmark"></i> MUTE</button>
+                
+                <div class="vol-wrap" id="volWrap">
+                    <div class="vol-bar-bg" id="volBarBg">
+                        <div class="vol-bar-fill" id="volBarFill"></div>
+                        <div class="vol-thumb" id="volThumb"></div>
+                    </div>
+                    <div class="vol-text"><span id="volTextVal">100</span>%</div>
                 </div>
             </div>
             <button class="gp-minimize" id="gpMinimize" title="Свернуть плеер"><i class="fa-solid fa-chevron-down"></i></button>
@@ -478,8 +492,10 @@
                     <div class="ci-center">
                         <div class="ci-title">${track.title}</div>
                         <div class="ci-artist">DXTR | SlizZe</div>
-                        <div class="progress-container" onclick="event.stopPropagation(); seek(event, this, ${index})">
-                            <div class="progress-bar" id="cardBar-${index}"></div>
+                        <div class="ci-player-controls">
+                            <div class="progress-container" onclick="event.stopPropagation(); seek(event, this, ${index})">
+                                <div class="progress-bar" id="cardBar-${index}"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="ci-right">
@@ -493,7 +509,7 @@
         });
         document.getElementById('trackCount').textContent = tracks.length;
 
-        // === УПРАВЛЕНИЕ ВОСПРОИЗВЕДЕНИЕМ v2.0 ===
+        // === УПРАВЛЕНИЕ ВОСПРОИЗВЕДЕНИЕМ v3.0 ===
         const gp = document.getElementById('globalPlayer'), gpPlayIcon = document.getElementById('gpPlayIcon'), gpPlayBtn = document.getElementById('gpPlay');
         const miniOrb = document.getElementById('miniOrb');
 
@@ -523,7 +539,7 @@
         function updateUI() {
             const isPlaying = !globalAudio.paused;
             gpPlayIcon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
-            miniOrb.classList.toggle('playing', isPlaying); // Вращение CD
+            miniOrb.classList.toggle('playing', isPlaying);
             
             tracks.forEach((_, i) => resetCardUI(i)); 
             if (currentTrackIndex !== -1) {
@@ -542,14 +558,14 @@
         globalAudio.addEventListener('pause', updateUI);
         globalAudio.addEventListener('ended', () => document.getElementById('gpNext').click());
 
-        // === ИСПРАВЛЕННЫЙ ТАЙМЛАЙН v2.0 ===
+        // === ТАЙМЛАЙН ===
         const gpBarFill = document.getElementById('gpProgBar'), gpTime = document.getElementById('gpTime'), gpDuration = document.getElementById('gpDuration'), gpProgCont = document.getElementById('gpProgCont');
-        let isDragging = false;
+        let isDraggingProgress = false;
 
         globalAudio.addEventListener('loadedmetadata', () => gpDuration.textContent = formatTime(globalAudio.duration));
         
         globalAudio.addEventListener('timeupdate', () => {
-            if (globalAudio.duration && !isDragging) {
+            if (globalAudio.duration && !isDraggingProgress) {
                 const p = (globalAudio.currentTime / globalAudio.duration) * 100;
                 updateProgressBarUI(p);
             }
@@ -562,47 +578,47 @@
             if(cardBar) cardBar.style.width = `${p}%`;
         }
 
-        function handleScrub(e, container) {
+        function handleProgressScrub(e, container) {
             const rect = container.getBoundingClientRect();
             let clientX = e.touches ? e.touches[0].clientX : e.clientX;
             let p = (clientX - rect.left) / rect.width;
             p = Math.max(0, Math.min(1, p));
-            if(!isDragging) globalAudio.currentTime = p * globalAudio.duration;
+            if(!isDraggingProgress) globalAudio.currentTime = p * globalAudio.duration;
             return p;
         }
 
-        function onDragStart(e) { isDragging = true; handleScrub(e, gpProgCont); }
-        function onDragMove(e) { if (!isDragging) return; const p = handleScrub(e, gpProgCont); updateProgressBarUI(p * 100); if(e.cancelable) e.preventDefault(); }
-        function onDragEnd(e) { if (!isDragging) return; isDragging = false; const rect = gpProgCont.getBoundingClientRect(); let cX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX; let p = (cX - rect.left) / rect.width; p = Math.max(0, Math.min(1, p)); globalAudio.currentTime = p * globalAudio.duration; }
+        function onProgressDragStart(e) { isDraggingProgress = true; handleProgressScrub(e, gpProgCont); }
+        function onProgressDragMove(e) { if (!isDraggingProgress) return; const p = handleProgressScrub(e, gpProgCont); updateProgressBarUI(p * 100); if(e.cancelable) e.preventDefault(); }
+        function onProgressDragEnd(e) { if (!isDraggingProgress) return; isDraggingProgress = false; const rect = gpProgCont.getBoundingClientRect(); let cX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX; let p = (cX - rect.left) / rect.width; p = Math.max(0, Math.min(1, p)); globalAudio.currentTime = p * globalAudio.duration; }
 
-        gpProgCont.addEventListener('mousedown', onDragStart);
-        gpProgCont.addEventListener('touchstart', onDragStart, {passive: false});
-        window.addEventListener('mousemove', onDragMove);
-        window.addEventListener('touchmove', onDragMove, {passive: false});
-        window.addEventListener('mouseup', onDragEnd);
-        window.addEventListener('touchend', onDragEnd);
+        gpProgCont.addEventListener('mousedown', onProgressDragStart);
+        gpProgCont.addEventListener('touchstart', onProgressDragStart, {passive: false});
+        window.addEventListener('mousemove', onProgressDragMove);
+        window.addEventListener('touchmove', onProgressDragMove, {passive: false});
+        window.addEventListener('mouseup', onProgressDragEnd);
+        window.addEventListener('touchend', onProgressDragEnd);
 
-        function seek(e, container, index) { if(currentTrackIndex !== index) return; handleScrub(e, container); }
+        function seek(e, container, index) { if(currentTrackIndex !== index) return; handleProgressScrub(e, container); }
 
-        // === ГРОМКОСТЬ И ГОРЯЧИЕ КЛАВИШИ v2.0 ===
-        const volSlider = document.getElementById('volSlider'), volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
+        // === ГРОМКОСТЬ (НОВЫЙ КАСТОМНЫЙ БАР) ===
+        const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
+        const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
         const volOverlay = document.getElementById('volOverlay'), volOverPercent = document.getElementById('volOverPercent'), volOverFill = document.getElementById('volOverFill'), volOverIcon = document.getElementById('volOverIcon');
-        const volWrap = document.getElementById('volWrap'), gpMuteMobile = document.getElementById('gpMuteMobile');
         
-        let currentVolume = 1, lastVolume = 1, volOverTimeout;
-
-        if (isMobile) gpMuteMobile.style.display = 'block';
+        let currentVolume = 1, lastVolume = 1, volOverTimeout, isDraggingVol = false;
 
         function updateVolumeUI(v, showOverlay = false) {
-            const p = v * 100;
-            volSlider.value = p;
+            const p = Math.round(v * 100);
+            volBarFill.style.width = `${p}%`;
+            volThumb.style.left = `${p}%`;
+            volTextVal.textContent = p;
             
             if(v === 0) { volIcon.className = 'fa-solid fa-volume-xmark'; volNode.classList.add('muted');}
             else if(v < 0.5) { volIcon.className = 'fa-solid fa-volume-low'; volNode.classList.remove('muted');}
             else { volIcon.className = 'fa-solid fa-volume-high'; volNode.classList.remove('muted');}
 
             if (showOverlay) {
-                volOverPercent.textContent = Math.round(p);
+                volOverPercent.textContent = p;
                 volOverFill.style.width = `${p}%`;
                 volOverIcon.className = volIcon.className + ' vol-over-icon';
                 volOverlay.classList.add('show');
@@ -618,8 +634,22 @@
             updateVolumeUI(currentVolume, showOver);
         }
 
-        volSlider.addEventListener('input', (e) => setVolume(e.target.value / 100));
+        // Логика перетаскивания ползунка громкости
+        function handleVolScrub(e) {
+            const rect = volBarBg.getBoundingClientRect();
+            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            let p = (clientX - rect.left) / rect.width;
+            setVolume(p);
+        }
 
+        volBarBg.addEventListener('mousedown', (e) => { isDraggingVol = true; volWrap.classList.add('dragging'); handleVolScrub(e); });
+        volBarBg.addEventListener('touchstart', (e) => { isDraggingVol = true; volWrap.classList.add('dragging'); handleVolScrub(e); }, {passive: false});
+        window.addEventListener('mousemove', (e) => { if(isDraggingVol) handleVolScrub(e); });
+        window.addEventListener('touchmove', (e) => { if(isDraggingVol) { handleVolScrub(e); if(e.cancelable) e.preventDefault(); } }, {passive: false});
+        window.addEventListener('mouseup', () => { isDraggingVol = false; volWrap.classList.remove('dragging'); });
+        window.addEventListener('touchend', () => { isDraggingVol = false; volWrap.classList.remove('dragging'); });
+
+        // Mute логика (на телефоне открывает меню, на ПК мутит звук)
         volNode.onclick = () => {
             if(isMobile) {
                 volWrap.classList.toggle('active');
@@ -627,7 +657,6 @@
                 currentVolume > 0 ? setVolume(0) : setVolume(lastVolume);
             }
         }
-        gpMuteMobile.onclick = () => { currentVolume > 0 ? setVolume(0) : setVolume(lastVolume); }
 
         // Горячие клавиши
         document.addEventListener('keydown', (e) => {
@@ -639,7 +668,7 @@
             if (e.code === 'ArrowDown') { e.preventDefault(); setVolume(currentVolume - 0.1, true); }
         });
 
-        // === СВОРАЧИВАНИЕ И ORB (CD) v2.0 ===
+        // === СВОРАЧИВАНИЕ И ORB (CD) ===
         document.getElementById('gpMinimize').onclick = () => {
             isMinimized = true; gp.classList.remove('active');
             setTimeout(() => { miniOrb.style.display = 'flex'; }, 400);
