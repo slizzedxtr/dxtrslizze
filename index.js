@@ -66,16 +66,23 @@ io.on('connection', (socket) => {
         let user = await User.findOne({ clientId });
         if (!user) user = await User.create({ clientId });
 
+        // ОТПРАВЛЯЕМ ДАННЫЕ ЮЗЕРА НА САЙТ
+        socket.emit('user_data', { 
+            nickname: user.nickname || null,
+            isBanned: user.isBanned 
+        });
+
+        // Проверка бана
         if (user.isBanned) {
             if (user.banExpireAt !== 0 && user.banExpireAt < Date.now()) {
                 user.isBanned = false;
                 await user.save();
                 socket.emit('ban_status', { isBanned: false });
-                sendToUser(clientId, "Ограничение снято. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
             } else {
                 socket.emit('ban_status', { isBanned: true });
             }
         }
+        // ... (дальше код с очередью сообщений без изменений)
 
         const pending = await PendingMsg.find({ clientId });
         if (pending.length > 0) {
