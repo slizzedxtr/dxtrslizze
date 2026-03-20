@@ -51,8 +51,8 @@
         .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 5px; border-bottom: 2px solid transparent; transition: 0.3s; }
         .nav-link:hover, .nav-link.active { color: #fff; border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0, 198, 255, 0.6); }
 
-        /* БУРГЕР МЕНЮ И САЙДБАР */
-        .burger-btn { position: absolute; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
+        /* БУРГЕР МЕНЮ - ТЕПЕРЬ FIXED ДЛЯ ПЛАВНОГО СКРОЛЛА */
+        .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan); }
         
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid rgba(0, 198, 255, 0.2); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
@@ -68,8 +68,8 @@
         #menuBanLock { color: var(--neon-red); font-size: 1rem; text-shadow: 0 0 10px rgba(255,0,51,0.8); margin-left: auto; display: none; animation: pulseRed 2s infinite; }
         @keyframes pulseRed { 0% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.1); text-shadow: 0 0 15px rgba(255,0,51,1); } 100% { opacity: 0.8; transform: scale(1); } }
 
-        /* СЧЕТЧИК ОНЛАЙНА */
-        .online-counter { position: absolute; top: 25px; right: 25px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); z-index: 20; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; }
+        /* СЧЕТЧИК ОНЛАЙНА - ТЕПЕРЬ FIXED */
+        .online-counter { position: fixed; top: 25px; right: 25px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); z-index: 20; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; }
         .online-counter:hover { border-color: rgba(0, 255, 102, 0.3); background: rgba(0, 255, 102, 0.05); }
         .pulse-dot { width: 10px; height: 10px; background-color: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: pulseGreen 2s infinite; }
         @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(0, 255, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); } }
@@ -77,7 +77,7 @@
         .online-num { color: var(--neon-green); font-weight: 900; transition: 0.3s; }
 
         /* ШАПКА */
-        header { text-align: center; padding: 6vh 20px 4vh; position: relative; z-index: 10; }
+        header { text-align: center; padding: 6vh 20px 4vh; position: relative; z-index: 10; margin-top: 50px; } /* Добавлен margin-top чтобы контент не наезжал на fixed меню */
         header h1 { font-size: clamp(3rem, 7vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--neon-cyan), var(--neon-purple), var(--neon-pink)); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 6s linear infinite; margin-bottom: 10px; filter: drop-shadow(0 0 20px rgba(0, 198, 255, 0.3)); }
         @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
         header p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; font-weight: 500; letter-spacing: 1px; }
@@ -169,14 +169,16 @@
         /* --- REDESIGN ЧАТА ПОДДЕРЖКИ (CYBERPUNK TERMINAL) --- */
         #chat-window {
             display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden;
-            background: rgba(8, 8, 12, 0.85); border: 1px solid rgba(0, 198, 255, 0.4); border-radius: 20px;
+            background: rgba(8, 8, 12, 0.85);
+            border: 1px solid rgba(0, 198, 255, 0.4); border-radius: 20px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0, 198, 255, 0.15), inset 0 0 20px rgba(112,0,255,0.1);
             backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); z-index: 9999;
             animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         
         .chat-header {
-            background: linear-gradient(90deg, #0a0a0f, #151520); border-bottom: 2px solid var(--neon-purple);
+            background: linear-gradient(90deg, #0a0a0f, #151520);
+            border-bottom: 2px solid var(--neon-purple);
             color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2; cursor: grab; user-select: none;
         }
@@ -189,7 +191,9 @@
         #chat-close { cursor: pointer; font-size: 1.5rem; transition: 0.3s; color: rgba(255,255,255,0.6); padding: 5px; }
         #chat-close:hover { color: var(--neon-pink); transform: rotate(90deg); text-shadow: 0 0 10px var(--neon-pink); }
         
-        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth; }
+        #chat-messages {
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth;
+        }
         #chat-messages::-webkit-scrollbar { width: 4px; }
         #chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-purple); border-radius: 10px; box-shadow: 0 0 10px var(--neon-purple); }
@@ -200,7 +204,10 @@
         .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; }
         @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
-        .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 5px 20px rgba(0,0,0,0.4); backdrop-filter: blur(10px); font-weight: 500; }
+        .chat-msg-bubble {
+            padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4); backdrop-filter: blur(10px); font-weight: 500;
+        }
         
         .msg-user { align-items: flex-end; }
         .msg-user .chat-msg-name { color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0,198,255,0.5); }
@@ -210,11 +217,19 @@
         .msg-bot .chat-msg-name { color: var(--neon-purple); text-shadow: 0 0 5px rgba(112,0,255,0.5); }
         .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.08); border: 1px solid rgba(112, 0, 255, 0.4); border-bottom-left-radius: 2px; }
         
-        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); z-index: 2; position: relative; }
-        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        .chat-input-area {
+            padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); z-index: 2; position: relative;
+        }
+        #chat-input {
+            flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px;
+            border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
         #chat-input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.2), inset 0 0 10px rgba(0,198,255,0.1); }
         
-        #chat-send { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        #chat-send {
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); border: none; color: #fff; width: 52px; height: 52px;
+            border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4); display: flex; justify-content: center; align-items: center; font-size: 1.2rem;
+        }
         #chat-send:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 0 25px rgba(0,198,255,0.6); }
 
         @keyframes chatTerminalOpen { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
@@ -234,8 +249,12 @@
             .platform-grid { grid-template-columns: 1fr; }
             header h1 { font-size: 2.5rem; }
             .top-nav { flex-direction: column; gap: 15px; align-items: center; padding-top: 15px; }
+            
+            /* СКРЫВАЕМ СЛОВО "ОНЛАЙН" НА ТЕЛЕФОНАХ */
+            .online-word { display: none; }
+            .online-counter { top: 15px; right: 15px; padding: 8px 15px; }
             .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; }
-            .online-counter { top: 15px; right: 15px; padding: 6px 12px; }
+            
             .promo-banner { padding: 25px 10px; }
             .countdown { gap: 5px; width: 100%; justify-content: center; }
             .cd-box { min-width: 0; flex: 1; padding: 8px 2px; } 
@@ -243,6 +262,7 @@
             .cd-label { font-size: 0.55rem; letter-spacing: 0; }
             .cd-colon { font-size: 1.3rem; margin: -10px -2px 0; }
             
+            /* Смартфон: Чат выезжает снизу, прилипает, не таскается */
             #chat-window { 
                 width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
                 border-radius: 24px 24px 0 0 !important; border-bottom: none;
@@ -279,7 +299,7 @@
 
     <div class="online-counter fade-in">
         <div class="pulse-dot"></div>
-        <div class="online-text"><span class="online-num" id="onlineCount">1</span> онлайн</div>
+        <div class="online-text"><span class="online-num" id="onlineCount">1</span><span class="online-word"> онлайн</span></div>
     </div>
 
     <nav class="top-nav fade-in">
