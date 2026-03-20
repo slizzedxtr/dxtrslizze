@@ -808,7 +808,27 @@
         window.userNickname = null; let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('dxtrClientId', clientId);
         const socket = io("https://dxtrslizze.onrender.com/");
         const chatWindow = document.getElementById('chat-window'), chatClose = document.getElementById('chat-close'), chatMessages = document.getElementById('chat-messages'), chatInput = document.getElementById('chat-input'), chatSendBtn = document.getElementById('chat-send'), chatHeader = document.getElementById('chat-header');
-        document.getElementById('sidebarSupportBtn').onclick = (e) => { e.preventDefault(); toggleSBar(); setTimeout(() => { chatWindow.style.display = 'flex'; if(!isMobile) { chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px'; } chatMessages.scrollTop = chatMessages.scrollHeight; }, 300); };
+        document.getElementById('sidebarSupportBtn').onclick = (e) => { 
+            e.preventDefault(); 
+            toggleSBar(); 
+            
+            setTimeout(() => { 
+                chatWindow.style.display = 'flex'; 
+                
+                if(!isMobile) { 
+                    chatWindow.style.left = 'auto'; 
+                    chatWindow.style.top = 'auto'; 
+                    chatWindow.style.right = '30px'; 
+                    chatWindow.style.bottom = '30px'; 
+                } 
+                
+                // Даем браузеру 50мс на отрисовку окна, чтобы он понял реальную высоту сообщений
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight; 
+                }, 50);
+                
+            }, 300); 
+        };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
         let isDraggingChat = false, chatOffsetX, chatOffsetY;
