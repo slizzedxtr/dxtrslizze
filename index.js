@@ -48,7 +48,7 @@ const PendingMsgSchema = new mongoose.Schema({
 });
 const PendingMsg = mongoose.model('PendingMsg', PendingMsgSchema);
 
-const EXPIRATION_TIME = 60 * 60 * 1000;
+const EXPIRATION_TIME = 60 * 60 * 1000; // 1 час на доставку
 
 // --- ВЕБ-СОКЕТЫ (САЙТ) ---
 io.on('connection', (socket) => {
@@ -63,10 +63,11 @@ io.on('connection', (socket) => {
     socket.on('register_client', async (clientId) => {
         socket.join(clientId);
         
+        // Ищем юзера в базе или создаем нового
         let user = await User.findOne({ clientId });
         if (!user) user = await User.create({ clientId });
 
-        // ОТПРАВЛЯЕМ ДАННЫЕ ЮЗЕРА НА САЙТ
+        // Отправляем данные юзера на сайт (чтобы отображался ник)
         socket.emit('user_data', { 
             nickname: user.nickname || null,
             isBanned: user.isBanned 
@@ -78,12 +79,13 @@ io.on('connection', (socket) => {
                 user.isBanned = false;
                 await user.save();
                 socket.emit('ban_status', { isBanned: false });
+                sendToUser(clientId, "Ограничение снято. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
             } else {
                 socket.emit('ban_status', { isBanned: true });
             }
         }
-        // ... (дальше код с очередью сообщений без изменений)
 
+        // Проверка отложенных сообщений
         const pending = await PendingMsg.find({ clientId });
         if (pending.length > 0) {
             const now = Date.now();
@@ -106,6 +108,8 @@ io.on('connection', (socket) => {
 
     socket.on('send_message', async (data) => {
         const user = await User.findOne({ clientId: data.clientId });
+        
+        // Если юзер в бане, игнорим его сообщения
         if (user && user.isBanned) {
             if (user.banExpireAt === 0 || user.banExpireAt > Date.now()) return;
             else {
@@ -128,12 +132,13 @@ io.on('connection', (socket) => {
             parse_mode: 'HTML',
             reply_markup: { inline_keyboard: [[{ text: "Spam ⚠️", callback_data: `spam_${data.clientId}` }]] }
         }).then(async (msg) => {
+            // Сохраняем связку: ID сообщения в ТГ -> ID клиента на сайте
             await MessageMap.create({ tgMsgId: msg.message_id, clientId: data.clientId, text: data.text });
         });
     });
 });
 
-// --- КНОПКИ ---
+// --- КНОПКИ В ТЕЛЕГРАМЕ ---
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
     
@@ -185,27 +190,35 @@ bot.on('message', async (msg) => {
     if (msg.from.id.toString() !== adminId.toString()) return;
     const text = msg.text || '';
 
+    // Команда вызова меню банов
     if (text === '/bans') {
         sendBannedMenu(msg.chat.id);
         return;
     }
 
+    // Обработка ответов (реплаев)
     if (msg.reply_to_message) {
         const mapped = await MessageMap.findOne({ tgMsgId: msg.reply_to_message.message_id });
         if (!mapped) return;
 
         const clientId = mapped.clientId;
 
+        // Команда установки ника
         if (text.startsWith('/nick ')) {
             const nick = text.replace('/nick ', '').trim();
             await User.findOneAndUpdate({ clientId }, { nickname: nick }, { upsert: true });
-            bot.sendMessage(adminId, `✅ Никнейм <b>${nick}</b> сохранен в базе!`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
+            
+            // Сразу сообщаем на сайт о новом нике, чтобы обновить интерфейс
+            io.to(clientId).emit('user_data', { nickname: nick });
+
+            bot.sendMessage(adminId, `✅ Никнейм <b>${nick}</b> сохранен в базе для ${clientId}!`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
             return;
         }
 
+        // Команды бана
         if (text === '/ban 1h' || text === '/ban perm') {
             const isPerm = text === '/ban perm';
-            const expireAt = isPerm ? 0 : Date.now() + 3600000;
+            const expireAt = isPerm ? 0 : Date.now() + 3600000; // 3600000 мс = 1 час
             const banMsg = isPerm ? "Вам НАВСЕГДА был перекрыт доступ к связи с тех. поддержкой." : "Вам был перекрыт доступ к связи с тех. поддержкой сроком на 1 час.";
             
             await User.findOneAndUpdate({ clientId }, { 
@@ -217,28 +230,34 @@ bot.on('message', async (msg) => {
             return;
         }
 
+        // Обычный ответ
         await sendToUser(clientId, text, 'normal', msg.message_id, "Ответ");
     }
 });
 
+// Функция отправки (с проверкой на онлайн)
 async function sendToUser(clientId, text, type, msgId, action) {
     const isWarning = type === 'warning';
     const isSuccess = type === 'success';
     const room = io.sockets.adapter.rooms.get(clientId);
 
     if (room && room.size > 0) {
+        // Юзер онлайн — отправляем напрямую
         io.to(clientId).emit('receive_message', { text, isWarning, isSuccess });
         if (msgId) bot.sendMessage(adminId, `✅ <b>${action} доставлен(о)!</b>`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
     } else {
+        // Юзер оффлайн — сохраняем в базу отложенных
         await PendingMsg.create({ clientId, text, isWarning, isSuccess });
         if (msgId) bot.sendMessage(adminId, `⏳ <b>${action}:</b> Юзер оффлайн. Сохранено в БД.`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
     }
 }
 
+// Меню заблокированных
 async function sendBannedMenu(chatId, messageId = null) {
     const bannedUsers = await User.find({ isBanned: true });
     const validBans = [];
     
+    // Очищаем истекшие баны перед показом
     for (const u of bannedUsers) {
         if (u.banExpireAt > 0 && u.banExpireAt < Date.now()) {
             u.isBanned = false;
