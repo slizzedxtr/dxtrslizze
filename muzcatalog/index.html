@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DXTR | SlizZe - Музыкальный каталог</title>
-    <meta name="description" content="Официальный каталог треков DXTR и SlizZe. Слушай и скачивай музыку в высоком качестве (MP3 и WAV).">
+    <meta name="description" content="Официальный каталог треков DXTR и SlizZe. Слушай и скачивай музыку в высоком качестве.">
     <link rel="icon" type="image.png" href="../dslogo.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -14,13 +14,12 @@
         :root {
             --neon-pink: #ff007f; --neon-purple: #7000ff; --neon-cyan: #00c6ff;
             --neon-yellow: #ffcc00; --neon-green: #00ff66; --neon-red: #ff0033;
-            --bg-dark: #050507; --glass-bg: rgba(20, 20, 25, 0.65);
-            --glass-border: rgba(255, 255, 255, 0.08);
+            --bg-dark: #050507; --glass-border: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff; --text-muted: #a1a1aa;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; outline: none; }
-        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative; padding-bottom: 120px; }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative; padding-bottom: 140px; }
 
         /* АНИМИРОВАННЫЙ ФОН */
         .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: #050507; }
@@ -28,30 +27,25 @@
         .blob-1 { width: 500px; height: 500px; background: var(--neon-purple); top: -10%; left: -10%; }
         .blob-2 { width: 600px; height: 600px; background: var(--neon-pink); bottom: -20%; right: -10%; animation-delay: -5s; }
         .blob-3 { width: 400px; height: 400px; background: var(--neon-cyan); top: 30%; left: 40%; opacity: 0.3; animation-delay: -10s; }
-
         body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; background: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(circle at center, black 40%, transparent 100%); -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%); }
         @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
-        .fade-in { animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
+        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* НАВИГАЦИЯ */
+        /* НАВИГАЦИЯ И МЕНЮ */
         .top-nav { display: flex; justify-content: center; gap: 40px; padding: 25px 20px 0; position: relative; z-index: 20; }
         .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 5px; border-bottom: 2px solid transparent; transition: 0.3s; }
         .nav-link:hover, .nav-link.active { color: #fff; border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0, 198, 255, 0.6); }
 
-        /* БУРГЕР И САЙДБАР */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan); }
-        
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid rgba(0, 198, 255, 0.2); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
         .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .sidebar-link i.icon-main { color: var(--neon-cyan); font-size: 1.4rem; transition: 0.3s; }
         .sidebar-link:hover { color: var(--neon-cyan); padding-left: 10px; border-bottom-color: rgba(0,198,255,0.3); }
-        
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
-
         #menuBanLock { color: var(--neon-red); font-size: 1rem; margin-left: auto; display: none; animation: pulseRed 2s infinite; }
         @keyframes pulseRed { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; text-shadow: 0 0 10px var(--neon-red); } }
 
@@ -64,14 +58,14 @@
 
         /* ШАПКА */
         header { text-align: center; padding: 6vh 20px 4vh; position: relative; z-index: 10; margin-top: 40px; }
-        header h1 { font-size: clamp(3rem, 7vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--neon-cyan), var(--neon-purple), var(--neon-pink)); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 6s linear infinite; margin-bottom: 10px; filter: drop-shadow(0 0 20px rgba(0, 198, 255, 0.3)); }
+        header h1 { font-size: clamp(3rem, 7vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--neon-cyan), var(--neon-purple), var(--neon-pink), var(--neon-cyan)); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 6s linear infinite; margin-bottom: 10px; filter: drop-shadow(0 0 20px rgba(0, 198, 255, 0.3)); }
         @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
         header p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; font-weight: 500; letter-spacing: 1px; }
 
         /* КАТАЛОГ И ПОИСК */
-        main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 20px 40px; z-index: 10; display: flex; flex-direction: column; gap: 20px; }
+        main { flex: 1; width: 100%; max-width: 1000px; margin: 0 auto; padding: 0 20px 40px; z-index: 10; display: flex; flex-direction: column; gap: 24px; }
         
-        .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: linear-gradient(135deg, rgba(30,30,40,0.6), rgba(10,10,15,0.8)); padding: 15px 25px; border-radius: 16px; border: 1px solid var(--glass-border); backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: linear-gradient(135deg, rgba(30,30,40,0.6), rgba(10,10,15,0.8)); padding: 15px 25px; border-radius: 16px; border: 1px solid var(--glass-border); backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .search-box { position: relative; flex: 1; max-width: 400px; display: flex; align-items: center; }
         .search-box i { position: absolute; left: 15px; color: var(--text-muted); font-size: 1.1rem; }
         .search-box input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 15px 12px 45px; border-radius: 12px; font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 500; outline: none; transition: 0.3s; }
@@ -80,11 +74,11 @@
         .track-counter .neon-text { color: var(--neon-yellow); text-shadow: 0 0 10px rgba(255, 204, 0, 0.5); font-size: 1.4rem; margin-left: 5px; }
 
         /* КАРТОЧКА ТРЕКА */
-        .catalog-item { background: linear-gradient(135deg, rgba(30,30,40,0.7) 0%, rgba(10,10,15,0.8) 100%); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px 25px; display: flex; align-items: center; gap: 20px; transition: all 0.3s; box-shadow: 0 15px 35px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1); position: relative; overflow: hidden; cursor: pointer; }
-        .catalog-item::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); transition: 0.5s; }
+        .catalog-item { background: linear-gradient(135deg, rgba(30,30,40,0.7) 0%, rgba(10,10,15,0.8) 100%); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px 25px; display: flex; align-items: center; gap: 20px; transition: all 0.3s; box-shadow: 0 15px 35px rgba(0,0,0,0.5); position: relative; overflow: hidden; cursor: pointer; margin-bottom: 12px; }
+        .catalog-item::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); transition: 0.6s ease-in-out; }
         .catalog-item:hover::before { left: 150%; }
-        .catalog-item:hover { border-color: rgba(0, 198, 255, 0.5); box-shadow: 0 15px 40px rgba(0, 198, 255, 0.2); transform: translateY(-3px); }
-        .catalog-item.playing { border-color: var(--neon-cyan); box-shadow: 0 0 30px rgba(0, 198, 255, 0.3), inset 0 0 20px rgba(0, 198, 255, 0.1); transform: scale(1.02); background: linear-gradient(135deg, rgba(40,40,60,0.8) 0%, rgba(15,15,25,0.9) 100%); }
+        .catalog-item:hover { border-color: rgba(0, 198, 255, 0.5); box-shadow: 0 15px 40px rgba(0, 198, 255, 0.2); transform: translateY(-4px); }
+        .catalog-item.playing { border-color: var(--neon-cyan); box-shadow: 0 0 30px rgba(0, 198, 255, 0.3), inset 0 0 20px rgba(0, 198, 255, 0.1); transform: scale(1.01); background: linear-gradient(135deg, rgba(40,40,60,0.8) 0%, rgba(15,15,25,0.9) 100%); margin-top: 5px; margin-bottom: 17px; }
         
         .ci-left { display: flex; align-items: center; gap: 15px; flex-shrink: 0; }
         .ci-number { color: var(--text-muted); font-weight: 900; font-size: 1.3rem; width: 30px; text-align: center; transition: 0.3s; font-style: italic; }
@@ -94,11 +88,12 @@
         .catalog-item:hover .ci-cover-wrapper img, .catalog-item.playing .ci-cover-wrapper img { transform: scale(1.15); filter: brightness(0.4); }
 
         .ci-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 204, 0, 0.9); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; opacity: 0; transition: 0.3s; backdrop-filter: blur(5px); }
+        .ci-play-btn i { width: 15px; text-align: center; display: block; } /* Жесткая фиксация иконки паузы/плей */
         .catalog-item:hover .ci-play-btn { opacity: 1; box-shadow: 0 0 20px rgba(255, 204, 0, 0.8); }
         .ci-play-btn:hover { background: #fff; transform: translate(-50%, -50%) scale(1.15); }
         .catalog-item.playing .ci-play-btn { opacity: 1; background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
 
-        .ci-center { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-right: 15px; }
+        .ci-center { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-right: 15px; justify-content: center; }
         .ci-title { font-size: 1.2rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.3s; }
         .catalog-item.playing .ci-title { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0,198,255,0.3); }
         .ci-artist { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
@@ -109,10 +104,10 @@
         .progress-bar { height: 6px; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: absolute; left: 0; top: 9px; pointer-events: none; z-index: 2; box-shadow: 0 0 10px rgba(0,198,255,0.5); }
         .progress-bar::after { content: ''; position: absolute; right: -8px; top: -5px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9); transition: transform 0.1s; }
         .progress-container:active .progress-bar::after { transform: scale(1.4); }
-        .time-display { font-size: 0.85rem; color: var(--text-muted); font-weight: 700; min-width: 90px; text-align: right; white-space: nowrap; }
+        .time-display-card { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; min-width: 85px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
-        .ci-right { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; width: 150px; }
-        .action-btn-sm { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 15px; border-radius: 12px; font-size: 0.85rem; font-weight: 800; cursor: pointer; transition: 0.3s; text-decoration: none; border: 1px solid transparent; color: #fff; text-transform: uppercase; z-index: 2;}
+        .ci-right { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; width: 160px; }
+        .action-btn-sm { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 15px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; cursor: pointer; transition: 0.3s; text-decoration: none; border: 1px solid transparent; color: #fff; text-transform: uppercase; z-index: 2; white-space: nowrap; }
         .dl-btn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.15); }
         .dl-btn:hover { border-color: var(--neon-cyan); background: rgba(0,198,255,0.1); box-shadow: 0 0 15px rgba(0,198,255,0.4); transform: translateY(-2px); }
         .yt-btn { background: rgba(255, 0, 0, 0.05); border-color: rgba(255, 0, 0, 0.2); color: #ff4d4d; }
@@ -120,76 +115,89 @@
         .plt-btn { background: rgba(112, 0, 255, 0.08); border-color: rgba(112, 0, 255, 0.3); color: #c280ff; }
         .plt-btn:hover { background: rgba(112, 0, 255, 0.2); border-color: var(--neon-purple); box-shadow: 0 0 15px rgba(112,0,255,0.5); color: #fff; transform: translateY(-2px); }
 
-        /* КНОПКА СКРОЛЛА ВВЕРХ */
-        .fixed-up-btn { position: fixed; bottom: 130px; left: 30px; width: 50px; height: 50px; background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); color: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 2px solid rgba(255,255,255,0.2); transition: 0.3s; cursor: pointer; opacity: 0; pointer-events: none; transform: translateY(20px); }
+        /* КНОПКА СКРОЛЛА ВВЕРХ (Идеальная текстура) */
+        .fixed-up-btn { position: fixed; bottom: 140px; left: 30px; width: 50px; height: 50px; background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); color: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.6), 0 0 0 2px rgba(255,255,255,0.1); border: none; transition: 0.3s; cursor: pointer; opacity: 0; pointer-events: none; transform: translateY(20px); }
         .fixed-up-btn.visible { opacity: 1; pointer-events: auto; transform: translateY(0); }
-        .fixed-up-btn:hover { transform: scale(1.15) translateY(-5px); box-shadow: 0 10px 25px rgba(0, 198, 255, 0.6); }
+        .fixed-up-btn:hover { transform: scale(1.15) translateY(-5px); box-shadow: 0 10px 25px rgba(0, 198, 255, 0.6), 0 0 0 2px rgba(0,198,255,0.5); }
 
         /* ========================================= */
-        /* --- ГЛОБАЛЬНЫЙ ПЛЕЕР (ИДЕАЛЬНЫЙ ДИЗАЙН) --- */
+        /* --- ГЛОБАЛЬНЫЙ ПЛЕЕР (НЕОН + КИБЕРПАНК) --- */
         /* ========================================= */
         .global-player {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(150px);
-            width: 95%; max-width: 1000px; height: 95px;
-            background: rgba(10, 10, 15, 0.85); /* Цвет фона под стилистику главной страницы */
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(200px);
+            width: 95%; max-width: 1100px; height: 95px;
+            background: rgba(10, 10, 15, 0.85);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 1px solid rgba(255,255,255,0.05); border-radius: 24px;
-            z-index: 9000; display: flex; align-items: center; padding: 0 25px; gap: 20px;
-            transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0, 198, 255, 0.2);
+            z-index: 9000; display: flex; align-items: center; padding: 0 30px; gap: 20px;
+            transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(0, 198, 255, 0.15), 0 0 30px rgba(112,0,255,0.2);
         }
+        .global-player::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent); opacity: 0.5; }
         .global-player.active { transform: translateX(-50%) translateY(0); }
         
-        .gp-left { display: flex; align-items: center; gap: 15px; width: 250px; flex-shrink: 0; }
+        .gp-left { display: flex; align-items: center; gap: 15px; width: 280px; flex-shrink: 0; }
         .gp-cover { width: 65px; height: 65px; border-radius: 14px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
-        .gp-info { display: flex; flex-direction: column; overflow: hidden; }
+        .gp-info { display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .gp-title-wrap { display: flex; align-items: center; gap: 10px; }
         .gp-title { font-weight: 800; color: #fff; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+        
+        /* Живой визуализатор в плеере */
+        .gp-visualizer { display: flex; align-items: flex-end; gap: 3px; height: 14px; opacity: 0; transition: 0.3s; }
+        .global-player.active .gp-visualizer { opacity: 1; }
+        .vis-bar { width: 3px; background: var(--neon-cyan); border-radius: 2px; animation: eq 1s infinite ease-in-out alternate; box-shadow: 0 0 5px var(--neon-cyan); }
+        .vis-bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
+        .vis-bar:nth-child(2) { animation-delay: 0.4s; height: 100%; }
+        .vis-bar:nth-child(3) { animation-delay: 0.2s; height: 40%; }
+        .vis-bar:nth-child(4) { animation-delay: 0.5s; height: 80%; }
+        @keyframes eq { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
+
         .gp-artist { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 3px; letter-spacing: 0.5px; }
 
-        .gp-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; }
-        .gp-controls { display: flex; align-items: center; gap: 25px; }
+        .gp-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+        .gp-controls { display: flex; align-items: center; gap: 30px; }
         .gp-btn { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; transition: 0.3s; }
         .gp-btn:hover { color: #fff; transform: scale(1.15); text-shadow: 0 0 10px #fff; }
         
-        /* Кнопка Play в стиле главной страницы */
-        #gpPlay { width: 50px; height: 50px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.5); }
-        #gpPlay:hover { background: var(--neon-pink); box-shadow: 0 0 20px rgba(255,0,127,0.6); transform: scale(1.1); color: #fff;}
+        /* Идеальная кнопка Play как на главной */
+        #gpPlay { width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.6); }
+        #gpPlay i { display: block; width: 15px; text-align: center; } /* Фикс центровки паузы/плей */
+        #gpPlay:hover { background: var(--neon-pink); box-shadow: 0 0 25px rgba(255,0,127,0.8); transform: scale(1.1); color: #fff;}
         
         .gp-progress-area { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 500px; }
         .gp-progress-area .progress-container { flex: 1; height: 20px; }
-        .gp-progress-area .time-display { min-width: 45px; font-size: 0.8rem; }
+        .gp-time { min-width: 45px; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
 
-        /* ИДЕАЛЬНАЯ ГРОМКОСТЬ (Кастомная) */
-        .gp-right { display: flex; align-items: center; justify-content: flex-end; gap: 20px; width: 250px; flex-shrink: 0; }
-        .vol-container { display: flex; align-items: center; gap: 10px; position: relative; }
-        .vol-btn { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; transition: 0.3s; width: 25px; }
-        .vol-btn:hover { color: var(--neon-cyan); }
-        .vol-btn.muted { color: var(--neon-red); position: relative; }
-        .vol-btn.muted::after { content: ''; position: absolute; top: 50%; left: -5px; width: calc(100% + 10px); height: 2px; background: var(--neon-red); transform: rotate(45deg); box-shadow: 0 0 5px var(--neon-red); }
+        /* ГРОМКОСТЬ (Кастомная широкая полоса) */
+        .gp-right { display: flex; align-items: center; justify-content: flex-end; gap: 20px; width: 280px; flex-shrink: 0; }
+        .vol-container { display: flex; align-items: center; gap: 12px; width: 100%; justify-content: flex-end;}
         
-        .vol-wrap { width: 0; overflow: hidden; opacity: 0; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.5); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); padding: 0; }
-        .vol-container:hover .vol-wrap, .vol-wrap.active { width: 145px; opacity: 1; padding: 8px 15px; }
+        /* Кнопка Mute */
+        .vol-mute-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); font-size: 1.1rem; cursor: pointer; transition: 0.3s; width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; }
+        .vol-mute-btn i { width: 20px; text-align: center; }
+        .vol-mute-btn:hover { background: rgba(0,198,255,0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.3); }
+        .vol-mute-btn.muted { color: var(--neon-red); border-color: rgba(255,0,51,0.3); background: rgba(255,0,51,0.1); box-shadow: 0 0 15px rgba(255,0,51,0.3); }
         
+        .vol-wrap { flex: 1; max-width: 140px; display: flex; align-items: center; gap: 12px; }
         .vol-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.15); border-radius: 10px; position: relative; cursor: pointer; display: flex; align-items: center; }
         .vol-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: absolute; left: 0; pointer-events: none; box-shadow: 0 0 10px rgba(0,198,255,0.5); }
-        .vol-thumb { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9); opacity: 0; transition: opacity 0.2s, transform 0.1s; }
+        .vol-thumb { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9); opacity: 0; transition: opacity 0.2s, transform 0.1s; pointer-events: none; }
         .vol-bar-bg:hover .vol-thumb, .vol-wrap.dragging .vol-thumb { opacity: 1; }
         .vol-bar-bg:active .vol-thumb { transform: translateY(-50%) scale(1.3); }
+        .vol-text { font-size: 0.8rem; font-weight: 800; color: #fff; min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
         
-        .vol-text { font-size: 0.8rem; font-weight: 800; color: #fff; min-width: 32px; text-align: right; }
-        
-        .gp-minimize { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; }
+        .gp-minimize { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; flex-shrink: 0;}
         .gp-minimize:hover { background: rgba(255,255,255,0.1); border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 15px rgba(255,0,127,0.4); transform: translateY(2px); }
 
         /* ========================================= */
-        /* --- СВЕРНУТЫЙ ПЛЕЕР (ВРАЩАЮЩИЙСЯ CD) --- */
+        /* --- СВЕРНУТЫЙ ПЛЕЕР (CD ORB) --- */
         /* ========================================= */
         .mini-player-orb {
             position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px;
-            border-radius: 50%; background: rgba(10,10,15,0.9); border: 2px solid var(--neon-cyan);
+            border-radius: 50%; background: rgba(10,10,15,0.95); border: 2px solid var(--neon-cyan);
             display: none; justify-content: center; align-items: center; z-index: 10005; cursor: grab;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(0, 198, 255, 0.4); backdrop-filter: blur(10px);
-            user-select: none; touch-action: none; transition: 0.3s;
+            user-select: none; touch-action: none; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .mini-player-orb:hover { transform: scale(1.1); }
         .mini-player-orb:active { cursor: grabbing; transform: scale(0.95); transition: 0s; }
@@ -198,21 +206,19 @@
         .mini-player-orb.playing .orb-icon { animation: spinCD 3s linear infinite; color: var(--neon-cyan); }
         @keyframes spinCD { 100% { transform: rotate(360deg); } }
 
-        /* ОВЕРЛЕЙ ГРОМКОСТИ (HOTKEYS) */
-        .vol-overlay { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: rgba(10,10,15,0.9); border: 1px solid var(--neon-cyan); padding: 25px 40px; border-radius: 20px; z-index: 10000; display: flex; flex-direction: column; align-items: center; gap: 15px; opacity: 0; pointer-events: none; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 40px rgba(0,198,255,0.2); backdrop-filter: blur(20px); }
-        .vol-overlay.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        .vol-over-icon { font-size: 2.5rem; color: var(--neon-cyan); text-shadow: 0 0 15px var(--neon-cyan); }
-        .vol-over-text { font-size: 1.8rem; font-weight: 800; color: #fff; }
-        .vol-over-bar { width: 200px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; }
-        .vol-over-fill { height: 100%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan)); width: 100%; border-radius: 3px; box-shadow: 0 0 10px var(--neon-cyan); transition: width 0.1s; }
-
-        /* МОДАЛКИ И ПОДВАЛ */
+        /* МОДАЛКИ (ГРАДИЕНТНАЯ ОБВОДКА ДЛЯ СКАЧАТЬ) */
         footer { padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-content { background: var(--bg-dark); border: 2px solid var(--neon-cyan); border-radius: 24px; padding: 40px; text-align: center; width: 90%; max-width: 400px; position: relative; box-shadow: 0 0 50px rgba(0,198,255,0.2); }
-        .close-btn { position: absolute; top: 15px; right: 25px; color: var(--text-muted); font-size: 2.5rem; cursor: pointer; transition: 0.3s; line-height: 1; }
+        
+        .modal-content-wrap { position: relative; padding: 3px; border-radius: 26px; overflow: hidden; }
+        .modal-content-wrap::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink), var(--neon-cyan)); animation: rotateGrad 4s linear infinite; z-index: -1; }
+        @keyframes rotateGrad { 100% { transform: rotate(360deg); } }
+        
+        .modal-inner { background: var(--bg-dark); border-radius: 23px; padding: 40px; text-align: center; width: 90vw; max-width: 400px; position: relative; box-shadow: inset 0 0 30px rgba(0,0,0,0.8); }
+        .close-btn { position: absolute; top: 15px; right: 25px; color: var(--text-muted); font-size: 2.5rem; cursor: pointer; transition: 0.3s; line-height: 1; z-index: 10; }
         .close-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
         .modal-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 30px; text-transform: uppercase; color: #fff; }
+        
         .format-btn { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 800; color: white; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; transition: 0.3s; background: rgba(255,255,255,0.03); }
         .format-btn.mp3:hover { border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 198, 255, 0.4); background: rgba(0,198,255,0.1); transform: scale(1.05); }
         .format-btn.wav:hover { border-color: var(--neon-pink); box-shadow: 0 0 20px rgba(255, 0, 127, 0.4); background: rgba(255,0,127,0.1); transform: scale(1.05); }
@@ -247,52 +253,65 @@
         #chat-send:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 0 25px rgba(0,198,255,0.6); }
         @keyframes chatTerminalOpen { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
-        /* ИСПРАВЛЕННАЯ АДАПТАЦИЯ (МОБИЛКИ) */
-        @media (max-width: 768px) {
+        /* ИДЕАЛЬНАЯ АДАПТАЦИЯ (МОБИЛКИ) */
+        @media (max-width: 800px) {
             .controls-bar { flex-direction: column; gap: 15px; text-align: center; }
             .search-box { max-width: 100%; width: 100%; }
-            .catalog-item { flex-wrap: wrap; padding: 15px; gap: 15px; border-radius: 16px; }
+            .catalog-item { flex-wrap: wrap; padding: 15px; gap: 15px; border-radius: 20px; }
             .ci-left { width: 100%; justify-content: flex-start; gap: 15px; }
             .ci-number { display: none; } 
-            .ci-cover-wrapper { width: 60px; height: 60px; }
-            .ci-play-btn { opacity: 1; width: 40px; height: 40px; font-size: 1.1rem; pointer-events: auto; }
+            .ci-cover-wrapper { width: 65px; height: 65px; }
+            .ci-play-btn { opacity: 1; width: 45px; height: 45px; font-size: 1.1rem; pointer-events: auto; }
             .ci-center { width: 100%; align-items: flex-start; text-align: left; padding-right: 0; }
-            .ci-header { width: 100%; }
-            .ci-player-controls { flex-direction: column; gap: 10px; align-items: stretch; }
-            .time-display { width: 100%; text-align: center; margin-top: -5px; }
+            .ci-player-controls { flex-direction: column; gap: 10px; align-items: stretch; margin-top: 10px; }
+            .time-display-card { width: 100%; text-align: center; margin-top: -5px; }
             .ci-right { width: 100%; margin-top: 5px; flex-direction: row; flex-wrap: wrap; }
-            .action-btn-sm { flex: 1; min-width: calc(50% - 5px); padding: 12px 10px; }
+            .action-btn-sm { flex: 1; min-width: calc(33% - 10px); padding: 12px 10px; font-size: 0.75rem; }
             .top-nav { flex-direction: column; gap: 15px; align-items: center; }
             
             .online-word { display: none; }
             .online-counter { top: 15px; right: 15px; padding: 8px 15px; }
             .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; }
             
-            /* Мобильный Плеер (Компактная нижняя панель) */
+            /* МОБИЛЬНЫЙ ПЛЕЕР - ШТОРКА */
             .global-player {
-                width: 100%; height: auto; bottom: 0; padding: 15px 20px 20px;
-                border-radius: 24px 24px 0 0; flex-direction: column; gap: 15px;
-                background: rgba(10,10,15,0.98); border-top: 1px solid var(--neon-cyan);
+                position: fixed; width: 100%; height: auto; bottom: 0; left: 0; transform: translateY(150%);
+                border-radius: 30px 30px 0 0; flex-direction: column; gap: 15px; padding: 25px 20px;
+                background: rgba(10,10,15,0.98); border: none; border-top: 1px solid var(--neon-cyan);
+                box-shadow: 0 -10px 40px rgba(0,0,0,0.9);
             }
-            .gp-left { width: 100%; justify-content: center; margin-bottom: 5px; }
-            .gp-cover { width: 45px; height: 45px; }
-            .gp-info { align-items: center; text-align: center; }
-            .gp-center { width: 100%; }
-            .gp-progress-area { width: 100%; max-width: 100%; }
-            .gp-right { position: absolute; top: 15px; right: 15px; width: auto; gap: 10px; }
+            .global-player.active { transform: translateY(0); }
+            .global-player::before { display: none; }
             
-            /* Мобильная громкость */
-            .vol-wrap { position: absolute; bottom: 40px; right: 0; background: rgba(10,10,15,0.95); border: 1px solid var(--neon-cyan); padding: 15px; border-radius: 15px; width: 200px; flex-direction: column; align-items: stretch; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-            .vol-text { text-align: center; font-size: 1rem; }
+            .gp-left { width: 100%; justify-content: flex-start; gap: 15px; }
+            .gp-cover { width: 55px; height: 55px; }
+            .gp-info { align-items: flex-start; }
             
-            .fixed-up-btn { bottom: 170px; left: 15px; width: 45px; height: 45px; font-size: 1rem; }
+            /* Перенос кнопок управления наверх к обложке */
+            .gp-mobile-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+            .gp-controls { gap: 15px; }
+            .gp-btn { font-size: 1.5rem; }
+            #gpPlay { width: 45px; height: 45px; font-size: 1.1rem; }
+            
+            .gp-center { width: 100%; order: 3; }
+            .gp-progress-area { width: 100%; max-width: 100%; margin-top: 10px; }
+            
+            .gp-right { width: 100%; justify-content: center; order: 4; margin-top: 5px; }
+            .vol-container { justify-content: center; }
+            .vol-mute-btn { width: 45px; height: 45px; font-size: 1.3rem; }
+            .vol-wrap { max-width: 100%; flex: 1; }
+            
+            .gp-minimize { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 40px; height: 25px; border-radius: 20px; border-bottom: none; background: rgba(0,198,255,0.2); }
+            .gp-minimize i { transform: rotate(180deg); color: var(--neon-cyan); }
+            
+            .fixed-up-btn { bottom: 180px; left: 15px; width: 45px; height: 45px; font-size: 1rem; }
             .mini-player-orb { bottom: 20px; right: 20px; width: 60px; height: 60px; }
-            .orb-icon { font-size: 2rem; }
             
             #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
             .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
             .drag-handle { display: none; }
         }
+        @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -329,16 +348,18 @@
     </nav>
 
     <div class="modal" id="downloadModal">
-        <div class="modal-content">
-            <div class="close-btn" onclick="closeModal('downloadModal')">×</div>
-            <div class="modal-title" id="modalTitle">Название трека</div>
-            <a href="#" class="format-btn mp3" id="linkMp3" download><i class="fa-solid fa-file-audio"></i> MP3 (320 kbps)</a>
-            <a href="#" class="format-btn wav" id="linkWav" download><i class="fa-solid fa-compact-disc"></i> WAV (Lossless)</a>
+        <div class="modal-content-wrap">
+            <div class="modal-inner">
+                <div class="close-btn" onclick="closeModal('downloadModal')">×</div>
+                <div class="modal-title" id="modalTitle">Название трека</div>
+                <a href="#" class="format-btn mp3" id="linkMp3" download><i class="fa-solid fa-file-audio"></i> MP3 (320 kbps)</a>
+                <a href="#" class="format-btn wav" id="linkWav" download><i class="fa-solid fa-compact-disc"></i> WAV (Lossless)</a>
+            </div>
         </div>
     </div>
 
     <div class="modal" id="platformsModal">
-        <div class="modal-content" style="border-color: var(--neon-purple); box-shadow: 0 0 50px rgba(112,0,255,0.3);">
+        <div class="modal-inner" style="border: 2px solid var(--neon-purple); box-shadow: 0 0 50px rgba(112,0,255,0.3);">
             <div class="close-btn" onclick="closeModal('platformsModal')">×</div>
             <div class="modal-title">Слушать на площадках</div>
             <a href="https://music.yandex.ru/album/41053328/track/149038623" target="_blank" class="plat-btn btn-yam"><i class="fa-brands fa-yandex"></i> Яндекс Музыка</a>
@@ -388,33 +409,45 @@
     <audio id="globalAudio" preload="metadata"></audio>
     
     <div class="global-player" id="globalPlayer">
-        <div class="gp-left">
-            <img id="gpCover" class="gp-cover" src="../dslogo.png" alt="Cover">
-            <div class="gp-info">
-                <div class="gp-title" id="gpTitle">Загрузка...</div>
-                <div class="gp-artist">DXTR | SlizZe</div>
+        <div class="gp-mobile-top">
+            <div class="gp-left">
+                <img id="gpCover" class="gp-cover" src="../dslogo.png" alt="Cover">
+                <div class="gp-info">
+                    <div class="gp-title-wrap">
+                        <div class="gp-title" id="gpTitle">Загрузка...</div>
+                        <div class="gp-visualizer">
+                            <div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div><div class="vis-bar"></div>
+                        </div>
+                    </div>
+                    <div class="gp-artist">DXTR | SlizZe</div>
+                </div>
+            </div>
+            
+            <div class="gp-controls mobile-only-controls" id="gpMobileControls" style="display: none;">
+                <button class="gp-btn" id="gpPrevM"><i class="fa-solid fa-backward-step"></i></button>
+                <button class="gp-btn" id="gpPlayM"><i class="fa-solid fa-play" id="gpPlayIconM"></i></button>
+                <button class="gp-btn" id="gpNextM"><i class="fa-solid fa-forward-step"></i></button>
             </div>
         </div>
 
         <div class="gp-center">
-            <div class="gp-controls">
+            <div class="gp-controls desktop-only-controls">
                 <button class="gp-btn" id="gpPrev" title="Предыдущий трек [<-]"><i class="fa-solid fa-backward-step"></i></button>
                 <button class="gp-btn" id="gpPlay" title="Пауза/Плей [Space]"><i class="fa-solid fa-play" id="gpPlayIcon"></i></button>
                 <button class="gp-btn" id="gpNext" title="Следующий трек [->]"><i class="fa-solid fa-forward-step"></i></button>
             </div>
             <div class="gp-progress-area">
-                <div class="time-display" id="gpTime">00:00</div>
+                <div class="gp-time" id="gpTime">00:00</div>
                 <div class="progress-container" id="gpProgCont">
                     <div class="progress-bar" id="gpProgBar"></div>
                 </div>
-                <div class="time-display" id="gpDuration">00:00</div>
+                <div class="gp-time" id="gpDuration">00:00</div>
             </div>
         </div>
 
         <div class="gp-right">
             <div class="vol-container" id="volCont">
-                <button class="vol-btn" id="gpMute" title="Громкость"><i class="fa-solid fa-volume-high" id="volIcon"></i></button>
-                
+                <button class="vol-mute-btn" id="gpMute" title="Громкость [M]"><i class="fa-solid fa-volume-high" id="volIcon"></i></button>
                 <div class="vol-wrap" id="volWrap">
                     <div class="vol-bar-bg" id="volBarBg">
                         <div class="vol-bar-fill" id="volBarFill"></div>
@@ -431,17 +464,8 @@
         <i class="fa-solid fa-compact-disc orb-icon" id="orbIcon"></i>
     </div>
 
-    <div class="vol-overlay" id="volOverlay">
-        <i class="fa-solid fa-volume-high vol-over-icon" id="volOverIcon"></i>
-        <div class="vol-over-text"><span id="volOverPercent">100</span>%</div>
-        <div class="vol-over-bar">
-            <div class="vol-over-fill" id="volOverFill"></div>
-        </div>
-    </div>
-
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        // === БАЗА ТРЕКОВ ===
         const tracks = [
             { title: "Music", cover: "../logo_Music.png", mp3: "../mp3_Music.mp3", wav: "../wav_Music.wav", yt: "https://www.youtube.com/watch?v=NZdm_FnmTQ8" },
             { title: "FastRap", cover: "../logo_FastRap.jpeg", mp3: "../mp3_FastRap.mp3", wav: "../wav_FastRap.wav", yt: "https://www.youtube.com/watch?v=rDByUUm7eaE" },
@@ -462,12 +486,15 @@
             { title: "Amazing Online", cover: "../logo_Amazing_Online.jpeg", mp3: "../mp3_Amazing_Online.mp3", wav: "../wav_Amazing_Online.wav", yt: "https://www.youtube.com/watch?v=qFm89V9JjFU" }
         ];
 
-        // === ИНИЦИАЛИЗАЦИЯ И ОБЩАЯ ЛОГИКА ===
         const globalAudio = document.getElementById('globalAudio');
-        let currentTrackIndex = -1;
-        let isMinimized = false;
-        let hasPlayed = false;
-        const isMobile = window.innerWidth <= 768;
+        let currentTrackIndex = -1, isMinimized = false, hasPlayed = false;
+        const isMobile = window.innerWidth <= 800;
+
+        // Мобильные элементы управления
+        if (isMobile) {
+            document.querySelector('.desktop-only-controls').style.display = 'none';
+            document.getElementById('gpMobileControls').style.display = 'flex';
+        }
 
         function formatTime(sec) {
             if (!sec || isNaN(sec)) return "00:00";
@@ -475,11 +502,10 @@
             return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
-        // Рендер списка треков
         const trackListContainer = document.getElementById('track-list');
         tracks.forEach((track, index) => {
             const num = index + 1 < 10 ? `0${index + 1}` : index + 1;
-            const pltBtn = (track.title === "Night City Lights") ? `<button class="action-btn-sm plt-btn" onclick="event.stopPropagation(); openPlatformsModal()"><i class="fa-solid fa-compact-disc"></i></button>` : '';
+            const pltBtn = (track.title === "Night City Lights") ? `<button class="action-btn-sm plt-btn" onclick="event.stopPropagation(); openPlatformsModal()"><i class="fa-solid fa-compact-disc"></i> Площадки</button>` : '';
             const trackHTML = `
                 <div class="catalog-item fade-in" id="card-${index}" style="animation-delay: ${index * 0.03}s" onclick="playTrack(${index})">
                     <div class="ci-left">
@@ -496,21 +522,33 @@
                             <div class="progress-container" onclick="event.stopPropagation(); seek(event, this, ${index})">
                                 <div class="progress-bar" id="cardBar-${index}"></div>
                             </div>
+                            <div class="time-display-card" id="ci-time-${index}">--:--</div>
                         </div>
                     </div>
                     <div class="ci-right">
-                        <a href="${track.yt}" target="_blank" class="action-btn-sm yt-btn" onclick="event.stopPropagation();"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="${track.yt}" target="_blank" class="action-btn-sm yt-btn" onclick="event.stopPropagation();"><i class="fa-brands fa-youtube"></i> Клип</a>
                         ${pltBtn}
-                        <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); openDownloadModal('${track.title}', '${track.mp3}', '${track.wav}')"><i class="fa-solid fa-download"></i></button>
+                        <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); openDownloadModal('${track.title}', '${track.mp3}', '${track.wav}')"><i class="fa-solid fa-download"></i> Скачать</button>
                     </div>
                 </div>
             `;
             trackListContainer.insertAdjacentHTML('beforeend', trackHTML);
+
+            // Асинхронная загрузка длительности
+            const tempAudio = new Audio();
+            tempAudio.preload = 'metadata';
+            tempAudio.src = track.mp3;
+            tempAudio.onloadedmetadata = () => {
+                track.durationStr = formatTime(tempAudio.duration);
+                const timeEl = document.getElementById(`ci-time-${index}`);
+                if (timeEl && currentTrackIndex !== index) timeEl.textContent = track.durationStr;
+            };
         });
         document.getElementById('trackCount').textContent = tracks.length;
 
-        // === УПРАВЛЕНИЕ ВОСПРОИЗВЕДЕНИЕМ v3.0 ===
-        const gp = document.getElementById('globalPlayer'), gpPlayIcon = document.getElementById('gpPlayIcon'), gpPlayBtn = document.getElementById('gpPlay');
+        const gp = document.getElementById('globalPlayer');
+        const gpPlayBtn = document.getElementById('gpPlay'), gpPlayIcon = document.getElementById('gpPlayIcon');
+        const gpPlayBtnM = document.getElementById('gpPlayM'), gpPlayIconM = document.getElementById('gpPlayIconM');
         const miniOrb = document.getElementById('miniOrb');
 
         function playTrack(index) {
@@ -530,18 +568,25 @@
         }
 
         function resetCardUI(index) {
-            const bar = document.getElementById(`cardBar-${index}`), icon = document.getElementById(`cardIcon-${index}`), card = document.getElementById(`card-${index}`);
-            if(bar) bar.style.width = '0%';
-            if(icon) icon.className = 'fa-solid fa-play';
+            const card = document.getElementById(`card-${index}`);
+            const icon = document.getElementById(`cardIcon-${index}`);
             if(card) card.classList.remove('playing');
+            if(icon) icon.className = 'fa-solid fa-play';
+            // Не сбрасываем время и полоску, если это тот же трек (пауза). Если переключили - сбрасываем.
+            if(index !== currentTrackIndex) {
+                const bar = document.getElementById(`cardBar-${index}`);
+                const timeEl = document.getElementById(`ci-time-${index}`);
+                if(bar) bar.style.width = '0%';
+                if(timeEl) timeEl.textContent = tracks[index].durationStr || '--:--';
+            }
         }
 
         function updateUI() {
             const isPlaying = !globalAudio.paused;
             gpPlayIcon.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+            if(gpPlayIconM) gpPlayIconM.className = isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play';
             miniOrb.classList.toggle('playing', isPlaying);
             
-            tracks.forEach((_, i) => resetCardUI(i)); 
             if (currentTrackIndex !== -1) {
                 const card = document.getElementById(`card-${currentTrackIndex}`);
                 if(card) {
@@ -551,12 +596,16 @@
             }
         }
 
-        gpPlayBtn.onclick = () => { if(currentTrackIndex !== -1) playTrack(currentTrackIndex); }
-        document.getElementById('gpNext').onclick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex + 1) % tracks.length); }
-        document.getElementById('gpPrev').onclick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex - 1 + tracks.length) % tracks.length); }
+        const handlePlayClick = () => { if(currentTrackIndex !== -1) playTrack(currentTrackIndex); };
+        const handleNextClick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex + 1) % tracks.length); };
+        const handlePrevClick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex - 1 + tracks.length) % tracks.length); };
+
+        gpPlayBtn.onclick = handlePlayClick; document.getElementById('gpNext').onclick = handleNextClick; document.getElementById('gpPrev').onclick = handlePrevClick;
+        if(isMobile) { gpPlayBtnM.onclick = handlePlayClick; document.getElementById('gpNextM').onclick = handleNextClick; document.getElementById('gpPrevM').onclick = handlePrevClick; }
+
         globalAudio.addEventListener('play', updateUI);
         globalAudio.addEventListener('pause', updateUI);
-        globalAudio.addEventListener('ended', () => document.getElementById('gpNext').click());
+        globalAudio.addEventListener('ended', handleNextClick);
 
         // === ТАЙМЛАЙН ===
         const gpBarFill = document.getElementById('gpProgBar'), gpTime = document.getElementById('gpTime'), gpDuration = document.getElementById('gpDuration'), gpProgCont = document.getElementById('gpProgCont');
@@ -567,15 +616,19 @@
         globalAudio.addEventListener('timeupdate', () => {
             if (globalAudio.duration && !isDraggingProgress) {
                 const p = (globalAudio.currentTime / globalAudio.duration) * 100;
-                updateProgressBarUI(p);
+                updateProgressBarUI(p, globalAudio.currentTime);
             }
         });
 
-        function updateProgressBarUI(p) {
+        function updateProgressBarUI(p, timeVal) {
             gpBarFill.style.width = `${p}%`;
-            gpTime.textContent = formatTime(globalAudio.currentTime);
+            const curTimeStr = formatTime(timeVal);
+            gpTime.textContent = curTimeStr;
             const cardBar = document.getElementById(`cardBar-${currentTrackIndex}`);
             if(cardBar) cardBar.style.width = `${p}%`;
+            
+            const cardTime = document.getElementById(`ci-time-${currentTrackIndex}`);
+            if(cardTime) cardTime.textContent = `${curTimeStr} / ${tracks[currentTrackIndex].durationStr}`;
         }
 
         function handleProgressScrub(e, container) {
@@ -588,7 +641,13 @@
         }
 
         function onProgressDragStart(e) { isDraggingProgress = true; handleProgressScrub(e, gpProgCont); }
-        function onProgressDragMove(e) { if (!isDraggingProgress) return; const p = handleProgressScrub(e, gpProgCont); updateProgressBarUI(p * 100); if(e.cancelable) e.preventDefault(); }
+        function onProgressDragMove(e) { 
+            if (!isDraggingProgress) return; 
+            const p = handleProgressScrub(e, gpProgCont); 
+            const t = p * globalAudio.duration;
+            updateProgressBarUI(p * 100, t); // Моментальное визуальное обновление
+            if(e.cancelable) e.preventDefault(); 
+        }
         function onProgressDragEnd(e) { if (!isDraggingProgress) return; isDraggingProgress = false; const rect = gpProgCont.getBoundingClientRect(); let cX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX; let p = (cX - rect.left) / rect.width; p = Math.max(0, Math.min(1, p)); globalAudio.currentTime = p * globalAudio.duration; }
 
         gpProgCont.addEventListener('mousedown', onProgressDragStart);
@@ -597,44 +656,34 @@
         window.addEventListener('touchmove', onProgressDragMove, {passive: false});
         window.addEventListener('mouseup', onProgressDragEnd);
         window.addEventListener('touchend', onProgressDragEnd);
-
         function seek(e, container, index) { if(currentTrackIndex !== index) return; handleProgressScrub(e, container); }
 
-        // === ГРОМКОСТЬ (НОВЫЙ КАСТОМНЫЙ БАР) ===
+        // === ГРОМКОСТЬ (3 Стадии иконок) ===
         const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
         const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
-        const volOverlay = document.getElementById('volOverlay'), volOverPercent = document.getElementById('volOverPercent'), volOverFill = document.getElementById('volOverFill'), volOverIcon = document.getElementById('volOverIcon');
         
-        let currentVolume = 1, lastVolume = 1, volOverTimeout, isDraggingVol = false;
+        let currentVolume = 1, lastVolume = 1, isDraggingVol = false;
 
-        function updateVolumeUI(v, showOverlay = false) {
+        function updateVolumeUI(v) {
             const p = Math.round(v * 100);
             volBarFill.style.width = `${p}%`;
             volThumb.style.left = `${p}%`;
             volTextVal.textContent = p;
             
+            volNode.classList.remove('muted');
             if(v === 0) { volIcon.className = 'fa-solid fa-volume-xmark'; volNode.classList.add('muted');}
-            else if(v < 0.5) { volIcon.className = 'fa-solid fa-volume-low'; volNode.classList.remove('muted');}
-            else { volIcon.className = 'fa-solid fa-volume-high'; volNode.classList.remove('muted');}
-
-            if (showOverlay) {
-                volOverPercent.textContent = p;
-                volOverFill.style.width = `${p}%`;
-                volOverIcon.className = volIcon.className + ' vol-over-icon';
-                volOverlay.classList.add('show');
-                clearTimeout(volOverTimeout);
-                volOverTimeout = setTimeout(() => { volOverlay.classList.remove('show'); }, 1500);
-            }
+            else if(v <= 0.35) { volIcon.className = 'fa-solid fa-volume-off'; } /* 1 stage (no waves visually but active) or volume-low */
+            else if(v <= 0.70) { volIcon.className = 'fa-solid fa-volume-low'; } /* 2 stages */
+            else { volIcon.className = 'fa-solid fa-volume-high'; } /* 3 stages */
         }
 
-        function setVolume(v, showOver = false) {
+        function setVolume(v) {
             currentVolume = Math.max(0, Math.min(1, v));
             globalAudio.volume = currentVolume;
             if(currentVolume > 0) lastVolume = currentVolume;
-            updateVolumeUI(currentVolume, showOver);
+            updateVolumeUI(currentVolume);
         }
 
-        // Логика перетаскивания ползунка громкости
         function handleVolScrub(e) {
             const rect = volBarBg.getBoundingClientRect();
             let clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -649,69 +698,33 @@
         window.addEventListener('mouseup', () => { isDraggingVol = false; volWrap.classList.remove('dragging'); });
         window.addEventListener('touchend', () => { isDraggingVol = false; volWrap.classList.remove('dragging'); });
 
-        // Mute логика (на телефоне открывает меню, на ПК мутит звук)
-        volNode.onclick = () => {
-            if(isMobile) {
-                volWrap.classList.toggle('active');
-            } else {
-                currentVolume > 0 ? setVolume(0) : setVolume(lastVolume);
-            }
-        }
+        function toggleMute() { currentVolume > 0 ? setVolume(0) : setVolume(lastVolume); }
+        volNode.onclick = toggleMute;
 
-        // Горячие клавиши
         document.addEventListener('keydown', (e) => {
             if (!hasPlayed || document.activeElement.tagName === 'INPUT') return;
             if (e.code === 'Space') { e.preventDefault(); gpPlayBtn.click(); }
-            if (e.code === 'ArrowRight') { e.preventDefault(); document.getElementById('gpNext').click(); }
-            if (e.code === 'ArrowLeft') { e.preventDefault(); document.getElementById('gpPrev').click(); }
-            if (e.code === 'ArrowUp') { e.preventDefault(); setVolume(currentVolume + 0.1, true); }
-            if (e.code === 'ArrowDown') { e.preventDefault(); setVolume(currentVolume - 0.1, true); }
+            if (e.code === 'ArrowRight') { e.preventDefault(); handleNextClick(); }
+            if (e.code === 'ArrowLeft') { e.preventDefault(); handlePrevClick(); }
+            if (e.code === 'ArrowUp') { e.preventDefault(); setVolume(currentVolume + 0.1); }
+            if (e.code === 'ArrowDown') { e.preventDefault(); setVolume(currentVolume - 0.1); }
+            if (e.key.toLowerCase() === 'm') { e.preventDefault(); toggleMute(); }
         });
 
-        // === СВОРАЧИВАНИЕ И ORB (CD) ===
-        document.getElementById('gpMinimize').onclick = () => {
-            isMinimized = true; gp.classList.remove('active');
-            setTimeout(() => { miniOrb.style.display = 'flex'; }, 400);
-        };
-        miniOrb.onclick = () => {
-            if(isDraggingOrb) return;
-            isMinimized = false; miniOrb.style.display = 'none'; gp.classList.add('active');
-        };
+        // СВОРАЧИВАНИЕ (CD ORB)
+        document.getElementById('gpMinimize').onclick = () => { isMinimized = true; gp.classList.remove('active'); setTimeout(() => { miniOrb.style.display = 'flex'; }, 400); };
+        miniOrb.onclick = () => { if(isDraggingOrb) return; isMinimized = false; miniOrb.style.display = 'none'; gp.classList.add('active'); };
 
         let isDraggingOrb = false, orbMoved = false, orbTouchX, orbTouchY, orbStartX, orbStartY;
-        function orbDragStart(e) {
-            isDraggingOrb = true; orbMoved = false;
-            let c = e.touches ? e.touches[0] : e;
-            orbTouchX = c.clientX; orbTouchY = c.clientY;
-            orbStartX = miniOrb.offsetLeft; orbStartY = miniOrb.offsetTop;
-            miniOrb.style.transition = 'none';
-        }
-        function orbDragMove(e) {
-            if (!isDraggingOrb) return;
-            let c = e.touches ? e.touches[0] : e;
-            let dx = c.clientX - orbTouchX, dy = c.clientY - orbTouchY;
-            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) orbMoved = true;
-            let x = orbStartX + dx, y = orbStartY + dy;
-            x = Math.max(10, Math.min(x, window.innerWidth - 80));
-            y = Math.max(10, Math.min(y, window.innerHeight - 80));
-            miniOrb.style.left = `${x}px`; miniOrb.style.top = `${y}px`;
-            miniOrb.style.right = 'auto'; miniOrb.style.bottom = 'auto';
-            if(e.cancelable) e.preventDefault();
-        }
-        function orbDragEnd() {
-            if (!isDraggingOrb) return;
-            isDraggingOrb = false; miniOrb.style.transition = '';
-            if(orbMoved) { isDraggingOrb = true; setTimeout(()=>isDraggingOrb=false, 100); }
-        }
+        function orbDragStart(e) { isDraggingOrb = true; orbMoved = false; let c = e.touches ? e.touches[0] : e; orbTouchX = c.clientX; orbTouchY = c.clientY; orbStartX = miniOrb.offsetLeft; orbStartY = miniOrb.offsetTop; miniOrb.style.transition = 'none'; }
+        function orbDragMove(e) { if (!isDraggingOrb) return; let c = e.touches ? e.touches[0] : e; let dx = c.clientX - orbTouchX, dy = c.clientY - orbTouchY; if (Math.abs(dx) > 5 || Math.abs(dy) > 5) orbMoved = true; let x = orbStartX + dx, y = orbStartY + dy; x = Math.max(10, Math.min(x, window.innerWidth - 80)); y = Math.max(10, Math.min(y, window.innerHeight - 80)); miniOrb.style.left = `${x}px`; miniOrb.style.top = `${y}px`; miniOrb.style.right = 'auto'; miniOrb.style.bottom = 'auto'; if(e.cancelable) e.preventDefault(); }
+        function orbDragEnd() { if (!isDraggingOrb) return; isDraggingOrb = false; miniOrb.style.transition = ''; if(orbMoved) { isDraggingOrb = true; setTimeout(()=>isDraggingOrb=false, 100); } }
 
-        miniOrb.addEventListener('mousedown', orbDragStart);
-        miniOrb.addEventListener('touchstart', orbDragStart, {passive: false});
-        window.addEventListener('mousemove', orbDragMove);
-        window.addEventListener('touchmove', orbDragMove, {passive: false});
-        window.addEventListener('mouseup', orbDragEnd);
-        window.addEventListener('touchend', orbDragEnd);
+        miniOrb.addEventListener('mousedown', orbDragStart); miniOrb.addEventListener('touchstart', orbDragStart, {passive: false});
+        window.addEventListener('mousemove', orbDragMove); window.addEventListener('touchmove', orbDragMove, {passive: false});
+        window.addEventListener('mouseup', orbDragEnd); window.addEventListener('touchend', orbDragEnd);
 
-        // === ОСТАЛЬНОЙ UI (СКРОЛЛ, БУРГЕР, ПОИСК) ===
+        // UI (Скролл, Меню, Поиск, Модалки)
         const btnUp = document.getElementById('scrollTopBtn');
         window.addEventListener('scroll', () => window.scrollY > 300 ? btnUp.classList.add('visible') : btnUp.classList.remove('visible'));
         btnUp.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -722,14 +735,10 @@
 
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase(); let count = 0;
-            document.querySelectorAll('.catalog-item').forEach(item => {
-                if(item.querySelector('.ci-title').textContent.toLowerCase().includes(q)) { item.style.display = 'flex'; count++; }
-                else item.style.display = 'none';
-            });
+            document.querySelectorAll('.catalog-item').forEach(item => { if(item.querySelector('.ci-title').textContent.toLowerCase().includes(q)) { item.style.display = 'flex'; count++; } else item.style.display = 'none'; });
             document.getElementById('trackCount').textContent = count;
         });
 
-        // Модалки
         const dM = document.getElementById('downloadModal'), pM = document.getElementById('platformsModal');
         function openDownloadModal(t, mp3, wav) { document.getElementById('modalTitle').textContent = t; document.getElementById('linkMp3').href = mp3; document.getElementById('linkWav').href = wav; dM.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
         function openPlatformsModal() { pM.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
@@ -737,11 +746,8 @@
         window.onclick = e => { if(e.target === dM) closeModal('downloadModal'); if(e.target === pM) closeModal('platformsModal'); }
 
         // Socket.io (Чат, Бан, Онлайн)
-        window.userNickname = null;
-        let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('dxtrClientId', clientId);
+        window.userNickname = null; let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('dxtrClientId', clientId);
         const socket = io("https://dxtrslizze.onrender.com/");
-        
         const chatWindow = document.getElementById('chat-window'), chatClose = document.getElementById('chat-close'), chatMessages = document.getElementById('chat-messages'), chatInput = document.getElementById('chat-input'), chatSendBtn = document.getElementById('chat-send'), chatHeader = document.getElementById('chat-header');
         document.getElementById('sidebarSupportBtn').onclick = (e) => { e.preventDefault(); toggleSBar(); setTimeout(() => { chatWindow.style.display = 'flex'; if(!isMobile) { chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px'; } chatMessages.scrollTop = chatMessages.scrollHeight; }, 300); };
         chatClose.onclick = () => chatWindow.style.display = 'none';
@@ -751,26 +757,14 @@
         document.addEventListener('mousemove', (e) => { if (!isDraggingChat) return; e.preventDefault(); chatWindow.style.left = `${startLeft + (e.clientX - startX)}px`; chatWindow.style.top = `${startTop + (e.clientY - startY)}px`; });
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        socket.on('connect', () => { socket.emit('register_client', clientId); });
-        socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
+        socket.on('connect', () => { socket.emit('register_client', clientId); }); socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
         socket.on('user_data', d => { if (d.nickname) { window.userNickname = d.nickname; document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; } });
-        socket.on('ban_status', d => {
-            if (d.isBanned) { document.getElementById('menuBanLock').style.display = 'inline-block'; document.getElementById('chatBanNotice').style.display = 'block'; document.getElementById('chatGreeting').style.display = 'none'; chatInput.disabled = true; chatInput.placeholder = "СВЯЗЬ ПРЕРВАНА"; chatInput.style.borderColor = "var(--neon-red)"; chatSendBtn.disabled = true; chatSendBtn.style.background = '#333'; chatSendBtn.style.color = '#555'; } 
-            else { document.getElementById('menuBanLock').style.display = 'none'; document.getElementById('chatBanNotice').style.display = 'none'; document.getElementById('chatGreeting').style.display = 'block'; chatInput.disabled = false; chatInput.placeholder = "Передача данных..."; chatInput.style.borderColor = "rgba(255,255,255,0.1)"; chatSendBtn.disabled = false; chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; chatSendBtn.style.color = '#fff'; }
-        });
+        socket.on('ban_status', d => { if (d.isBanned) { document.getElementById('menuBanLock').style.display = 'inline-block'; document.getElementById('chatBanNotice').style.display = 'block'; document.getElementById('chatGreeting').style.display = 'none'; chatInput.disabled = true; chatInput.placeholder = "СВЯЗЬ ПРЕРВАНА"; chatInput.style.borderColor = "var(--neon-red)"; chatSendBtn.disabled = true; chatSendBtn.style.background = '#333'; chatSendBtn.style.color = '#555'; } else { document.getElementById('menuBanLock').style.display = 'none'; document.getElementById('chatBanNotice').style.display = 'none'; document.getElementById('chatGreeting').style.display = 'block'; chatInput.disabled = false; chatInput.placeholder = "Передача данных..."; chatInput.style.borderColor = "rgba(255,255,255,0.1)"; chatSendBtn.disabled = false; chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; chatSendBtn.style.color = '#fff'; } });
         socket.on('receive_message', d => { if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex'; addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); });
 
         chatSendBtn.onclick = sendMessageToBot; chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
         function sendMessageToBot() { const t = chatInput.value.trim(); if (!t || chatInput.disabled) return; socket.emit('send_message', { text: t, clientId: clientId }); addChatMessage('Вы', t, 'flex-end', true, false, false); chatInput.value = ''; }
-        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) {
-            const wrapper = document.createElement('div'); wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
-            const nameLab = document.createElement('span'); nameLab.className = 'chat-msg-name'; nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender;
-            const bubble = document.createElement('div'); bubble.className = 'chat-msg-bubble'; bubble.textContent = text;
-            if (isWarn) { nameLab.style.color = 'var(--neon-red)'; bubble.style.background = 'rgba(255,0,51,0.1)'; bubble.style.border = '1px solid var(--neon-red)'; } 
-            else if (isSucc) { nameLab.style.color = 'var(--neon-green)'; bubble.style.background = 'rgba(0,255,102,0.1)'; bubble.style.border = '1px solid var(--neon-green)'; }
-            wrapper.appendChild(nameLab); wrapper.appendChild(bubble); chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight;
-            if (save) { const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); if (h.length > 50) h.shift(); localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); }
-        }
+        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { const wrapper = document.createElement('div'); wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; const nameLab = document.createElement('span'); nameLab.className = 'chat-msg-name'; nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; const bubble = document.createElement('div'); bubble.className = 'chat-msg-bubble'; bubble.textContent = text; if (isWarn) { nameLab.style.color = 'var(--neon-red)'; bubble.style.background = 'rgba(255,0,51,0.1)'; bubble.style.border = '1px solid var(--neon-red)'; } else if (isSucc) { nameLab.style.color = 'var(--neon-green)'; bubble.style.background = 'rgba(0,255,102,0.1)'; bubble.style.border = '1px solid var(--neon-green)'; } wrapper.appendChild(nameLab); wrapper.appendChild(bubble); chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight; if (save) { const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); if (h.length > 50) h.shift(); localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); } }
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
     </script>
 </body>
