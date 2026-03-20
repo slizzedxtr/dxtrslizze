@@ -31,7 +31,6 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// Храним привязку сообщений ТГ к юзерам 24 часа
 const MessageMapSchema = new mongoose.Schema({
     tgMsgId: Number,
     clientId: String,
@@ -40,7 +39,6 @@ const MessageMapSchema = new mongoose.Schema({
 });
 const MessageMap = mongoose.model('MessageMap', MessageMapSchema);
 
-// ВОТ ОНА — ОЧЕРЕДЬ ДЛЯ ОФФЛАЙН ПОЛЬЗОВАТЕЛЕЙ
 const PendingMsgSchema = new mongoose.Schema({
     clientId: String,
     text: String,
@@ -50,17 +48,24 @@ const PendingMsgSchema = new mongoose.Schema({
 });
 const PendingMsg = mongoose.model('PendingMsg', PendingMsgSchema);
 
-const EXPIRATION_TIME = 60 * 60 * 1000; // Срок годности сообщений (1 час)
+const EXPIRATION_TIME = 60 * 60 * 1000;
 
 // --- ВЕБ-СОКЕТЫ (САЙТ) ---
 io.on('connection', (socket) => {
+    // Рассылаем РЕАЛЬНЫЙ счетчик онлайна при подключении
+    io.emit('online_update', io.engine.clientsCount);
+
+    socket.on('disconnect', () => {
+        // Рассылаем РЕАЛЬНЫЙ счетчик онлайна при отключении
+        io.emit('online_update', io.engine.clientsCount);
+    });
+
     socket.on('register_client', async (clientId) => {
         socket.join(clientId);
         
         let user = await User.findOne({ clientId });
         if (!user) user = await User.create({ clientId });
 
-        // 1. Проверка бана при входе
         if (user.isBanned) {
             if (user.banExpireAt !== 0 && user.banExpireAt < Date.now()) {
                 user.isBanned = false;
@@ -72,29 +77,22 @@ io.on('connection', (socket) => {
             }
         }
 
-        // 2. ВЫДАЧА ОФФЛАЙН-ОЧЕРЕДИ ИЗ БАЗЫ
         const pending = await PendingMsg.find({ clientId });
         if (pending.length > 0) {
             const now = Date.now();
             let sentCount = 0;
-            let expiredCount = 0;
 
             for (const m of pending) {
                 if (now - m.timestamp < EXPIRATION_TIME) {
                     socket.emit('receive_message', { text: m.text, isWarning: m.isWarning, isSuccess: m.isSuccess });
                     sentCount++;
-                } else {
-                    expiredCount++;
                 }
             }
             
-            // Удаляем выданные из базы
             await PendingMsg.deleteMany({ clientId });
             
             if (sentCount > 0) {
                 bot.sendMessage(adminId, `🔔 <b>Юзер вернулся!</b>\nПользователь <code>${clientId}</code> зашёл на сайт и получил ${sentCount} отложенных сообщений.`, { parse_mode: 'HTML' });
-            } else if (expiredCount > 0) {
-                bot.sendMessage(adminId, `⚠️ <b>Юзер вернулся поздно.</b>\nВремя ожидания ответа для <code>${clientId}</code> истекло.`, { parse_mode: 'HTML' });
             }
         }
     });
@@ -128,11 +126,10 @@ io.on('connection', (socket) => {
     });
 });
 
-// --- КНОПКИ (SPAM И МЕНЮ БАНОВ) ---
+// --- КНОПКИ ---
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
     
-    // SPAM
     if (query.data.startsWith('spam_')) {
         const cId = query.data.replace('spam_', '');
         await sendToUser(cId, "Пожалуйста, не присылайте сообщения которые не имеют смысл или не связаны с темой сайта.", 'warning', query.message.message_id, "Spam-фильтр");
@@ -140,7 +137,6 @@ bot.on('callback_query', async (query) => {
         bot.answerCallbackQuery(query.id, { text: "Отправлено" });
     }
 
-    // ИНФО О БАНЕ
     if (query.data.startsWith('baninfo_')) {
         const clientId = query.data.replace('baninfo_', '');
         const user = await User.findOne({ clientId });
@@ -161,12 +157,10 @@ bot.on('callback_query', async (query) => {
         bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
     }
 
-    // НАЗАД К СПИСКУ БАНОВ
     if (query.data === 'banlist') {
         sendBannedMenu(adminId, query.message.message_id);
     }
 
-    // ДОСРОЧНЫЙ РАЗБАН АДМИНОМ
     if (query.data.startsWith('unban_')) {
         const clientId = query.data.replace('unban_', '');
         await User.findOneAndUpdate({ clientId }, { isBanned: false });
@@ -179,7 +173,7 @@ bot.on('callback_query', async (query) => {
     }
 });
 
-// --- ТЕКСТОВЫЕ КОМАНДЫ И РЕПЛАИ ---
+// --- КОМАНДЫ И РЕПЛАИ ---
 bot.on('message', async (msg) => {
     if (msg.from.id.toString() !== adminId.toString()) return;
     const text = msg.text || '';
@@ -220,20 +214,17 @@ bot.on('message', async (msg) => {
     }
 });
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 async function sendToUser(clientId, text, type, msgId, action) {
     const isWarning = type === 'warning';
     const isSuccess = type === 'success';
     const room = io.sockets.adapter.rooms.get(clientId);
 
     if (room && room.size > 0) {
-        // ЮЗЕР ОНЛАЙН - летит мгновенно
         io.to(clientId).emit('receive_message', { text, isWarning, isSuccess });
         if (msgId) bot.sendMessage(adminId, `✅ <b>${action} доставлен(о)!</b>`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
     } else {
-        // ЮЗЕР ОФФЛАЙН - сохраняется в облачную БД навсегда (до захода или истечения 1 часа)
         await PendingMsg.create({ clientId, text, isWarning, isSuccess });
-        if (msgId) bot.sendMessage(adminId, `⏳ <b>${action}:</b> Юзер оффлайн. Сохранено в облачную очередь.`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
+        if (msgId) bot.sendMessage(adminId, `⏳ <b>${action}:</b> Юзер оффлайн. Сохранено в БД.`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
     }
 }
 
@@ -241,7 +232,6 @@ async function sendBannedMenu(chatId, messageId = null) {
     const bannedUsers = await User.find({ isBanned: true });
     const validBans = [];
     
-    // Очистка истекших банов на лету
     for (const u of bannedUsers) {
         if (u.banExpireAt > 0 && u.banExpireAt < Date.now()) {
             u.isBanned = false;
