@@ -406,7 +406,7 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА (С ПАМЯТЬЮ, БАНАМИ И WARNING'АМИ) ===
+        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА (С ПАМЯТЬЮ, БАНАМИ, WARNING'АМИ И SUCCESS'АМИ) ===
         const SERVER_URL = "https://dxtrslizze.onrender.com/"; 
         const socket = io(SERVER_URL);
         
@@ -427,22 +427,19 @@
         const chatSendBtn = document.getElementById('chat-send');
         const chatMessages = document.getElementById('chat-messages');
 
-        // Открытие/закрытие
         chatToggle.onclick = () => {
             chatWindow.style.display = 'flex';
             chatMessages.scrollTop = chatMessages.scrollHeight; 
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        // Загрузка истории
         function loadChatHistory() {
             const history = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
             history.forEach(msg => {
-                addChatMessage(msg.sender, msg.text, msg.color, msg.align, false, msg.isWarning);
+                addChatMessage(msg.sender, msg.text, msg.color, msg.align, false, msg.isWarning, msg.isSuccess);
             });
         }
 
-        // Отправка сообщения
         chatSendBtn.onclick = sendMessageToBot;
         chatInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
@@ -456,21 +453,19 @@
             if (!text || chatInput.disabled) return;
             
             socket.emit('send_message', { text: text, clientId: clientId });
-            addChatMessage('Вы', text, 'var(--neon-cyan)', 'flex-end', true, false);
+            addChatMessage('Вы', text, 'var(--neon-cyan)', 'flex-end', true, false, false);
             chatInput.value = '';
         }
 
         // Прием ответа
         socket.on('receive_message', (data) => {
             if (chatWindow.style.display === 'none') chatWindow.style.display = 'flex';
-            // Если isWarning true, отрисуется красным
-            addChatMessage('Support', data.text, 'var(--neon-purple)', 'flex-start', true, data.isWarning);
+            addChatMessage('Support', data.text, 'var(--neon-purple)', 'flex-start', true, data.isWarning, data.isSuccess);
         });
 
-        // СТАТУС БЛОКИРОВКИ ОТ СЕРВЕРА
+        // Блокировка и разблокировка интерфейса
         socket.on('ban_status', (data) => {
             if (data.isBanned) {
-                // Блокируем чат
                 chatToggle.innerHTML = '<i class="fa-solid fa-lock"></i>';
                 chatToggle.style.background = '#ff0033';
                 chatToggle.style.boxShadow = '0 0 25px rgba(255,0,51,0.6)';
@@ -483,7 +478,6 @@
                 chatSendBtn.style.background = '#333';
                 chatSendBtn.style.boxShadow = 'none';
             } else {
-                // Разблокируем чат
                 chatToggle.innerHTML = '<i class="fa-solid fa-comment-dots"></i>';
                 chatToggle.style.background = 'var(--neon-cyan)';
                 chatToggle.style.boxShadow = '0 0 25px rgba(0,198,255,0.6)';
@@ -498,8 +492,8 @@
             }
         });
 
-        // Отрисовка сообщения (добавлен параметр isWarning)
-        function addChatMessage(sender, text, color, align, save = true, isWarning = false) {
+        // Отрисовка сообщения с учетом статусов Warning (Красный) и Success (Зеленый)
+        function addChatMessage(sender, text, color, align, save = true, isWarning = false, isSuccess = false) {
             const wrapper = document.createElement('div');
             wrapper.style.display = 'flex';
             wrapper.style.flexDirection = 'column';
@@ -508,24 +502,36 @@
             const nameLab = document.createElement('span');
             nameLab.textContent = sender;
             nameLab.style.fontSize = '0.7rem';
-            nameLab.style.color = isWarning ? '#ff0033' : color;
+            
+            // Цвет никнейма
+            if (isWarning) nameLab.style.color = '#ff0033';
+            else if (isSuccess) nameLab.style.color = '#00ff66';
+            else nameLab.style.color = color;
+
             nameLab.style.marginBottom = '3px';
             nameLab.style.fontWeight = 'bold';
 
             const bubble = document.createElement('div');
-            bubble.style.background = isWarning ? 'rgba(255,0,51,0.1)' : 'rgba(255,255,255,0.1)';
             bubble.style.padding = '8px 12px';
             bubble.style.borderRadius = '12px';
             bubble.style.color = '#fff';
             bubble.style.maxWidth = '85%';
             bubble.style.wordWrap = 'break-word';
-            // Если это предупреждение - красная неоновая рамка
+            
+            // Стили самой рамки сообщения
             if (isWarning) {
+                bubble.style.background = 'rgba(255,0,51,0.1)';
                 bubble.style.border = '1px solid #ff0033';
                 bubble.style.boxShadow = '0 0 10px rgba(255,0,51,0.5)';
+            } else if (isSuccess) {
+                bubble.style.background = 'rgba(0,255,102,0.1)';
+                bubble.style.border = '1px solid #00ff66';
+                bubble.style.boxShadow = '0 0 10px rgba(0,255,102,0.5)';
             } else {
+                bubble.style.background = 'rgba(255,255,255,0.1)';
                 bubble.style.border = `1px solid ${color}`;
             }
+            
             bubble.textContent = text;
 
             wrapper.appendChild(nameLab);
@@ -536,7 +542,7 @@
 
             if (save) {
                 const history = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
-                history.push({ sender, text, color, align, isWarning });
+                history.push({ sender, text, color, align, isWarning, isSuccess });
                 if (history.length > 50) history.shift(); 
                 localStorage.setItem('dxtrChatHistory', JSON.stringify(history));
             }
