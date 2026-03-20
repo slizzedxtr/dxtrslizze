@@ -14,13 +14,12 @@ const adminId = process.env.ADMIN_CHAT_ID;
 const bot = new TelegramBot(token, { polling: true });
 
 // --- ХРАНИЛИЩА ДАННЫХ ---
-const messageMap = new Map(); // ТГ Msg ID -> { clientId, text } (храним текст для причины бана)
-const pendingMessages = new Map(); // Client ID -> [{text, timestamp, isWarning}]
-const EXPIRATION_TIME = 60 * 60 * 1000; // 1 час для очереди
+const messageMap = new Map();
+const pendingMessages = new Map();
+const EXPIRATION_TIME = 60 * 60 * 1000; // 1 час
 
-// НОВЫЕ ХРАНИЛИЩА:
-const nicknames = new Map(); // Client ID -> Nickname
-const bannedUsers = new Map(); // Client ID -> { expireAt, reasonText, durationText }
+const nicknames = new Map();
+const bannedUsers = new Map(); 
 
 // --- ВЕБ-СОКЕТЫ (САЙТ) ---
 io.on('connection', (socket) => {
@@ -29,18 +28,20 @@ io.on('connection', (socket) => {
         socket.join(clientId);
         console.log(`User connected: ${clientId}`);
 
-        // Проверяем, не в бане ли юзер при заходе
+        // 1. Проверка банов при заходе юзера
         if (bannedUsers.has(clientId)) {
             const banInfo = bannedUsers.get(clientId);
             if (banInfo.expireAt === 0 || banInfo.expireAt > Date.now()) {
                 socket.emit('ban_status', { isBanned: true });
             } else {
-                bannedUsers.delete(clientId); // Бан истек
+                // Время истекло, пока он был оффлайн
+                bannedUsers.delete(clientId);
                 socket.emit('ban_status', { isBanned: false });
+                sendToUser(clientId, "Ограничение снято. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
             }
         }
 
-        // Проверяем очередь сообщений
+        // 2. Выдача очереди ожидающих сообщений
         if (pendingMessages.has(clientId)) {
             const userQueue = pendingMessages.get(clientId);
             const now = Date.now();
@@ -54,20 +55,19 @@ io.on('connection', (socket) => {
 
             if (validMessages.length > 0) {
                 validMessages.forEach(msg => {
-                    socket.emit('receive_message', { text: msg.text, isWarning: msg.isWarning });
+                    socket.emit('receive_message', { text: msg.text, isWarning: msg.isWarning, isSuccess: msg.isSuccess });
                 });
-                bot.sendMessage(adminId, `🔔 <b>Юзер вернулся!</b>\nПользователь <code>${clientId}</code> получил свои сообщения.`, { parse_mode: 'HTML' });
+                bot.sendMessage(adminId, `🔔 <b>Юзер вернулся!</b>\nПользователь <code>${clientId}</code> получил отложенные сообщения.`, { parse_mode: 'HTML' });
             }
             pendingMessages.delete(clientId);
         }
     });
 
     socket.on('send_message', (data) => {
-        // Если юзер в бане, блокируем отправку на сервере
         if (bannedUsers.has(data.clientId)) {
             const banInfo = bannedUsers.get(data.clientId);
             if (banInfo.expireAt === 0 || banInfo.expireAt > Date.now()) return;
-            else bannedUsers.delete(data.clientId);
+            else bannedUsers.delete(data.clientId); // Бан истек, пускаем
         }
 
         const nick = nicknames.get(data.clientId) ? ` (<b>${nicknames.get(data.clientId)}</b>)` : '';
@@ -87,35 +87,29 @@ io.on('connection', (socket) => {
             }
         };
 
-        bot.sendMessage(adminId, tgMessage, options)
-        .then((msg) => {
-            // Сохраняем и ID, и текст (чтобы знать причину бана)
+        bot.sendMessage(adminId, tgMessage, options).then((msg) => {
             messageMap.set(msg.message_id, { clientId: data.clientId, text: data.text });
         });
     });
 });
 
-// --- КНОПКИ (SPAM И МЕНЮ БАНОВ) ---
+// --- КНОПКИ (SPAM И БАНЫ) ---
 bot.on('callback_query', (query) => {
     const userId = query.from.id.toString();
-    if (userId !== adminId.toString()) {
-        return bot.answerCallbackQuery(query.id, { text: "Доступ запрещён!", show_alert: true });
-    }
+    if (userId !== adminId.toString()) return bot.answerCallbackQuery(query.id, { text: "Доступ запрещён!", show_alert: true });
 
-    // 1. Кнопка SPAM
+    // Кнопка SPAM
     if (query.data.startsWith('spam_')) {
         const clientId = query.data.replace('spam_', '');
         const spamText = "Пожалуйста, не присылайте сообщения которые не имеют смысл или не связаны с темой сайта.";
         
-        sendToUser(clientId, spamText, true, query.message.message_id, "Spam-фильтр");
+        sendToUser(clientId, spamText, 'warning', query.message.message_id, "Spam-фильтр");
 
-        bot.editMessageReplyMarkup({ inline_keyboard: [] }, { 
-            chat_id: query.message.chat.id, message_id: query.message.message_id 
-        });
+        bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: query.message.chat.id, message_id: query.message.message_id });
         bot.answerCallbackQuery(query.id, { text: "Предупреждение отправлено" });
     }
 
-    // 2. Инфо о забаненном
+    // Инфо о бане
     if (query.data.startsWith('baninfo_')) {
         const clientId = query.data.replace('baninfo_', '');
         const info = bannedUsers.get(clientId);
@@ -136,86 +130,92 @@ bot.on('callback_query', (query) => {
         bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
     }
 
-    // 3. Возврат к списку банов
-    if (query.data === 'banlist') {
-        sendBannedMenu(adminId, query.message.message_id);
-    }
+    // Возврат в меню банов
+    if (query.data === 'banlist') sendBannedMenu(adminId, query.message.message_id);
 
-    // 4. Разбан
+    // Досрочный разбан админом
     if (query.data.startsWith('unban_')) {
         const clientId = query.data.replace('unban_', '');
         bannedUsers.delete(clientId);
-        io.to(clientId).emit('ban_status', { isBanned: false }); // Снимаем замок на сайте
         
+        io.to(clientId).emit('ban_status', { isBanned: false });
+        sendToUser(clientId, "Ограничение снято. Администратор досрочно снял блокировку с вас. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
+
         bot.answerCallbackQuery(query.id, {text: "Разблокирован!"});
-        sendBannedMenu(adminId, query.message.message_id); // Обновляем список
+        sendBannedMenu(adminId, query.message.message_id);
     }
 });
 
-// --- ОТВЕТЫ И КОМАНДЫ ИЗ ТЕЛЕГРАМ ---
+// --- ОТВЕТЫ И КОМАНДЫ (TEXT) ---
 bot.on('message', (msg) => {
     const text = msg.text || '';
 
-    // Меню банов по команде /bans
     if (text === '/bans' && msg.from.id.toString() === adminId.toString()) {
         sendBannedMenu(msg.chat.id);
         return;
     }
 
-    // Обработка реплая на сообщение бота
     if (msg.reply_to_message && messageMap.has(msg.reply_to_message.message_id)) {
         const targetData = messageMap.get(msg.reply_to_message.message_id);
         const clientId = targetData.clientId;
-        const reasonText = targetData.text;
 
-        // Команда: Задать ник
         if (text.startsWith('/nick ')) {
             const nick = text.replace('/nick ', '').trim();
             nicknames.set(clientId, nick);
-            bot.sendMessage(adminId, `✅ Никнейм <b>${nick}</b> привязан к пользователю <code>${clientId}</code>`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
+            bot.sendMessage(adminId, `✅ Никнейм <b>${nick}</b> сохранен!`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
             return;
         }
 
-        // Команда: Бан
         if (text === '/ban 1h' || text === '/ban perm') {
             const isPerm = (text === '/ban perm');
             const expireAt = isPerm ? 0 : Date.now() + (60 * 60 * 1000);
             const durationText = isPerm ? "Навсегда" : "1 час";
             const banMsg = isPerm ? "Вам НАВСЕГДА был перекрыт доступ к связи с тех. поддержкой." : "Вам был перекрыт доступ к связи с тех. поддержкой сроком на 1 час.";
 
-            bannedUsers.set(clientId, { expireAt, reasonText, durationText });
+            bannedUsers.set(clientId, { expireAt, reasonText: targetData.text, durationText });
             
-            // Блокируем чат на фронте и шлем красное сообщение
             io.to(clientId).emit('ban_status', { isBanned: true });
-            sendToUser(clientId, banMsg, true, msg.message_id, "Блокировка");
-
+            sendToUser(clientId, banMsg, 'warning', msg.message_id, "Блокировка");
             bot.sendMessage(adminId, `🚫 Пользователь <code>${clientId}</code> заблокирован (${durationText}).`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
+
+            // Таймер автоматического разбана (если сервер не уснет)
+            if (!isPerm) {
+                setTimeout(() => {
+                    if (bannedUsers.has(clientId)) {
+                        const info = bannedUsers.get(clientId);
+                        if (info.expireAt > 0 && info.expireAt <= Date.now()) {
+                            bannedUsers.delete(clientId);
+                            io.to(clientId).emit('ban_status', { isBanned: false });
+                            sendToUser(clientId, "Ограничение снято. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
+                        }
+                    }
+                }, 60 * 60 * 1000);
+            }
             return;
         }
 
-        // Если это не команда, а обычный текст - отправляем юзеру
-        sendToUser(clientId, text, false, msg.message_id, "Ответ");
+        // Обычный ответ
+        sendToUser(clientId, text, 'normal', msg.message_id, "Ответ");
     }
 });
 
 // --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+function sendToUser(clientId, text, msgType, msgId, actionName) {
+    const isWarning = msgType === 'warning';
+    const isSuccess = msgType === 'success';
 
-// Функция отправки сообщений (учитывает онлайн/оффлайн)
-function sendToUser(clientId, text, isWarning, msgId, actionName) {
     const room = io.sockets.adapter.rooms.get(clientId);
     if (room && room.size > 0) {
-        io.to(clientId).emit('receive_message', { text: text, isWarning: isWarning });
-        bot.sendMessage(adminId, `✅ <b>${actionName} доставлен(о)!</b>`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
+        io.to(clientId).emit('receive_message', { text, isWarning, isSuccess });
+        if (msgId) bot.sendMessage(adminId, `✅ <b>${actionName} доставлен(о)!</b>`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
     } else {
         if (!pendingMessages.has(clientId)) pendingMessages.set(clientId, []);
-        pendingMessages.get(clientId).push({ text, timestamp: Date.now(), isWarning });
-        bot.sendMessage(adminId, `⏳ <b>${actionName}:</b> Юзер оффлайн. Сохранено в очередь.`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
+        pendingMessages.get(clientId).push({ text, timestamp: Date.now(), isWarning, isSuccess });
+        if (msgId) bot.sendMessage(adminId, `⏳ <b>${actionName}:</b> Юзер оффлайн. Сохранено в очередь.`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
     }
 }
 
-// Генерация меню заблокированных
 function sendBannedMenu(chatId, messageId = null) {
-    // Очищаем истекшие баны перед показом
     for (const [clientId, info] of bannedUsers.entries()) {
         if (info.expireAt > 0 && info.expireAt < Date.now()) bannedUsers.delete(clientId);
     }
