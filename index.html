@@ -597,7 +597,32 @@
             chatInput.value = '';
         }
 
-        socket.on('receive_message', (data) => {
+        // Получение данных профиля из базы
+        socket.on('user_data', (data) => {
+            if (data.nickname) {
+                document.getElementById('chatGreeting').innerHTML = `<i class="fa-solid fa-user-check"></i> Терминал активен. Приветствую, <b>${data.nickname}</b>!`;
+                // Сохраняем ник локально для красоты в пузырях
+                window.userNickname = data.nickname;
+            }
+        });
+
+        // И измени функцию addChatMessage, чтобы вместо "Вы" писался ник:
+        function addChatMessage(sender, text, align, save = true, isWarning = false, isSuccess = false) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
+
+            const nameLab = document.createElement('span');
+            nameLab.className = 'chat-msg-name';
+            
+            // Если отправитель "Вы" и у нас есть ник в базе — пишем ник
+            if (sender === 'DXTR' && window.userNickname) {
+                nameLab.textContent = window.userNickname;
+            } else {
+                nameLab.textContent = sender;
+            }
+            // ... (остальной код функции без изменений)
+            
+            socket.on('receive_message', (data) => {
             if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
                 chatWindow.style.display = 'flex';
             }
