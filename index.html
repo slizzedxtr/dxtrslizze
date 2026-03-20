@@ -23,6 +23,7 @@
             --neon-purple: #7000ff;
             --neon-cyan: #00c6ff;
             --neon-yellow: #ffcc00;
+            --neon-green: #00ff66;
             --bg-dark: #050507;
             --glass-bg: rgba(20, 20, 25, 0.65);
             --glass-border: rgba(255, 255, 255, 0.08);
@@ -37,7 +38,7 @@
             display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative;
         }
 
-        /* АНИМИРОВАННЫЙ ФОН + ХАЙТЕК СЕТКА */
+        /* АНИМИРОВАННЫЙ ФОН */
         .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: #050507; }
         .blob { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5; animation: float 20s infinite alternate ease-in-out; }
         .blob-1 { width: 500px; height: 500px; background: var(--neon-purple); top: -10%; left: -10%; }
@@ -61,6 +62,27 @@
         .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 5px; border-bottom: 2px solid transparent; transition: 0.3s; }
         .nav-link:hover, .nav-link.active { color: #fff; border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0, 198, 255, 0.6); }
 
+        /* БУРГЕР МЕНЮ И САЙДБАР */
+        .burger-btn { position: absolute; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
+        .burger-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan); }
+        
+        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.1); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
+        .sidebar.active { left: 0; }
+        .sidebar-link { color: white; text-decoration: none; font-size: 1.2rem; font-weight: 700; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-link i { color: var(--neon-cyan); font-size: 1.4rem; transition: 0.3s; }
+        .sidebar-link:hover { color: var(--neon-cyan); padding-left: 10px; }
+        .sidebar-link:hover i { text-shadow: 0 0 15px var(--neon-cyan); }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+
+        /* СЧЕТЧИК ОНЛАЙНА */
+        .online-counter { position: absolute; top: 25px; right: 25px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); z-index: 20; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; }
+        .online-counter:hover { border-color: rgba(0, 255, 102, 0.3); background: rgba(0, 255, 102, 0.05); }
+        .pulse-dot { width: 10px; height: 10px; background-color: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.7); } 70% { box-shadow: 0 0 0 8px rgba(0, 255, 102, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); } }
+        .online-text { font-size: 0.85rem; font-weight: 700; color: #fff; letter-spacing: 1px; text-transform: uppercase; }
+        .online-num { color: var(--neon-green); font-weight: 900; transition: 0.3s; }
+
         /* ШАПКА */
         header { text-align: center; padding: 6vh 20px 4vh; position: relative; z-index: 10; }
         header h1 { font-size: clamp(3rem, 7vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--neon-cyan), var(--neon-purple), var(--neon-pink)); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 6s linear infinite; margin-bottom: 10px; filter: drop-shadow(0 0 20px rgba(0, 198, 255, 0.3)); }
@@ -72,7 +94,7 @@
         .section-title { margin: 60px 0 30px; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; display: flex; align-items: center; gap: 20px; }
         .section-title::before, .section-title::after { content: ''; height: 2px; flex: 1; background: linear-gradient(90deg, transparent, var(--neon-purple), transparent); opacity: 0.5; }
 
-        /* БЛОК GUSTO (НОВЫЙ АЛЬБОМ) */
+        /* БЛОК GUSTO */
         .promo-banner {
             background: linear-gradient(135deg, rgba(20,20,30,0.8) 0%, rgba(5,5,10,0.9) 100%);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
@@ -88,7 +110,6 @@
             animation: rotate 15s linear infinite; pointer-events: none; z-index: 0;
         }
 
-        /* Анимация левитации для обложки */
         @keyframes float-cover {
             0% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-10px) rotate(2deg); }
@@ -175,7 +196,7 @@
         .play-vid-btn { background: rgba(255,204,0,0.9); color: #000; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(255, 204, 0, 0.4); font-size: 1rem; margin-top: auto; }
         .play-vid-btn:hover { transform: scale(1.15); background: #fff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); }
 
-        /* Подвал */
+        /* ПОДВАЛ */
         footer { padding: 60px 20px; text-align: center; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); border-top: 1px solid rgba(255,255,255,0.05); position: relative; z-index: 10; }
         .footer-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
         .action-btn { display: flex; align-items: center; gap: 10px; padding: 15px 35px; border-radius: 50px; text-decoration: none; font-weight: 800; color: white; transition: 0.3s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
@@ -183,7 +204,7 @@
         .coop-btn { background: rgba(112, 0, 255, 0.2); border-color: var(--neon-purple); } .coop-btn:hover { background: var(--neon-purple); box-shadow: 0 0 20px rgba(112,0,255,0.5); }
         .contact-btn { background: rgba(0, 136, 204, 0.2); border-color: #0088cc; } .contact-btn:hover { background: #0088cc; box-shadow: 0 0 20px rgba(0,136,204,0.5); }
 
-        /* Модалка плеера YouTube */
+        /* МОДАЛКА YOUTUBE */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
         .modal-content { width: 90%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 0 60px rgba(112,0,255,0.4); position: relative; }
         .modal-fallback { margin-top: 20px; color: var(--text-muted); font-size: 0.9rem; }
@@ -191,7 +212,65 @@
         .close-btn { position: absolute; top: 25px; right: 40px; color: white; font-size: 3rem; cursor: pointer; z-index: 10000; transition: 0.3s; line-height: 1; }
         .close-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
 
-        /* Адаптация под мобильные (с фиксом таймера) */
+        /* --- ДИЗАЙН ЧАТА ПОДДЕРЖКИ --- */
+        #chat-widget { position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end; }
+        #chat-window {
+            display: none; width: 350px; height: 480px; flex-direction: column; overflow: hidden;
+            background: linear-gradient(145deg, rgba(15,15,20,0.85), rgba(5,5,10,0.95));
+            border: 1px solid rgba(0, 198, 255, 0.3); border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6), 0 0 30px rgba(0, 198, 255, 0.15), inset 0 0 20px rgba(255,255,255,0.02);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            margin-bottom: 20px; transform-origin: bottom right; animation: chatPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .chat-header {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+            color: #fff; padding: 18px 20px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 2; text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        #chat-close { cursor: pointer; font-size: 1.4rem; transition: 0.3s; color: rgba(255,255,255,0.8); }
+        #chat-close:hover { color: #fff; transform: rotate(90deg) scale(1.1); }
+        
+        #chat-messages {
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 0.95rem; scroll-behavior: smooth;
+        }
+        #chat-messages::-webkit-scrollbar { width: 6px; }
+        #chat-messages::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        #chat-messages::-webkit-scrollbar-thumb { background: rgba(0,198,255,0.3); border-radius: 10px; }
+        
+        .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; }
+        @keyframes msgFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg-name { font-size: 0.7rem; font-weight: 800; margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
+        .chat-msg-bubble {
+            padding: 12px 16px; border-radius: 18px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.4;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); backdrop-filter: blur(5px);
+        }
+        .msg-user { align-items: flex-end; }
+        .msg-user .chat-msg-name { color: var(--neon-cyan); }
+        .msg-user .chat-msg-bubble { background: rgba(0, 198, 255, 0.1); border: 1px solid rgba(0, 198, 255, 0.3); border-bottom-right-radius: 4px; }
+        .msg-bot { align-items: flex-start; }
+        .msg-bot .chat-msg-name { color: var(--neon-purple); }
+        .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.1); border: 1px solid rgba(112, 0, 255, 0.3); border-bottom-left-radius: 4px; }
+        
+        .chat-input-area {
+            padding: 15px; display: flex; gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.3); z-index: 2;
+        }
+        #chat-input {
+            flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 18px;
+            border-radius: 16px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s;
+        }
+        #chat-input:focus { border-color: var(--neon-cyan); background: rgba(0,198,255,0.05); box-shadow: inset 0 0 10px rgba(0,198,255,0.1); }
+        #chat-send {
+            background: linear-gradient(45deg, var(--neon-purple), #9b4dff); border: none; color: #fff; width: 50px; height: 50px;
+            border-radius: 16px; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(112,0,255,0.3); display: flex; justify-content: center; align-items: center; font-size: 1.1rem;
+        }
+        #chat-send:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(112,0,255,0.6); filter: brightness(1.2); }
+
+        #chat-toggle { background: linear-gradient(135deg, var(--neon-cyan), #00ffcc); border: none; width: 70px; height: 70px; border-radius: 50%; color: #000; cursor: pointer; box-shadow: 0 10px 30px rgba(0,198,255,0.4); font-size: 2rem; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        #chat-toggle:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 15px 40px rgba(0,198,255,0.6); }
+        @keyframes chatPop { 0% { opacity: 0; transform: scale(0.8) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+        /* Адаптация под мобильные */
         @media (max-width: 900px) {
             .hero-release, .promo-banner { flex-direction: column; text-align: center; padding: 30px 20px; }
             .hero-cover-wrap { width: 100%; max-width: 300px; }
@@ -206,17 +285,15 @@
             .platform-grid { grid-template-columns: 1fr; }
             header h1 { font-size: 2.5rem; }
             .top-nav { flex-direction: column; gap: 15px; align-items: center; padding-top: 15px; }
-            
-            /* Фикс таймера */
+            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; }
+            .online-counter { top: 15px; right: 15px; padding: 6px 12px; }
             .promo-banner { padding: 25px 10px; }
             .countdown { gap: 5px; width: 100%; justify-content: center; }
             .cd-box { min-width: 0; flex: 1; padding: 8px 2px; } 
             .cd-num { font-size: 1.3rem; }
             .cd-label { font-size: 0.55rem; letter-spacing: 0; }
             .cd-colon { font-size: 1.3rem; margin: -10px -2px 0; }
-            
-            /* Фикс виджета чата для мобилок */
-            #chat-window { max-width: calc(100vw - 40px); }
+            #chat-window { max-width: calc(100vw - 40px); height: 400px; right: 20px; bottom: 100px; }
         }
     </style>
 </head>
@@ -226,6 +303,23 @@
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
+    </div>
+
+    <div class="burger-btn fade-in" id="burgerBtn">
+        <i class="fa-solid fa-bars"></i>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar" id="sidebar">
+        <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+            МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.5rem; cursor: pointer; color: white; transition: 0.3s;"></i>
+        </div>
+        <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info"></i> О нас</a>
+        <a href="#" class="sidebar-link" id="sidebarSupportBtn"><i class="fa-solid fa-headset"></i> Тех. поддержка</a>
+    </div>
+
+    <div class="online-counter fade-in">
+        <div class="pulse-dot"></div>
+        <div class="online-text"><span class="online-num" id="onlineCount">1</span> онлайн</div>
     </div>
 
     <nav class="top-nav fade-in">
@@ -243,35 +337,26 @@
         </div>
     </div>
 
-    <div id="chat-widget" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; display: flex; flex-direction: column; align-items: flex-end;">
-        
-        <div id="chat-window" style="display: none; width: 320px; height: 420px; background: rgba(10,10,15,0.95); border: 2px solid var(--neon-cyan); border-radius: 20px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,198,255,0.3); backdrop-filter: blur(15px); margin-bottom: 20px; transform-origin: bottom right; animation: chatPop 0.3s ease-out;">
-            <div style="background: var(--neon-cyan); color: #000; padding: 15px; font-weight: 900; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center;">
+    <div id="chat-widget">
+        <div id="chat-window">
+            <div class="chat-header">
                 <span>D&S Support</span>
-                <i class="fa-solid fa-xmark" id="chat-close" style="cursor: pointer; font-size: 1.4rem; transition: 0.3s;"></i>
+                <i class="fa-solid fa-xmark" id="chat-close"></i>
             </div>
-            <div id="chat-messages" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 0.9rem;">
-                <div style="color: var(--text-muted); text-align: center; font-size: 0.8rem; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 8px;">
+            <div id="chat-messages">
+                <div style="color: var(--text-muted); text-align: center; font-size: 0.8rem; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
                     Оставьте сообщение, мы ответим вам в реальном времени!
                 </div>
             </div>
-            <div style="padding: 15px; display: flex; gap: 10px; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5);">
-                <input type="text" id="chat-input" placeholder="Ваш вопрос..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 15px; border-radius: 12px; outline: none; font-family: 'Montserrat', sans-serif;">
-                <button id="chat-send" style="background: var(--neon-purple); border: none; color: #fff; width: 45px; border-radius: 12px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4);"><i class="fa-solid fa-paper-plane"></i></button>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Ваш вопрос...">
+                <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
-        
-        <button id="chat-toggle" style="background: var(--neon-cyan); border: none; width: 65px; height: 65px; border-radius: 50%; color: #000; cursor: pointer; box-shadow: 0 0 25px rgba(0,198,255,0.6); font-size: 1.8rem; transition: 0.3s; display: flex; justify-content: center; align-items: center;">
+        <button id="chat-toggle">
             <i class="fa-solid fa-comment-dots"></i>
         </button>
     </div>
-
-    <style>
-        @keyframes chatPop { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
-        #chat-toggle:hover { transform: scale(1.1); background: #fff; box-shadow: 0 0 30px rgba(255,255,255,0.8); }
-        #chat-close:hover { color: var(--neon-pink); transform: rotate(90deg); }
-        #chat-send:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
-    </style>
 
     <header class="fade-in">
         <h1>DXTR SlizZe</h1>
@@ -406,10 +491,42 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА (С ПАМЯТЬЮ, БАНАМИ, WARNING'АМИ И SUCCESS'АМИ) ===
+        // === ЛОГИКА САЙДБАРА (МЕНЮ) ===
+        const burgerBtn = document.getElementById('burgerBtn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const closeSidebar = document.getElementById('closeSidebar');
+        const sidebarSupportBtn = document.getElementById('sidebarSupportBtn');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+        }
+
+        burgerBtn.onclick = toggleMenu;
+        closeSidebar.onclick = toggleMenu;
+        sidebarOverlay.onclick = toggleMenu;
+
+        // Открытие чата из меню
+        sidebarSupportBtn.onclick = (e) => {
+            e.preventDefault();
+            toggleMenu();
+            setTimeout(() => {
+                chatWindow.style.display = 'flex';
+                chatMessages.scrollTop = chatMessages.scrollHeight; 
+            }, 300);
+        };
+
+        // === ЛОГИКА ТЕЛЕГРАМ ЧАТА И ОНЛАЙНА ===
         const SERVER_URL = "https://dxtrslizze.onrender.com/"; 
         const socket = io(SERVER_URL);
         
+        // Получение реального онлайна с сервера
+        const onlineCountEl = document.getElementById('onlineCount');
+        socket.on('online_update', (count) => {
+            onlineCountEl.innerText = count; 
+        });
+
         let clientId = localStorage.getItem('dxtrClientId');
         if (!clientId) {
             clientId = 'user_' + Math.random().toString(36).substr(2, 9);
@@ -436,7 +553,7 @@
         function loadChatHistory() {
             const history = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
             history.forEach(msg => {
-                addChatMessage(msg.sender, msg.text, msg.color, msg.align, false, msg.isWarning, msg.isSuccess);
+                addChatMessage(msg.sender, msg.text, msg.align, false, msg.isWarning, msg.isSuccess);
             });
         }
 
@@ -453,17 +570,15 @@
             if (!text || chatInput.disabled) return;
             
             socket.emit('send_message', { text: text, clientId: clientId });
-            addChatMessage('Вы', text, 'var(--neon-cyan)', 'flex-end', true, false, false);
+            addChatMessage('Вы', text, 'flex-end', true, false, false);
             chatInput.value = '';
         }
 
-        // Прием ответа
         socket.on('receive_message', (data) => {
             if (chatWindow.style.display === 'none') chatWindow.style.display = 'flex';
-            addChatMessage('Support', data.text, 'var(--neon-purple)', 'flex-start', true, data.isWarning, data.isSuccess);
+            addChatMessage('Support', data.text, 'flex-start', true, data.isWarning, data.isSuccess);
         });
 
-        // Блокировка и разблокировка интерфейса
         socket.on('ban_status', (data) => {
             if (data.isBanned) {
                 chatToggle.innerHTML = '<i class="fa-solid fa-lock"></i>';
@@ -471,7 +586,7 @@
                 chatToggle.style.boxShadow = '0 0 25px rgba(255,0,51,0.6)';
                 
                 chatInput.disabled = true;
-                chatInput.placeholder = "Доступ к чату ограничен";
+                chatInput.placeholder = "Доступ ограничен";
                 chatInput.style.opacity = "0.5";
                 
                 chatSendBtn.disabled = true;
@@ -479,60 +594,42 @@
                 chatSendBtn.style.boxShadow = 'none';
             } else {
                 chatToggle.innerHTML = '<i class="fa-solid fa-comment-dots"></i>';
-                chatToggle.style.background = 'var(--neon-cyan)';
-                chatToggle.style.boxShadow = '0 0 25px rgba(0,198,255,0.6)';
+                chatToggle.style.background = 'linear-gradient(135deg, var(--neon-cyan), #00ffcc)';
+                chatToggle.style.boxShadow = '0 10px 30px rgba(0,198,255,0.4)';
                 
                 chatInput.disabled = false;
                 chatInput.placeholder = "Ваш вопрос...";
                 chatInput.style.opacity = "1";
                 
                 chatSendBtn.disabled = false;
-                chatSendBtn.style.background = 'var(--neon-purple)';
-                chatSendBtn.style.boxShadow = '0 0 15px rgba(112,0,255,0.4)';
+                chatSendBtn.style.background = 'linear-gradient(45deg, var(--neon-purple), #9b4dff)';
+                chatSendBtn.style.boxShadow = '0 5px 15px rgba(112,0,255,0.3)';
             }
         });
 
-        // Отрисовка сообщения с учетом статусов Warning (Красный) и Success (Зеленый)
-        function addChatMessage(sender, text, color, align, save = true, isWarning = false, isSuccess = false) {
+        function addChatMessage(sender, text, align, save = true, isWarning = false, isSuccess = false) {
             const wrapper = document.createElement('div');
-            wrapper.style.display = 'flex';
-            wrapper.style.flexDirection = 'column';
-            wrapper.style.alignItems = align;
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
 
             const nameLab = document.createElement('span');
+            nameLab.className = 'chat-msg-name';
             nameLab.textContent = sender;
-            nameLab.style.fontSize = '0.7rem';
             
-            // Цвет никнейма
-            if (isWarning) nameLab.style.color = '#ff0033';
-            else if (isSuccess) nameLab.style.color = '#00ff66';
-            else nameLab.style.color = color;
-
-            nameLab.style.marginBottom = '3px';
-            nameLab.style.fontWeight = 'bold';
-
             const bubble = document.createElement('div');
-            bubble.style.padding = '8px 12px';
-            bubble.style.borderRadius = '12px';
-            bubble.style.color = '#fff';
-            bubble.style.maxWidth = '85%';
-            bubble.style.wordWrap = 'break-word';
+            bubble.className = 'chat-msg-bubble';
+            bubble.textContent = text;
             
-            // Стили самой рамки сообщения
             if (isWarning) {
+                nameLab.style.color = '#ff0033';
                 bubble.style.background = 'rgba(255,0,51,0.1)';
                 bubble.style.border = '1px solid #ff0033';
-                bubble.style.boxShadow = '0 0 10px rgba(255,0,51,0.5)';
+                bubble.style.boxShadow = '0 0 15px rgba(255,0,51,0.3)';
             } else if (isSuccess) {
+                nameLab.style.color = '#00ff66';
                 bubble.style.background = 'rgba(0,255,102,0.1)';
                 bubble.style.border = '1px solid #00ff66';
-                bubble.style.boxShadow = '0 0 10px rgba(0,255,102,0.5)';
-            } else {
-                bubble.style.background = 'rgba(255,255,255,0.1)';
-                bubble.style.border = `1px solid ${color}`;
+                bubble.style.boxShadow = '0 0 15px rgba(0,255,102,0.3)';
             }
-            
-            bubble.textContent = text;
 
             wrapper.appendChild(nameLab);
             wrapper.appendChild(bubble);
@@ -542,7 +639,7 @@
 
             if (save) {
                 const history = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
-                history.push({ sender, text, color, align, isWarning, isSuccess });
+                history.push({ sender, text, align, isWarning, isSuccess });
                 if (history.length > 50) history.shift(); 
                 localStorage.setItem('dxtrChatHistory', JSON.stringify(history));
             }
@@ -550,7 +647,7 @@
 
         loadChatHistory();
 
-        // === ЛОГИКА ТАЙМЕРА ДО ВЫХОДА АЛЬБОМА GUSTO (01.04.2026) ===
+        // === ЛОГИКА ТАЙМЕРА GUSTO ===
         const countDownDate = new Date("April 1, 2026 00:00:00").getTime();
         const countdownTimer = setInterval(function() {
             const now = new Date().getTime();
