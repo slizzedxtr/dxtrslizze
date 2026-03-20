@@ -45,6 +45,8 @@
         .sidebar-link:hover { color: var(--neon-cyan); padding-left: 10px; border-bottom-color: rgba(0,198,255,0.3); }
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
+        #menuBanLock { color: var(--neon-red); font-size: 1rem; margin-left: auto; display: none; animation: pulseRed 2s infinite; }
+        @keyframes pulseRed { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; text-shadow: 0 0 10px var(--neon-red); } }
 
         /* СЧЕТЧИК ОНЛАЙНА */
         .online-counter { position: fixed; top: 25px; right: 25px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); z-index: 20; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; }
@@ -84,8 +86,8 @@
         .catalog-item:hover .ci-cover-wrapper img, .catalog-item.playing .ci-cover-wrapper img { transform: scale(1.15); filter: brightness(0.4); }
 
         /* ЖЕСТКАЯ ФИКСАЦИЯ ЦЕНТРА ПАУЗЫ */
-        .ci-play-btn, #gpPlay { position: relative; display: flex; justify-content: center; align-items: center; }
-        .ci-play-btn i, #gpPlay i { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: 0.2s; }
+        .ci-play-btn, #gpPlay, #gpPlayM { position: relative; display: flex; justify-content: center; align-items: center; }
+        .ci-play-btn i, #gpPlay i, #gpPlayM i { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: 0.2s; }
         i.fa-play { margin-left: 2px; } /* Оптическое смещение для треугольника */
         i.fa-pause { margin-left: 0; }
 
@@ -159,7 +161,7 @@
         .gp-btn { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; transition: 0.3s; }
         .gp-btn:hover { color: #fff; transform: scale(1.15); text-shadow: 0 0 10px #fff; }
         
-        #gpPlay { width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.6); }
+        #gpPlay { width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.6); }
         #gpPlay:hover { background: var(--neon-pink); box-shadow: 0 0 25px rgba(255,0,127,0.8); transform: scale(1.1); color: #fff;}
         
         .gp-progress-area { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 500px; }
@@ -204,7 +206,7 @@
         .mini-player-orb.playing .orb-icon { animation: spinCD 3s linear infinite; color: var(--neon-cyan); }
         @keyframes spinCD { 100% { transform: rotate(360deg); } }
 
-        /* МОДАЛКИ (ГРАДИЕНТНАЯ ОБВОДКА ДЛЯ СКАЧАТЬ) */
+        /* МОДАЛКИ */
         footer { padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 9999; justify-content: center; align-items: center; }
         .modal-content-wrap { position: relative; padding: 3px; border-radius: 26px; overflow: hidden; }
@@ -222,6 +224,31 @@
         .btn-yam { background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); } .btn-yam:hover { background: rgba(255, 204, 0, 0.9); color: #000; box-shadow: 0 0 20px rgba(255, 204, 0, 0.6); transform: scale(1.05); }
         .btn-spo { background: rgba(29, 185, 84, 0.1); border-color: rgba(29, 185, 84, 0.3); } .btn-spo:hover { background: #1DB954; box-shadow: 0 0 20px rgba(29, 185, 84, 0.6); transform: scale(1.05); }
         .btn-vk { background: rgba(0, 119, 255, 0.1); border-color: rgba(0, 119, 255, 0.3); } .btn-vk:hover { background: #0077FF; box-shadow: 0 0 20px rgba(0, 119, 255, 0.6); transform: scale(1.05); }
+
+        /* ЧАТ ТЕХПОДДЕРЖКИ */
+        #chat-window { display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden; background: rgba(8, 8, 12, 0.85); border: 1px solid rgba(0, 198, 255, 0.4); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0, 198, 255, 0.15), inset 0 0 20px rgba(112,0,255,0.1); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); z-index: 9999; animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .chat-header { background: linear-gradient(90deg, #0a0a0f, #151520); border-bottom: 2px solid var(--neon-purple); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2; cursor: grab; user-select: none; }
+        .chat-header:active { cursor: grabbing; }
+        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        .chat-header-title { font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(112,0,255,0.8); }
+        .drag-handle { color: rgba(255,255,255,0.3); font-size: 1rem; }
+        #chat-close { cursor: pointer; font-size: 1.5rem; transition: 0.3s; color: rgba(255,255,255,0.6); padding: 5px; }
+        #chat-close:hover { color: var(--neon-pink); transform: rotate(90deg); text-shadow: 0 0 10px var(--neon-pink); }
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth; }
+        #chat-messages::-webkit-scrollbar { width: 4px; } #chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); } #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-purple); border-radius: 10px; box-shadow: 0 0 10px var(--neon-purple); }
+        .chat-system-msg { color: var(--neon-cyan); text-align: center; font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; padding: 8px; border: 1px dashed rgba(0,198,255,0.3); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .chat-system-ban { color: var(--neon-red); text-align: center; font-size: 0.8rem; font-weight: 800; margin-bottom: 10px; padding: 10px; border: 1px solid var(--neon-red); border-radius: 8px; background: rgba(255,0,51,0.1); box-shadow: 0 0 15px rgba(255,0,51,0.2); display: none; }
+        .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; } @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+        .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 5px 20px rgba(0,0,0,0.4); backdrop-filter: blur(10px); font-weight: 500; }
+        .msg-user { align-items: flex-end; } .msg-user .chat-msg-name { color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0,198,255,0.5); } .msg-user .chat-msg-bubble { background: rgba(0, 198, 255, 0.08); border: 1px solid rgba(0, 198, 255, 0.4); border-bottom-right-radius: 2px; }
+        .msg-bot { align-items: flex-start; } .msg-bot .chat-msg-name { color: var(--neon-purple); text-shadow: 0 0 5px rgba(112,0,255,0.5); } .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.08); border: 1px solid rgba(112, 0, 255, 0.4); border-bottom-left-radius: 2px; }
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); z-index: 2; position: relative; }
+        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        #chat-input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.2), inset 0 0 10px rgba(0,198,255,0.1); }
+        #chat-send { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        #chat-send:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 0 25px rgba(0,198,255,0.6); }
+        @keyframes chatTerminalOpen { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
         /* ИДЕАЛЬНАЯ АДАПТАЦИЯ (МОБИЛКИ - FULLSCREEN ПЛЕЕР) */
         @media (max-width: 800px) {
@@ -278,13 +305,17 @@
             
             /* Кнопки управления */
             .gp-controls { width: 100%; justify-content: space-evenly; margin-top: 20px; }
-            #gpPlay { width: 70px; height: 70px; font-size: 1.8rem; }
+            #gpPlay { width: 70px; height: 70px; font-size: 1.8rem; background: var(--neon-purple); color: white; border: none; border-radius: 50%; box-shadow: 0 0 15px rgba(112,0,255,0.6); display: flex; justify-content: center; align-items: center; }
             .gp-btn { font-size: 2rem; }
 
             /* Громкость */
             .gp-right { width: 100%; max-width: 400px; justify-content: center; margin-top: 20px; }
             .vol-container { width: 100%; justify-content: center; }
             .vol-wrap { max-width: 100%; flex: 1; }
+            
+            #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+            .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
+            .drag-handle { display: none; }
         }
     </style>
 </head>
@@ -305,6 +336,15 @@
             МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.5rem; cursor: pointer; color: white; transition: 0.3s;"></i>
         </div>
         <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info icon-main"></i> О нас</a>
+        <a href="#" class="sidebar-link" id="sidebarSupportBtn">
+            <i class="fa-solid fa-headset icon-main"></i> Тех. поддержка
+            <i class="fa-solid fa-lock" id="menuBanLock"></i>
+        </a>
+    </div>
+
+    <div class="online-counter">
+        <div class="pulse-dot"></div>
+        <div class="online-text"><span class="online-num" id="onlineCount">1</span><span class="online-word"> онлайн</span></div>
     </div>
 
     <nav class="top-nav fade-in">
@@ -330,6 +370,24 @@
             <a href="https://music.yandex.ru/album/41053328/track/149038623" target="_blank" class="plat-btn btn-yam"><i class="fa-brands fa-yandex"></i> Яндекс Музыка</a>
             <a href="https://open.spotify.com/track/5mvN7HfEXmxy1wH8V2r216" target="_blank" class="plat-btn btn-spo"><i class="fa-brands fa-spotify"></i> Spotify</a>
             <a href="https://vk.ru/audio-2001553364_147553364_69b1b8413dbf4d1f2e" target="_blank" class="plat-btn btn-vk"><i class="fa-brands fa-vk"></i> VK Music</a>
+        </div>
+    </div>
+
+    <div id="chat-window">
+        <div class="chat-header" id="chat-header">
+            <div class="chat-header-info">
+                <i class="fa-solid fa-grip-vertical drag-handle"></i>
+                <span class="chat-header-title">D&S Terminal</span>
+            </div>
+            <i class="fa-solid fa-xmark" id="chat-close"></i>
+        </div>
+        <div id="chat-messages">
+            <div class="chat-system-ban" id="chatBanNotice"><i class="fa-solid fa-circle-exclamation"></i> ДОСТУП ОГРАНИЧЕН</div>
+            <div class="chat-system-msg" id="chatGreeting">Система на связи. Задайте ваш вопрос.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Передача данных...">
+            <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -413,6 +471,7 @@
         <i class="fa-solid fa-compact-disc orb-icon" id="orbIcon"></i>
     </div>
 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         const tracks = [
             { title: "Music", cover: "../logo_Music.png", mp3: "../mp3_Music.mp3", wav: "../wav_Music.wav", yt: "https://www.youtube.com/watch?v=NZdm_FnmTQ8" },
@@ -500,11 +559,11 @@
 
         function playTrack(index) {
             hasPlayed = true;
-            document.body.classList.add('player-fullscreen'); // Для сокрытия кнопки "наверх" на моб.
+            document.body.classList.add('player-fullscreen'); 
             if (currentTrackIndex === index) {
                 globalAudio.paused ? globalAudio.play() : globalAudio.pause();
             } else {
-                if (currentTrackIndex !== -1) resetCardUI(currentTrackIndex); // Сброс старого
+                if (currentTrackIndex !== -1) resetCardUI(currentTrackIndex);
                 currentTrackIndex = index;
                 globalAudio.src = tracks[index].mp3;
                 document.getElementById('gpTitle').textContent = tracks[index].title;
@@ -519,7 +578,6 @@
             updateUI();
         }
 
-        // ПОЛНЫЙ СБРОС СТАРОГО ТРЕКА В 00:00
         function resetCardUI(index) {
             if(index === -1) return;
             const card = document.getElementById(`card-${index}`);
@@ -533,7 +591,6 @@
             if(timeEl && tracks[index].durationStr) timeEl.textContent = tracks[index].durationStr;
         }
 
-        // ПОЛНОЕ ЗАКРЫТИЕ ПЛЕЕРА
         function closePlayer() {
             globalAudio.pause();
             globalAudio.currentTime = 0;
@@ -545,7 +602,6 @@
             miniOrb.style.display = 'none';
             document.body.classList.remove('player-fullscreen');
             
-            // Сброс текста в плеере
             document.getElementById('gpTitle').textContent = 'Загрузка...';
             document.getElementById('gpTime').textContent = '00:00';
             document.getElementById('gpProgBar').style.width = '0%';
@@ -582,7 +638,6 @@
         globalAudio.addEventListener('pause', updateUI);
         globalAudio.addEventListener('ended', handleNextClick);
 
-        // === ИДЕАЛЬНЫЙ ТАЙМЛАЙН БЕЗ ЗАДЕРЖЕК (ГЛОБАЛЬНЫЙ ОБРАБОТЧИК) ===
         const gpBarFill = document.getElementById('gpProgBar'), gpTime = document.getElementById('gpTime'), gpDuration = document.getElementById('gpDuration');
         let isDraggingProgress = false;
         let activeScrubberContainer = null;
@@ -611,7 +666,6 @@
             }
         }
 
-        // Глобальный слушатель для всех ползунков прогресса (И плеер и каталог)
         document.addEventListener('mousedown', startProgressDrag);
         document.addEventListener('touchstart', startProgressDrag, {passive: false});
 
@@ -619,7 +673,6 @@
             const cont = e.target.closest('.progress-container');
             if (!cont) return;
             
-            // Если кликнули на каталог, убедимся что это текущий трек. Если другой - запускаем его.
             const idx = cont.getAttribute('data-index');
             if (idx !== null) {
                 const parsedIdx = parseInt(idx);
@@ -632,7 +685,6 @@
 
             isDraggingProgress = true;
             activeScrubberContainer = cont;
-            // Отключаем CSS transition для моментального визуала
             document.querySelectorAll('.progress-container').forEach(c => c.classList.add('dragging'));
             scrubProgress(e);
         }
@@ -644,7 +696,6 @@
             let p = (clientX - rect.left) / rect.width;
             p = Math.max(0, Math.min(1, p));
             
-            // Моментальное визуальное обновление ВСЕХ ползунков текущего трека
             updateProgressBarUI(p * 100, p * globalAudio.duration);
             
             if(e.type === 'mousemove' || e.type === 'touchmove') {
@@ -660,11 +711,10 @@
 
         function endProgressDrag(e) {
             if(!isDraggingProgress || !globalAudio.duration) return;
-            scrubProgress(e); // Финальный апдейт координаты
+            scrubProgress(e);
             isDraggingProgress = false;
             document.querySelectorAll('.progress-container').forEach(c => c.classList.remove('dragging'));
             
-            // Фактическая перемотка аудио
             const rect = activeScrubberContainer.getBoundingClientRect();
             let clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
             let p = (clientX - rect.left) / rect.width;
@@ -673,7 +723,6 @@
             activeScrubberContainer = null;
         }
 
-        // === ГРОМКОСТЬ (3 СТАДИИ ПО ПРОЦЕНТАМ) ===
         const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
         const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
         let currentVolume = 1, lastVolume = 1, isDraggingVol = false;
@@ -725,8 +774,7 @@
             if (e.key.toLowerCase() === 'm') { e.preventDefault(); toggleMute(); }
         });
 
-        // СВОРАЧИВАНИЕ (CD ORB)
-        miniOrb.onclick = () => { if(isDraggingOrb) return; isMinimized = false; miniOrb.style.display = 'none'; gp.classList.add('active'); document.body.classList.add('player-fullscreen'); };
+        miniOrb.onclick = () => { if(isDraggingOrb) return; isMinimized = false; miniOrb.style.display = 'none'; gp.classList.add('active'); if(window.innerWidth <= 800) document.body.classList.add('player-fullscreen'); };
 
         let isDraggingOrb = false, orbMoved = false, orbTouchX, orbTouchY, orbStartX, orbStartY;
         function orbDragStart(e) { isDraggingOrb = true; orbMoved = false; let c = e.touches ? e.touches[0] : e; orbTouchX = c.clientX; orbTouchY = c.clientY; orbStartX = miniOrb.offsetLeft; orbStartY = miniOrb.offsetTop; miniOrb.style.transition = 'none'; }
@@ -737,7 +785,6 @@
         window.addEventListener('mousemove', orbDragMove); window.addEventListener('touchmove', orbDragMove, {passive: false});
         window.addEventListener('mouseup', orbDragEnd); window.addEventListener('touchend', orbDragEnd);
 
-        // UI (Скролл, Меню, Поиск, Модалки)
         const btnUp = document.getElementById('scrollTopBtn');
         window.addEventListener('scroll', () => window.scrollY > 300 ? btnUp.classList.add('visible') : btnUp.classList.remove('visible'));
         btnUp.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -757,6 +804,27 @@
         function openPlatformsModal() { pM.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
         function closeModal(m) { document.getElementById(m).style.display = 'none'; document.body.style.overflow = 'auto'; }
         window.onclick = e => { if(e.target === dM) closeModal('downloadModal'); if(e.target === pM) closeModal('platformsModal'); }
+
+        window.userNickname = null; let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('dxtrClientId', clientId);
+        const socket = io("https://dxtrslizze.onrender.com/");
+        const chatWindow = document.getElementById('chat-window'), chatClose = document.getElementById('chat-close'), chatMessages = document.getElementById('chat-messages'), chatInput = document.getElementById('chat-input'), chatSendBtn = document.getElementById('chat-send'), chatHeader = document.getElementById('chat-header');
+        document.getElementById('sidebarSupportBtn').onclick = (e) => { e.preventDefault(); toggleSBar(); setTimeout(() => { chatWindow.style.display = 'flex'; if(!isMobile) { chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px'; } chatMessages.scrollTop = chatMessages.scrollHeight; }, 300); };
+        chatClose.onclick = () => chatWindow.style.display = 'none';
+
+        let isDraggingChat = false, startX, startY, startLeft, startTop;
+        chatHeader.addEventListener('mousedown', (e) => { if(isMobile) return; isDraggingChat = true; const rect = chatWindow.getBoundingClientRect(); chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto'; chatWindow.style.left = rect.left + 'px'; chatWindow.style.top = rect.top + 'px'; chatWindow.style.margin = '0'; startX = e.clientX; startY = e.clientY; startLeft = rect.left; startTop = rect.top; });
+        document.addEventListener('mousemove', (e) => { if (!isDraggingChat) return; e.preventDefault(); chatWindow.style.left = `${startLeft + (e.clientX - startX)}px`; chatWindow.style.top = `${startTop + (e.clientY - startY)}px`; });
+        document.addEventListener('mouseup', () => { isDraggingChat = false; });
+
+        socket.on('connect', () => { socket.emit('register_client', clientId); }); socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
+        socket.on('user_data', d => { if (d.nickname) { window.userNickname = d.nickname; document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; } });
+        socket.on('ban_status', d => { if (d.isBanned) { document.getElementById('menuBanLock').style.display = 'inline-block'; document.getElementById('chatBanNotice').style.display = 'block'; document.getElementById('chatGreeting').style.display = 'none'; chatInput.disabled = true; chatInput.placeholder = "СВЯЗЬ ПРЕРВАНА"; chatInput.style.borderColor = "var(--neon-red)"; chatSendBtn.disabled = true; chatSendBtn.style.background = '#333'; chatSendBtn.style.color = '#555'; } else { document.getElementById('menuBanLock').style.display = 'none'; document.getElementById('chatBanNotice').style.display = 'none'; document.getElementById('chatGreeting').style.display = 'block'; chatInput.disabled = false; chatInput.placeholder = "Передача данных..."; chatInput.style.borderColor = "rgba(255,255,255,0.1)"; chatSendBtn.disabled = false; chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; chatSendBtn.style.color = '#fff'; } });
+        socket.on('receive_message', d => { if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex'; addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); });
+
+        chatSendBtn.onclick = sendMessageToBot; chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
+        function sendMessageToBot() { const t = chatInput.value.trim(); if (!t || chatInput.disabled) return; socket.emit('send_message', { text: t, clientId: clientId }); addChatMessage('Вы', t, 'flex-end', true, false, false); chatInput.value = ''; }
+        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { const wrapper = document.createElement('div'); wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; const nameLab = document.createElement('span'); nameLab.className = 'chat-msg-name'; nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; const bubble = document.createElement('div'); bubble.className = 'chat-msg-bubble'; bubble.textContent = text; if (isWarn) { nameLab.style.color = 'var(--neon-red)'; bubble.style.background = 'rgba(255,0,51,0.1)'; bubble.style.border = '1px solid var(--neon-red)'; } else if (isSucc) { nameLab.style.color = 'var(--neon-green)'; bubble.style.background = 'rgba(0,255,102,0.1)'; bubble.style.border = '1px solid var(--neon-green)'; } wrapper.appendChild(nameLab); wrapper.appendChild(bubble); chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight; if (save) { const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); if (h.length > 50) h.shift(); localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); } }
+        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
 
         setVolume(1);
     </script>
