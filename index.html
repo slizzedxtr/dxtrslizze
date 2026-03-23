@@ -253,7 +253,8 @@
             /* СКРЫВАЕМ СЛОВО "ОНЛАЙН" НА ТЕЛЕФОНАХ */
             .online-word { display: none; }
             .online-counter { top: 15px; right: 15px; padding: 8px 15px; }
-            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; }
+            /* ДЕЛАЕМ БУРГЕР ТАКОГО ЖЕ РАЗМЕРА, КАК В КАТАЛОГЕ */
+            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
             
             .promo-banner { padding: 25px 10px; }
             .countdown { gap: 5px; width: 100%; justify-content: center; }
@@ -458,7 +459,7 @@
 
     <script>
         // === ПЕРЕМЕННЫЕ ===
-        window.userNickname = null;
+        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
         let clientId = localStorage.getItem('dxtrClientId');
         if (!clientId) {
             clientId = 'user_' + Math.random().toString(36).substr(2, 9);
@@ -543,7 +544,13 @@
         socket.on('user_data', (data) => {
             if (data.nickname) {
                 window.userNickname = data.nickname;
+                localStorage.setItem('dxtrUserNickname', data.nickname);
                 chatGreeting.innerHTML = `<i class="fa-solid fa-user-check"></i> Терминал активен. Приветствую, <b>${data.nickname}</b>!`;
+                
+                // Мгновенная замена "Вы" на никнейм в уже открытом чате
+                document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => {
+                    if(el.textContent === 'Вы') el.textContent = data.nickname;
+                });
             }
         });
 
