@@ -126,11 +126,21 @@ io.on('connection', (socket) => {
 
 👤 ID: <code>${data.clientId}</code>${nickStr}
 ➖➖➖➖➖➖➖➖➖
-💡 <i>Ответь, используй /nick, /ban 1h, /ban perm или Spam:</i>`;
+💡 <i>Ответь реплаем (или используй /nick для имени), либо выбери действие:</i>`;
 
         bot.sendMessage(adminId, tgText, {
             parse_mode: 'HTML',
-            reply_markup: { inline_keyboard: [[{ text: "Spam ⚠️", callback_data: `spam_${data.clientId}` }]] }
+            reply_markup: { 
+                inline_keyboard: [
+                    [
+                        { text: "Ban 1h ⏳", callback_data: `ban1h_${data.clientId}` },
+                        { text: "Ban Perm 🚫", callback_data: `banperm_${data.clientId}` }
+                    ],
+                    [
+                        { text: "Spam ⚠️", callback_data: `spam_${data.clientId}` }
+                    ]
+                ] 
+            }
         }).then(async (msg) => {
             // Сохраняем связку: ID сообщения в ТГ -> ID клиента на сайте
             await MessageMap.create({ tgMsgId: msg.message_id, clientId: data.clientId, text: data.text });
@@ -142,6 +152,7 @@ io.on('connection', (socket) => {
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
     
+    // Кнопка Spam
     if (query.data.startsWith('spam_')) {
         const cId = query.data.replace('spam_', '');
         await sendToUser(cId, "Пожалуйста, не присылайте сообщения которые не имеют смысл или не связаны с темой сайта.", 'warning', query.message.message_id, "Spam-фильтр");
@@ -149,6 +160,29 @@ bot.on('callback_query', async (query) => {
         bot.answerCallbackQuery(query.id, { text: "Отправлено" });
     }
 
+    // Кнопки Бана
+    if (query.data.startsWith('ban1h_') || query.data.startsWith('banperm_')) {
+        const isPerm = query.data.startsWith('banperm_');
+        const clientId = query.data.replace(isPerm ? 'banperm_' : 'ban1h_', '');
+        const expireAt = isPerm ? 0 : Date.now() + 3600000; // 3600000 мс = 1 час
+        const banMsg = isPerm ? "Вам НАВСЕГДА был перекрыт доступ к связи с тех. поддержкой." : "Вам был перекрыт доступ к связи с тех. поддержкой сроком на 1 час.";
+        
+        // Достаем текст сообщения для фиксации причины
+        const mapped = await MessageMap.findOne({ tgMsgId: query.message.message_id });
+        const reason = mapped ? mapped.text : "Нарушение правил";
+
+        await User.findOneAndUpdate({ clientId }, { 
+            isBanned: true, banExpireAt: expireAt, banReason: reason, banDurationText: isPerm ? "Навсегда" : "1 час" 
+        }, { upsert: true });
+        
+        io.to(clientId).emit('ban_status', { isBanned: true });
+        await sendToUser(clientId, banMsg, 'warning', query.message.message_id, "Блокировка");
+        
+        bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
+        bot.answerCallbackQuery(query.id, { text: isPerm ? "Выдан перманентный бан" : "Выдан бан на 1 час" });
+    }
+
+    // Информация о забаненном
     if (query.data.startsWith('baninfo_')) {
         const clientId = query.data.replace('baninfo_', '');
         const user = await User.findOne({ clientId });
@@ -169,10 +203,12 @@ bot.on('callback_query', async (query) => {
         bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
     }
 
+    // Возврат к списку банов
     if (query.data === 'banlist') {
         sendBannedMenu(adminId, query.message.message_id);
     }
 
+    // Кнопка разбана в меню
     if (query.data.startsWith('unban_')) {
         const clientId = query.data.replace('unban_', '');
         await User.findOneAndUpdate({ clientId }, { isBanned: false });
@@ -215,10 +251,10 @@ bot.on('message', async (msg) => {
             return;
         }
 
-        // Команды бана
+        // Текстовые команды бана (оставил на случай, если тебе понадобится забанить реплаем)
         if (text === '/ban 1h' || text === '/ban perm') {
             const isPerm = text === '/ban perm';
-            const expireAt = isPerm ? 0 : Date.now() + 3600000; // 3600000 мс = 1 час
+            const expireAt = isPerm ? 0 : Date.now() + 3600000;
             const banMsg = isPerm ? "Вам НАВСЕГДА был перекрыт доступ к связи с тех. поддержкой." : "Вам был перекрыт доступ к связи с тех. поддержкой сроком на 1 час.";
             
             await User.findOneAndUpdate({ clientId }, { 
@@ -244,7 +280,7 @@ async function sendToUser(clientId, text, type, msgId, action) {
     if (room && room.size > 0) {
         // Юзер онлайн — отправляем напрямую
         io.to(clientId).emit('receive_message', { text, isWarning, isSuccess });
-        if (msgId) bot.sendMessage(adminId, `✅ <b>${action} доставлен(о)!</b>`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
+        if (msgId) bot.sendMessage(adminId, `✅ <b>${action} доставлен!</b>`, { reply_to_message_id: msgId, parse_mode: 'HTML' });
     } else {
         // Юзер оффлайн — сохраняем в базу отложенных
         await PendingMsg.create({ clientId, text, isWarning, isSuccess });
