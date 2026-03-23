@@ -149,12 +149,15 @@
             z-index: 9000; display: flex; align-items: center; padding: 0 30px; gap: 20px;
             transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
             box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(0, 198, 255, 0.15), 0 0 30px rgba(112,0,255,0.2);
+            overflow: hidden; /* Сдерживаем свечение на ПК */
         }
         .global-player::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent); opacity: 0.5; }
         .global-player.active { transform: translateX(-50%) translateY(0); }
         
+        .gp-bg-glow { display: none; } /* Скрыто на ПК */
+        
         .gp-header-mobile { display: none; }
-        .gp-content { display: flex; align-items: center; width: 100%; justify-content: space-between; gap: 20px; }
+        .gp-content { display: flex; align-items: center; width: 100%; justify-content: space-between; gap: 20px; position: relative; z-index: 2; }
         
         .gp-left { display: flex; align-items: center; gap: 15px; width: 280px; flex-shrink: 0; }
         .gp-cover { width: 65px; height: 65px; border-radius: 14px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
@@ -296,14 +299,28 @@
             .global-player {
                 position: fixed; width: 100vw; height: 100vh; top: 0; left: 0;
                 transform: translateY(100%); border-radius: 0; flex-direction: column;
-                padding: 20px; background: var(--bg-dark); z-index: 10000;
+                padding: 20px; background: rgba(5, 5, 8, 0.75) !important; z-index: 10000;
                 justify-content: flex-start; align-items: stretch; border: none; box-shadow: none;
+                overflow: hidden;
             }
             .global-player.active { transform: translateY(0); }
             .global-player::before { display: none; }
             
-            /* Скрыть кнопку "наверх", когда плеер на весь экран */
-            body.player-fullscreen .fixed-up-btn { display: none !important; }
+            /* ДИНАМИЧЕСКИЙ ФОН (GLOW) */
+            .gp-bg-glow {
+                display: block;
+                position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
+                background-size: cover; background-position: center;
+                filter: blur(80px) brightness(0.45); z-index: -1; opacity: 0;
+                transition: background-image 0.8s ease, opacity 0.5s;
+                pointer-events: none;
+            }
+            body.player-fullscreen .gp-bg-glow { opacity: 1; }
+            
+            /* Скрыть интерфейс, когда плеер на весь экран */
+            body.player-fullscreen .fixed-up-btn,
+            body.player-fullscreen .burger-btn,
+            body.player-fullscreen .online-counter { display: none !important; }
 
             /* Header Плеера (Крестик и Свернуть) */
             .window-actions { display: none; } 
@@ -366,7 +383,7 @@
         </a>
     </div>
 
-    <div class="online-counter">
+    <div class="online-counter" id="onlineCounterDiv">
         <div class="pulse-dot"></div>
         <div class="online-text"><span class="online-num" id="onlineCount">1</span><span class="online-word"> онлайн</span></div>
     </div>
@@ -438,7 +455,7 @@
     <audio id="globalAudio" preload="metadata"></audio>
     
     <div class="global-player" id="globalPlayer">
-        <div class="gp-header-mobile">
+        <div class="gp-bg-glow" id="gpBgGlow"></div> <div class="gp-header-mobile">
             <button class="gp-action-btn-m" onclick="minimizePlayer()"><i class="fa-solid fa-chevron-down"></i></button>
             <div style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted);">Сейчас играет</div>
             <button class="gp-action-btn-m" onclick="closePlayer()"><i class="fa-solid fa-xmark"></i></button>
@@ -579,6 +596,7 @@
         const gpPlayBtn = document.getElementById('gpPlay'), gpPlayIcon = document.getElementById('gpPlayIcon');
         const miniOrb = document.getElementById('miniOrb');
         const gpBadge18 = document.getElementById('gpBadge18');
+        const gpBgGlow = document.getElementById('gpBgGlow');
 
         // ЛОГИКА ПЛЕЕРА
         function playTrack(index) {
@@ -592,6 +610,9 @@
                 globalAudio.src = tracks[index].mp3;
                 document.getElementById('gpTitle').textContent = tracks[index].title;
                 document.getElementById('gpCover').src = tracks[index].cover;
+                
+                // Устанавливаем динамический фон для мобилок
+                gpBgGlow.style.backgroundImage = `url('${tracks[index].cover}')`;
                 
                 if(explicitTracks.includes(tracks[index].title)) { gpBadge18.style.display = 'inline-flex'; }
                 else { gpBadge18.style.display = 'none'; }
@@ -664,7 +685,7 @@
         globalAudio.addEventListener('pause', updateUI);
         globalAudio.addEventListener('ended', handleNextClick);
 
-        // ПЕРЕМОТКА
+        // ПЕРЕМОТКА - ИСПРАВЛЕНА ЛОГИКА ТАПОВ
         const gpBarFill = document.getElementById('gpProgBar'), gpTime = document.getElementById('gpTime'), gpDuration = document.getElementById('gpDuration');
         let isDraggingProgress = false;
         let activeScrubberContainer = null;
@@ -719,14 +740,26 @@
         function scrubProgress(e) {
             if(!isDraggingProgress || !globalAudio.duration) return;
             const rect = activeScrubberContainer.getBoundingClientRect();
-            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            
+            // Безопасное получение координат (исправляет баг "залипания" перемотки на смартфонах)
+            let clientX = 0;
+            if (e.type.includes('touch')) {
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                } else if (e.changedTouches && e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                }
+            } else {
+                clientX = e.clientX;
+            }
+            
             let p = (clientX - rect.left) / rect.width;
             p = Math.max(0, Math.min(1, p));
             
             updateProgressBarUI(p * 100, p * globalAudio.duration);
             
-            if(e.type === 'mousemove' || e.type === 'touchmove') {
-                if(e.cancelable) e.preventDefault();
+            if(e.cancelable && (e.type === 'mousemove' || e.type === 'touchmove')) {
+                e.preventDefault();
             }
         }
 
@@ -743,14 +776,24 @@
             document.querySelectorAll('.progress-container').forEach(c => c.classList.remove('dragging'));
             
             const rect = activeScrubberContainer.getBoundingClientRect();
-            let clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+            
+            // Безопасное получение координат конца
+            let clientX = 0;
+            if (e.type.includes('touch')) {
+                if (e.changedTouches && e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                }
+            } else {
+                clientX = e.clientX;
+            }
+            
             let p = (clientX - rect.left) / rect.width;
             p = Math.max(0, Math.min(1, p));
             globalAudio.currentTime = p * globalAudio.duration;
             activeScrubberContainer = null;
         }
 
-        // ГРОМКОСТЬ
+        // ГРОМКОСТЬ - ИСПРАВЛЕНА ЛОГИКА ТАПОВ
         const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
         const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
         let currentVolume = 1, lastVolume = 1, isDraggingVol = false;
@@ -777,7 +820,18 @@
 
         function handleVolScrub(e) {
             const rect = volBarBg.getBoundingClientRect();
-            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            
+            let clientX = 0;
+            if (e.type.includes('touch')) {
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                } else if (e.changedTouches && e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                }
+            } else {
+                clientX = e.clientX;
+            }
+            
             let p = (clientX - rect.left) / rect.width;
             setVolume(p);
         }
@@ -792,7 +846,7 @@
         function toggleMute() { currentVolume > 0 ? setVolume(0) : setVolume(lastVolume); }
         volNode.onclick = toggleMute;
 
-        // ГОРЯЧИЕ КЛАВИШИ
+        // ГОРЯЧИЕ КЛАВИШИ - ФИКС ДЛЯ РУССКОЙ РАСКЛАДКИ "М/Ь"
         document.addEventListener('keydown', (e) => {
             if (!hasPlayed || document.activeElement.tagName === 'INPUT') return;
             if (e.code === 'Space') { e.preventDefault(); gpPlayBtn.click(); }
@@ -800,7 +854,12 @@
             if (e.code === 'ArrowLeft') { e.preventDefault(); handlePrevClick(); }
             if (e.code === 'ArrowUp') { e.preventDefault(); setVolume(currentVolume + 0.1); }
             if (e.code === 'ArrowDown') { e.preventDefault(); setVolume(currentVolume - 0.1); }
-            if (e.key.toLowerCase() === 'm') { e.preventDefault(); toggleMute(); }
+            
+            // e.code === 'KeyM' сработает независимо от раскладки клавиатуры
+            if (e.code === 'KeyM' || e.key.toLowerCase() === 'm' || e.key.toLowerCase() === 'ь') { 
+                e.preventDefault(); 
+                toggleMute(); 
+            }
         });
 
         // DRAG & DROP ДЛЯ МИНИ-ПЛЕЕРА
@@ -843,7 +902,6 @@
         window.onclick = e => { if(e.target === dM) closeModal('downloadModal'); if(e.target === pM) closeModal('platformsModal'); }
 
         // === ЧАТ ТЕХПОДДЕРЖКИ ===
-        // Синхронизация никнейма через localStorage
         window.userNickname = localStorage.getItem('dxtrUserNickname') || null; 
         let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9); 
         localStorage.setItem('dxtrClientId', clientId);
@@ -873,7 +931,6 @@
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        // Драг-энд-дроп для окна чата
         let isDraggingChat = false, chatOffsetX, chatOffsetY;
 
         chatHeader.addEventListener('mousedown', (e) => {
@@ -911,7 +968,6 @@
 
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        // Сокеты и логика отправки сообщений
         socket.on('connect', () => { socket.emit('register_client', clientId); }); 
         socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
         
@@ -921,7 +977,6 @@
                 localStorage.setItem('dxtrUserNickname', d.nickname); 
                 document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; 
                 
-                // Ретроактивная замена "Вы" на никнейм в текущем окне
                 document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => {
                     if(el.textContent === 'Вы') el.textContent = d.nickname;
                 });
