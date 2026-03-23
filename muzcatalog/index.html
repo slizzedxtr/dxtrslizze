@@ -284,6 +284,11 @@
             .action-btn-sm { flex: 1; min-width: 0; padding: 10px 5px; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .top-nav { flex-direction: column; gap: 15px; align-items: center; }
             
+            /* ФИКС ВИЗУАЛА ДЛЯ МОБИЛКИ (Кнопка меню и онлайн) */
+            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
+            .online-word { display: none; }
+            .online-counter { top: 15px; right: 15px; padding: 8px 15px; }
+            
             /* КНОПКА "НАВЕРХ" НА ТЕЛЕФОНЕ - СТРОГО СЛЕВА ВНИЗУ */
             .fixed-up-btn { bottom: 20px; left: 20px; width: 45px; height: 45px; font-size: 1rem; }
             
@@ -838,7 +843,8 @@
         window.onclick = e => { if(e.target === dM) closeModal('downloadModal'); if(e.target === pM) closeModal('platformsModal'); }
 
         // === ЧАТ ТЕХПОДДЕРЖКИ ===
-        window.userNickname = null; 
+        // Синхронизация никнейма через localStorage
+        window.userNickname = localStorage.getItem('dxtrUserNickname') || null; 
         let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9); 
         localStorage.setItem('dxtrClientId', clientId);
         
@@ -908,7 +914,19 @@
         // Сокеты и логика отправки сообщений
         socket.on('connect', () => { socket.emit('register_client', clientId); }); 
         socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
-        socket.on('user_data', d => { if (d.nickname) { window.userNickname = d.nickname; document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; } });
+        
+        socket.on('user_data', d => { 
+            if (d.nickname) { 
+                window.userNickname = d.nickname; 
+                localStorage.setItem('dxtrUserNickname', d.nickname); 
+                document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; 
+                
+                // Ретроактивная замена "Вы" на никнейм в текущем окне
+                document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => {
+                    if(el.textContent === 'Вы') el.textContent = d.nickname;
+                });
+            } 
+        });
         
         socket.on('ban_status', d => { 
             if (d.isBanned) { 
@@ -916,7 +934,7 @@
                 document.getElementById('chatBanNotice').style.display = 'block'; 
                 document.getElementById('chatGreeting').style.display = 'none'; 
                 chatInput.disabled = true; 
-                chatInput.placeholder = "Вам ограничен доступ к тех. поддержке"; 
+                chatInput.placeholder = "СВЯЗЬ ПРЕРВАНА"; 
                 chatInput.style.borderColor = "var(--neon-red)"; 
                 chatSendBtn.disabled = true; 
                 chatSendBtn.style.background = '#333'; 
