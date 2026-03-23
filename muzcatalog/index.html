@@ -418,16 +418,16 @@
         <div class="chat-header" id="chat-header">
             <div class="chat-header-info">
                 <i class="fa-solid fa-grip-vertical drag-handle"></i>
-                <span class="chat-header-title">D&S Terminal</span>
+                <span class="chat-header-title">D&S Support</span>
             </div>
             <i class="fa-solid fa-xmark" id="chat-close"></i>
         </div>
         <div id="chat-messages">
             <div class="chat-system-ban" id="chatBanNotice"><i class="fa-solid fa-circle-exclamation"></i> ДОСТУП ОГРАНИЧЕН</div>
-            <div class="chat-system-msg" id="chatGreeting">Система на связи. Задайте ваш вопрос.</div>
+            <div class="chat-system-msg" id="chatGreeting">Чат тех. поддержки. Задайте ваш вопрос.</div>
         </div>
         <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Передача данных...">
+            <input type="text" id="chat-input" placeholder="Опишите проблему...">
             <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
@@ -685,7 +685,7 @@
         globalAudio.addEventListener('pause', updateUI);
         globalAudio.addEventListener('ended', handleNextClick);
 
-        // ПЕРЕМОТКА - ИСПРАВЛЕНА ЛОГИКА ТАПОВ
+        // ПЕРЕМОТКА
         const gpBarFill = document.getElementById('gpProgBar'), gpTime = document.getElementById('gpTime'), gpDuration = document.getElementById('gpDuration');
         let isDraggingProgress = false;
         let activeScrubberContainer = null;
@@ -741,7 +741,6 @@
             if(!isDraggingProgress || !globalAudio.duration) return;
             const rect = activeScrubberContainer.getBoundingClientRect();
             
-            // Безопасное получение координат (исправляет баг "залипания" перемотки на смартфонах)
             let clientX = 0;
             if (e.type.includes('touch')) {
                 if (e.touches && e.touches.length > 0) {
@@ -777,7 +776,6 @@
             
             const rect = activeScrubberContainer.getBoundingClientRect();
             
-            // Безопасное получение координат конца
             let clientX = 0;
             if (e.type.includes('touch')) {
                 if (e.changedTouches && e.changedTouches.length > 0) {
@@ -793,7 +791,7 @@
             activeScrubberContainer = null;
         }
 
-        // ГРОМКОСТЬ - ИСПРАВЛЕНА ЛОГИКА ТАПОВ
+        // ГРОМКОСТЬ
         const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
         const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
         let currentVolume = 1, lastVolume = 1, isDraggingVol = false;
@@ -846,7 +844,7 @@
         function toggleMute() { currentVolume > 0 ? setVolume(0) : setVolume(lastVolume); }
         volNode.onclick = toggleMute;
 
-        // ГОРЯЧИЕ КЛАВИШИ - ФИКС ДЛЯ РУССКОЙ РАСКЛАДКИ "М/Ь"
+        // ГОРЯЧИЕ КЛАВИШИ
         document.addEventListener('keydown', (e) => {
             if (!hasPlayed || document.activeElement.tagName === 'INPUT') return;
             if (e.code === 'Space') { e.preventDefault(); gpPlayBtn.click(); }
@@ -854,8 +852,6 @@
             if (e.code === 'ArrowLeft') { e.preventDefault(); handlePrevClick(); }
             if (e.code === 'ArrowUp') { e.preventDefault(); setVolume(currentVolume + 0.1); }
             if (e.code === 'ArrowDown') { e.preventDefault(); setVolume(currentVolume - 0.1); }
-            
-            // e.code === 'KeyM' сработает независимо от раскладки клавиатуры
             if (e.code === 'KeyM' || e.key.toLowerCase() === 'm' || e.key.toLowerCase() === 'ь') { 
                 e.preventDefault(); 
                 toggleMute(); 
@@ -880,7 +876,7 @@
         window.addEventListener('mousemove', orbDragMove); window.addEventListener('touchmove', orbDragMove, {passive: false});
         window.addEventListener('mouseup', orbDragEnd); window.addEventListener('touchend', orbDragEnd);
 
-        // ИНТЕРФЕЙСНЫЕ МЕХАНИКИ (СКРОЛЛ, МЕНЮ, ПОИСК, МОДАЛКИ)
+        // ИНТЕРФЕЙСНЫЕ МЕХАНИКИ
         const btnUp = document.getElementById('scrollTopBtn');
         window.addEventListener('scroll', () => window.scrollY > 300 ? btnUp.classList.add('visible') : btnUp.classList.remove('visible'));
         btnUp.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -902,9 +898,35 @@
         window.onclick = e => { if(e.target === dM) closeModal('downloadModal'); if(e.target === pM) closeModal('platformsModal'); }
 
         // === ЧАТ ТЕХПОДДЕРЖКИ ===
+        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
+
         window.userNickname = localStorage.getItem('dxtrUserNickname') || null; 
-        let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9); 
+        
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+        }
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
+        let lsId = localStorage.getItem('dxtrClientId');
+        let cookieId = getCookie('dxtrClientId');
+        let clientId = lsId || cookieId || 'user_' + Math.random().toString(36).substr(2, 9); 
+        
         localStorage.setItem('dxtrClientId', clientId);
+        setCookie('dxtrClientId', clientId, 365);
         
         const socket = io("https://dxtrslizze.onrender.com/");
         const chatWindow = document.getElementById('chat-window'), chatClose = document.getElementById('chat-close'), chatMessages = document.getElementById('chat-messages'), chatInput = document.getElementById('chat-input'), chatSendBtn = document.getElementById('chat-send'), chatHeader = document.getElementById('chat-header');
@@ -912,21 +934,15 @@
         document.getElementById('sidebarSupportBtn').onclick = (e) => { 
             e.preventDefault(); 
             toggleSBar(); 
-            
             setTimeout(() => { 
                 chatWindow.style.display = 'flex'; 
-                
                 if(window.innerWidth > 800) { 
                     chatWindow.style.left = 'auto'; 
                     chatWindow.style.top = 'auto'; 
                     chatWindow.style.right = '30px'; 
                     chatWindow.style.bottom = '30px'; 
                 } 
-                
-                setTimeout(() => {
-                    chatMessages.scrollTop = chatMessages.scrollHeight; 
-                }, 50);
-                
+                setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 50);
             }, 300); 
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
@@ -936,18 +952,14 @@
         chatHeader.addEventListener('mousedown', (e) => {
             if (window.innerWidth <= 800 || e.target.id === 'chat-close') return;
             isDraggingChat = true;
-            
             chatWindow.style.animation = 'none';
             chatWindow.style.transform = 'none';
-            
             const rect = chatWindow.getBoundingClientRect();
             chatOffsetX = e.clientX - rect.left;
             chatOffsetY = e.clientY - rect.top;
-            
             chatWindow.style.right = 'auto';
             chatWindow.style.bottom = 'auto';
             chatWindow.style.margin = '0';
-            
             chatWindow.style.left = rect.left + 'px';
             chatWindow.style.top = rect.top + 'px';
         });
@@ -955,28 +967,35 @@
         document.addEventListener('mousemove', (e) => {
             if (!isDraggingChat) return;
             e.preventDefault();
-            
             let newX = e.clientX - chatOffsetX;
             let newY = e.clientY - chatOffsetY;
-            
             newX = Math.max(0, Math.min(newX, window.innerWidth - chatWindow.offsetWidth));
             newY = Math.max(0, Math.min(newY, window.innerHeight - chatWindow.offsetHeight));
-            
             chatWindow.style.left = `${newX}px`;
             chatWindow.style.top = `${newY}px`;
         });
 
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        socket.on('connect', () => { socket.emit('register_client', clientId); }); 
+        socket.on('connect', () => { 
+            fpPromise
+                .then(fp => fp.get())
+                .then(result => {
+                    const visitorId = result.visitorId;
+                    socket.emit('register_client', { clientId: clientId, fpHash: visitorId });
+                })
+                .catch(error => {
+                    socket.emit('register_client', { clientId: clientId, fpHash: 'blocked' });
+                });
+        }); 
+
         socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
         
         socket.on('user_data', d => { 
             if (d.nickname) { 
                 window.userNickname = d.nickname; 
                 localStorage.setItem('dxtrUserNickname', d.nickname); 
-                document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; 
-                
+                document.getElementById('chatGreeting').innerHTML = `Чат тех. поддержки. Приветствую, <b>${d.nickname}</b>!`; 
                 document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => {
                     if(el.textContent === 'Вы') el.textContent = d.nickname;
                 });
@@ -989,7 +1008,7 @@
                 document.getElementById('chatBanNotice').style.display = 'block'; 
                 document.getElementById('chatGreeting').style.display = 'none'; 
                 chatInput.disabled = true; 
-                chatInput.placeholder = "СВЯЗЬ ПРЕРВАНА"; 
+                chatInput.placeholder = "Доступ ограничен."; 
                 chatInput.style.borderColor = "var(--neon-red)"; 
                 chatSendBtn.disabled = true; 
                 chatSendBtn.style.background = '#333'; 
@@ -999,7 +1018,7 @@
                 document.getElementById('chatBanNotice').style.display = 'none'; 
                 document.getElementById('chatGreeting').style.display = 'block'; 
                 chatInput.disabled = false; 
-                chatInput.placeholder = "Передача данных..."; 
+                chatInput.placeholder = "Опишите проблему..."; 
                 chatInput.style.borderColor = "rgba(255,255,255,0.1)"; 
                 chatSendBtn.disabled = false; 
                 chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; 
