@@ -28,7 +28,6 @@
             display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative;
         }
 
-        /* МАТРИЦА ФОН */
         #matrixCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: -2; opacity: 0.6;
@@ -39,7 +38,90 @@
             background: radial-gradient(circle at center, transparent 30%, var(--bg-dark) 100%);
         }
 
-        /* МЕНЮ И БУРГЕР */
+        /* ============================================================
+           ХЭЛЛОУИН ОВЕРЛЕЙ
+        ============================================================ */
+        #horror-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 500; pointer-events: none;
+            opacity: 0; transition: opacity 0.4s ease;
+            display: flex; justify-content: center; align-items: center;
+        }
+        #horror-overlay.active { opacity: 1; }
+
+        /* Кровавый туман по краям */
+        #horror-fog {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent 20%, rgba(140, 0, 0, 0.22) 65%, rgba(80, 0, 0, 0.6) 100%);
+            opacity: 0; transition: opacity 1.2s ease;
+        }
+        #horror-overlay.active #horror-fog { opacity: 1; }
+
+        #pumpkin-face {
+            position: absolute;
+            width: 340px; height: 280px;
+            opacity: 0;
+            transform: scale(0.15);
+            filter: drop-shadow(0 0 50px rgba(255, 30, 0, 0.9)) drop-shadow(0 0 100px rgba(180, 0, 0, 0.6));
+            will-change: transform, opacity;
+        }
+
+        /* ========== ГЛИТЧ ЗАГОЛОВКА ========== */
+        @keyframes glitch-shift-1 {
+            0%   { clip-path: inset(8% 0 82% 0);  transform: translate(-5px, 0); }
+            15%  { clip-path: inset(55% 0 15% 0); transform: translate(5px, 0); }
+            30%  { clip-path: inset(25% 0 55% 0); transform: translate(-4px, 2px); }
+            45%  { clip-path: inset(75% 0 3% 0);  transform: translate(4px, -2px); }
+            60%  { clip-path: inset(3% 0 75% 0);  transform: translate(-6px, 0); }
+            75%  { clip-path: inset(40% 0 35% 0); transform: translate(6px, 1px); }
+            90%  { clip-path: inset(65% 0 12% 0); transform: translate(-3px, 0); }
+            100% { clip-path: inset(8% 0 82% 0);  transform: translate(-5px, 0); }
+        }
+        @keyframes glitch-shift-2 {
+            0%   { clip-path: inset(65% 0 8% 0);  transform: translate(6px, 0); }
+            15%  { clip-path: inset(15% 0 65% 0); transform: translate(-6px, 0); }
+            30%  { clip-path: inset(45% 0 35% 0); transform: translate(5px, -2px); }
+            45%  { clip-path: inset(3% 0 80% 0);  transform: translate(-5px, 2px); }
+            60%  { clip-path: inset(35% 0 45% 0); transform: translate(7px, 0); }
+            75%  { clip-path: inset(80% 0 5% 0);  transform: translate(-7px, -1px); }
+            90%  { clip-path: inset(20% 0 60% 0); transform: translate(4px, 0); }
+            100% { clip-path: inset(65% 0 8% 0);  transform: translate(6px, 0); }
+        }
+        @keyframes glitch-rgb {
+            0%   { text-shadow: -4px 0 #ff0000, 4px 0 #00ffcc, 0 0 35px rgba(255,0,0,0.9); color: #cc0000; }
+            20%  { text-shadow:  4px 0 #ff2200, -4px 0 #00aaff, 0 0 55px rgba(220,0,0,1);  color: #dd0000; }
+            40%  { text-shadow: -5px 0 #ff4400,  5px 0 #0066ff, 0 0 28px rgba(200,0,0,0.8); color: #bb0000; }
+            60%  { text-shadow:  3px 0 #cc0000, -3px 0 #33ffbb, 0 0 45px rgba(255,30,0,0.9); color: #ee0000; }
+            80%  { text-shadow: -6px 0 #ff1100,  6px 0 #0088ff, 0 0 20px rgba(180,0,0,1);  color: #cc0000; }
+            100% { text-shadow: -4px 0 #ff0000,  4px 0 #00ffcc, 0 0 35px rgba(255,0,0,0.9); color: #cc0000; }
+        }
+        @keyframes glitch-body {
+            0%,2%,4%,100% { transform: translate(0); }
+            1%   { transform: translate(-3px, 1px); }
+            3%   { transform: translate(3px, -1px); }
+        }
+
+        .glitch-title {
+            position: relative;
+            animation: glitch-rgb 0.13s infinite, glitch-body 0.8s infinite !important;
+            -webkit-text-fill-color: unset !important;
+        }
+        .glitch-title::before,
+        .glitch-title::after {
+            content: 'ERROR';
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            font-size: inherit; font-weight: inherit; letter-spacing: inherit; text-transform: inherit;
+        }
+        .glitch-title::before {
+            color: #ff2200;
+            animation: glitch-shift-1 0.18s infinite;
+        }
+        .glitch-title::after {
+            color: #ff0066;
+            animation: glitch-shift-2 0.22s infinite;
+        }
+
+        /* МЕНЮ */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(0,255,102,0.05); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); border-color: var(--neon-green); }
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(2, 6, 2, 0.95); backdrop-filter: blur(25px); border-right: 1px solid var(--glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
@@ -50,13 +132,11 @@
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
 
-        /* ШАПКА СТРАНИЦЫ */
         header { text-align: center; padding: 10vh 20px 2vh; position: relative; z-index: 10; }
-        header h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; text-transform: uppercase; letter-spacing: 10px; color: var(--neon-green); text-shadow: 0 0 25px var(--neon-green-glow); margin-bottom: 10px; }
+        header h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; text-transform: uppercase; letter-spacing: 10px; color: var(--neon-green); text-shadow: 0 0 25px var(--neon-green-glow); margin-bottom: 10px; transition: color 0.3s; }
 
         main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 40px; z-index: 10; display: flex; flex-direction: column; align-items: center; position: relative; }
 
-        /* ИНТЕРФЕЙС ПРОМОКОДА */
         .promo-wrapper { position: relative; width: 100%; max-width: 450px; display: flex; flex-direction: column; align-items: center; margin-top: 3vh; transition: all 0.5s ease-out; z-index: 10; }
         .promo-wrapper.hidden { opacity: 0; transform: scale(0.8); pointer-events: none; }
         
@@ -66,37 +146,19 @@
             backdrop-filter: blur(15px); transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             position: relative; z-index: 2;
         }
-        
         .promo-box.collapsing { width: 70px; border-radius: 50%; background: var(--neon-green); border-color: #fff; box-shadow: 0 0 50px var(--neon-green); }
         .promo-box.collapsing input, .promo-box.collapsing button { opacity: 0; pointer-events: none; }
-
         .promo-box input { flex: 1; background: transparent; border: none; outline: none; padding: 0 25px; color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; font-family: 'Montserrat', sans-serif; letter-spacing: 2px; transition: opacity 0.3s; }
         .promo-box input::placeholder { color: var(--text-muted); font-weight: 500; letter-spacing: 1px; }
-        
         .promo-box button { width: 70px; background: rgba(0, 255, 102, 0.1); border: none; border-left: 1px solid var(--glass-border); color: var(--neon-green); font-size: 1.5rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; }
         .promo-box button:hover { background: var(--neon-green); color: #000; box-shadow: -5px 0 20px var(--neon-green-glow); }
-
         .error-msg { margin-top: 15px; color: var(--error-red); font-size: 0.95rem; font-weight: 600; opacity: 0; transform: translateY(-10px); transition: all 0.3s; text-align: center; }
         .error-msg.visible { opacity: 1; transform: translateY(0); }
-
-        /* ВСПЛЕСК КАПЕЛЬКИ */
-        .splash-ring {
-            position: absolute; top: 35px; left: 50%; width: 70px; height: 70px; background: var(--neon-green); border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; z-index: 3;
-        }
+        .splash-ring { position: absolute; top: 35px; left: 50%; width: 70px; height: 70px; background: var(--neon-green); border-radius: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; z-index: 3; }
         .splash-ring.animate { animation: splashEffect 0.7s ease-out forwards; }
-        @keyframes splashEffect {
-            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(8); opacity: 0; }
-        }
+        @keyframes splashEffect { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(8); opacity: 0; } }
 
-        /* === БЛОК ТРЕКА (ЗАБЛОКИРОВАННЫЙ И РАЗБЛОКИРОВАННЫЙ) === */
-        .snippet-wrapper {
-            width: 100%; display: flex; flex-direction: column; align-items: center; gap: 30px;
-            margin-top: 20px; transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative; z-index: 5;
-        }
-        /* Анимация подъема при разблокировке */
+        .snippet-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 30px; margin-top: 20px; transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; z-index: 5; }
         .snippet-wrapper.unlocked { transform: translateY(-120px); }
 
         .hero-release {
@@ -105,140 +167,94 @@
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 102, 0.05); position: relative; overflow: hidden;
             transition: all 0.6s ease-out; 
         }
-        /* Меняем границу при разблокировке */
         .unlocked .hero-release { border-color: var(--neon-green); box-shadow: 0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1); }
-        
         .hero-release::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(0,255,102,0.1) 0%, transparent 60%); animation: rotateBg 15s linear infinite; pointer-events: none; z-index: 0; }
         @keyframes rotateBg { 100% { transform: rotate(360deg); } }
-
-        /* Пульсация под бит */
-        @keyframes beatPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-        .hero-release.pulsing { animation: beatPulse 0.5s infinite ease-out; }
-
-        /* ОБЛОЖКА И ЕЁ ПЛАВНОЕ ПОКАЧИВАНИЕ */
-        .hero-cover-wrap { 
-            position: relative; flex-shrink: 0; width: 300px; aspect-ratio: 1/1; z-index: 1; border-radius: 20px; overflow: hidden; 
-            box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid var(--glass-border); 
-            animation: float-cover 6s ease-in-out infinite; 
-        }
-        @keyframes float-cover {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(2deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-        
-        /* Заглушка обложки */
-        .cover-placeholder {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(204, 68, 68, 0.1), rgba(0,0,0,0.8));
-            display: flex; justify-content: center; align-items: center;
-            font-size: 6rem; color: var(--error-red); text-shadow: 0 0 20px rgba(204, 68, 68, 0.5);
-            transition: opacity 0.6s ease; z-index: 2;
-        }
+        .hero-cover-wrap { position: relative; flex-shrink: 0; width: 300px; aspect-ratio: 1/1; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid var(--glass-border); animation: float-cover 6s ease-in-out infinite; }
+        @keyframes float-cover { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } 100% { transform: translateY(0px) rotate(0deg); } }
+        .cover-placeholder { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, rgba(204, 68, 68, 0.1), rgba(0,0,0,0.8)); display: flex; justify-content: center; align-items: center; font-size: 6rem; color: var(--error-red); text-shadow: 0 0 20px rgba(204, 68, 68, 0.5); transition: opacity 0.6s ease; z-index: 2; }
         .unlocked .cover-placeholder { opacity: 0; pointer-events: none; }
-        
-        /* Настоящая обложка */
-        #realCover {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;
-            opacity: 0; transition: transform 0.5s, opacity 0.6s ease; z-index: 1;
-        }
+        #realCover { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: transform 0.5s, opacity 0.6s ease; z-index: 1; }
         .unlocked #realCover { opacity: 1; }
         .hero-cover-wrap:hover #realCover { transform: scale(1.05); }
-
         .hero-info { flex: 1; z-index: 1; display: flex; flex-direction: column; gap: 20px; width: 100%; }
-        
-        /* Бейджик статуса */
         .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; align-self: flex-start; transition: all 0.5s; }
         .locked-badge { color: var(--error-red); border: 1px solid var(--error-red); background: rgba(204, 68, 68, 0.1); box-shadow: 0 0 15px rgba(204, 68, 68, 0.3); }
         .unlocked-badge { color: var(--neon-green); border: 1px solid var(--neon-green); background: rgba(0, 255, 102, 0.15); box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); }
-        
         .hero-info h2 { font-size: 3rem; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 0 20px rgba(0,0,0,0.8); transition: color 0.5s; }
         .unlocked .hero-info h2 { text-shadow: 0 0 20px rgba(0,255,102,0.4); }
-
-        /* ИСПРАВЛЕННЫЙ ПЛЕЕР (скрыт до разблокировки) */
         .audio-player-container { opacity: 0; max-height: 0; overflow: hidden; transition: all 0.6s ease; width: 100%; pointer-events: none; }
         .unlocked .audio-player-container { opacity: 1; max-height: 100px; pointer-events: all; }
-        
         .audio-player { background: rgba(0,0,0,0.6); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--glass-border); box-shadow: inset 0 0 20px rgba(0,0,0,0.8); width: 100%; }
         .play-pause-btn { background: var(--neon-green); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; box-shadow: 0 0 15px var(--neon-green-glow); flex-shrink: 0; }
         .play-pause-btn:hover { transform: scale(1.1); background: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.6); }
-        
         .progress-container { flex: 1; height: 24px; display: flex; align-items: center; cursor: pointer; position: relative; touch-action: none; min-width: 50px; }
         .progress-container::before { content: ''; position: absolute; left: 0; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         .progress-bar { height: 6px; width: 0%; background: var(--neon-green); border-radius: 10px; position: relative; pointer-events: none; z-index: 2; box-shadow: 0 0 10px var(--neon-green); }
         .progress-bar::after { content: ''; position: absolute; right: -7px; top: -5px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px var(--neon-green); }
         .time-display { font-size: 0.85rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 90px; text-align: right; white-space: nowrap; flex-shrink: 0; }
-
-        /* Кнопка Назад */
         #backBtn { opacity: 0; transform: translateY(-20px); transition: all 0.6s ease; pointer-events: none; background: transparent; border: 2px solid var(--text-muted); color: var(--text-muted); padding: 12px 30px; border-radius: 50px; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
         .unlocked #backBtn { opacity: 1; transform: translateY(0); pointer-events: all; }
         #backBtn:hover { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,102,0.2); transform: translateX(-5px); }
 
-        /* ЧАТ ПОДДЕРЖКИ (ХАКЕРСКИЙ СТИЛЬ) */
-        #chat-window {
-            display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden;
-            background: rgba(2, 6, 2, 0.85); border: 1px solid var(--glass-border); border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px var(--neon-green-glow), inset 0 0 20px rgba(0, 255, 102, 0.1);
-            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); z-index: 9999;
-            animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        .chat-header { background: linear-gradient(90deg, #050f05, #0a1f0a); border-bottom: 2px solid var(--neon-green); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2; cursor: grab; user-select: none; }
+        /* ЧАТ */
+        #chat-window { display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden; background: rgba(2, 6, 2, 0.85); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px var(--neon-green-glow); backdrop-filter: blur(30px); z-index: 9999; animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .chat-header { background: linear-gradient(90deg, #050f05, #0a1f0a); border-bottom: 2px solid var(--neon-green); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: grab; user-select: none; }
         .chat-header:active { cursor: grabbing; }
         .chat-header-info { display: flex; align-items: center; gap: 10px; }
         .chat-header-title { font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-green); }
-        .drag-handle { color: rgba(255,255,255,0.3); font-size: 1rem; }
+        .drag-handle { color: rgba(255,255,255,0.3); }
         #chat-close { cursor: pointer; font-size: 1.5rem; transition: 0.3s; color: var(--text-muted); padding: 5px; }
-        #chat-close:hover { color: var(--neon-green); transform: rotate(90deg); text-shadow: 0 0 10px var(--neon-green); }
-        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth; }
+        #chat-close:hover { color: var(--neon-green); transform: rotate(90deg); }
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         #chat-messages::-webkit-scrollbar { width: 4px; }
-        #chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
-        #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; box-shadow: 0 0 10px var(--neon-green); }
-        .chat-system-msg { color: var(--neon-green); text-align: center; font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; padding: 8px; border: 1px dashed var(--glass-border); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.3); }
+        #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; }
+        .chat-system-msg { color: var(--neon-green); text-align: center; font-size: 0.8rem; font-weight: 600; padding: 8px; border: 1px dashed var(--glass-border); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; }
         @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
-        .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 5px 20px rgba(0,0,0,0.4); backdrop-filter: blur(10px); font-weight: 500; }
+        .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; font-weight: 500; }
         .msg-user { align-items: flex-end; }
-        .msg-user .chat-msg-name { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
-        .msg-user .chat-msg-bubble { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-bottom-right-radius: 2px; }
+        .msg-user .chat-msg-name { color: #fff; }
+        .msg-user .chat-msg-bubble { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); border-bottom-right-radius: 2px; }
         .msg-bot { align-items: flex-start; }
-        .msg-bot .chat-msg-name { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green-glow); }
-        .msg-bot .chat-msg-bubble { background: rgba(0, 255, 102, 0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
-        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid var(--glass-border); background: rgba(2, 6, 2, 0.9); z-index: 2; position: relative; }
-        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
-        #chat-input:focus { border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green-glow), inset 0 0 10px rgba(0, 255, 102, 0.1); }
-        #chat-send { background: linear-gradient(135deg, #0a290a, #004d1f); border: 2px solid var(--glass-border); color: var(--neon-green); width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px var(--neon-green-glow); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
-        #chat-send:hover { transform: translateY(-2px) scale(1.05); background: var(--neon-green); color: #000; border-color: #fff; box-shadow: 0 0 25px var(--neon-green); }
+        .msg-bot .chat-msg-name { color: var(--neon-green); }
+        .msg-bot .chat-msg-bubble { background: rgba(0,255,102,0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid var(--glass-border); background: rgba(2,6,2,0.9); }
+        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; }
+        #chat-input:focus { border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green-glow); }
+        #chat-send { background: linear-gradient(135deg, #0a290a, #004d1f); border: 2px solid var(--glass-border); color: var(--neon-green); width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        #chat-send:hover { background: var(--neon-green); color: #000; }
+        @keyframes chatTerminalOpen { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
-        /* Мобильная адаптация */
         @media (max-width: 900px) {
             .hero-release { flex-direction: column; text-align: center; padding: 30px 20px; }
             .hero-cover-wrap { width: 100%; max-width: 250px; }
             .hero-badge { align-self: center; }
             .hero-info h2 { font-size: 2.2rem; }
-            .snippet-wrapper.unlocked { transform: translateY(-90px); } /* Чуть меньше подъем на планшетах */
+            .snippet-wrapper.unlocked { transform: translateY(-90px); }
         }
         @media (max-width: 600px) {
-            header h1 { font-size: 2.5rem; }
+            header h1 { font-size: 2.5rem; letter-spacing: 5px; }
             .promo-box { height: 60px; }
             .promo-box input { font-size: 1rem; }
-            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
-            .snippet-wrapper.unlocked { transform: translateY(-80px); } /* Подъем на смартфонах */
-
-            #chat-window { 
-                width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
-                border-radius: 24px 24px 0 0 !important; border-bottom: none;
-                animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            }
-            .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
+            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; }
+            .snippet-wrapper.unlocked { transform: translateY(-80px); }
+            #pumpkin-face { width: 240px; height: 200px; }
+            #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; }
             .drag-handle { display: none; }
         }
-        @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <canvas id="matrixCanvas"></canvas>
+
+    <!-- ХЭЛЛОУИН ОВЕРЛЕЙ -->
+    <div id="horror-overlay">
+        <div id="horror-fog"></div>
+        <svg id="pumpkin-face" viewBox="0 0 200 170" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
 
     <div class="burger-btn" id="burgerBtn"><i class="fa-solid fa-bars"></i></div>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -249,13 +265,11 @@
         <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home"></i> Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
         <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info"></i> О нас</a>
-        <a href="#" class="sidebar-link" id="sidebarSupportBtn">
-            <i class="fa-solid fa-headset"></i> Тех. поддержка
-        </a>
+        <a href="#" class="sidebar-link" id="sidebarSupportBtn"><i class="fa-solid fa-headset"></i> Тех. поддержка</a>
     </div>
 
     <header>
-        <h1>PROMOCODE</h1>
+        <h1 id="pageTitle">PROMOCODE</h1>
     </header>
 
     <main>
@@ -272,14 +286,11 @@
             <div class="hero-release" id="snippetHero">
                 <div class="hero-cover-wrap">
                     <div class="cover-placeholder" id="coverPlaceholder"><i class="fa-solid fa-question"></i></div>
-                    <img src="../logo_Dance_Girl.jpeg" id="realCover" alt="Dance Girl" onerror="this.src='dslogo.png'">
+                    <img src="../logo_Dance_Girl.jpeg" id="realCover" alt="Dance Girl" onerror="this.src='../dslogo.png'">
                 </div>
                 <div class="hero-info">
-                    <div class="hero-badge locked-badge" id="lockBadge">
-                        <i class="fa-solid fa-lock"></i> Контент заблокирован
-                    </div>
+                    <div class="hero-badge locked-badge" id="lockBadge"><i class="fa-solid fa-lock"></i> Контент заблокирован</div>
                     <h2 id="trackTitle">???</h2>
-                    
                     <div class="audio-player-container">
                         <div class="audio-player">
                             <button class="play-pause-btn" id="playBtn" onclick="togglePlay()"><i class="fa-solid fa-play"></i></button>
@@ -305,7 +316,7 @@
             <i class="fa-solid fa-xmark" id="chat-close"></i>
         </div>
         <div id="chat-messages">
-            <div class="chat-system-msg" id="chatGreeting">Система тех. поддержки активна. Задайте ваш вопрос.</div>
+            <div class="chat-system-msg">Система тех. поддержки активна. Задайте ваш вопрос.</div>
         </div>
         <div class="chat-input-area">
             <input type="text" id="chat-input" placeholder="Ввод команды/проблемы...">
@@ -314,7 +325,6 @@
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
     <script>
         // ==========================================
         // ======= НАСТРОЙКИ ПРОМОКОДА ==============
@@ -322,32 +332,206 @@
         const SECRET_PROMOCODE = "D&S_Dance";
         // ==========================================
 
-        // === МАТРИЦА (КАНВАС) ===
+        // ========== МАТРИЦА ==========
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const matrixChars = "01".split(""); 
-        const fontSize = 16; const columns = canvas.width / fontSize;
-        const drops = []; for(let x = 0; x < columns; x++) drops[x] = 1;
-        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const FONT_SIZE = 16;
+        let columns = Math.floor(canvas.width / FONT_SIZE);
+        let drops = [];
+        // Цвет каждого столбца: 0 = зелёный, 1 = красный
+        let colColor = [];
+
+        function initMatrix() {
+            columns = Math.floor(canvas.width / FONT_SIZE);
+            drops = [];
+            colColor = [];
+            for (let i = 0; i < columns; i++) {
+                drops[i] = Math.random() * -60;
+                colColor[i] = 0;
+            }
+        }
+        initMatrix();
+
         function drawMatrix() {
-            ctx.fillStyle = 'rgba(2, 6, 2, 0.1)';
+            // Фон чуть темнее когда красный
+            const hasSomeRed = colColor.some(c => c === 1);
+            ctx.fillStyle = hasSomeRed ? 'rgba(5, 1, 1, 0.08)' : 'rgba(2, 6, 2, 0.08)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#00ff66'; ctx.font = fontSize + 'px monospace';
-            for(let i = 0; i < drops.length; i++) {
-                const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            ctx.font = FONT_SIZE + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const char = Math.random() > 0.5 ? '1' : '0';
+                const isRed = colColor[i] === 1;
+                // Яркий «голова» символ
+                const headRow = Math.floor(drops[i]);
+                const currentRow = headRow;
+                ctx.fillStyle = isRed
+                    ? (currentRow % 6 < 2 ? '#ff5555' : '#cc0000')
+                    : (currentRow % 6 < 2 ? '#afffbf' : '#00ff66');
+                ctx.fillText(char, i * FONT_SIZE, drops[i] * FONT_SIZE);
+
+                if (drops[i] * FONT_SIZE > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
                 drops[i]++;
             }
         }
         setInterval(drawMatrix, 50);
 
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initMatrix();
         });
 
-        // === МЕНЮ БУРГЕР ===
+        // ========== РОЖИЦЫ ТЫКВЫ (SVG пути) ==========
+        const pumpkinFaces = [
+            // 1. Острые зубы, злобный взгляд
+            `<g fill="#c80000">
+                <ellipse cx="58" cy="52" rx="24" ry="19"/>
+                <ellipse cx="142" cy="52" rx="24" ry="19"/>
+                <ellipse cx="58" cy="52" rx="9" ry="13" fill="#6b0000"/>
+                <ellipse cx="142" cy="52" rx="9" ry="13" fill="#6b0000"/>
+                <path d="M12 112 Q32 84 55 92 Q72 72 100 88 Q128 72 145 92 Q168 84 188 112 Q165 155 100 158 Q35 155 12 112Z"/>
+                <path d="M45 92 L52 118 L60 96 L68 122 L78 96 L88 124 L98 98 L100 126 L102 98 L112 124 L122 96 L132 122 L140 96 L148 118 L155 92" fill="#750000" stroke="#c80000" stroke-width="1.5"/>
+            </g>`,
+            // 2. Перечёркнутые глаза
+            `<g>
+                <line x1="36" y1="36" x2="80" y2="72" stroke="#cc0000" stroke-width="9" stroke-linecap="round"/>
+                <line x1="80" y1="36" x2="36" y2="72" stroke="#cc0000" stroke-width="9" stroke-linecap="round"/>
+                <line x1="120" y1="36" x2="164" y2="72" stroke="#cc0000" stroke-width="9" stroke-linecap="round"/>
+                <line x1="164" y1="36" x2="120" y2="72" stroke="#cc0000" stroke-width="9" stroke-linecap="round"/>
+                <path d="M18 110 Q35 85 58 90 Q78 70 100 87 Q122 70 142 90 Q165 85 182 110 Q162 152 100 156 Q38 152 18 110Z" fill="#b80000"/>
+                <rect x="36" y="110" width="13" height="30" rx="2" fill="#700000"/>
+                <rect x="55" y="110" width="13" height="38" rx="2" fill="#700000"/>
+                <rect x="74" y="110" width="13" height="28" rx="2" fill="#700000"/>
+                <rect x="93" y="110" width="13" height="40" rx="2" fill="#700000"/>
+                <rect x="112" y="110" width="13" height="28" rx="2" fill="#700000"/>
+                <rect x="131" y="110" width="13" height="38" rx="2" fill="#700000"/>
+                <rect x="150" y="110" width="13" height="30" rx="2" fill="#700000"/>
+            </g>`,
+            // 3. Треугольные глаза
+            `<g fill="#bf0000">
+                <polygon points="38,72 60,28 82,72"/>
+                <polygon points="46,66 60,36 74,66" fill="#6b0000"/>
+                <polygon points="118,72 140,28 162,72"/>
+                <polygon points="126,66 140,36 154,66" fill="#6b0000"/>
+                <path d="M8 112 Q22 82 52 88 Q72 66 100 84 Q128 66 148 88 Q178 82 192 112 Q178 154 100 158 Q22 154 8 112Z"/>
+                <path d="M35 112 L44 138 L56 110 L66 142 L78 108 L88 140 L98 110 L100 144 L102 110 L112 140 L122 108 L132 142 L144 110 L154 138 L165 112" fill="#780000" stroke="#bf0000" stroke-width="1.5"/>
+            </g>`,
+            // 4. Круглые глаза, широкий рот
+            `<g fill="#c50000">
+                <circle cx="62" cy="54" r="22"/>
+                <circle cx="62" cy="54" r="11" fill="#6a0000"/>
+                <circle cx="138" cy="54" r="22"/>
+                <circle cx="138" cy="54" r="11" fill="#6a0000"/>
+                <path d="M16 114 Q38 86 65 94 Q84 74 100 90 Q116 74 135 94 Q162 86 184 114 Q168 152 100 156 Q32 152 16 114Z"/>
+                <path d="M58 94 Q80 146 100 148 Q120 146 142 94 Q120 126 100 130 Q80 126 58 94Z" fill="#880000"/>
+                <circle cx="70" cy="116" r="5" fill="#ff4444"/>
+                <circle cx="85" cy="130" r="5" fill="#ff4444"/>
+                <circle cx="100" cy="135" r="5" fill="#ff4444"/>
+                <circle cx="115" cy="130" r="5" fill="#ff4444"/>
+                <circle cx="130" cy="116" r="5" fill="#ff4444"/>
+            </g>`,
+            // 5. Неровные зубы, прищуренные глаза
+            `<g fill="#d40000">
+                <path d="M28 62 Q50 32 80 54 Q68 74 48 70 Q28 70 28 62Z"/>
+                <path d="M120 62 Q150 32 172 62 Q168 70 148 70 Q128 74 120 62Z"/>
+                <line x1="38" y1="46" x2="72" y2="42" stroke="#880000" stroke-width="5" stroke-linecap="round"/>
+                <line x1="128" y1="42" x2="162" y2="46" stroke="#880000" stroke-width="5" stroke-linecap="round"/>
+                <path d="M12 116 Q20 86 50 92 Q70 70 100 88 Q130 70 150 92 Q180 86 188 116 Q170 155 100 158 Q30 155 12 116Z"/>
+                <path d="M42 92 L52 120 L64 94 L76 124 L88 96 L100 128 L112 96 L124 124 L136 94 L148 120 L158 92" fill="#840000" stroke="#d40000" stroke-width="1.5"/>
+            </g>`,
+            // 6. Максимально злобная
+            `<g fill="#aa0000">
+                <path d="M25 65 Q40 35 65 40 Q85 35 80 62 Q65 78 45 72 Q25 72 25 65Z"/>
+                <path d="M120 62 Q115 35 135 40 Q160 35 175 65 Q175 72 155 72 Q135 78 120 62Z"/>
+                <path d="M38 44 L55 38 L72 46" stroke="#660000" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M128 46 L145 38 L162 44" stroke="#660000" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M6 116 Q15 85 46 90 Q66 66 100 86 Q134 66 154 90 Q185 85 194 116 Q176 156 100 160 Q24 156 6 116Z"/>
+                <path d="M36 90 L46 122 L60 94 L72 126 L84 94 L96 130 L100 132 L104 130 L116 94 L128 126 L140 94 L152 122 L164 90" fill="#6b0000" stroke="#aa0000" stroke-width="1.5"/>
+                <ellipse cx="46" cy="52" rx="8" ry="5" fill="#660000"/>
+                <ellipse cx="154" cy="52" rx="8" ry="5" fill="#660000"/>
+            </g>`
+        ];
+
+        // ========== ХЭЛЛОУИН ИВЕНТ ==========
+        const horrorOverlay = document.getElementById('horror-overlay');
+        const pumpkinSvg = document.getElementById('pumpkin-face');
+        const pageTitle = document.getElementById('pageTitle');
+        let horrorActive = false;
+        let waveIntervalId = null;
+
+        function triggerHorrorEvent() {
+            if (horrorActive) return;
+            horrorActive = true;
+
+            // Случайная рожица
+            const face = pumpkinFaces[Math.floor(Math.random() * pumpkinFaces.length)];
+            pumpkinSvg.innerHTML = face;
+
+            // Волна красного по матрице слева направо
+            let wavePos = 0;
+            waveIntervalId = setInterval(() => {
+                for (let i = wavePos; i < Math.min(wavePos + 5, columns); i++) colColor[i] = 1;
+                wavePos += 5;
+                if (wavePos >= columns) clearInterval(waveIntervalId);
+            }, 15);
+
+            // Показываем оверлей
+            horrorOverlay.classList.add('active');
+
+            // Заголовок → ERROR с глитчем
+            pageTitle.textContent = 'ERROR';
+            pageTitle.classList.add('glitch-title');
+
+            // Рожица: начальная позиция (маленькая, прозрачная)
+            pumpkinSvg.style.transition = 'none';
+            pumpkinSvg.style.opacity = '0';
+            pumpkinSvg.style.transform = 'scale(0.12)';
+
+            // Запускаем приближение
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                pumpkinSvg.style.transition = 'opacity 0.9s ease-out, transform 4s cubic-bezier(0.05, 0.0, 0.35, 1.0)';
+                pumpkinSvg.style.opacity = '0.95';
+                pumpkinSvg.style.transform = 'scale(3.2)';
+            }));
+
+            // Через 4с — растворяем рожицу
+            setTimeout(() => {
+                pumpkinSvg.style.transition = 'opacity 1.1s ease-in, transform 1.1s ease-in';
+                pumpkinSvg.style.opacity = '0';
+                pumpkinSvg.style.transform = 'scale(3.8)';
+            }, 4000);
+
+            // Через 5.2с — всё возвращается
+            setTimeout(() => {
+                // Скрываем оверлей
+                horrorOverlay.classList.remove('active');
+
+                // Волна зелёного обратно
+                let waveBack = 0;
+                const waveBackId = setInterval(() => {
+                    for (let i = waveBack; i < Math.min(waveBack + 5, columns); i++) colColor[i] = 0;
+                    waveBack += 5;
+                    if (waveBack >= columns) clearInterval(waveBackId);
+                }, 15);
+
+                // Восстанавливаем заголовок
+                pageTitle.textContent = 'PROMOCODE';
+                pageTitle.classList.remove('glitch-title');
+
+                horrorActive = false;
+            }, 5200);
+        }
+
+        // Каждые 30 секунд
+        setInterval(triggerHorrorEvent, 30000);
+
+        // ========== МЕНЮ ==========
         const burgerBtn = document.getElementById('burgerBtn');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -355,9 +539,11 @@
         const sidebarSupportBtn = document.getElementById('sidebarSupportBtn');
 
         function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
-        burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
+        burgerBtn.onclick = toggleMenu;
+        closeSidebar.onclick = toggleMenu;
+        sidebarOverlay.onclick = toggleMenu;
 
-        // === ЛОГИКА ЧАТА (ХАКЕРСКАЯ) ===
+        // ========== ЧАТ ==========
         const chatWindow = document.getElementById('chat-window');
         const chatClose = document.getElementById('chat-close');
         const chatMessages = document.getElementById('chat-messages');
@@ -365,168 +551,155 @@
         const chatSendBtn = document.getElementById('chat-send');
         const chatHeader = document.getElementById('chat-header');
 
-        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
         let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('dxtrClientId', clientId);
         window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
 
-        const socket = io("https://dxtrslizze.onrender.com/");
+        let socket;
+        try {
+            socket = io("https://dxtrslizze.onrender.com/");
+            socket.on('connect', () => {
+                import('https://openfpcdn.io/fingerprintjs/v4')
+                    .then(FP => FP.load())
+                    .then(fp => fp.get())
+                    .then(r => socket.emit('register_client', { clientId, fpHash: r.visitorId }))
+                    .catch(() => socket.emit('register_client', { clientId, fpHash: 'blocked' }));
+            });
+            socket.on('receive_message', d => {
+                if (chatWindow.style.display === 'none') chatWindow.style.display = 'flex';
+                addChatMessage('Support', d.text, 'flex-start', true);
+            });
+        } catch(e) {}
 
         sidebarSupportBtn.onclick = (e) => {
             e.preventDefault(); toggleMenu();
             setTimeout(() => {
-                chatWindow.style.display = 'flex'; chatMessages.scrollTop = chatMessages.scrollHeight;
-                if(window.innerWidth > 600) { chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px'; }
+                chatWindow.style.display = 'flex';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                if(window.innerWidth > 600) { chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px'; }
             }, 300);
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        let isDraggingChat = false, chatOffsetX, chatOffsetY;
-        chatHeader.addEventListener('mousedown', (e) => {
+        let isDraggingChat = false, chatOffX, chatOffY;
+        chatHeader.addEventListener('mousedown', e => {
             if (window.innerWidth <= 600 || e.target.id === 'chat-close') return;
-            isDraggingChat = true; chatWindow.style.animation = 'none'; chatWindow.style.transform = 'none';
-            const rect = chatWindow.getBoundingClientRect();
-            chatOffsetX = e.clientX - rect.left; chatOffsetY = e.clientY - rect.top;
-            chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto'; chatWindow.style.margin = '0';
-            chatWindow.style.left = rect.left + 'px'; chatWindow.style.top = rect.top + 'px';
+            isDraggingChat = true;
+            const r = chatWindow.getBoundingClientRect();
+            chatOffX = e.clientX - r.left; chatOffY = e.clientY - r.top;
+            chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto';
+            chatWindow.style.left = r.left + 'px'; chatWindow.style.top = r.top + 'px';
         });
-        document.addEventListener('mousemove', (e) => {
-            if (!isDraggingChat) return; e.preventDefault();
-            let newX = e.clientX - chatOffsetX; let newY = e.clientY - chatOffsetY;
-            newX = Math.max(0, Math.min(newX, window.innerWidth - chatWindow.offsetWidth));
-            newY = Math.max(0, Math.min(newY, window.innerHeight - chatWindow.offsetHeight));
-            chatWindow.style.left = `${newX}px`; chatWindow.style.top = `${newY}px`;
+        document.addEventListener('mousemove', e => {
+            if (!isDraggingChat) return;
+            chatWindow.style.left = Math.max(0, Math.min(e.clientX - chatOffX, window.innerWidth - chatWindow.offsetWidth)) + 'px';
+            chatWindow.style.top = Math.max(0, Math.min(e.clientY - chatOffY, window.innerHeight - chatWindow.offsetHeight)) + 'px';
         });
         document.addEventListener('mouseup', () => isDraggingChat = false);
 
-        socket.on('connect', () => { fpPromise.then(fp => fp.get()).then(result => socket.emit('register_client', { clientId: clientId, fpHash: result.visitorId })); });
-        socket.on('receive_message', d => {
-            if (chatWindow.style.display === 'none') chatWindow.style.display = 'flex';
-            addChatMessage('Support', d.text, 'flex-start', true, false, true);
-        });
-
         chatSendBtn.onclick = sendMessage;
-        chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+        chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
 
         function sendMessage() {
             const t = chatInput.value.trim(); if (!t) return;
-            socket.emit('send_message', { text: t, clientId: clientId });
+            if (socket) socket.emit('send_message', { text: t, clientId });
             addChatMessage(window.userNickname || 'Вы', t, 'flex-end');
             chatInput.value = '';
         }
 
-        function addChatMessage(sender, text, align, save = true, isError = false, isBot = false) {
-            const wrapper = document.createElement('div'); wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
-            const nameLab = document.createElement('span'); nameLab.className = 'chat-msg-name'; nameLab.textContent = sender;
-            const bubble = document.createElement('div'); bubble.className = 'chat-msg-bubble'; bubble.textContent = text;
-            wrapper.appendChild(nameLab); wrapper.appendChild(bubble);
-            chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight;
+        function addChatMessage(sender, text, align, save = true) {
+            const w = document.createElement('div');
+            w.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
+            const n = document.createElement('span'); n.className = 'chat-msg-name'; n.textContent = sender;
+            const b = document.createElement('div'); b.className = 'chat-msg-bubble'; b.textContent = text;
+            w.appendChild(n); w.appendChild(b);
+            chatMessages.appendChild(w); chatMessages.scrollTop = chatMessages.scrollHeight;
             if (save) {
-                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; h.push({ sender, text, align, isBot });
-                if (h.length > 50) h.shift(); localStorage.setItem('dxtrChatHistory', JSON.stringify(h));
+                const h = JSON.parse(localStorage.getItem('dxtrChatHistory') || '[]');
+                h.push({ sender, text, align }); if (h.length > 50) h.shift();
+                localStorage.setItem('dxtrChatHistory', JSON.stringify(h));
             }
         }
-        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, false, m.isBot));
+        (JSON.parse(localStorage.getItem('dxtrChatHistory') || '[]')).forEach(m => addChatMessage(m.sender, m.text, m.align, false));
 
-        // === ЛОГИКА РАЗБЛОКИРОВКИ ===
+        // ========== ПРОМОКОД ==========
         const promoInput = document.getElementById('promoInput');
         const promoSubmit = document.getElementById('promoSubmit');
         const promoError = document.getElementById('promoError');
         const promoBox = document.getElementById('promoBox');
         const promoWrapper = document.getElementById('promoWrapper');
         const splashRing = document.getElementById('splashRing');
-        
         const snippetWrapper = document.getElementById('snippetWrapper');
         const lockBadge = document.getElementById('lockBadge');
         const trackTitle = document.getElementById('trackTitle');
 
         function checkPromo() {
             const val = promoInput.value.trim();
-            if (val === "") return;
-
+            if (!val) return;
             if (val === SECRET_PROMOCODE) {
                 promoError.classList.remove('visible');
-                promoBox.classList.add('collapsing'); // 1. Сжимаем поле
-                
+                promoBox.classList.add('collapsing');
                 setTimeout(() => {
-                    promoBox.style.opacity = '0'; // Прячем сжатый кружок
-                    splashRing.classList.add('animate'); // Пускаем всплеск
-                    
+                    promoBox.style.opacity = '0';
+                    splashRing.classList.add('animate');
                     setTimeout(() => {
-                        // 2. Скрываем блок ввода (плавный fade out)
                         promoWrapper.classList.add('hidden');
-                        
-                        // 3. Поднимаем трек и разблокируем визуал
                         snippetWrapper.classList.add('unlocked');
-                        
                         lockBadge.classList.remove('locked-badge');
                         lockBadge.classList.add('unlocked-badge');
                         lockBadge.innerHTML = '<i class="fa-solid fa-lock-open"></i> Доступ открыт';
                         trackTitle.textContent = 'Dance Girl';
-                        
-                    }, 200); 
-                }, 600); 
+                    }, 200);
+                }, 600);
             } else {
-                // Ошибка
                 promoError.classList.add('visible');
-                promoBox.style.transform = 'translateX(-10px)';
-                setTimeout(() => promoBox.style.transform = 'translateX(10px)', 100);
-                setTimeout(() => promoBox.style.transform = 'translateX(-10px)', 200);
-                setTimeout(() => promoBox.style.transform = 'translateX(0)', 300);
+                promoBox.style.transition = 'transform 0.1s';
+                ['-10px','10px','-10px','0px'].forEach((x, i) => {
+                    setTimeout(() => promoBox.style.transform = `translateX(${x})`, i * 100);
+                });
+                setTimeout(() => promoBox.style.transition = '', 400);
             }
         }
 
         promoSubmit.onclick = checkPromo;
-        promoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPromo(); });
+        promoInput.addEventListener('keypress', e => { if (e.key === 'Enter') checkPromo(); });
         promoInput.addEventListener('input', () => promoError.classList.remove('visible'));
 
         function goBack() {
-            // Остановка музыки
-            if(snippetAudio) { snippetAudio.pause(); snippetAudio.currentTime = 0; }
-            if(playBtnIcon) playBtnIcon.className = 'fa-solid fa-play';
-            if(snippetHero) {
-                snippetHero.style.transform = `scale(1)`;
-                snippetHero.style.boxShadow = `0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 255, 102, 0.05)`;
-            }
+            if (snippetAudio && !snippetAudio.paused) { snippetAudio.pause(); snippetAudio.currentTime = 0; }
+            if (playBtnIcon) playBtnIcon.className = 'fa-solid fa-play';
+            if (snippetHero) { snippetHero.style.transform = 'scale(1)'; snippetHero.style.boxShadow = ''; }
 
-            // 1. Опускаем трек вниз и блокируем
             snippetWrapper.classList.remove('unlocked');
-            
             setTimeout(() => {
                 lockBadge.classList.remove('unlocked-badge');
                 lockBadge.classList.add('locked-badge');
                 lockBadge.innerHTML = '<i class="fa-solid fa-lock"></i> Контент заблокирован';
                 trackTitle.textContent = '???';
             }, 300);
-
-            // 2. Возвращаем поле ввода
             setTimeout(() => {
                 promoWrapper.classList.remove('hidden');
                 splashRing.classList.remove('animate');
-                
                 setTimeout(() => {
                     promoBox.style.opacity = '1';
                     promoBox.classList.remove('collapsing');
-                    promoInput.value = ''; 
+                    promoInput.value = '';
                 }, 50);
             }, 600);
         }
 
-        // === Web Audio API: НАСТОЯЩАЯ ПУЛЬСАЦИЯ ПОД БИТ ===
+        // ========== WEB AUDIO ПУЛЬСАЦИЯ ==========
         const snippetAudio = document.getElementById('snippetAudio');
         const snippetHero = document.getElementById('snippetHero');
-        let audioCtx, analyser, source, dataArray;
-        let isAudioSetup = false;
+        let audioCtx, analyser, source, dataArray, isAudioSetup = false;
 
         function setupAudio() {
             if (isAudioSetup) return;
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            audioCtx = new AudioContext();
-            analyser = audioCtx.createAnalyser();
-            analyser.fftSize = 256; 
+            const AC = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AC();
+            analyser = audioCtx.createAnalyser(); analyser.fftSize = 256;
             source = audioCtx.createMediaElementSource(snippetAudio);
-            source.connect(analyser);
-            analyser.connect(audioCtx.destination);
+            source.connect(analyser); analyser.connect(audioCtx.destination);
             dataArray = new Uint8Array(analyser.frequencyBinCount);
             isAudioSetup = true;
             pulseBeat();
@@ -534,26 +707,18 @@
 
         function pulseBeat() {
             requestAnimationFrame(pulseBeat);
-            if (snippetAudio.paused) return; 
-
+            if (!snippetAudio || snippetAudio.paused) return;
             analyser.getByteFrequencyData(dataArray);
-            let sum = 0;
-            for(let i = 0; i < 10; i++) sum += dataArray[i];
-            let avg = sum / 10; 
-            
-            if (avg < 30) {
-                snippetHero.style.transform = `scale(1)`;
-                snippetHero.style.boxShadow = `0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1)`;
-                return;
-            }
-            
-            let scale = 1 + (avg / 255) * 0.05; 
-            let glow = 50 + (avg / 255) * 70;
+            let sum = 0; for(let i = 0; i < 10; i++) sum += dataArray[i];
+            const avg = sum / 10;
+            if (avg < 30) { snippetHero.style.transform = 'scale(1)'; return; }
+            const scale = 1 + (avg / 255) * 0.05;
+            const glow = 50 + (avg / 255) * 70;
             snippetHero.style.transform = `scale(${scale})`;
-            snippetHero.style.boxShadow = `0 0 ${glow}px rgba(0, 255, 102, 0.3), inset 0 0 ${glow/2}px rgba(0, 255, 102, 0.2)`;
+            snippetHero.style.boxShadow = `0 0 ${glow}px rgba(0,255,102,0.3), inset 0 0 ${glow/2}px rgba(0,255,102,0.2)`;
         }
 
-        // === АУДИОПЛЕЕР С ИСПРАВЛЕННОЙ ПЕРЕМОТКОЙ ===
+        // ========== ПЛЕЕР ==========
         const playBtnIcon = document.querySelector('#playBtn i');
         const progressBar = document.getElementById('progressBar');
         const progressContainer = document.getElementById('progressContainer');
@@ -561,60 +726,53 @@
         let isDragging = false;
 
         function togglePlay() {
-            if (!isAudioSetup) setupAudio(); 
+            if (!isAudioSetup) setupAudio();
             if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-
             if (snippetAudio.paused) {
-                snippetAudio.play();
-                playBtnIcon.className = 'fa-solid fa-pause';
+                snippetAudio.play(); playBtnIcon.className = 'fa-solid fa-pause';
             } else {
-                snippetAudio.pause();
-                playBtnIcon.className = 'fa-solid fa-play';
-                snippetHero.style.transform = `scale(1)`;
-                snippetHero.style.boxShadow = `0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1)`;
+                snippetAudio.pause(); playBtnIcon.className = 'fa-solid fa-play';
+                if (snippetHero) snippetHero.style.transform = 'scale(1)';
             }
         }
 
-        function formatTime(seconds) {
-            if (!seconds || isNaN(seconds)) return "00:00";
-            const min = Math.floor(seconds / 60); const sec = Math.floor(seconds % 60);
-            return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
+        function fmt(s) {
+            if (!s || isNaN(s)) return '00:00';
+            return `${Math.floor(s/60)<10?'0':''}${Math.floor(s/60)}:${Math.floor(s%60)<10?'0':''}${Math.floor(s%60)}`;
         }
 
-        snippetAudio.addEventListener('loadedmetadata', () => { timeDisplay.textContent = `00:00 / ${formatTime(snippetAudio.duration)}`; });
+        snippetAudio.addEventListener('loadedmetadata', () => { timeDisplay.textContent = `00:00 / ${fmt(snippetAudio.duration)}`; });
 
-        function updateProgress(clientX) {
-            const rect = progressContainer.getBoundingClientRect();
-            let offsetX = clientX - rect.left; const width = rect.width;
-            if (offsetX < 0) offsetX = 0; if (offsetX > width) offsetX = width;
-            const percentage = offsetX / width;
-            progressBar.style.width = (percentage * 100) + '%';
+        function updateProg(x) {
+            const r = progressContainer.getBoundingClientRect();
+            const pct = Math.max(0, Math.min((x - r.left) / r.width, 1));
+            progressBar.style.width = (pct * 100) + '%';
             if (snippetAudio.duration) {
-                const targetTime = percentage * snippetAudio.duration;
-                timeDisplay.textContent = `${formatTime(targetTime)} / ${formatTime(snippetAudio.duration)}`;
-                snippetAudio.currentTime = targetTime;
+                snippetAudio.currentTime = pct * snippetAudio.duration;
+                timeDisplay.textContent = `${fmt(snippetAudio.currentTime)} / ${fmt(snippetAudio.duration)}`;
             }
         }
 
-        progressContainer.addEventListener('mousedown', (e) => { isDragging = true; updateProgress(e.clientX); });
-        window.addEventListener('mousemove', (e) => { if (isDragging) { e.preventDefault(); updateProgress(e.clientX); } });
-        window.addEventListener('mouseup', () => { isDragging = false; });
-        progressContainer.addEventListener('touchstart', (e) => { isDragging = true; updateProgress(e.touches[0].clientX); }, { passive: false });
-        progressContainer.addEventListener('touchmove', (e) => { if (isDragging) { e.preventDefault(); updateProgress(e.touches[0].clientX); } }, { passive: false });
-        progressContainer.addEventListener('touchend', () => { isDragging = false; });
+        progressContainer.addEventListener('mousedown', e => { isDragging = true; updateProg(e.clientX); });
+        window.addEventListener('mousemove', e => { if (isDragging) { e.preventDefault(); updateProg(e.clientX); } });
+        window.addEventListener('mouseup', () => isDragging = false);
+        progressContainer.addEventListener('touchstart', e => { isDragging = true; updateProg(e.touches[0].clientX); }, { passive: false });
+        progressContainer.addEventListener('touchmove', e => { if (isDragging) { e.preventDefault(); updateProg(e.touches[0].clientX); } }, { passive: false });
+        progressContainer.addEventListener('touchend', () => isDragging = false);
 
         snippetAudio.addEventListener('timeupdate', () => {
             if (snippetAudio.duration && !isDragging) {
-                const progressPercent = (snippetAudio.currentTime / snippetAudio.duration) * 100;
-                progressBar.style.width = `${progressPercent}%`;
-                timeDisplay.textContent = `${formatTime(snippetAudio.currentTime)} / ${formatTime(snippetAudio.duration)}`;
+                progressBar.style.width = `${(snippetAudio.currentTime / snippetAudio.duration) * 100}%`;
+                timeDisplay.textContent = `${fmt(snippetAudio.currentTime)} / ${fmt(snippetAudio.duration)}`;
             }
         });
 
         snippetAudio.addEventListener('ended', () => {
-            playBtnIcon.className = 'fa-solid fa-play'; progressBar.style.width = '0%'; snippetAudio.currentTime = 0;
-            timeDisplay.textContent = `00:00 / ${formatTime(snippetAudio.duration)}`;
-            snippetHero.style.transform = `scale(1)`; snippetHero.style.boxShadow = `0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1)`;
+            playBtnIcon.className = 'fa-solid fa-play';
+            progressBar.style.width = '0%';
+            snippetAudio.currentTime = 0;
+            timeDisplay.textContent = `00:00 / ${fmt(snippetAudio.duration)}`;
+            if (snippetHero) snippetHero.style.transform = 'scale(1)';
         });
     </script>
 </body>
