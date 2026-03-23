@@ -27,6 +27,7 @@
         .blob-1 { width: 500px; height: 500px; background: var(--neon-purple); top: -10%; left: -10%; }
         .blob-2 { width: 600px; height: 600px; background: var(--neon-pink); bottom: -20%; right: -10%; animation-delay: -5s; }
         .blob-3 { width: 400px; height: 400px; background: var(--neon-cyan); top: 30%; left: 40%; opacity: 0.3; animation-delay: -10s; }
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
         
         body::before { 
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; 
@@ -82,34 +83,39 @@
         .track-counter { font-size: 1.1rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
         .track-counter .neon-text { color: var(--neon-yellow); text-shadow: 0 0 10px rgba(255, 204, 0, 0.5); font-size: 1.4rem; margin-left: 5px; }
 
+        /* СООБЩЕНИЕ О ПУСТОМ ПОИСКЕ */
+        .empty-state { display: none; text-align: center; padding: 60px 20px; opacity: 0; transition: opacity 0.3s ease; }
+        .empty-state.show { display: block; opacity: 1; }
+        .empty-icon { font-size: 4rem; color: var(--text-muted); margin-bottom: 20px; opacity: 0.6; }
+        .empty-text { font-size: 1.3rem; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; }
+        .empty-subtext { font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; }
+
         /* КАРТОЧКА ТРЕКА */
         .catalog-item { background: linear-gradient(135deg, rgba(30,30,40,0.7) 0%, rgba(10,10,15,0.8) 100%); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px 25px; display: flex; align-items: center; gap: 20px; transition: all 0.3s; box-shadow: 0 15px 35px rgba(0,0,0,0.5); position: relative; overflow: hidden; margin-bottom: 12px; }
         .catalog-item::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); transition: 0.6s ease-in-out; }
         .catalog-item:hover::before { left: 150%; }
-        .catalog-item:hover { border-color: rgba(0, 198, 255, 0.5); box-shadow: 0 15px 40px rgba(0, 198, 255, 0.2); transform: translateY(-4px); cursor: pointer; }
-        .catalog-item.playing { border-color: var(--neon-cyan); box-shadow: 0 0 30px rgba(0, 198, 255, 0.3), inset 0 0 20px rgba(0, 198, 255, 0.1); transform: scale(1.01); background: linear-gradient(135deg, rgba(40,40,60,0.8) 0%, rgba(15,15,25,0.9) 100%); margin-top: 5px; margin-bottom: 17px; }
+        .catalog-item:hover { border-color: rgba(112, 0, 255, 0.5); box-shadow: 0 15px 40px rgba(112, 0, 255, 0.25), inset 0 0 20px rgba(112, 0, 255, 0.1); transform: translateY(-4px); cursor: pointer; }
+        .catalog-item.playing { border-color: var(--neon-purple); box-shadow: 0 0 30px rgba(112, 0, 255, 0.4), inset 0 0 20px rgba(112, 0, 255, 0.1); transform: scale(1.01); background: linear-gradient(135deg, rgba(40,40,60,0.8) 0%, rgba(15,15,25,0.9) 100%); margin-top: 5px; margin-bottom: 17px; }
         
         .ci-left { display: flex; align-items: center; gap: 15px; flex-shrink: 0; pointer-events: none; }
         .ci-number { color: var(--text-muted); font-weight: 900; font-size: 1.3rem; width: 30px; text-align: center; transition: 0.3s; font-style: italic; }
-        .catalog-item.playing .ci-number { color: var(--neon-cyan); text-shadow: 0 0 10px var(--neon-cyan); }
+        .catalog-item.playing .ci-number { color: var(--neon-purple); text-shadow: 0 0 10px var(--neon-purple); }
         .ci-cover-wrapper { position: relative; width: 85px; height: 85px; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); pointer-events: auto; cursor: pointer; }
         .ci-cover-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .catalog-item:hover .ci-cover-wrapper img, .catalog-item.playing .ci-cover-wrapper img { transform: scale(1.15); filter: brightness(0.4); }
 
-        .ci-play-btn, #gpPlay, #gpPlayM { position: relative; display: flex; justify-content: center; align-items: center; }
-        .ci-play-btn i, #gpPlay i, #gpPlayM i { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: 0.2s; }
-        i.fa-play { margin-left: 2px; } 
-        i.fa-pause { margin-left: 0; }
-
-        .ci-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 204, 0, 0.9); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; opacity: 0; transition: 0.3s; backdrop-filter: blur(5px); }
+        .ci-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 204, 0, 0.9); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; opacity: 0; transition: 0.3s; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; }
+        .ci-play-btn i { position: static; transform: none; }
+        .ci-play-btn i.fa-play { margin-left: 2px; }
+        .ci-play-btn i.fa-pause { margin-left: 0; }
         .catalog-item:hover .ci-play-btn { opacity: 1; box-shadow: 0 0 20px rgba(255, 204, 0, 0.8); }
         .ci-play-btn:hover { background: #fff; transform: translate(-50%, -50%) scale(1.15); }
-        .catalog-item.playing .ci-play-btn { opacity: 1; background: var(--neon-cyan); color: #000; box-shadow: 0 0 20px var(--neon-cyan); }
+        .catalog-item.playing .ci-play-btn { opacity: 1; background: var(--neon-purple); color: #fff; box-shadow: 0 0 20px var(--neon-purple); }
 
         .ci-center { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-right: 15px; justify-content: center; pointer-events: none; }
         .ci-title-wrap { display: flex; align-items: center; gap: 10px; }
         .ci-title { font-size: 1.2rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.3s; }
-        .catalog-item.playing .ci-title { color: var(--neon-cyan); text-shadow: 0 0 10px rgba(0,198,255,0.3); }
+        .catalog-item.playing .ci-title { color: var(--neon-purple); text-shadow: 0 0 10px rgba(112,0,255,0.3); }
         
         .badge-18 { display: inline-flex; justify-content: center; align-items: center; background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.5); color: #ff3333; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 12px; backdrop-filter: blur(4px); box-shadow: 0 0 10px rgba(255,0,0,0.2); vertical-align: middle; flex-shrink: 0; }
         .ci-artist { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
@@ -117,8 +123,8 @@
         .ci-player-controls { display: flex; align-items: center; gap: 15px; width: 100%; margin-top: 5px; pointer-events: auto; }
         .progress-container { width: 100%; height: 24px; display: flex; align-items: center; cursor: pointer; position: relative; }
         .progress-container::before { content: ''; position: absolute; left: 0; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
-        .progress-bar { height: 6px; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: absolute; left: 0; top: 9px; pointer-events: none; z-index: 2; box-shadow: 0 0 10px rgba(0,198,255,0.5); transition: width 0.1s linear; }
-        .progress-bar::after { content: ''; position: absolute; right: -8px; top: -5px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9); transition: transform 0.1s; }
+        .progress-bar { height: 6px; width: 0%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink)); border-radius: 10px; position: absolute; left: 0; top: 9px; pointer-events: none; z-index: 2; box-shadow: 0 0 10px rgba(112,0,255,0.5); transition: width 0.1s linear; }
+        .progress-bar::after { content: ''; position: absolute; right: -8px; top: -5px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(112, 0, 255, 0.9); transition: transform 0.1s; }
         .progress-container.dragging .progress-bar { transition: none !important; }
         .progress-container:active .progress-bar::after { transform: scale(1.4); }
         
@@ -148,13 +154,13 @@
             border: 1px solid rgba(255,255,255,0.05); border-radius: 24px;
             z-index: 9000; display: flex; align-items: center; padding: 0 30px; gap: 20px;
             transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(0, 198, 255, 0.15), 0 0 30px rgba(112,0,255,0.2);
-            overflow: hidden; /* Сдерживаем свечение на ПК */
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(112, 0, 255, 0.15), 0 0 30px rgba(112,0,255,0.2);
+            overflow: hidden;
         }
-        .global-player::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent); opacity: 0.5; }
+        .global-player::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-purple), transparent); opacity: 0.5; }
         .global-player.active { transform: translateX(-50%) translateY(0); }
         
-        .gp-bg-glow { display: none; } /* Скрыто на ПК */
+        .gp-bg-glow { display: none; }
         
         .gp-header-mobile { display: none; }
         .gp-content { display: flex; align-items: center; width: 100%; justify-content: space-between; gap: 20px; position: relative; z-index: 2; }
@@ -171,8 +177,9 @@
         .gp-btn { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; transition: 0.3s; }
         .gp-btn:hover { color: #fff; transform: scale(1.15); text-shadow: 0 0 10px #fff; }
         
-        #gpPlay { width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.6); }
-        #gpPlay:hover { background: var(--neon-pink); box-shadow: 0 0 25px rgba(255,0,127,0.8); transform: scale(1.1); color: #fff;}
+        #gpPlay { width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.6); display: flex; justify-content: center; align-items: center; }
+        #gpPlay:hover { background: var(--neon-pink); box-shadow: 0 0 25px rgba(255,0,127,0.8); transform: scale(1.1); }
+        #gpPlay i { position: static; transform: none; }
         
         .gp-progress-area { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 500px; }
         .gp-progress-area .progress-container { flex: 1; height: 20px; }
@@ -181,13 +188,13 @@
         .gp-right { display: flex; align-items: center; justify-content: flex-end; gap: 15px; width: 300px; flex-shrink: 0; }
         .vol-container { display: flex; align-items: center; gap: 12px; width: 100%; justify-content: flex-end;}
         .vol-mute-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); font-size: 1.1rem; cursor: pointer; transition: 0.3s; width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; }
-        .vol-mute-btn:hover { background: rgba(0,198,255,0.1); border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.3); }
+        .vol-mute-btn:hover { background: rgba(112,0,255,0.1); border-color: var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 15px rgba(112,0,255,0.3); }
         .vol-mute-btn.muted { color: var(--neon-red); border-color: rgba(255,0,51,0.3); background: rgba(255,0,51,0.1); box-shadow: 0 0 15px rgba(255,0,51,0.3); }
         
         .vol-wrap { flex: 1; max-width: 120px; display: flex; align-items: center; gap: 12px; }
         .vol-bar-bg { width: 100%; height: 6px; background: rgba(255,255,255,0.15); border-radius: 10px; position: relative; cursor: pointer; display: flex; align-items: center; }
-        .vol-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: absolute; left: 0; pointer-events: none; box-shadow: 0 0 10px rgba(0,198,255,0.5); }
-        .vol-thumb { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9); opacity: 0; transition: opacity 0.2s, transform 0.1s; pointer-events: none; }
+        .vol-bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink)); border-radius: 10px; position: absolute; left: 0; pointer-events: none; box-shadow: 0 0 10px rgba(112,0,255,0.5); }
+        .vol-thumb { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(112, 0, 255, 0.9); opacity: 0; transition: opacity 0.2s, transform 0.1s; pointer-events: none; z-index: 10; }
         .vol-bar-bg:hover .vol-thumb, .vol-wrap.dragging .vol-thumb { opacity: 1; }
         .vol-bar-bg:active .vol-thumb { transform: translateY(-50%) scale(1.3); }
         .vol-text { font-size: 0.8rem; font-weight: 800; color: #fff; min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
@@ -195,25 +202,28 @@
         .window-actions { display: flex; gap: 8px; }
         .gp-action-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; flex-shrink: 0;}
         .gp-action-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(2px); }
-        .gp-min-btn:hover { border-color: var(--neon-cyan); color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.4); }
+        .gp-min-btn:hover { border-color: var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 15px rgba(112,0,255,0.4); }
         .gp-close-btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 15px rgba(255,0,127,0.4); }
 
         /* ========================================= */
-        /* --- СВЕРНУТЫЙ ПЛЕЕР (CD ORB) --- */
+        /* --- СВЕРНУТЫЙ ПЛЕЕР (MINI ORB) --- */
         /* ========================================= */
         .mini-player-orb {
             position: fixed; bottom: 30px; right: 30px; width: 70px; height: 70px;
-            border-radius: 50%; background: rgba(10,10,15,0.95); border: 2px solid var(--neon-cyan);
+            border-radius: 50%; background: rgba(10,10,15,0.95);
             display: none; justify-content: center; align-items: center; z-index: 10005; cursor: grab;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(0, 198, 255, 0.4); backdrop-filter: blur(10px);
-            user-select: none; touch-action: none; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(112, 0, 255, 0.5), inset 0 0 15px rgba(112, 0, 255, 0.2);
+            backdrop-filter: blur(10px); user-select: none; touch-action: none;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+            background: conic-gradient(from 0deg, rgba(112, 0, 255, 0.8), rgba(255, 0, 127, 0.8), rgba(0, 198, 255, 0.8), rgba(112, 0, 255, 0.8)) border-box;
         }
         .mini-player-orb:hover { transform: scale(1.1); }
         .mini-player-orb:active { cursor: grabbing; transform: scale(0.95); transition: 0s; }
-        .orb-icon { font-size: 2.5rem; color: #fff; text-shadow: 0 0 15px var(--neon-cyan); transition: 0.3s; }
-        .mini-player-orb:hover .orb-icon { color: var(--neon-cyan); }
-        .mini-player-orb.playing .orb-icon { animation: spinCD 3s linear infinite; color: var(--neon-cyan); }
-        @keyframes spinCD { 100% { transform: rotate(360deg); } }
+        .orb-icon { font-size: 2rem; background: linear-gradient(135deg, #ff007f, #7000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: none; transition: 0.3s; }
+        .mini-player-orb:hover .orb-icon { transform: scale(1.15); }
+        .mini-player-orb.playing .orb-icon { animation: pulseOrb 2s ease-in-out infinite; }
+        @keyframes pulseOrb { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } }
 
         /* МОДАЛКИ */
         footer { padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
@@ -279,7 +289,7 @@
             .ci-left { width: 100%; justify-content: flex-start; gap: 15px; }
             .ci-number { display: none; } 
             .ci-cover-wrapper { width: 65px; height: 65px; }
-            .ci-play-btn { width: 45px; height: 45px; font-size: 1.1rem; pointer-events: auto; opacity: 1;}
+            .ci-play-btn { width: 45px; height: 45px; font-size: 1.1rem; pointer-events: auto; opacity: 1; }
             .ci-center { width: 100%; align-items: flex-start; text-align: left; padding-right: 0; }
             .ci-player-controls { flex-direction: column; gap: 10px; align-items: stretch; margin-top: 10px; }
             .time-display-card { width: 100%; text-align: center; margin-top: -5px; }
@@ -358,6 +368,7 @@
             .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
             .drag-handle { display: none; }
         }
+        @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -376,6 +387,8 @@
         <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
             МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.5rem; cursor: pointer; color: white; transition: 0.3s;"></i>
         </div>
+        <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home icon-main"></i> Главная</a>
+        <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music icon-main"></i> Муз. каталог</a>
         <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info icon-main"></i> О нас</a>
         <a href="#" class="sidebar-link" id="sidebarSupportBtn">
             <i class="fa-solid fa-headset icon-main"></i> Тех. поддержка
@@ -391,6 +404,7 @@
     <nav class="top-nav fade-in">
         <a href="https://dxtrslizze.xyz/" class="nav-link">Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="nav-link active">Муз. каталог</a>
+        <a href="https://dxtrslizze.xyz/about" class="nav-link">О нас</a>
     </nav>
 
     <div class="modal" id="downloadModal">
@@ -446,6 +460,11 @@
             <div class="track-counter">Найдено: <span class="neon-text" id="trackCount">0</span></div>
         </div>
         <div id="track-list"></div>
+        <div class="empty-state" id="emptyState">
+            <div class="empty-icon"><i class="fa-solid fa-compact-disc"></i></div>
+            <div class="empty-text">Ничего не найдено</div>
+            <div class="empty-subtext">Попробуй другой запрос или перейди в полный каталог</div>
+        </div>
     </main>
 
     <footer>
@@ -455,7 +474,8 @@
     <audio id="globalAudio" preload="metadata"></audio>
     
     <div class="global-player" id="globalPlayer">
-        <div class="gp-bg-glow" id="gpBgGlow"></div> <div class="gp-header-mobile">
+        <div class="gp-bg-glow" id="gpBgGlow"></div>
+        <div class="gp-header-mobile">
             <button class="gp-action-btn-m" onclick="minimizePlayer()"><i class="fa-solid fa-chevron-down"></i></button>
             <div style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted);">Сейчас играет</div>
             <button class="gp-action-btn-m" onclick="closePlayer()"><i class="fa-solid fa-xmark"></i></button>
@@ -476,7 +496,7 @@
             <div class="gp-center">
                 <div class="gp-controls">
                     <button class="gp-btn" id="gpPrev" title="Предыдущий трек [<-]"><i class="fa-solid fa-backward-step"></i></button>
-                    <button class="gp-btn" id="gpPlay" title="Пауза/Плей [Space]"><i class="fa-solid fa-play" id="gpPlayIcon"></i></button>
+                    <button id="gpPlay" title="Пауза/Плей [Space]"><i class="fa-solid fa-play" id="gpPlayIcon"></i></button>
                     <button class="gp-btn" id="gpNext" title="Следующий трек [->]"><i class="fa-solid fa-forward-step"></i></button>
                 </div>
                 <div class="gp-progress-area">
@@ -490,7 +510,7 @@
 
             <div class="gp-right">
                 <div class="vol-container" id="volCont">
-                    <button class="vol-mute-btn" id="gpMute" title="Громкость [M]"><i class="fa-solid fa-volume-high" id="volIcon"></i></button>
+                    <button class="vol-mute-btn" id="gpMute" title="Громкость [M]"><i id="volIcon" class="fa-solid fa-volume-high"></i></button>
                     <div class="vol-wrap" id="volWrap">
                         <div class="vol-bar-bg" id="volBarBg">
                             <div class="vol-bar-fill" id="volBarFill"></div>
@@ -508,7 +528,7 @@
     </div>
 
     <div class="mini-player-orb" id="miniOrb" title="Развернуть плеер">
-        <i class="fa-solid fa-compact-disc orb-icon" id="orbIcon"></i>
+        <i class="fa-solid fa-waveform-lines orb-icon" id="orbIcon"></i>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -611,7 +631,6 @@
                 document.getElementById('gpTitle').textContent = tracks[index].title;
                 document.getElementById('gpCover').src = tracks[index].cover;
                 
-                // Устанавливаем динамический фон для мобилок
                 gpBgGlow.style.backgroundImage = `url('${tracks[index].cover}')`;
                 
                 if(explicitTracks.includes(tracks[index].title)) { gpBadge18.style.display = 'inline-flex'; }
@@ -791,7 +810,7 @@
             activeScrubberContainer = null;
         }
 
-        // ГРОМКОСТЬ
+        // ГРОМКОСТЬ С ДИНАМИЧЕСКОЙ ИКОНКОЙ
         const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
         const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
         let currentVolume = 1, lastVolume = 1, isDraggingVol = false;
@@ -803,7 +822,10 @@
             volTextVal.textContent = p;
             
             volNode.classList.remove('muted');
-            if(v === 0) { volIcon.className = 'fa-solid fa-volume-xmark'; volNode.classList.add('muted');}
+            if(v === 0) { 
+                volIcon.className = 'fa-solid fa-volume-xmark'; 
+                volNode.classList.add('muted');
+            }
             else if(v <= 0.35) { volIcon.className = 'fa-solid fa-volume-off'; }
             else if(v <= 0.70) { volIcon.className = 'fa-solid fa-volume-low'; }
             else { volIcon.className = 'fa-solid fa-volume-high'; }
@@ -885,10 +907,26 @@
         function toggleSBar() { sBar.classList.toggle('active'); sOver.classList.toggle('active'); }
         bBtn.onclick = toggleSBar; cSBar.onclick = toggleSBar; sOver.onclick = toggleSBar;
 
+        // ПОИСК С ПУСТЫМ СОСТОЯНИЕМ
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            const q = e.target.value.toLowerCase(); let count = 0;
-            document.querySelectorAll('.catalog-item').forEach(item => { if(item.querySelector('.ci-title').textContent.toLowerCase().includes(q)) { item.style.display = 'flex'; count++; } else item.style.display = 'none'; });
+            const q = e.target.value.toLowerCase(); 
+            let count = 0;
+            document.querySelectorAll('.catalog-item').forEach(item => { 
+                if(item.querySelector('.ci-title').textContent.toLowerCase().includes(q)) { 
+                    item.style.display = 'flex'; 
+                    count++; 
+                } else { 
+                    item.style.display = 'none'; 
+                } 
+            });
             document.getElementById('trackCount').textContent = count;
+            
+            const emptyState = document.getElementById('emptyState');
+            if(count === 0) {
+                emptyState.classList.add('show');
+            } else {
+                emptyState.classList.remove('show');
+            }
         });
 
         const dM = document.getElementById('downloadModal'), pM = document.getElementById('platformsModal');
