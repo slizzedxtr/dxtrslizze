@@ -27,7 +27,15 @@
         .blob-1 { width: 500px; height: 500px; background: var(--neon-purple); top: -10%; left: -10%; }
         .blob-2 { width: 600px; height: 600px; background: var(--neon-pink); bottom: -20%; right: -10%; animation-delay: -5s; }
         .blob-3 { width: 400px; height: 400px; background: var(--neon-cyan); top: 30%; left: 40%; opacity: 0.3; animation-delay: -10s; }
-        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; background: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 40px 40px; mask-image: radial-gradient(circle at center, black 40%, transparent 100%); -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%); }
+        
+        body::before { 
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; 
+            background: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); 
+            background-size: 40px 40px; 
+            mask-image: radial-gradient(circle at center, black 40%, transparent 100%); 
+            -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%); 
+        }
+        
         .fade-in { animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
@@ -38,13 +46,16 @@
 
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan); }
+        
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid rgba(0, 198, 255, 0.2); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
         .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .sidebar-link i.icon-main { color: var(--neon-cyan); font-size: 1.4rem; transition: 0.3s; }
         .sidebar-link:hover { color: var(--neon-cyan); padding-left: 10px; border-bottom-color: rgba(0,198,255,0.3); }
+        
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
+        
         #menuBanLock { color: var(--neon-red); font-size: 1rem; margin-left: auto; display: none; animation: pulseRed 2s infinite; }
         @keyframes pulseRed { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; text-shadow: 0 0 10px var(--neon-red); } }
 
@@ -66,7 +77,7 @@
         .controls-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: linear-gradient(135deg, rgba(30,30,40,0.6), rgba(10,10,15,0.8)); padding: 15px 25px; border-radius: 16px; border: 1px solid var(--glass-border); backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .search-box { position: relative; flex: 1; max-width: 400px; display: flex; align-items: center; }
         .search-box i { position: absolute; left: 15px; color: var(--text-muted); font-size: 1.1rem; }
-        .search-box input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 15px 12px 45px; border-radius: 12px; font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 500; outline: none; transition: 0.3s; }
+        .search-box input { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 15px 12px 45px; border-radius: 12px; font-size: 1rem; font-weight: 500; transition: 0.3s; }
         .search-box input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 198, 255, 0.3); background: rgba(0,0,0,0.6); }
         .track-counter { font-size: 1.1rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
         .track-counter .neon-text { color: var(--neon-yellow); text-shadow: 0 0 10px rgba(255, 204, 0, 0.5); font-size: 1.4rem; margin-left: 5px; }
@@ -85,10 +96,9 @@
         .ci-cover-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .catalog-item:hover .ci-cover-wrapper img, .catalog-item.playing .ci-cover-wrapper img { transform: scale(1.15); filter: brightness(0.4); }
 
-        /* ЖЕСТКАЯ ФИКСАЦИЯ ЦЕНТРА ПАУЗЫ */
         .ci-play-btn, #gpPlay, #gpPlayM { position: relative; display: flex; justify-content: center; align-items: center; }
         .ci-play-btn i, #gpPlay i, #gpPlayM i { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: 0.2s; }
-        i.fa-play { margin-left: 2px; } /* Оптическое смещение для треугольника */
+        i.fa-play { margin-left: 2px; } 
         i.fa-pause { margin-left: 0; }
 
         .ci-play-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 204, 0, 0.9); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; opacity: 0; transition: 0.3s; backdrop-filter: blur(5px); }
@@ -109,7 +119,6 @@
         .progress-container::before { content: ''; position: absolute; left: 0; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
         .progress-bar { height: 6px; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: absolute; left: 0; top: 9px; pointer-events: none; z-index: 2; box-shadow: 0 0 10px rgba(0,198,255,0.5); transition: width 0.1s linear; }
         .progress-bar::after { content: ''; position: absolute; right: -8px; top: -5px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(0, 198, 255, 0.9); transition: transform 0.1s; }
-        /* ОТКЛЮЧАЕМ АНИМАЦИЮ ПРИ ПЕРЕТАСКИВАНИИ ДЛЯ РЕАЛЬНОГО ВРЕМЕНИ */
         .progress-container.dragging .progress-bar { transition: none !important; }
         .progress-container:active .progress-bar::after { transform: scale(1.4); }
         
@@ -144,9 +153,7 @@
         .global-player::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent); opacity: 0.5; }
         .global-player.active { transform: translateX(-50%) translateY(0); }
         
-        /* HEADER (ТОЛЬКО ДЛЯ МОБИЛОК) */
         .gp-header-mobile { display: none; }
-
         .gp-content { display: flex; align-items: center; width: 100%; justify-content: space-between; gap: 20px; }
         
         .gp-left { display: flex; align-items: center; gap: 15px; width: 280px; flex-shrink: 0; }
@@ -168,7 +175,6 @@
         .gp-progress-area .progress-container { flex: 1; height: 20px; }
         .gp-time { min-width: 45px; font-size: 0.8rem; color: var(--text-muted); font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; }
 
-        /* ГРОМКОСТЬ И КНОПКИ ЗАКРЫТИЯ */
         .gp-right { display: flex; align-items: center; justify-content: flex-end; gap: 15px; width: 300px; flex-shrink: 0; }
         .vol-container { display: flex; align-items: center; gap: 12px; width: 100%; justify-content: flex-end;}
         .vol-mute-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-main); font-size: 1.1rem; cursor: pointer; transition: 0.3s; width: 40px; height: 40px; border-radius: 12px; display: flex; justify-content: center; align-items: center; }
@@ -235,14 +241,26 @@
         #chat-close { cursor: pointer; font-size: 1.5rem; transition: 0.3s; color: rgba(255,255,255,0.6); padding: 5px; }
         #chat-close:hover { color: var(--neon-pink); transform: rotate(90deg); text-shadow: 0 0 10px var(--neon-pink); }
         #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth; }
-        #chat-messages::-webkit-scrollbar { width: 4px; } #chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); } #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-purple); border-radius: 10px; box-shadow: 0 0 10px var(--neon-purple); }
+        #chat-messages::-webkit-scrollbar { width: 4px; } 
+        #chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); } 
+        #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-purple); border-radius: 10px; box-shadow: 0 0 10px var(--neon-purple); }
+        
         .chat-system-msg { color: var(--neon-cyan); text-align: center; font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; padding: 8px; border: 1px dashed rgba(0,198,255,0.3); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; }
         .chat-system-ban { color: var(--neon-red); text-align: center; font-size: 0.8rem; font-weight: 800; margin-bottom: 10px; padding: 10px; border: 1px solid var(--neon-red); border-radius: 8px; background: rgba(255,0,51,0.1); box-shadow: 0 0 15px rgba(255,0,51,0.2); display: none; }
-        .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; } @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; } 
+        @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
         .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
         .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 5px 20px rgba(0,0,0,0.4); backdrop-filter: blur(10px); font-weight: 500; }
-        .msg-user { align-items: flex-end; } .msg-user .chat-msg-name { color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0,198,255,0.5); } .msg-user .chat-msg-bubble { background: rgba(0, 198, 255, 0.08); border: 1px solid rgba(0, 198, 255, 0.4); border-bottom-right-radius: 2px; }
-        .msg-bot { align-items: flex-start; } .msg-bot .chat-msg-name { color: var(--neon-purple); text-shadow: 0 0 5px rgba(112,0,255,0.5); } .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.08); border: 1px solid rgba(112, 0, 255, 0.4); border-bottom-left-radius: 2px; }
+        
+        .msg-user { align-items: flex-end; } 
+        .msg-user .chat-msg-name { color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0,198,255,0.5); } 
+        .msg-user .chat-msg-bubble { background: rgba(0, 198, 255, 0.08); border: 1px solid rgba(0, 198, 255, 0.4); border-bottom-right-radius: 2px; }
+        
+        .msg-bot { align-items: flex-start; } 
+        .msg-bot .chat-msg-name { color: var(--neon-purple); text-shadow: 0 0 5px rgba(112,0,255,0.5); } 
+        .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.08); border: 1px solid rgba(112, 0, 255, 0.4); border-bottom-left-radius: 2px; }
+        
         .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); z-index: 2; position: relative; }
         #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
         #chat-input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.2), inset 0 0 10px rgba(0,198,255,0.1); }
@@ -283,7 +301,7 @@
             body.player-fullscreen .fixed-up-btn { display: none !important; }
 
             /* Header Плеера (Крестик и Свернуть) */
-            .window-actions { display: none; } /* Скрыть десктопные экшены */
+            .window-actions { display: none; } 
             .gp-header-mobile { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
             .gp-action-btn-m { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; }
 
@@ -313,6 +331,7 @@
             .vol-container { width: 100%; justify-content: center; }
             .vol-wrap { max-width: 100%; flex: 1; }
             
+            /* Чат на мобильных */
             #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
             .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
             .drag-handle { display: none; }
@@ -414,7 +433,6 @@
     <audio id="globalAudio" preload="metadata"></audio>
     
     <div class="global-player" id="globalPlayer">
-        
         <div class="gp-header-mobile">
             <button class="gp-action-btn-m" onclick="minimizePlayer()"><i class="fa-solid fa-chevron-down"></i></button>
             <div style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted);">Сейчас играет</div>
@@ -557,6 +575,7 @@
         const miniOrb = document.getElementById('miniOrb');
         const gpBadge18 = document.getElementById('gpBadge18');
 
+        // ЛОГИКА ПЛЕЕРА
         function playTrack(index) {
             hasPlayed = true;
             document.body.classList.add('player-fullscreen'); 
@@ -633,11 +652,14 @@
         const handleNextClick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex + 1) % tracks.length); };
         const handlePrevClick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex - 1 + tracks.length) % tracks.length); };
 
-        gpPlayBtn.onclick = handlePlayClick; document.getElementById('gpNext').onclick = handleNextClick; document.getElementById('gpPrev').onclick = handlePrevClick;
+        gpPlayBtn.onclick = handlePlayClick; 
+        document.getElementById('gpNext').onclick = handleNextClick; 
+        document.getElementById('gpPrev').onclick = handlePrevClick;
         globalAudio.addEventListener('play', updateUI);
         globalAudio.addEventListener('pause', updateUI);
         globalAudio.addEventListener('ended', handleNextClick);
 
+        // ПЕРЕМОТКА
         const gpBarFill = document.getElementById('gpProgBar'), gpTime = document.getElementById('gpTime'), gpDuration = document.getElementById('gpDuration');
         let isDraggingProgress = false;
         let activeScrubberContainer = null;
@@ -723,6 +745,7 @@
             activeScrubberContainer = null;
         }
 
+        // ГРОМКОСТЬ
         const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
         const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
         let currentVolume = 1, lastVolume = 1, isDraggingVol = false;
@@ -764,6 +787,7 @@
         function toggleMute() { currentVolume > 0 ? setVolume(0) : setVolume(lastVolume); }
         volNode.onclick = toggleMute;
 
+        // ГОРЯЧИЕ КЛАВИШИ
         document.addEventListener('keydown', (e) => {
             if (!hasPlayed || document.activeElement.tagName === 'INPUT') return;
             if (e.code === 'Space') { e.preventDefault(); gpPlayBtn.click(); }
@@ -774,7 +798,14 @@
             if (e.key.toLowerCase() === 'm') { e.preventDefault(); toggleMute(); }
         });
 
-        miniOrb.onclick = () => { if(isDraggingOrb) return; isMinimized = false; miniOrb.style.display = 'none'; gp.classList.add('active'); if(window.innerWidth <= 800) document.body.classList.add('player-fullscreen'); };
+        // DRAG & DROP ДЛЯ МИНИ-ПЛЕЕРА
+        miniOrb.onclick = () => { 
+            if(isDraggingOrb) return; 
+            isMinimized = false; 
+            miniOrb.style.display = 'none'; 
+            gp.classList.add('active'); 
+            if(window.innerWidth <= 800) document.body.classList.add('player-fullscreen'); 
+        };
 
         let isDraggingOrb = false, orbMoved = false, orbTouchX, orbTouchY, orbStartX, orbStartY;
         function orbDragStart(e) { isDraggingOrb = true; orbMoved = false; let c = e.touches ? e.touches[0] : e; orbTouchX = c.clientX; orbTouchY = c.clientY; orbStartX = miniOrb.offsetLeft; orbStartY = miniOrb.offsetTop; miniOrb.style.transition = 'none'; }
@@ -785,6 +816,7 @@
         window.addEventListener('mousemove', orbDragMove); window.addEventListener('touchmove', orbDragMove, {passive: false});
         window.addEventListener('mouseup', orbDragEnd); window.addEventListener('touchend', orbDragEnd);
 
+        // ИНТЕРФЕЙСНЫЕ МЕХАНИКИ (СКРОЛЛ, МЕНЮ, ПОИСК, МОДАЛКИ)
         const btnUp = document.getElementById('scrollTopBtn');
         window.addEventListener('scroll', () => window.scrollY > 300 ? btnUp.classList.add('visible') : btnUp.classList.remove('visible'));
         btnUp.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -805,9 +837,14 @@
         function closeModal(m) { document.getElementById(m).style.display = 'none'; document.body.style.overflow = 'auto'; }
         window.onclick = e => { if(e.target === dM) closeModal('downloadModal'); if(e.target === pM) closeModal('platformsModal'); }
 
-        window.userNickname = null; let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9); localStorage.setItem('dxtrClientId', clientId);
+        // === ЧАТ ТЕХПОДДЕРЖКИ ===
+        window.userNickname = null; 
+        let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9); 
+        localStorage.setItem('dxtrClientId', clientId);
+        
         const socket = io("https://dxtrslizze.onrender.com/");
         const chatWindow = document.getElementById('chat-window'), chatClose = document.getElementById('chat-close'), chatMessages = document.getElementById('chat-messages'), chatInput = document.getElementById('chat-input'), chatSendBtn = document.getElementById('chat-send'), chatHeader = document.getElementById('chat-header');
+        
         document.getElementById('sidebarSupportBtn').onclick = (e) => { 
             e.preventDefault(); 
             toggleSBar(); 
@@ -815,14 +852,13 @@
             setTimeout(() => { 
                 chatWindow.style.display = 'flex'; 
                 
-                if(!isMobile) { 
+                if(window.innerWidth > 800) { 
                     chatWindow.style.left = 'auto'; 
                     chatWindow.style.top = 'auto'; 
                     chatWindow.style.right = '30px'; 
                     chatWindow.style.bottom = '30px'; 
                 } 
                 
-                // Даем браузеру 50мс на отрисовку окна, чтобы он понял реальную высоту сообщений
                 setTimeout(() => {
                     chatMessages.scrollTop = chatMessages.scrollHeight; 
                 }, 50);
@@ -831,29 +867,24 @@
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
+        // Драг-энд-дроп для окна чата
         let isDraggingChat = false, chatOffsetX, chatOffsetY;
 
         chatHeader.addEventListener('mousedown', (e) => {
-            // Отключаем перетаскивание на мобилках или если кликнули по крестику
             if (window.innerWidth <= 800 || e.target.id === 'chat-close') return;
             isDraggingChat = true;
             
-            // Сбрасываем CSS-анимацию, чтобы она не ломала координаты
             chatWindow.style.animation = 'none';
             chatWindow.style.transform = 'none';
             
             const rect = chatWindow.getBoundingClientRect();
-            
-            // Вычисляем, где именно внутри шапки мы зажали мышь
             chatOffsetX = e.clientX - rect.left;
             chatOffsetY = e.clientY - rect.top;
             
-            // Отвязываем окно от нижнего правого угла
             chatWindow.style.right = 'auto';
             chatWindow.style.bottom = 'auto';
             chatWindow.style.margin = '0';
             
-            // Фиксируем текущую позицию перед началом движения
             chatWindow.style.left = rect.left + 'px';
             chatWindow.style.top = rect.top + 'px';
         });
@@ -862,11 +893,9 @@
             if (!isDraggingChat) return;
             e.preventDefault();
             
-            // Вычисляем новые координаты
             let newX = e.clientX - chatOffsetX;
             let newY = e.clientY - chatOffsetY;
             
-            // Ограничители (чтобы окно не утащили за пределы монитора)
             newX = Math.max(0, Math.min(newX, window.innerWidth - chatWindow.offsetWidth));
             newY = Math.max(0, Math.min(newY, window.innerHeight - chatWindow.offsetHeight));
             
@@ -874,18 +903,88 @@
             chatWindow.style.top = `${newY}px`;
         });
 
-        document.addEventListener('mouseup', () => { 
-            isDraggingChat = false; 
+        document.addEventListener('mouseup', () => { isDraggingChat = false; });
+
+        // Сокеты и логика отправки сообщений
+        socket.on('connect', () => { socket.emit('register_client', clientId); }); 
+        socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
+        socket.on('user_data', d => { if (d.nickname) { window.userNickname = d.nickname; document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; } });
+        
+        socket.on('ban_status', d => { 
+            if (d.isBanned) { 
+                document.getElementById('menuBanLock').style.display = 'inline-block'; 
+                document.getElementById('chatBanNotice').style.display = 'block'; 
+                document.getElementById('chatGreeting').style.display = 'none'; 
+                chatInput.disabled = true; 
+                chatInput.placeholder = "Вам ограничен доступ к тех. поддержке"; 
+                chatInput.style.borderColor = "var(--neon-red)"; 
+                chatSendBtn.disabled = true; 
+                chatSendBtn.style.background = '#333'; 
+                chatSendBtn.style.color = '#555'; 
+            } else { 
+                document.getElementById('menuBanLock').style.display = 'none'; 
+                document.getElementById('chatBanNotice').style.display = 'none'; 
+                document.getElementById('chatGreeting').style.display = 'block'; 
+                chatInput.disabled = false; 
+                chatInput.placeholder = "Передача данных..."; 
+                chatInput.style.borderColor = "rgba(255,255,255,0.1)"; 
+                chatSendBtn.disabled = false; 
+                chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; 
+                chatSendBtn.style.color = '#fff'; 
+            } 
+        });
+        
+        socket.on('receive_message', d => { 
+            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex'; 
+            addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); 
         });
 
-        socket.on('connect', () => { socket.emit('register_client', clientId); }); socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
-        socket.on('user_data', d => { if (d.nickname) { window.userNickname = d.nickname; document.getElementById('chatGreeting').innerHTML = `Терминал активен. Приветствую, <b>${d.nickname}</b>!`; } });
-        socket.on('ban_status', d => { if (d.isBanned) { document.getElementById('menuBanLock').style.display = 'inline-block'; document.getElementById('chatBanNotice').style.display = 'block'; document.getElementById('chatGreeting').style.display = 'none'; chatInput.disabled = true; chatInput.placeholder = "СВЯЗЬ ПРЕРВАНА"; chatInput.style.borderColor = "var(--neon-red)"; chatSendBtn.disabled = true; chatSendBtn.style.background = '#333'; chatSendBtn.style.color = '#555'; } else { document.getElementById('menuBanLock').style.display = 'none'; document.getElementById('chatBanNotice').style.display = 'none'; document.getElementById('chatGreeting').style.display = 'block'; chatInput.disabled = false; chatInput.placeholder = "Передача данных..."; chatInput.style.borderColor = "rgba(255,255,255,0.1)"; chatSendBtn.disabled = false; chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; chatSendBtn.style.color = '#fff'; } });
-        socket.on('receive_message', d => { if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex'; addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); });
-
-        chatSendBtn.onclick = sendMessageToBot; chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
-        function sendMessageToBot() { const t = chatInput.value.trim(); if (!t || chatInput.disabled) return; socket.emit('send_message', { text: t, clientId: clientId }); addChatMessage('Вы', t, 'flex-end', true, false, false); chatInput.value = ''; }
-        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { const wrapper = document.createElement('div'); wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; const nameLab = document.createElement('span'); nameLab.className = 'chat-msg-name'; nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; const bubble = document.createElement('div'); bubble.className = 'chat-msg-bubble'; bubble.textContent = text; if (isWarn) { nameLab.style.color = 'var(--neon-red)'; bubble.style.background = 'rgba(255,0,51,0.1)'; bubble.style.border = '1px solid var(--neon-red)'; } else if (isSucc) { nameLab.style.color = 'var(--neon-green)'; bubble.style.background = 'rgba(0,255,102,0.1)'; bubble.style.border = '1px solid var(--neon-green)'; } wrapper.appendChild(nameLab); wrapper.appendChild(bubble); chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight; if (save) { const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); if (h.length > 50) h.shift(); localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); } }
+        chatSendBtn.onclick = sendMessageToBot; 
+        chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
+        
+        function sendMessageToBot() { 
+            const t = chatInput.value.trim(); 
+            if (!t || chatInput.disabled) return; 
+            socket.emit('send_message', { text: t, clientId: clientId }); 
+            addChatMessage('Вы', t, 'flex-end', true, false, false); 
+            chatInput.value = ''; 
+        }
+        
+        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { 
+            const wrapper = document.createElement('div'); 
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; 
+            
+            const nameLab = document.createElement('span'); 
+            nameLab.className = 'chat-msg-name'; 
+            nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; 
+            
+            const bubble = document.createElement('div'); 
+            bubble.className = 'chat-msg-bubble'; 
+            bubble.textContent = text; 
+            
+            if (isWarn) { 
+                nameLab.style.color = 'var(--neon-red)'; 
+                bubble.style.background = 'rgba(255,0,51,0.1)'; 
+                bubble.style.border = '1px solid var(--neon-red)'; 
+            } else if (isSucc) { 
+                nameLab.style.color = 'var(--neon-green)'; 
+                bubble.style.background = 'rgba(0,255,102,0.1)'; 
+                bubble.style.border = '1px solid var(--neon-green)'; 
+            } 
+            
+            wrapper.appendChild(nameLab); 
+            wrapper.appendChild(bubble); 
+            chatMessages.appendChild(wrapper); 
+            chatMessages.scrollTop = chatMessages.scrollHeight; 
+            
+            if (save) { 
+                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; 
+                h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); 
+                if (h.length > 50) h.shift(); 
+                localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); 
+            } 
+        }
+        
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
 
         setVolume(1);
