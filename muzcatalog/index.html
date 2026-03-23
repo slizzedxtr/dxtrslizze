@@ -177,9 +177,25 @@
         .gp-btn { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; transition: 0.3s; }
         .gp-btn:hover { color: #fff; transform: scale(1.15); text-shadow: 0 0 10px #fff; }
         
-        #gpPlay { width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; font-size: 1.3rem; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.6); display: flex; justify-content: center; align-items: center; }
-        #gpPlay:hover { background: var(--neon-pink); box-shadow: 0 0 25px rgba(255,0,127,0.8); transform: scale(1.1); }
-        #gpPlay i { position: static; transform: none; }
+        /* ЖЁСТКИЙ ФИКСАТОР ДЛЯ КНОПКИ ПЛЕЙ/ПАУЗА */
+        #gpPlay { 
+            width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; 
+            font-size: 1.3rem; cursor: pointer; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+            box-shadow: 0 0 15px rgba(112,0,255,0.6); display: flex; justify-content: center; align-items: center; 
+            backface-visibility: hidden; transform: translateZ(0); 
+        }
+        #gpPlay:hover { 
+            background: var(--neon-pink); box-shadow: 0 0 25px rgba(255,0,127,0.8); 
+            transform: scale(1.1) translateZ(0); 
+        }
+        #gpPlay i { 
+            position: static; margin: 0 !important; padding: 0 !important; width: 1.25em; text-align: center; 
+            display: inline-flex; justify-content: center; align-items: center; 
+            backface-visibility: hidden; transform: translateZ(0); 
+        }
+        #gpPlay i.fa-play { transform: translateX(2px) translateZ(0); } /* Визуальный центр для Play */
+        #gpPlay i.fa-pause { transform: translateX(0) translateZ(0); }
+        /* ======================================== */
         
         .gp-progress-area { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 500px; }
         .gp-progress-area .progress-container { flex: 1; height: 20px; }
@@ -663,7 +679,7 @@
         const globalAudio = document.getElementById('globalAudio');
         let currentTrackIndex = -1, isMinimized = false, hasPlayed = false;
         
-        window.justScrubbed = false; // Флаг для блокировки случайных кликов после скраббинга
+        window.justScrubbed = false;
 
         function formatTime(sec) {
             if (!sec || isNaN(sec)) return "00:00";
@@ -727,7 +743,7 @@
 
         // ЛОГИКА ПЛЕЕРА
         function playTrack(index) {
-            if (window.justScrubbed) return; // Игнорируем клик, если только что была перемотка
+            if (window.justScrubbed) return; 
             
             hasPlayed = true;
             document.body.classList.add('player-fullscreen'); 
@@ -907,7 +923,6 @@
             isDraggingProgress = false;
             document.querySelectorAll('.progress-container').forEach(c => c.classList.remove('dragging'));
             
-            // Фикс бага с кликом при перемотке
             window.justScrubbed = true;
             setTimeout(() => { window.justScrubbed = false; }, 50);
 
