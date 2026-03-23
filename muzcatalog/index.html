@@ -207,7 +207,6 @@
 
         /* ========================================= */
         /* --- СВЕРНУТЫЙ ПЛЕЕР (MINI ORB) --- */
-        /* --- БАГ 2 ИСПРАВЛЕН: z-index 9500 < sidebar 10000 --- */
         /* ========================================= */
         .mini-player-orb {
             position: fixed;
@@ -219,7 +218,6 @@
             display: none;
             justify-content: center;
             align-items: center;
-            /* БАГ 2: был 10005, теперь меньше sidebar (10000) */
             z-index: 9500;
             cursor: grab;
             user-select: none;
@@ -227,7 +225,6 @@
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
         }
 
-        /* Внешний вращающийся ореол */
         .mini-player-orb::before {
             content: '';
             position: absolute;
@@ -244,7 +241,6 @@
             z-index: -1;
         }
 
-        /* Внутренний тёмный фон */
         .mini-player-orb::after {
             content: '';
             position: absolute;
@@ -271,7 +267,6 @@
             transition: transform 0s;
         }
 
-        /* Иконка поверх псевдоэлементов */
         .orb-content {
             position: relative;
             z-index: 1;
@@ -291,7 +286,6 @@
             line-height: 1;
         }
 
-        /* Звуковые волны под иконкой (анимируются только при воспроизведении) */
         .orb-waves {
             display: flex;
             align-items: flex-end;
@@ -308,7 +302,6 @@
             transition: background 0.3s;
         }
 
-        /* Анимация волн при воспроизведении */
         .mini-player-orb.playing .orb-wave-bar:nth-child(1) { animation: wave1 0.8s ease-in-out infinite; }
         .mini-player-orb.playing .orb-wave-bar:nth-child(2) { animation: wave1 0.8s ease-in-out infinite 0.15s; }
         .mini-player-orb.playing .orb-wave-bar:nth-child(3) { animation: wave1 0.8s ease-in-out infinite 0.30s; }
@@ -320,7 +313,6 @@
             50% { height: 10px; background: var(--neon-pink); }
         }
 
-        /* Пульсирующее кольцо при воспроизведении */
         .mini-player-orb.playing::before {
             animation: orbRotate 1.5s linear infinite;
         }
@@ -604,7 +596,7 @@
                 </div>
                 <div class="gp-progress-area">
                     <div class="gp-time" id="gpTime">00:00</div>
-                    <div class="progress-container" id="gpProgCont" data-global="true">
+                    <div class="progress-container" id="gpProgCont" data-global="true" onclick="event.stopPropagation()">
                         <div class="progress-bar" id="gpProgBar"></div>
                     </div>
                     <div class="gp-time" id="gpDuration">00:00</div>
@@ -630,7 +622,6 @@
         </div>
     </div>
 
-    <!-- БАГ 2 ИСПРАВЛЕН: Добавлен orb-content wrapper и orb-ring-pulse для анимаций -->
     <div class="mini-player-orb" id="miniOrb" title="Развернуть плеер">
         <div class="orb-ring-pulse"></div>
         <div class="orb-content">
@@ -671,6 +662,8 @@
 
         const globalAudio = document.getElementById('globalAudio');
         let currentTrackIndex = -1, isMinimized = false, hasPlayed = false;
+        
+        window.justScrubbed = false; // Флаг для блокировки случайных кликов после скраббинга
 
         function formatTime(sec) {
             if (!sec || isNaN(sec)) return "00:00";
@@ -700,7 +693,7 @@
                         </div>
                         <div class="ci-artist">DXTR | SlizZe</div>
                         <div class="ci-player-controls">
-                            <div class="progress-container" data-index="${index}">
+                            <div class="progress-container" data-index="${index}" onclick="event.stopPropagation()">
                                 <div class="progress-bar" id="cardBar-${index}"></div>
                             </div>
                             <div class="time-display-card" id="ci-time-${index}">--:--</div>
@@ -734,6 +727,8 @@
 
         // ЛОГИКА ПЛЕЕРА
         function playTrack(index) {
+            if (window.justScrubbed) return; // Игнорируем клик, если только что была перемотка
+            
             hasPlayed = true;
             document.body.classList.add('player-fullscreen'); 
             if (currentTrackIndex === index) {
@@ -819,11 +814,10 @@
         globalAudio.addEventListener('ended', handleNextClick);
 
         // ПЕРЕМОТКА
-        // БАГ 3 ИСПРАВЛЕН: флаг блокирует всплытие клика на карточку при перемотке мышью
         const gpBarFill = document.getElementById('gpProgBar'), gpTime = document.getElementById('gpTime'), gpDuration = document.getElementById('gpDuration');
         let isDraggingProgress = false;
         let activeScrubberContainer = null;
-        let progressDragHappened = false; // флаг — была ли реальная перемотка
+        let progressDragHappened = false;
 
         globalAudio.addEventListener('loadedmetadata', () => gpDuration.textContent = formatTime(globalAudio.duration));
         
@@ -859,8 +853,6 @@
             const idx = cont.getAttribute('data-index');
             if (idx !== null) {
                 const parsedIdx = parseInt(idx);
-                // БАГ 3: если трек уже текущий — не вызываем playTrack здесь
-                // чтобы не триггерить паузу. Только меняем трек если он другой.
                 if (parsedIdx !== currentTrackIndex) {
                     playTrack(parsedIdx);
                 }
@@ -874,7 +866,6 @@
             document.querySelectorAll('.progress-container').forEach(c => c.classList.add('dragging'));
             scrubProgress(e);
 
-            // БАГ 3: останавливаем всплытие, чтобы onclick карточки не сработал
             e.stopPropagation();
         }
 
@@ -916,6 +907,10 @@
             isDraggingProgress = false;
             document.querySelectorAll('.progress-container').forEach(c => c.classList.remove('dragging'));
             
+            // Фикс бага с кликом при перемотке
+            window.justScrubbed = true;
+            setTimeout(() => { window.justScrubbed = false; }, 50);
+
             const rect = activeScrubberContainer.getBoundingClientRect();
             
             let clientX = 0;
