@@ -74,7 +74,7 @@
         .section-title { margin: 60px 0 30px; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; display: flex; align-items: center; gap: 20px; }
         .section-title::before, .section-title::after { content: ''; height: 2px; flex: 1; background: linear-gradient(90deg, transparent, var(--neon-purple), transparent); opacity: 0.5; }
 
-        /* БЛОК GUSTO (НОВЫЙ АЛЬБОМ) */
+        /* БЛОК GUSTO */
         .promo-banner {
             background: linear-gradient(135deg, rgba(20,20,30,0.8) 0%, rgba(5,5,10,0.9) 100%);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
@@ -89,13 +89,11 @@
             background: radial-gradient(circle at center, rgba(255,204,0,0.1) 0%, transparent 60%);
             animation: rotate 15s linear infinite; pointer-events: none; z-index: 0;
         }
-
         @keyframes float-cover {
             0% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-10px) rotate(2deg); }
             100% { transform: translateY(0px) rotate(0deg); }
         }
-
         .promo-cover-wrap { 
             position: relative; flex-shrink: 0; width: 250px; height: 250px; z-index: 1; 
             border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
@@ -104,7 +102,6 @@
         }
         .promo-cover-wrap img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .promo-banner:hover .promo-cover-wrap img { transform: scale(1.05); }
-
         .promo-info { flex: 1; z-index: 1; display: flex; flex-direction: column; gap: 15px; }
         .promo-badge { display: inline-block; background: rgba(255, 204, 0, 0.15); color: var(--neon-yellow); padding: 6px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--neon-yellow); align-self: flex-start; box-shadow: 0 0 15px rgba(255,204,0,0.3); }
         .promo-info h2 { font-size: 3.5rem; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.3); letter-spacing: 2px; }
@@ -116,7 +113,7 @@
         .cd-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .cd-colon { font-size: 2rem; font-weight: 900; color: rgba(255,255,255,0.2); align-self: center; margin-top: -15px; }
 
-        /* ГЛАВНЫЙ РЕЛИЗ: NCL - СВЕЖИЙ РЕДИЗАЙН */
+        /* ГЛАВНЫЙ РЕЛИЗ: NCL */
         .hero-release {
             background: linear-gradient(135deg, rgba(20,20,35,0.8) 0%, rgba(5,5,15,0.9) 100%);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
@@ -125,7 +122,6 @@
         }
         .hero-release::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(0,198,255,0.15) 0%, transparent 60%); animation: rotate 15s linear infinite; pointer-events: none; z-index: 0; }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
-
         .hero-cover-wrap { position: relative; flex-shrink: 0; width: 350px; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
         .hero-cover { width: 100%; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; display: block; }
         .hero-cover-wrap:hover .hero-cover { transform: scale(1.05); }
@@ -134,11 +130,9 @@
         .hero-badge { display: inline-block; background: rgba(0, 255, 102, 0.15); color: var(--neon-green); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--neon-green); align-self: flex-start; box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); }
         .hero-info h2 { font-size: 3.5rem; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.4); letter-spacing: 1px; }
 
-        /* Аудиоплеер */
         .audio-player { background: rgba(0,0,0,0.5); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
         .play-pause-btn { background: var(--neon-purple); color: white; border: none; width: 50px; height: 50px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.5); flex-shrink: 0; }
         .play-pause-btn:hover { transform: scale(1.1); background: var(--neon-pink); box-shadow: 0 0 20px rgba(255,0,127,0.6); }
-        
         .progress-container { width: 100%; height: 24px; display: flex; align-items: center; cursor: pointer; position: relative; }
         .progress-container::before { content: ''; position: absolute; left: 0; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.15); border-radius: 10px; }
         .progress-bar { height: 6px; width: 0%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple)); border-radius: 10px; position: relative; pointer-events: none; z-index: 2; box-shadow: 0 0 10px rgba(0,198,255,0.5); }
@@ -157,13 +151,11 @@
         .yt { border-color: rgba(255,0,0,0.4); background: rgba(255,0,0,0.05); } .yt::before { background: linear-gradient(45deg, #cc0000, #ff4d4d); }
         .spot { border-color: rgba(29,185,84,0.4); background: rgba(29,185,84,0.05); } .spot::before { background: linear-gradient(45deg, #14833b, #1DB954); }
         .vkm { border-color: rgba(0,119,255,0.4); background: rgba(0,119,255,0.05); } .vkm::before { background: linear-gradient(45deg, #005ce6, #0077FF); }
-        
-        /* ПЕРЕЧЕРКНУТЫЙ ЯНДЕКС */
         .yam { border-color: rgba(255,204,0,0.2); background: rgba(255,204,0,0.02); color: rgba(255,255,255,0.3); text-decoration: line-through; cursor: not-allowed; }
         .yam::before { display: none; }
         .yam:hover { transform: none; border-color: rgba(255,204,0,0.2); }
 
-        /* СЕТКА КЛИПОВ */
+        /* СЕТКА КЛИПОВ (ДИНАМИЧЕСКАЯ) */
         .tracks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         .track-card { background: linear-gradient(135deg, rgba(30,30,40,0.7), rgba(10,10,15,0.8)); border: 1px solid var(--glass-border); border-radius: 20px; padding: 15px; display: flex; align-items: center; gap: 15px; transition: 0.3s; backdrop-filter: blur(10px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
         .track-card:hover { border-color: var(--neon-cyan); box-shadow: 0 8px 25px rgba(0, 198, 255, 0.2); transform: translateY(-5px); }
@@ -181,15 +173,25 @@
         .play-vid-btn { background: rgba(255,204,0,0.9); color: #000; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(255, 204, 0, 0.4); font-size: 1rem; margin-top: auto; }
         .play-vid-btn:hover { transform: scale(1.15); background: #fff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.8); }
 
-        /* Подвал */
+        /* ПОДВАЛ (ОБНОВЛЕННЫЕ КНОПКИ) */
         footer { padding: 60px 20px; text-align: center; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); border-top: 1px solid rgba(255,255,255,0.05); position: relative; z-index: 10; }
-        .footer-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
-        .action-btn { display: flex; align-items: center; gap: 10px; padding: 15px 35px; border-radius: 50px; text-decoration: none; font-weight: 800; color: white; transition: 0.3s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .footer-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 900px; margin: 0 auto; }
+        .action-btn { display: flex; align-items: center; gap: 10px; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 800; color: white; transition: 0.3s; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
         .action-btn:hover { transform: scale(1.05) translateY(-3px); }
-        .coop-btn { background: rgba(112, 0, 255, 0.2); border-color: var(--neon-purple); } .coop-btn:hover { background: var(--neon-purple); box-shadow: 0 0 20px rgba(112,0,255,0.5); }
-        .contact-btn { background: rgba(0, 136, 204, 0.2); border-color: #0088cc; } .contact-btn:hover { background: #0088cc; box-shadow: 0 0 20px rgba(0,136,204,0.5); }
+        
+        .coop-btn { background: rgba(112, 0, 255, 0.15); border-color: rgba(112,0,255,0.4); } .coop-btn:hover { background: var(--neon-purple); box-shadow: 0 0 20px rgba(112,0,255,0.5); }
+        .contact-btn { background: rgba(0, 136, 204, 0.15); border-color: rgba(0,136,204,0.4); } .contact-btn:hover { background: #0088cc; box-shadow: 0 0 20px rgba(0,136,204,0.5); }
+        
+        .yt-footer-btn { background: rgba(255, 0, 0, 0.15); border-color: rgba(255, 0, 0, 0.4); }
+        .yt-footer-btn:hover { background: #ff0000; box-shadow: 0 0 20px rgba(255,0,0,0.6); }
+        
+        .tt-footer-btn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.2); }
+        .tt-footer-btn:hover { 
+            background: #fff; color: #000; border-color: #fff;
+            box-shadow: -4px 0 15px var(--neon-cyan), 4px 0 15px var(--neon-pink); 
+        }
 
-        /* Модалка плеера YouTube */
+        /* МОДАЛКИ (YouTube и Install PWA) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); backdrop-filter: blur(15px); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
         .modal-content { width: 90%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 0 60px rgba(112,0,255,0.4); position: relative; }
         .modal-fallback { margin-top: 20px; color: var(--text-muted); font-size: 0.9rem; }
@@ -197,7 +199,16 @@
         .close-btn { position: absolute; top: 25px; right: 40px; color: white; font-size: 3rem; cursor: pointer; z-index: 10000; transition: 0.3s; line-height: 1; }
         .close-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
 
-        /* --- REDESIGN ЧАТА ПОДДЕРЖКИ (CYBERPUNK TERMINAL) --- */
+        .install-box { background: var(--bg-dark); border: 2px solid var(--neon-cyan); border-radius: 24px; padding: 40px; max-width: 450px; text-align: center; box-shadow: inset 0 0 30px rgba(0,198,255,0.1), 0 20px 50px rgba(0,0,0,0.8); position: relative; }
+        .install-box i.fa-mobile-screen { font-size: 3rem; color: var(--neon-cyan); margin-bottom: 20px; filter: drop-shadow(0 0 10px rgba(0,198,255,0.6)); }
+        .install-box h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; }
+        .install-box p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
+        .install-btn { background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); color: white; border: none; padding: 15px 30px; font-weight: 800; border-radius: 12px; font-size: 1rem; cursor: pointer; transition: 0.3s; width: 100%; text-transform: uppercase; letter-spacing: 1px; }
+        .install-btn:hover { box-shadow: 0 0 25px rgba(0, 198, 255, 0.6); transform: scale(1.03); }
+        .install-close { position: absolute; top: 15px; right: 20px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+        .install-close:hover { color: var(--neon-red); }
+
+        /* ЧАТ ПОДДЕРЖКИ */
         #chat-window {
             display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden;
             background: rgba(8, 8, 12, 0.85); border: 1px solid rgba(0, 198, 255, 0.4); border-radius: 20px;
@@ -233,7 +244,6 @@
         .msg-user { align-items: flex-end; }
         .msg-user .chat-msg-name { color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0,198,255,0.5); }
         .msg-user .chat-msg-bubble { background: rgba(0, 198, 255, 0.08); border: 1px solid rgba(0, 198, 255, 0.4); border-bottom-right-radius: 2px; }
-        
         .msg-bot { align-items: flex-start; }
         .msg-bot .chat-msg-name { color: var(--neon-purple); text-shadow: 0 0 5px rgba(112,0,255,0.5); }
         .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.08); border: 1px solid rgba(112, 0, 255, 0.4); border-bottom-left-radius: 2px; }
@@ -269,8 +279,7 @@
             .hero-cover-wrap { width: 100%; max-width: 300px; }
             .promo-cover-wrap { width: 200px; height: 200px; }
             .hero-badge, .promo-badge { align-self: center; }
-            .hero-info h2 { font-size: 2.8rem; }
-            .promo-info h2 { font-size: 2.8rem; }
+            .hero-info h2, .promo-info h2 { font-size: 2.8rem; }
             .platform-grid { grid-template-columns: 1fr 1fr; }
             .download-btn { width: 100%; }
             .countdown { justify-content: center; }
@@ -290,6 +299,7 @@
             .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
             .online-word { display: none; }
             .online-counter { top: 15px; right: 15px; padding: 8px 15px; }
+            .footer-buttons { flex-direction: column; }
 
             #chat-window { 
                 width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
@@ -308,6 +318,16 @@
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
         <div class="blob blob-3"></div>
+    </div>
+
+    <div class="modal" id="installModal">
+        <div class="install-box">
+            <i class="fa-solid fa-xmark install-close" onclick="closeInstallModal()"></i>
+            <i class="fa-solid fa-mobile-screen"></i>
+            <h3>Наш сайт всегда под рукой</h3>
+            <p>Добавь DXTR | SlizZe на рабочий стол, чтобы всегда быть в курсе свежих дропов и слушать музыку без задержек.</p>
+            <button class="install-btn" onclick="triggerInstall()">Добавить на рабочий стол</button>
+        </div>
     </div>
 
     <div class="burger-btn fade-in" id="burgerBtn"><i class="fa-solid fa-bars"></i></div>
@@ -423,63 +443,8 @@
 
         <div class="section-title fade-in" style="animation-delay: 0.4s;">Другие клипы</div>
         
-        <div class="tracks-grid fade-in" style="animation-delay: 0.5s;">
-            
-            <div class="track-card">
-                <div class="track-cover"><img src="logo_Brawl_Stars.jpeg" alt="Brawl Stars" onerror="this.src='dslogo.png'"></div>
-                <div class="track-info-new">
-                    <div class="track-header"><span class="track-number">01</span><span class="track-title">Brawl Stars</span></div>
-                    <div class="track-artist">DXTR | SlizZe • YouTube</div>
-                    <button class="play-vid-btn" onclick="openVideo('_bT2_wmJ6tc')"><i class="fa-solid fa-play"></i></button>
-                </div>
-            </div>
-
-            <div class="track-card">
-                <div class="track-cover"><img src="logo_Cefiro_Reload.jpeg" alt="Cefiro Reload" onerror="this.src='dslogo.png'"></div>
-                <div class="track-info-new">
-                    <div class="track-header"><span class="track-number">02</span><span class="track-title">Cefiro Reload</span></div>
-                    <div class="track-artist">DXTR | SlizZe • YouTube</div>
-                    <button class="play-vid-btn" onclick="openVideo('TMn7k7XM4I0')"><i class="fa-solid fa-play"></i></button>
-                </div>
-            </div>
-
-            <div class="track-card">
-                <div class="track-cover"><img src="logo_Music.png" alt="Music" onerror="this.src='dslogo.png'"></div>
-                <div class="track-info-new">
-                    <div class="track-header"><span class="track-number">03</span><span class="track-title">Music</span></div>
-                    <div class="track-artist">DXTR | SlizZe • YouTube</div>
-                    <button class="play-vid-btn" onclick="openVideo('NZdm_FnmTQ8')"><i class="fa-solid fa-play"></i></button>
-                </div>
-            </div>
-
-            <div class="track-card">
-                <div class="track-cover"><img src="logo_Friday.jpeg" alt="Friday" onerror="this.src='dslogo.png'"></div>
-                <div class="track-info-new">
-                    <div class="track-header"><span class="track-number">04</span><span class="track-title">Friday</span></div>
-                    <div class="track-artist">DXTR | SlizZe • YouTube</div>
-                    <button class="play-vid-btn" onclick="openVideo('RyRbNoU2nPc')"><i class="fa-solid fa-play"></i></button>
-                </div>
-            </div>
-            
-            <div class="track-card">
-                <div class="track-cover"><img src="logo_F90.jpeg" alt="F90" onerror="this.src='dslogo.png'"></div>
-                <div class="track-info-new">
-                    <div class="track-header"><span class="track-number">05</span><span class="track-title">F90</span></div>
-                    <div class="track-artist">DXTR | SlizZe • YouTube</div>
-                    <button class="play-vid-btn" onclick="openVideo('1YC9JlxU-zg')"><i class="fa-solid fa-play"></i></button>
-                </div>
-            </div>
-
-            <div class="track-card">
-                <div class="track-cover"><img src="logo_VIS.jpeg" alt="Выход из Сна" onerror="this.src='dslogo.png'"></div>
-                <div class="track-info-new">
-                    <div class="track-header"><span class="track-number">06</span><span class="track-title">Выход из Сна</span></div>
-                    <div class="track-artist">DXTR | SlizZe • YouTube</div>
-                    <button class="play-vid-btn" onclick="openVideo('k7QO9_nLI5A')"><i class="fa-solid fa-play"></i></button>
-                </div>
-            </div>
-
-        </div>
+        <div class="tracks-grid fade-in" id="randomTracksGrid" style="animation-delay: 0.5s;"></div>
+        
     </main>
 
     <footer class="fade-in" style="animation-delay: 0.6s;">
@@ -489,6 +454,12 @@
             </a>
             <a href="https://t.me/dxtr_slizze" target="_blank" class="action-btn contact-btn">
                 <i class="fa-brands fa-telegram"></i> Наш Telegram
+            </a>
+            <a href="https://www.youtube.com/@DXTR.SlizZe" target="_blank" class="action-btn yt-footer-btn">
+                <i class="fa-brands fa-youtube"></i> YouTube
+            </a>
+            <a href="https://www.tiktok.com/@dxtr.slizze" target="_blank" class="action-btn tt-footer-btn">
+                <i class="fa-brands fa-tiktok"></i> TikTok
             </a>
         </div>
         <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; margin-top: 30px;">© 2026 DXTR | SlizZe</p>
@@ -519,6 +490,97 @@
             document.getElementById("minutes").innerText = minutes < 10 ? '0' + minutes : minutes;
             document.getElementById("seconds").innerText = seconds < 10 ? '0' + seconds : seconds;
         }, 1000);
+
+        // === ДИНАМИЧЕСКИЕ КЛИПЫ YOUTUBE (без шортсов) ===
+        // База данных всех доступных клипов
+        const ytDatabase = [
+            { id: "NZdm_FnmTQ8", title: "Music", cover: "logo_Music.png" },
+            { id: "rDByUUm7eaE", title: "FastRap", cover: "logo_FastRap.jpeg" },
+            { id: "SCCUhxNEi8w", title: "Mafia", cover: "logo_Mafia.png" },
+            { id: "_bT2_wmJ6tc", title: "Brawl Stars", cover: "logo_Brawl_Stars.jpeg" },
+            { id: "zaDFqj5H7R4", title: "Night Club", cover: "logo_Night_Club.jpeg" },
+            { id: "NX0QOM2-OKE", title: "Minecraft", cover: "logo_Minecraft.jpeg" },
+            { id: "RyRbNoU2nPc", title: "Friday", cover: "logo_Friday.jpeg" },
+            { id: "1YC9JlxU-zg", title: "F90", cover: "logo_F90.jpeg" },
+            { id: "gyPCJrQGeKg", title: "Dying Light", cover: "logo_Dying_Light.jpeg" },
+            { id: "TMn7k7XM4I0", title: "Cefiro Reload", cover: "logo_Cefiro_Reload.jpeg" },
+            { id: "qj1nzYAte0Y", title: "Casino", cover: "logo_Casino.jpeg" },
+            { id: "ylW3c41lAUA", title: "New Year", cover: "logo_New_Year.jpeg" },
+            { id: "k7QO9_nLI5A", title: "Выход из Сна", cover: "logo_VIS.jpeg" },
+            { id: "XE-bKULqNVQ", title: "Carnaval", cover: "logo_Carnaval.jpeg" },
+            { id: "ksahwYBQgrs", title: "Life Simulator", cover: "logo_Life_Simulator.jpeg" },
+            { id: "qFm89V9JjFU", title: "Amazing Online", cover: "logo_Amazing_Online.jpeg" }
+        ];
+
+        function renderRandomTracks() {
+            const grid = document.getElementById('randomTracksGrid');
+            grid.innerHTML = '';
+            
+            // Перемешиваем массив (Алгоритм Фишера-Йетса)
+            let shuffled = [...ytDatabase];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            // Берем первые 6 треков
+            const selectedTracks = shuffled.slice(0, 6);
+
+            selectedTracks.forEach((track, index) => {
+                const num = index + 1 < 10 ? `0${index + 1}` : index + 1;
+                const html = `
+                    <div class="track-card">
+                        <div class="track-cover"><img src="${track.cover}" alt="${track.title}" onerror="this.src='dslogo.png'"></div>
+                        <div class="track-info-new">
+                            <div class="track-header"><span class="track-number">${num}</span><span class="track-title">${track.title}</span></div>
+                            <div class="track-artist">DXTR | SlizZe • YouTube</div>
+                            <button class="play-vid-btn" onclick="openVideo('${track.id}')"><i class="fa-solid fa-play"></i></button>
+                        </div>
+                    </div>`;
+                grid.insertAdjacentHTML('beforeend', html);
+            });
+        }
+        
+        // Запускаем рендер при загрузке страницы
+        window.addEventListener('DOMContentLoaded', renderRandomTracks);
+
+        // === PWA: ДОБАВИТЬ НА РАБОЧИЙ СТОЛ ===
+        let deferredPrompt;
+        const installModal = document.getElementById('installModal');
+
+        // Перехватываем системный ивент для Chrome/Android
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        // Проверяем, заходил ли юзер ранее
+        if (!localStorage.getItem('dxtr_visited_v2')) {
+            setTimeout(() => {
+                installModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }, 2500); // Показываем через 2.5 сек
+        }
+
+        function closeInstallModal() {
+            installModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            localStorage.setItem('dxtr_visited_v2', 'true');
+        }
+
+        function triggerInstall() {
+            if (deferredPrompt) {
+                // Если поддерживается системное окно (Android Chrome)
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                });
+            } else {
+                // Для iOS Safari или браузеров ПК
+                alert("Чтобы добавить на рабочий стол:\n\n🍏 iOS (Safari): Нажми иконку 'Поделиться' (квадрат со стрелочкой) внизу и выбери 'На экран Домой'.\n\n🤖 Android / ПК: Нажми три точки в меню браузера и выбери 'Добавить на гл. экран' или иконку установки в строке адреса.");
+            }
+            closeInstallModal();
+        }
 
         // === ЛОГИКА МОДАЛЬНОГО ОКНА YOUTUBE ===
         const modal = document.getElementById('videoModal');
@@ -684,7 +746,6 @@
         const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
         window.userNickname = localStorage.getItem('dxtrUserNickname') || null; 
 
-        // Хранилище Cookies как бэкап
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
@@ -704,7 +765,6 @@
             return null;
         }
 
-        // Двойная проверка ID
         let lsId = localStorage.getItem('dxtrClientId');
         let cookieId = getCookie('dxtrClientId');
         let clientId = lsId || cookieId || 'user_' + Math.random().toString(36).substr(2, 9); 
