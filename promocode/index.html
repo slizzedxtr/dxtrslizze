@@ -98,13 +98,24 @@
         .snippet-wrapper.visible { display: flex; }
         .snippet-wrapper.active { opacity: 1; transform: scale(1); }
 
+        /* ГЛАВНОЕ ОКОШКО ТРЕКА */
         .hero-release {
             background: linear-gradient(135deg, rgba(5,20,10,0.8) 0%, rgba(2,10,5,0.9) 100%);
             backdrop-filter: blur(25px); border: 2px solid var(--neon-green); border-radius: 30px; padding: 40px; display: flex; gap: 40px; align-items: center; width: 100%; max-width: 850px;
             box-shadow: 0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1); position: relative; overflow: hidden;
+            transition: all 0.6s ease-out; /* Для плавного закрытия */
         }
         .hero-release::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(0,255,102,0.1) 0%, transparent 60%); animation: rotateBg 15s linear infinite; pointer-events: none; z-index: 0; }
         @keyframes rotateBg { 100% { transform: rotate(360deg); } }
+
+        /* АНИМАЦИЯ ПУЛЬСАЦИИ ПОД БИТ */
+        @keyframes beatPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); } /* Тонкая, едва заметная пульсация */
+        }
+        .hero-release.active.pulsing {
+            animation: beatPulse 0.5s infinite ease-out; /* Длительность под "бит" */
+        }
 
         .hero-cover-wrap { position: relative; flex-shrink: 0; width: 300px; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid var(--glass-border); }
         .hero-cover-wrap img { width: 100%; display: block; transition: transform 0.5s; }
@@ -128,6 +139,55 @@
         .back-btn { background: transparent; border: 2px solid var(--text-muted); color: var(--text-muted); padding: 12px 30px; border-radius: 50px; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
         .back-btn:hover { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,102,0.2); transform: translateX(-5px); }
 
+        /* ЧАТ ПОДДЕРЖКИ (ХАКЕРСКИЙ СТИЛЬ) */
+        #chat-window {
+            display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden;
+            background: rgba(2, 6, 2, 0.85); border: 1px solid var(--glass-border); border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px var(--neon-green-glow), inset 0 0 20px rgba(0, 255, 102, 0.1);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); z-index: 9999;
+            animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .chat-header {
+            background: linear-gradient(90deg, #050f05, #0a1f0a); border-bottom: 2px solid var(--neon-green);
+            color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2; cursor: grab; user-select: none;
+        }
+        .chat-header:active { cursor: grabbing; }
+        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        .chat-header-title { font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-green); }
+        .drag-handle { color: rgba(255,255,255,0.3); font-size: 1rem; }
+        #chat-close { cursor: pointer; font-size: 1.5rem; transition: 0.3s; color: var(--text-muted); padding: 5px; }
+        #chat-close:hover { color: var(--neon-green); transform: rotate(90deg); text-shadow: 0 0 10px var(--neon-green); }
+        
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth; }
+        #chat-messages::-webkit-scrollbar { width: 4px; }
+        #chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; box-shadow: 0 0 10px var(--neon-green); }
+        
+        .chat-system-msg { color: var(--neon-green); text-align: center; font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; padding: 8px; border: 1px dashed var(--glass-border); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.3); }
+        
+        .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; }
+        @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+        .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 5px 20px rgba(0,0,0,0.4); backdrop-filter: blur(10px); font-weight: 500; }
+        
+        .msg-user { align-items: flex-end; }
+        .msg-user .chat-msg-name { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+        .msg-user .chat-msg-bubble { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-bottom-right-radius: 2px; }
+        
+        .msg-bot { align-items: flex-start; }
+        .msg-bot .chat-msg-name { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green-glow); }
+        .msg-bot .chat-msg-bubble { background: rgba(0, 255, 102, 0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
+        
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid var(--glass-border); background: rgba(2, 6, 2, 0.9); z-index: 2; position: relative; }
+        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        #chat-input:focus { border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green-glow), inset 0 0 10px rgba(0, 255, 102, 0.1); }
+        #chat-send { background: linear-gradient(135deg, #0a290a, #004d1f); border: 2px solid var(--glass-border); color: var(--neon-green); width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px var(--neon-green-glow); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        #chat-send:hover { transform: translateY(-2px) scale(1.05); background: var(--neon-green); color: #000; border-color: #fff; box-shadow: 0 0 25px var(--neon-green); }
+
+        @keyframes chatTerminalOpen { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+        /* Мобильная адаптация */
         @media (max-width: 900px) {
             .hero-release { flex-direction: column; text-align: center; padding: 30px 20px; }
             .hero-cover-wrap { width: 100%; max-width: 250px; }
@@ -139,7 +199,16 @@
             .promo-box { height: 60px; }
             .promo-box input { font-size: 1rem; }
             .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
+
+            #chat-window { 
+                width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
+                border-radius: 24px 24px 0 0 !important; border-bottom: none;
+                animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            }
+            .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
+            .drag-handle { display: none; }
         }
+        @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -155,6 +224,9 @@
         <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home"></i> Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
         <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info"></i> О нас</a>
+        <a href="#" class="sidebar-link" id="sidebarSupportBtn">
+            <i class="fa-solid fa-headset icon-main"></i> Тех. поддержка
+        </a>
     </div>
 
     <header>
@@ -172,7 +244,7 @@
         </div>
 
         <div class="snippet-wrapper" id="snippetWrapper">
-            <div class="hero-release">
+            <div class="hero-release" id="snippetHero">
                 <div class="hero-cover-wrap">
                     <img src="../logo_Dance_Girl.jpeg" alt="Dance Girl Cover" onerror="this.src='dslogo.png'">
                 </div>
@@ -193,6 +265,25 @@
             <button class="back-btn" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Назад</button>
         </div>
     </main>
+
+    <div id="chat-window">
+        <div class="chat-header" id="chat-header">
+            <div class="chat-header-info">
+                <i class="fa-solid fa-grip-vertical drag-handle"></i>
+                <span class="chat-header-title">DS Support</span>
+            </div>
+            <i class="fa-solid fa-xmark" id="chat-close"></i>
+        </div>
+        <div id="chat-messages">
+            <div class="chat-system-msg" id="chatGreeting">Система тех. поддержки активна. Задайте ваш вопрос.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ввод команды/проблемы...">
+            <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
         // ==========================================
@@ -240,6 +331,7 @@
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const closeSidebar = document.getElementById('closeSidebar');
+        const sidebarSupportBtn = document.getElementById('sidebarSupportBtn');
 
         function toggleMenu() {
             sidebar.classList.toggle('active');
@@ -248,6 +340,102 @@
         burgerBtn.onclick = toggleMenu;
         closeSidebar.onclick = toggleMenu;
         sidebarOverlay.onclick = toggleMenu;
+
+        // === ЛОГИКА ЧАТА (ХАКЕРСКАЯ) ===
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send');
+        const chatHeader = document.getElementById('chat-header');
+
+        // Генерируем ID клиента
+        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
+        let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('dxtrClientId', clientId);
+        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
+
+        const socket = io("https://dxtrslizze.onrender.com/");
+
+        // Логика подключения тех поддержки
+        sidebarSupportBtn.onclick = (e) => {
+            e.preventDefault();
+            toggleMenu();
+            setTimeout(() => {
+                chatWindow.style.display = 'flex';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                if(window.innerWidth > 600) {
+                    chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px';
+                }
+            }, 300);
+        };
+        chatClose.onclick = () => chatWindow.style.display = 'none';
+
+        // Drag and drop чата
+        let isDraggingChat = false, chatOffsetX, chatOffsetY;
+        chatHeader.addEventListener('mousedown', (e) => {
+            if (window.innerWidth <= 600 || e.target.id === 'chat-close') return;
+            isDraggingChat = true;
+            chatWindow.style.animation = 'none';
+            chatWindow.style.transform = 'none';
+            const rect = chatWindow.getBoundingClientRect();
+            chatOffsetX = e.clientX - rect.left; chatOffsetY = e.clientY - rect.top;
+            chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto'; chatWindow.style.margin = '0';
+            chatWindow.style.left = rect.left + 'px'; chatWindow.style.top = rect.top + 'px';
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingChat) return;
+            e.preventDefault();
+            let newX = e.clientX - chatOffsetX; let newY = e.clientY - chatOffsetY;
+            newX = Math.max(0, Math.min(newX, window.innerWidth - chatWindow.offsetWidth));
+            newY = Math.max(0, Math.min(newY, window.innerHeight - chatWindow.offsetHeight));
+            chatWindow.style.left = `${newX}px`; chatWindow.style.top = `${newY}px`;
+        });
+        document.addEventListener('mouseup', () => isDraggingChat = false);
+
+        // Сокет логика
+        socket.on('connect', () => {
+            fpPromise.then(fp => fp.get()).then(result => socket.emit('register_client', { clientId: clientId, fpHash: result.visitorId }));
+        });
+
+        socket.on('receive_message', d => {
+            if (chatWindow.style.display === 'none') chatWindow.style.display = 'flex';
+            addChatMessage('Support', d.text, 'flex-start', true, false, true); // isBot = true
+        });
+
+        chatSendBtn.onclick = sendMessage;
+        chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+
+        function sendMessage() {
+            const t = chatInput.value.trim();
+            if (!t) return;
+            socket.emit('send_message', { text: t, clientId: clientId });
+            addChatMessage(window.userNickname || 'Вы', t, 'flex-end');
+            chatInput.value = '';
+        }
+
+        function addChatMessage(sender, text, align, save = true, isError = false, isBot = false) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
+            const nameLab = document.createElement('span');
+            nameLab.className = 'chat-msg-name';
+            nameLab.textContent = sender;
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-msg-bubble';
+            bubble.textContent = text;
+            wrapper.appendChild(nameLab); wrapper.appendChild(bubble);
+            chatMessages.appendChild(wrapper);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            if (save) {
+                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
+                h.push({ sender, text, align, isBot });
+                if (h.length > 50) h.shift();
+                localStorage.setItem('dxtrChatHistory', JSON.stringify(h));
+            }
+        }
+        // Загрузка истории
+        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, false, m.isBot));
+
 
         // === ЛОГИКА ПРОМОКОДА И АНИМАЦИИ ===
         const promoInput = document.getElementById('promoInput');
@@ -258,6 +446,7 @@
         const splashRing = document.getElementById('splashRing');
         const snippetWrapper = document.getElementById('snippetWrapper');
         const snippetAudio = document.getElementById('snippetAudio');
+        const snippetHero = document.getElementById('snippetHero'); // Окошко трека
 
         function checkPromo() {
             const val = promoInput.value.trim();
@@ -306,9 +495,10 @@
 
         // Кнопка Назад
         function goBack() {
-            // Останавливаем музыку если играет
+            // Останавливаем музыку и пульсацию если играет
             snippetAudio.pause();
             snippetAudio.currentTime = 0;
+            snippetHero.classList.remove('pulsing'); // Останавливаем пульсацию
             document.querySelector('#playBtn i').className = 'fa-solid fa-play';
 
             // 1. Скрываем сниппет
@@ -331,7 +521,7 @@
             }, 600);
         }
 
-        // === АУДИОПЛЕЕР ===
+        // === АУДИОПЛЕЕР С ИСПРАВЛЕННОЙ ПЕРЕМОТКОЙ НА ТЕЛЕФОНЕ ===
         const playBtnIcon = document.querySelector('#playBtn i');
         const progressBar = document.getElementById('progressBar');
         const progressContainer = document.getElementById('progressContainer');
@@ -342,9 +532,11 @@
             if (snippetAudio.paused) {
                 snippetAudio.play();
                 playBtnIcon.className = 'fa-solid fa-pause';
+                snippetHero.classList.add('pulsing'); // Запускаем пульсацию
             } else {
                 snippetAudio.pause();
                 playBtnIcon.className = 'fa-solid fa-play';
+                snippetHero.classList.remove('pulsing'); // Останавливаем пульсацию
             }
         }
 
@@ -359,30 +551,66 @@
             timeDisplay.textContent = `00:00 / ${formatTime(snippetAudio.duration)}`;
         });
 
+        // Общая функция расчета прогресса
         function updateProgress(clientX) {
             const rect = progressContainer.getBoundingClientRect();
             let offsetX = clientX - rect.left;
             const width = rect.width;
+            
             if (offsetX < 0) offsetX = 0;
             if (offsetX > width) offsetX = width;
+            
             const percentage = offsetX / width;
             
             progressBar.style.width = (percentage * 100) + '%';
             
             if (snippetAudio.duration) {
                 const targetTime = percentage * snippetAudio.duration;
+                // Обновляем текст времени пока тянем (опционально)
                 timeDisplay.textContent = `${formatTime(targetTime)} / ${formatTime(snippetAudio.duration)}`;
                 snippetAudio.currentTime = targetTime;
             }
         }
 
-        progressContainer.addEventListener('mousedown', (e) => { isDragging = true; updateProgress(e.clientX); });
-        window.addEventListener('mousemove', (e) => { if (isDragging) { updateProgress(e.clientX); } });
-        window.addEventListener('mouseup', () => { isDragging = false; });
-        progressContainer.addEventListener('touchstart', (e) => { isDragging = true; updateProgress(e.touches[0].clientX); }, { passive: false });
-        window.addEventListener('touchmove', (e) => { if (isDragging) { updateProgress(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
-        window.addEventListener('touchend', () => { isDragging = false; });
+        // Мышь
+        progressContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            updateProgress(e.clientX);
+        });
 
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                e.preventDefault();
+                updateProgress(e.clientX);
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // --- ИСПРАВЛЕНИЕ: Тач (Телефоны) ---
+        // touchstart - аналог mousedown
+        progressContainer.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            updateProgress(e.touches[0].clientX); // Передаем clientX первого пальца
+        }, { passive: true });
+
+        // touchmove - аналог mousemove
+        window.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                // Предотвращаем прокрутку страницы пока тянем ползунок
+                e.preventDefault(); 
+                updateProgress(e.touches[0].clientX);
+            }
+        }, { passive: false }); // Важно: passive: false для preventDefault()
+
+        // touchend - аналог mouseup
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Timeupdate для обычного движения плеера
         snippetAudio.addEventListener('timeupdate', () => {
             if (snippetAudio.duration && !isDragging) {
                 const progressPercent = (snippetAudio.currentTime / snippetAudio.duration) * 100;
@@ -396,6 +624,7 @@
             progressBar.style.width = '0%';
             snippetAudio.currentTime = 0;
             timeDisplay.textContent = `00:00 / ${formatTime(snippetAudio.duration)}`;
+            snippetHero.classList.remove('pulsing'); // Останавливаем пульсацию в конце
         });
     </script>
 </body>
