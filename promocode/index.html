@@ -3,539 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DXTR | SlizZe — PROMOCODE</title>
+    <title>PROMOCODE | DXTR | SlizZe</title>
+    <meta name="description" content="Секретная страница. Введите промокод для доступа к эксклюзивным материалам.">
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="../dslogo.png">
-
+    
     <style>
-        /* ============================================================
-           КОНФИГУРАЦИЯ: ПРОМОКОД ХРАНИТСЯ ЗДЕСЬ
-           Измените значение VALID_PROMO чтобы сменить промокод
-           ============================================================ */
         :root {
-            --valid-promo-placeholder: "D&S_Dance"; /* Только для отображения, логика ниже */
-        }
-        /* ============================================================ */
-
-        :root {
-            --matrix-green: #00ff41;
-            --matrix-dim: #003b10;
-            --matrix-mid: #00a832;
-            --matrix-glow: rgba(0, 255, 65, 0.4);
-            --bg-dark: #010c02;
-            --glass-bg: rgba(0, 20, 5, 0.75);
-            --glass-border: rgba(0, 255, 65, 0.15);
-            --text-muted: #3a7a45;
-            --neon-red: #ff2244;
-            --neon-cyan: #00c6ff;
-            --neon-purple: #7000ff;
+            --neon-green: #00ff66;
+            --neon-green-glow: rgba(0, 255, 102, 0.4);
+            --bg-dark: #020602;
+            --glass-bg: rgba(5, 15, 5, 0.7);
+            --glass-border: rgba(0, 255, 102, 0.2);
+            --text-main: #ffffff;
+            --text-muted: #8aa88a;
+            --error-red: #cc4444; 
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--matrix-green);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
+            background-color: var(--bg-dark); color: var(--text-main);
+            display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative;
         }
 
-        /* ===== MATRIX RAIN CANVAS ===== */
-        #matrix-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: -1;
-            opacity: 0.35;
+        /* МАТРИЦА ФОН */
+        #matrixCanvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -2; opacity: 0.6;
+        }
+        
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
+            background: radial-gradient(circle at center, transparent 30%, var(--bg-dark) 100%);
         }
 
-        /* Тёмный оверлей для читаемости */
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: radial-gradient(ellipse at center, transparent 30%, rgba(1, 12, 2, 0.7) 100%);
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* ===== МЕНЮ (боковое) ===== */
-        .burger-btn {
-            position: fixed; top: 25px; left: 25px; z-index: 10001;
-            background: rgba(0, 255, 65, 0.05);
-            border: 1px solid rgba(0, 255, 65, 0.25);
-            width: 45px; height: 45px; border-radius: 12px;
-            display: flex; justify-content: center; align-items: center;
-            color: var(--matrix-green); font-size: 1.2rem; cursor: pointer;
-            transition: 0.3s; backdrop-filter: blur(10px);
-        }
-        .burger-btn:hover {
-            background: var(--matrix-green); color: #000;
-            box-shadow: 0 0 20px var(--matrix-glow);
-        }
-
-        .sidebar-overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(5px);
-            z-index: 9999; display: none; opacity: 0; transition: 0.3s;
-        }
+        /* МЕНЮ И БУРГЕР */
+        .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(0,255,102,0.05); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
+        .burger-btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); border-color: var(--neon-green); }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(2, 6, 2, 0.95); backdrop-filter: blur(25px); border-right: 1px solid var(--glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
+        .sidebar.active { left: 0; }
+        .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-link i { color: var(--neon-green); font-size: 1.4rem; transition: 0.3s; }
+        .sidebar-link:hover { color: var(--neon-green); padding-left: 10px; border-bottom-color: var(--neon-green-glow); }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
 
-        .sidebar {
-            position: fixed; top: 0; left: -300px;
-            width: 300px; height: 100vh;
-            background: rgba(1, 8, 2, 0.95);
-            backdrop-filter: blur(25px);
-            border-right: 1px solid rgba(0, 255, 65, 0.25);
-            z-index: 10000;
-            display: flex; flex-direction: column;
-            padding: 80px 30px 30px;
-            transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-shadow: 20px 0 50px rgba(0, 0, 0, 0.8);
-        }
-        .sidebar.active { left: 0; }
+        /* ШАПКА СТРАНИЦЫ */
+        header { text-align: center; padding: 12vh 20px 4vh; position: relative; z-index: 10; }
+        header h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; text-transform: uppercase; letter-spacing: 10px; color: var(--neon-green); text-shadow: 0 0 25px var(--neon-green-glow); margin-bottom: 10px; }
 
-        .sidebar-header {
-            color: var(--text-muted); font-size: 0.9rem; font-weight: 800;
-            letter-spacing: 2px; margin-bottom: 30px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .sidebar-header-close {
-            font-size: 1.5rem; cursor: pointer; color: var(--matrix-green);
-            transition: 0.3s;
-        }
-        .sidebar-header-close:hover { color: var(--neon-red); transform: rotate(90deg); }
+        main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 40px; z-index: 10; display: flex; flex-direction: column; align-items: center; position: relative; }
 
-        .sidebar-link {
-            color: white; text-decoration: none;
-            font-size: 1.1rem; font-weight: 700;
-            padding: 18px 0;
-            border-bottom: 1px solid rgba(0, 255, 65, 0.07);
-            display: flex; align-items: center; gap: 15px;
-            transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+        /* ИНТЕРФЕЙС ПРОМОКОДА */
+        .promo-wrapper { position: relative; width: 100%; max-width: 450px; display: flex; flex-direction: column; align-items: center; margin-top: 5vh; transition: opacity 0.3s; }
+        
+        .promo-box {
+            display: flex; width: 100%; height: 70px; background: var(--glass-bg); border: 2px solid var(--neon-green); border-radius: 20px; overflow: hidden;
+            box-shadow: 0 0 30px var(--neon-green-glow), inset 0 0 15px rgba(0, 255, 102, 0.1);
+            backdrop-filter: blur(15px); transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            position: relative; z-index: 2;
         }
-        .sidebar-link .icon-main { color: var(--matrix-green); font-size: 1.4rem; transition: 0.3s; }
-        .sidebar-link:hover, .sidebar-link.active {
-            color: var(--matrix-green); padding-left: 10px;
-            border-bottom-color: rgba(0, 255, 65, 0.3);
-        }
+        
+        .promo-box.collapsing { width: 70px; border-radius: 50%; background: var(--neon-green); border-color: #fff; box-shadow: 0 0 50px var(--neon-green); }
+        .promo-box.collapsing input, .promo-box.collapsing button { opacity: 0; pointer-events: none; }
 
-        /* ===== ЗАГОЛОВОК СТРАНИЦЫ ===== */
-        header {
-            text-align: center;
-            padding: 6vh 20px 4vh;
-            position: relative; z-index: 10;
+        .promo-box input { flex: 1; background: transparent; border: none; outline: none; padding: 0 25px; color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; font-family: 'Montserrat', sans-serif; letter-spacing: 2px; transition: opacity 0.3s; }
+        .promo-box input::placeholder { color: var(--text-muted); font-weight: 500; letter-spacing: 1px; }
+        
+        .promo-box button { width: 70px; background: rgba(0, 255, 102, 0.1); border: none; border-left: 1px solid var(--glass-border); color: var(--neon-green); font-size: 1.5rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; }
+        .promo-box button:hover { background: var(--neon-green); color: #000; box-shadow: -5px 0 20px var(--neon-green-glow); }
+
+        .error-msg { margin-top: 15px; color: var(--error-red); font-size: 0.95rem; font-weight: 600; opacity: 0; transform: translateY(-10px); transition: all 0.3s; text-align: center; }
+        .error-msg.visible { opacity: 1; transform: translateY(0); }
+
+        /* ВСПЛЕСК КАПЕЛЬКИ */
+        .splash-ring {
+            position: absolute; top: 35px; left: 50%; width: 70px; height: 70px; background: var(--neon-green); border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; z-index: 3;
         }
-        header h1 {
-            font-size: clamp(3rem, 7vw, 4.5rem);
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 8px;
-            background: linear-gradient(90deg, #00ff41, #00c86a, #00ff41, #7fff00);
-            background-size: 300% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient-shift 5s linear infinite;
-            filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.5));
-        }
-        @keyframes gradient-shift {
-            0% { background-position: 0% center; }
-            100% { background-position: 300% center; }
+        .splash-ring.animate { animation: splashEffect 0.7s ease-out forwards; }
+        @keyframes splashEffect {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(8); opacity: 0; }
         }
 
-        /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
-        main {
-            flex: 1; width: 100%; max-width: 800px;
-            margin: 0 auto; padding: 0 20px 60px;
-            z-index: 10; position: relative;
-            display: flex; flex-direction: column; align-items: center;
+        /* БЛОК СО СНИППЕТОМ */
+        .snippet-wrapper {
+            width: 100%; display: none; flex-direction: column; align-items: center; gap: 30px;
+            opacity: 0; transform: scale(0.9); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
+        .snippet-wrapper.visible { display: flex; }
+        .snippet-wrapper.active { opacity: 1; transform: scale(1); }
 
-        /* ===== ПОЛЕ ВВОДА ПРОМОКОДА ===== */
-        #promo-section {
-            width: 100%; display: flex; flex-direction: column;
-            align-items: center; gap: 20px; margin-top: 30px;
+        /* ГЛАВНОЕ ОКОШКО ТРЕКА */
+        .hero-release {
+            background: linear-gradient(135deg, rgba(5,20,10,0.8) 0%, rgba(2,10,5,0.9) 100%);
+            backdrop-filter: blur(25px); border: 2px solid var(--neon-green); border-radius: 30px; padding: 40px; display: flex; gap: 40px; align-items: center; width: 100%; max-width: 850px;
+            box-shadow: 0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1); position: relative; overflow: hidden;
+            /* Плавность для динамического scale от Web Audio API */
+            transition: transform 0.05s ease-out, box-shadow 0.05s ease-out; 
         }
+        .hero-release::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(0,255,102,0.1) 0%, transparent 60%); animation: rotateBg 15s linear infinite; pointer-events: none; z-index: 0; }
+        @keyframes rotateBg { 100% { transform: rotate(360deg); } }
 
-        .promo-label {
-            font-size: 0.9rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 3px;
-            color: var(--text-muted);
-            text-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
-        }
+        .hero-cover-wrap { position: relative; flex-shrink: 0; width: 300px; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.8); border: 1px solid var(--glass-border); }
+        .hero-cover-wrap img { width: 100%; display: block; transition: transform 0.5s; }
+        .hero-cover-wrap:hover img { transform: scale(1.05); }
 
-        .promo-input-wrap {
-            position: relative; width: 100%; max-width: 460px;
-            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
+        .hero-info { flex: 1; z-index: 1; display: flex; flex-direction: column; gap: 20px; width: 100%; }
+        .hero-badge { display: inline-block; background: rgba(0, 255, 102, 0.15); color: var(--neon-green); padding: 5px 15px; border-radius: 50px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--neon-green); align-self: flex-start; box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); }
+        .hero-info h2 { font-size: 3rem; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 0 20px rgba(0,255,102,0.4); }
 
-        #promo-input {
-            width: 100%;
-            background: rgba(0, 20, 5, 0.7);
-            border: 2px solid rgba(0, 255, 65, 0.3);
-            color: var(--matrix-green);
-            padding: 18px 60px 18px 24px;
-            border-radius: 16px;
-            font-size: 1.15rem;
-            font-weight: 700;
-            font-family: 'Montserrat', monospace;
-            letter-spacing: 2px;
-            outline: none;
-            transition: 0.3s;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.05), inset 0 0 20px rgba(0, 0, 0, 0.4);
-        }
-        #promo-input::placeholder { color: var(--text-muted); letter-spacing: 1px; }
-        #promo-input:focus {
-            border-color: var(--matrix-green);
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2), inset 0 0 15px rgba(0, 255, 65, 0.05);
-        }
+        /* ИСПРАВЛЕННЫЙ ПЛЕЕР */
+        .audio-player { background: rgba(0,0,0,0.6); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--glass-border); box-shadow: inset 0 0 20px rgba(0,0,0,0.8); width: 100%; }
+        .play-pause-btn { background: var(--neon-green); color: #000; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; box-shadow: 0 0 15px var(--neon-green-glow); flex-shrink: 0; }
+        .play-pause-btn:hover { transform: scale(1.1); background: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.6); }
+        
+        /* Исправление перемотки: touch-action: none блокирует скролл страницы */
+        .progress-container { flex: 1; height: 24px; display: flex; align-items: center; cursor: pointer; position: relative; touch-action: none; min-width: 50px; }
+        .progress-container::before { content: ''; position: absolute; left: 0; width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        .progress-bar { height: 6px; width: 0%; background: var(--neon-green); border-radius: 10px; position: relative; pointer-events: none; z-index: 2; box-shadow: 0 0 10px var(--neon-green); }
+        .progress-bar::after { content: ''; position: absolute; right: -7px; top: -5px; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 12px var(--neon-green); }
+        
+        /* Исправление времени: white-space: nowrap не дает переносить текст */
+        .time-display { font-size: 0.85rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 90px; text-align: right; white-space: nowrap; flex-shrink: 0; }
 
-        #promo-submit {
-            position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-            background: transparent; border: none;
-            color: var(--matrix-mid); font-size: 1.5rem;
-            cursor: pointer; transition: 0.3s; padding: 5px;
-        }
-        #promo-submit:hover { color: var(--matrix-green); text-shadow: 0 0 15px var(--matrix-green); }
+        .back-btn { background: transparent; border: 2px solid var(--text-muted); color: var(--text-muted); padding: 12px 30px; border-radius: 50px; font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .back-btn:hover { border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,102,0.2); transform: translateX(-5px); }
 
-        #promo-error {
-            font-size: 0.9rem; font-weight: 700;
-            color: rgba(255, 34, 68, 0.75);
-            letter-spacing: 1px; text-align: center;
-            opacity: 0; transform: translateY(-5px);
-            transition: opacity 0.3s, transform 0.3s;
-            min-height: 20px;
+        /* ЧАТ ПОДДЕРЖКИ (ХАКЕРСКИЙ СТИЛЬ) */
+        #chat-window {
+            display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden;
+            background: rgba(2, 6, 2, 0.85); border: 1px solid var(--glass-border); border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 30px var(--neon-green-glow), inset 0 0 20px rgba(0, 255, 102, 0.1);
+            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); z-index: 9999;
+            animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
-        #promo-error.show { opacity: 1; transform: translateY(0); }
+        .chat-header {
+            background: linear-gradient(90deg, #050f05, #0a1f0a); border-bottom: 2px solid var(--neon-green);
+            color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2; cursor: grab; user-select: none;
+        }
+        .chat-header:active { cursor: grabbing; }
+        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        .chat-header-title { font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-green); }
+        .drag-handle { color: rgba(255,255,255,0.3); font-size: 1rem; }
+        #chat-close { cursor: pointer; font-size: 1.5rem; transition: 0.3s; color: var(--text-muted); padding: 5px; }
+        #chat-close:hover { color: var(--neon-green); transform: rotate(90deg); text-shadow: 0 0 10px var(--neon-green); }
+        
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth; }
+        #chat-messages::-webkit-scrollbar { width: 4px; }
+        #chat-messages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; box-shadow: 0 0 10px var(--neon-green); }
+        
+        .chat-system-msg { color: var(--neon-green); text-align: center; font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; padding: 8px; border: 1px dashed var(--glass-border); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; background: rgba(0,0,0,0.3); }
+        
+        .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; }
+        @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+        .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 5px 20px rgba(0,0,0,0.4); backdrop-filter: blur(10px); font-weight: 500; }
+        
+        .msg-user { align-items: flex-end; }
+        .msg-user .chat-msg-name { color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
+        .msg-user .chat-msg-bubble { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-bottom-right-radius: 2px; }
+        
+        .msg-bot { align-items: flex-start; }
+        .msg-bot .chat-msg-name { color: var(--neon-green); text-shadow: 0 0 5px var(--neon-green-glow); }
+        .msg-bot .chat-msg-bubble { background: rgba(0, 255, 102, 0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
+        
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid var(--glass-border); background: rgba(2, 6, 2, 0.9); z-index: 2; position: relative; }
+        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+        #chat-input:focus { border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green-glow), inset 0 0 10px rgba(0, 255, 102, 0.1); }
+        #chat-send { background: linear-gradient(135deg, #0a290a, #004d1f); border: 2px solid var(--glass-border); color: var(--neon-green); width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px var(--neon-green-glow); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        #chat-send:hover { transform: translateY(-2px) scale(1.05); background: var(--neon-green); color: #000; border-color: #fff; box-shadow: 0 0 25px var(--neon-green); }
 
-        /* ===== АНИМАЦИЯ ИСЧЕЗНОВЕНИЯ ПОЛЯ ВВОДА ===== */
-        @keyframes collapse-to-dot {
-            0% { transform: scale(1) translateX(0); opacity: 1; border-radius: 16px; }
-            40% { transform: scale(0.6) translateX(0); opacity: 1; border-radius: 30px; }
-            70% { transform: scale(0.15) translateX(0); opacity: 1; border-radius: 50%; }
-            85% { transform: scale(0.15) translateX(0); opacity: 1; border-radius: 50%; }
-            100% { transform: scale(0) translateX(0); opacity: 0; border-radius: 50%; }
-        }
-        .collapsing { animation: collapse-to-dot 0.85s cubic-bezier(0.4, 0, 0.2, 1) forwards; pointer-events: none; }
+        @keyframes chatTerminalOpen { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
-        /* Капелька */
-        .droplet {
-            position: fixed;
-            width: 20px; height: 20px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #7fff00, var(--matrix-green));
-            box-shadow: 0 0 20px var(--matrix-green), 0 0 40px rgba(0, 255, 65, 0.5);
-            pointer-events: none; z-index: 9998;
-            animation: droplet-fly 0.9s cubic-bezier(0.2, 0, 1, 0.8) forwards;
+        /* Мобильная адаптация */
+        @media (max-width: 900px) {
+            .hero-release { flex-direction: column; text-align: center; padding: 30px 20px; }
+            .hero-cover-wrap { width: 100%; max-width: 250px; }
+            .hero-badge { align-self: center; }
+            .hero-info h2 { font-size: 2.2rem; }
         }
-        @keyframes droplet-fly {
-            0% { transform: scale(1) translate(0, 0); opacity: 1; }
-            50% { transform: scale(1.5) translate(0, -60px); opacity: 1; }
-            100% { transform: scale(0) translate(0, -120px); opacity: 0; }
-        }
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.5rem; }
+            .promo-box { height: 60px; }
+            .promo-box input { font-size: 1rem; }
+            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
 
-        /* ===== СЕКЦИЯ СЕКРЕТНОГО ТРЕКА ===== */
-        #secret-section {
-            display: none; width: 100%;
-            opacity: 0; transform: scale(0.9) translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            #chat-window { 
+                width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
+                border-radius: 24px 24px 0 0 !important; border-bottom: none;
+                animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            }
+            .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
+            .drag-handle { display: none; }
         }
-        #secret-section.visible { opacity: 1; transform: scale(1) translateY(0); }
-
-        .secret-release {
-            background: linear-gradient(135deg, rgba(0, 20, 5, 0.85) 0%, rgba(1, 8, 2, 0.95) 100%);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 2px solid var(--matrix-green);
-            border-radius: 30px; padding: 40px;
-            display: flex; gap: 40px; align-items: center;
-            box-shadow: 0 0 50px rgba(0, 255, 65, 0.2), inset 0 0 30px rgba(0, 255, 65, 0.05);
-            position: relative; overflow: hidden;
-        }
-        .secret-release::before {
-            content: '';
-            position: absolute; top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(circle at center, rgba(0, 255, 65, 0.08) 0%, transparent 60%);
-            animation: rotate 20s linear infinite;
-            pointer-events: none; z-index: 0;
-        }
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
-
-        .secret-cover-wrap {
-            position: relative; flex-shrink: 0;
-            width: 300px; height: 300px; z-index: 1;
-            border-radius: 20px; overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 255, 65, 0.15);
-            border: 1px solid rgba(0, 255, 65, 0.2);
-            animation: float-cover 6s ease-in-out infinite;
-        }
-        @keyframes float-cover {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        .secret-cover-wrap img { width: 100%; height: 100%; object-fit: cover; }
-
-        .secret-info {
-            flex: 1; z-index: 1;
-            display: flex; flex-direction: column; gap: 20px;
-        }
-
-        .secret-badge {
-            display: inline-block;
-            background: rgba(0, 255, 65, 0.1);
-            color: var(--matrix-green);
-            padding: 6px 18px; border-radius: 50px;
-            font-size: 0.82rem; font-weight: 800;
-            text-transform: uppercase; letter-spacing: 2px;
-            border: 1px solid rgba(0, 255, 65, 0.4);
-            align-self: flex-start;
-            box-shadow: 0 0 15px rgba(0, 255, 65, 0.2);
-        }
-
-        .secret-title-block { display: flex; flex-direction: column; gap: 6px; }
-        .secret-snippet-label {
-            font-size: 0.8rem; font-weight: 700;
-            color: var(--text-muted); text-transform: uppercase;
-            letter-spacing: 3px;
-        }
-        .secret-title {
-            font-size: 2.8rem; font-weight: 900;
-            color: #fff; line-height: 1.1; letter-spacing: 1px;
-            text-shadow: 0 0 25px rgba(0, 255, 65, 0.3);
-        }
-
-        /* Аудиоплеер (зелёная версия) */
-        .audio-player {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 16px; padding: 15px 20px;
-            display: flex; align-items: center; gap: 20px;
-            border: 1px solid rgba(0, 255, 65, 0.1);
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-        .play-pause-btn {
-            background: var(--matrix-green); color: #000;
-            border: none; width: 50px; height: 50px;
-            border-radius: 50%; font-size: 1.2rem; cursor: pointer;
-            display: flex; justify-content: center; align-items: center;
-            transition: 0.3s; flex-shrink: 0;
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
-        }
-        .play-pause-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.8);
-        }
-        .progress-container {
-            width: 100%; height: 24px;
-            display: flex; align-items: center;
-            cursor: pointer; position: relative;
-        }
-        .progress-container::before {
-            content: ''; position: absolute; left: 0;
-            width: 100%; height: 6px;
-            background: rgba(0, 255, 65, 0.1); border-radius: 10px;
-        }
-        .progress-bar {
-            height: 6px; width: 0%;
-            background: linear-gradient(90deg, var(--matrix-dim), var(--matrix-green));
-            border-radius: 10px; position: relative;
-            pointer-events: none; z-index: 2;
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-        }
-        .progress-bar::after {
-            content: ''; position: absolute; right: -7px; top: -5px;
-            width: 16px; height: 16px; background: var(--matrix-green);
-            border-radius: 50%; box-shadow: 0 0 12px var(--matrix-green);
-            transition: transform 0.1s;
-        }
-        .progress-container:active .progress-bar::after { transform: scale(1.4); }
-        .time-display {
-            font-size: 0.85rem; color: var(--text-muted);
-            font-variant-numeric: tabular-nums; font-weight: 700;
-            min-width: 90px; text-align: right; white-space: nowrap;
-        }
-
-        /* Кнопка "Назад" */
-        .back-btn-wrap { display: flex; justify-content: flex-start; }
-        .back-btn {
-            display: inline-flex; align-items: center; gap: 10px;
-            background: rgba(0, 255, 65, 0.05);
-            color: var(--matrix-green);
-            padding: 13px 24px; border-radius: 12px;
-            text-decoration: none; font-weight: 800;
-            border: 1px solid rgba(0, 255, 65, 0.25);
-            cursor: pointer; transition: 0.3s;
-            font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px;
-        }
-        .back-btn:hover {
-            background: rgba(0, 255, 65, 0.12);
-            border-color: var(--matrix-green);
-            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
-            transform: translateX(-4px);
-        }
-
-        /* Анимация появления секрета */
-        @keyframes expand-from-dot {
-            0% { opacity: 0; transform: scale(0.85) translateY(40px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        /* ===== АДАПТИВ ===== */
-        @media (max-width: 750px) {
-            .secret-release { flex-direction: column; text-align: center; padding: 28px 20px; }
-            .secret-cover-wrap { width: 100%; max-width: 260px; height: 260px; }
-            .secret-badge { align-self: center; }
-            .secret-title { font-size: 2rem; }
-            .back-btn-wrap { justify-content: center; }
-        }
-        @media (max-width: 480px) {
-            .burger-btn { top: 15px; left: 15px; }
-            header { padding-top: 70px; }
-            #promo-input { font-size: 1rem; }
-        }
+        @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <canvas id="matrix-canvas"></canvas>
+    <canvas id="matrixCanvas"></canvas>
 
-    <!-- ===== БОКОВОЕ МЕНЮ ===== -->
     <div class="burger-btn" id="burgerBtn"><i class="fa-solid fa-bars"></i></div>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            МЕНЮ
-            <i class="fa-solid fa-xmark sidebar-header-close" id="closeSidebar"></i>
+        <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
+            МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.5rem; cursor: pointer; color: white; transition: 0.3s;"></i>
         </div>
-        <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home icon-main"></i> Главная</a>
-        <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music icon-main"></i> Муз. каталог</a>
-        <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info icon-main"></i> О нас</a>
+        <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home"></i> Главная</a>
+        <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
+        <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info"></i> О нас</a>
+        <a href="#" class="sidebar-link" id="sidebarSupportBtn">
+            <i class="fa-solid fa-headset"></i> Тех. поддержка
+        </a>
     </div>
 
-    <!-- ===== ШАПКА ===== -->
     <header>
         <h1>PROMOCODE</h1>
     </header>
 
-    <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
     <main>
-
-        <!-- СЕКЦИЯ ВВОДА ПРОМОКОДА -->
-        <div id="promo-section">
-            <p class="promo-label"><i class="fa-solid fa-key" style="margin-right:8px;"></i>Введи промокод</p>
-            <div class="promo-input-wrap" id="promo-input-wrap">
-                <input type="text" id="promo-input" placeholder="Введи промокод..." autocomplete="off" spellcheck="false">
-                <button id="promo-submit"><i class="fa-solid fa-arrow-right"></i></button>
+        <div class="promo-wrapper" id="promoWrapper">
+            <div class="promo-box" id="promoBox">
+                <input type="text" id="promoInput" placeholder="Введите код доступа" autocomplete="off" spellcheck="false">
+                <button id="promoSubmit"><i class="fa-solid fa-terminal"></i></button>
             </div>
-            <div id="promo-error"><i class="fa-solid fa-circle-xmark" style="margin-right:6px;"></i>Промокод не существует</div>
+            <div class="error-msg" id="promoError">Данный промокод не существует</div>
+            <div class="splash-ring" id="splashRing"></div>
         </div>
 
-        <!-- СЕКЦИЯ СЕКРЕТНОГО ТРЕКА (скрыта по умолчанию) -->
-        <div id="secret-section">
-            <div class="secret-release">
-                <div class="secret-cover-wrap">
-                    <img src="../logo_Dance_Girl.jpeg" alt="Dance Girl Cover" onerror="this.src='../dslogo.png'">
+        <div class="snippet-wrapper" id="snippetWrapper">
+            <div class="hero-release" id="snippetHero">
+                <div class="hero-cover-wrap">
+                    <img src="../logo_Dance_Girl.jpeg" alt="Dance Girl Cover" onerror="this.src='dslogo.png'">
                 </div>
-                <div class="secret-info">
-                    <div class="secret-badge"><i class="fa-solid fa-lock-open" style="margin-right:6px;"></i>Секретный контент</div>
-                    <div class="secret-title-block">
-                        <span class="secret-snippet-label">Snippet</span>
-                        <span class="secret-title">Dance Girl</span>
-                    </div>
-
+                <div class="hero-info">
+                    <div class="hero-badge">Snippet</div>
+                    <h2>Dance Girl</h2>
+                    
                     <div class="audio-player">
-                        <button class="play-pause-btn" id="secretPlayBtn" onclick="toggleSecretPlay()">
-                            <i class="fa-solid fa-play"></i>
-                        </button>
-                        <audio id="secretAudio" src="../snippet_Dance_Girl.mp3" preload="metadata"></audio>
-                        <div class="progress-container" id="secretProgressContainer">
-                            <div class="progress-bar" id="secretProgressBar"></div>
+                        <button class="play-pause-btn" id="playBtn" onclick="togglePlay()"><i class="fa-solid fa-play"></i></button>
+                        <audio id="snippetAudio" src="../snippet_Dance_Girl.mp3" preload="metadata" crossorigin="anonymous"></audio>
+                        <div class="progress-container" id="progressContainer">
+                            <div class="progress-bar" id="progressBar"></div>
                         </div>
-                        <span class="time-display" id="secretTimeDisplay">00:00 / 00:00</span>
-                    </div>
-
-                    <div class="back-btn-wrap">
-                        <div class="back-btn" id="backBtn">
-                            <i class="fa-solid fa-arrow-left"></i> Назад
-                        </div>
+                        <span class="time-display" id="timeDisplay">00:00 / 00:00</span>
                     </div>
                 </div>
             </div>
+            <button class="back-btn" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i> Назад</button>
         </div>
-
     </main>
 
+    <div id="chat-window">
+        <div class="chat-header" id="chat-header">
+            <div class="chat-header-info">
+                <i class="fa-solid fa-grip-vertical drag-handle"></i>
+                <span class="chat-header-title">DS Support</span>
+            </div>
+            <i class="fa-solid fa-xmark" id="chat-close"></i>
+        </div>
+        <div id="chat-messages">
+            <div class="chat-system-msg" id="chatGreeting">Система тех. поддержки активна. Задайте ваш вопрос.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Ввод команды/проблемы...">
+            <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
     <script>
-        /* ============================================================
-           ПРОМОКОД — МЕНЯЙ ТОЛЬКО ЭТУ СТРОКУ
-           ============================================================ */
-        const VALID_PROMO = "D&S_Dance";
-        /* ============================================================ */
+        // ==========================================
+        // ======= НАСТРОЙКИ ПРОМОКОДА ==============
+        // ==========================================
+        const SECRET_PROMOCODE = "D&S_Dance";
+        // ==========================================
 
-        // ===== MATRIX RAIN =====
-        const canvas = document.getElementById('matrix-canvas');
+        // === МАТРИЦА (КАНВАС) ===
+        const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
-        let drops = [];
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const matrixChars = "01".split(""); 
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        for(let x = 0; x < columns; x++) drops[x] = 1;
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(2, 6, 2, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff66';
+            ctx.font = fontSize + 'px monospace';
+            for(let i = 0; i < drops.length; i++) {
+                const text = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
 
-        function resizeCanvas() {
+        window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            initDrops();
-        }
+        });
 
-        function initDrops() {
-            const cols = Math.floor(canvas.width / 20);
-            drops = Array.from({ length: cols }, () => Math.random() * -canvas.height / 14);
-        }
-
-        const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF";
-        const charArr = chars.split('');
-
-        function drawMatrix() {
-            ctx.fillStyle = 'rgba(1, 12, 2, 0.045)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            drops.forEach((y, i) => {
-                const char = charArr[Math.floor(Math.random() * charArr.length)];
-                const x = i * 20;
-
-                // Яркий символ впереди
-                ctx.fillStyle = '#afffbf';
-                ctx.font = '14px Montserrat, monospace';
-                ctx.fillText(char, x, y * 14);
-
-                // Остальная цепочка
-                ctx.fillStyle = '#00ff41';
-                ctx.font = '13px Montserrat, monospace';
-                ctx.fillText(charArr[Math.floor(Math.random() * charArr.length)], x, (y - 1) * 14);
-
-                ctx.fillStyle = 'rgba(0, 180, 60, 0.7)';
-                ctx.fillText(charArr[Math.floor(Math.random() * charArr.length)], x, (y - 2) * 14);
-
-                drops[i]++;
-                if (drops[i] * 14 > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
-                }
-            });
-        }
-
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        setInterval(drawMatrix, 42);
-
-        // ===== МЕНЮ =====
+        // === МЕНЮ БУРГЕР ===
         const burgerBtn = document.getElementById('burgerBtn');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const closeSidebar = document.getElementById('closeSidebar');
+        const sidebarSupportBtn = document.getElementById('sidebarSupportBtn');
 
         function toggleMenu() {
             sidebar.classList.toggle('active');
@@ -545,199 +331,292 @@
         closeSidebar.onclick = toggleMenu;
         sidebarOverlay.onclick = toggleMenu;
 
-        // ===== ПРОМОКОД =====
-        const promoInput = document.getElementById('promo-input');
-        const promoSubmit = document.getElementById('promo-submit');
-        const promoError = document.getElementById('promo-error');
-        const promoInputWrap = document.getElementById('promo-input-wrap');
-        const promoSection = document.getElementById('promo-section');
-        const secretSection = document.getElementById('secret-section');
-        const promoLabel = document.querySelector('.promo-label');
+        // === ЛОГИКА ЧАТА (ХАКЕРСКАЯ) ===
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send');
+        const chatHeader = document.getElementById('chat-header');
 
-        function showError() {
-            promoError.classList.add('show');
-            promoInputWrap.style.animation = 'shake 0.4s ease';
-            setTimeout(() => { promoInputWrap.style.animation = ''; }, 400);
-        }
+        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
+        let clientId = localStorage.getItem('dxtrClientId') || 'user_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('dxtrClientId', clientId);
+        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
 
-        function hideError() {
-            promoError.classList.remove('show');
-        }
+        const socket = io("https://dxtrslizze.onrender.com/");
 
-        promoInput.addEventListener('input', hideError);
-
-        // Анимация тряски при ошибке
-        const shakeStyle = document.createElement('style');
-        shakeStyle.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                18% { transform: translateX(-10px); }
-                36% { transform: translateX(10px); }
-                54% { transform: translateX(-6px); }
-                72% { transform: translateX(6px); }
-                90% { transform: translateX(-2px); }
-            }
-        `;
-        document.head.appendChild(shakeStyle);
-
-        function activatePromo() {
-            const val = promoInput.value.trim();
-            if (!val) return;
-
-            if (val !== VALID_PROMO) {
-                showError();
-                return;
-            }
-
-            // Верный промокод — запускаем анимацию
-            hideError();
-            promoLabel.style.transition = 'opacity 0.4s';
-            promoLabel.style.opacity = '0';
-
-            const rect = promoInputWrap.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-
-            promoInputWrap.classList.add('collapsing');
-
+        sidebarSupportBtn.onclick = (e) => {
+            e.preventDefault();
+            toggleMenu();
             setTimeout(() => {
-                // Создаём капельку
-                const droplet = document.createElement('div');
-                droplet.className = 'droplet';
-                droplet.style.left = (centerX - 10) + 'px';
-                droplet.style.top = (centerY - 10) + 'px';
-                document.body.appendChild(droplet);
+                chatWindow.style.display = 'flex';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                if(window.innerWidth > 600) {
+                    chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px';
+                }
+            }, 300);
+        };
+        chatClose.onclick = () => chatWindow.style.display = 'none';
 
-                promoSection.style.visibility = 'hidden';
+        let isDraggingChat = false, chatOffsetX, chatOffsetY;
+        chatHeader.addEventListener('mousedown', (e) => {
+            if (window.innerWidth <= 600 || e.target.id === 'chat-close') return;
+            isDraggingChat = true;
+            chatWindow.style.animation = 'none'; chatWindow.style.transform = 'none';
+            const rect = chatWindow.getBoundingClientRect();
+            chatOffsetX = e.clientX - rect.left; chatOffsetY = e.clientY - rect.top;
+            chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto'; chatWindow.style.margin = '0';
+            chatWindow.style.left = rect.left + 'px'; chatWindow.style.top = rect.top + 'px';
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingChat) return;
+            e.preventDefault();
+            let newX = e.clientX - chatOffsetX; let newY = e.clientY - chatOffsetY;
+            newX = Math.max(0, Math.min(newX, window.innerWidth - chatWindow.offsetWidth));
+            newY = Math.max(0, Math.min(newY, window.innerHeight - chatWindow.offsetHeight));
+            chatWindow.style.left = `${newX}px`; chatWindow.style.top = `${newY}px`;
+        });
+        document.addEventListener('mouseup', () => isDraggingChat = false);
 
-                setTimeout(() => {
-                    droplet.remove();
-                    promoSection.style.display = 'none';
-
-                    // Показываем секретный трек
-                    secretSection.style.display = 'block';
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            secretSection.classList.add('visible');
-                        });
-                    });
-                }, 900);
-            }, 500);
-        }
-
-        promoSubmit.onclick = activatePromo;
-        promoInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') activatePromo();
+        socket.on('connect', () => {
+            fpPromise.then(fp => fp.get()).then(result => socket.emit('register_client', { clientId: clientId, fpHash: result.visitorId }));
         });
 
-        // ===== КНОПКА "НАЗАД" =====
-        document.getElementById('backBtn').onclick = function () {
-            // Останавливаем аудио
-            if (!secretAudio.paused) {
-                secretAudio.pause();
-                secretAudio.currentTime = 0;
-                secretPlayBtnIcon.className = 'fa-solid fa-play';
-                secretProgressBar.style.width = '0%';
+        socket.on('receive_message', d => {
+            if (chatWindow.style.display === 'none') chatWindow.style.display = 'flex';
+            addChatMessage('Support', d.text, 'flex-start', true, false, true);
+        });
+
+        chatSendBtn.onclick = sendMessage;
+        chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+
+        function sendMessage() {
+            const t = chatInput.value.trim();
+            if (!t) return;
+            socket.emit('send_message', { text: t, clientId: clientId });
+            addChatMessage(window.userNickname || 'Вы', t, 'flex-end');
+            chatInput.value = '';
+        }
+
+        function addChatMessage(sender, text, align, save = true, isError = false, isBot = false) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
+            const nameLab = document.createElement('span'); nameLab.className = 'chat-msg-name'; nameLab.textContent = sender;
+            const bubble = document.createElement('div'); bubble.className = 'chat-msg-bubble'; bubble.textContent = text;
+            wrapper.appendChild(nameLab); wrapper.appendChild(bubble);
+            chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight;
+            if (save) {
+                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
+                h.push({ sender, text, align, isBot });
+                if (h.length > 50) h.shift();
+                localStorage.setItem('dxtrChatHistory', JSON.stringify(h));
+            }
+        }
+        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, false, m.isBot));
+
+        // === ЛОГИКА ПРОМОКОДА И АНИМАЦИИ ===
+        const promoInput = document.getElementById('promoInput');
+        const promoSubmit = document.getElementById('promoSubmit');
+        const promoError = document.getElementById('promoError');
+        const promoBox = document.getElementById('promoBox');
+        const promoWrapper = document.getElementById('promoWrapper');
+        const splashRing = document.getElementById('splashRing');
+        const snippetWrapper = document.getElementById('snippetWrapper');
+
+        function checkPromo() {
+            const val = promoInput.value.trim();
+            if (val === "") return;
+
+            if (val === SECRET_PROMOCODE) {
+                promoError.classList.remove('visible');
+                promoBox.classList.add('collapsing');
+                setTimeout(() => {
+                    promoBox.style.opacity = '0'; 
+                    splashRing.classList.add('animate'); 
+                    setTimeout(() => {
+                        promoWrapper.style.display = 'none'; 
+                        snippetWrapper.classList.add('visible');
+                        setTimeout(() => snippetWrapper.classList.add('active'), 50);
+                    }, 300); 
+                }, 600); 
+            } else {
+                promoError.classList.add('visible');
+                promoBox.style.transform = 'translateX(-10px)';
+                setTimeout(() => promoBox.style.transform = 'translateX(10px)', 100);
+                setTimeout(() => promoBox.style.transform = 'translateX(-10px)', 200);
+                setTimeout(() => promoBox.style.transform = 'translateX(0)', 300);
+            }
+        }
+
+        promoSubmit.onclick = checkPromo;
+        promoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPromo(); });
+        promoInput.addEventListener('input', () => promoError.classList.remove('visible'));
+
+        function goBack() {
+            if(snippetAudio) { snippetAudio.pause(); snippetAudio.currentTime = 0; }
+            if(playBtnIcon) playBtnIcon.className = 'fa-solid fa-play';
+            if(snippetHero) {
+                snippetHero.style.transform = `scale(1)`;
+                snippetHero.style.boxShadow = `0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1)`;
             }
 
-            // Скрываем секрет
-            secretSection.classList.remove('visible');
-
+            snippetWrapper.classList.remove('active');
             setTimeout(() => {
-                secretSection.style.display = 'none';
+                snippetWrapper.classList.remove('visible');
+                promoWrapper.style.display = 'flex';
+                splashRing.classList.remove('animate');
+                setTimeout(() => {
+                    promoBox.style.opacity = '1';
+                    promoBox.classList.remove('collapsing');
+                    promoInput.value = ''; 
+                }, 50);
+            }, 600);
+        }
 
-                // Восстанавливаем поле ввода
-                promoInput.value = '';
-                promoInputWrap.classList.remove('collapsing');
-                promoInputWrap.style.animation = 'none';
-                promoInputWrap.style.transform = '';
-                promoInputWrap.style.opacity = '';
-                promoInputWrap.style.borderRadius = '';
+        // === Web Audio API: НАСТОЯЩАЯ ПУЛЬСАЦИЯ ПОД БИТ ===
+        const snippetAudio = document.getElementById('snippetAudio');
+        const snippetHero = document.getElementById('snippetHero');
+        let audioCtx, analyser, source, dataArray;
+        let isAudioSetup = false;
 
-                promoSection.style.display = 'flex';
-                promoSection.style.visibility = 'visible';
+        function setupAudio() {
+            if (isAudioSetup) return;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256; 
+            source = audioCtx.createMediaElementSource(snippetAudio);
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+            dataArray = new Uint8Array(analyser.frequencyBinCount);
+            isAudioSetup = true;
+            pulseBeat();
+        }
 
-                // Анимация появления поля ввода
-                promoInputWrap.style.opacity = '0';
-                promoInputWrap.style.transform = 'scale(0.1)';
-                promoInputWrap.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        function pulseBeat() {
+            requestAnimationFrame(pulseBeat);
+            if (snippetAudio.paused) return; // Экономим ресы, если на паузе
 
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        promoInputWrap.style.opacity = '1';
-                        promoInputWrap.style.transform = 'scale(1)';
-                        promoLabel.style.opacity = '1';
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Вычисляем басы (первые 10 частот из массива)
+            let sum = 0;
+            for(let i = 0; i < 10; i++) sum += dataArray[i];
+            let avg = sum / 10; // Среднее значение от 0 до 255
+            
+            // Если звук тихий, не дергаем
+            if (avg < 30) {
+                snippetHero.style.transform = `scale(1)`;
+                snippetHero.style.boxShadow = `0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1)`;
+                return;
+            }
+            
+            // Превращаем бас в масштаб (scale). Максимум 1.05.
+            let scale = 1 + (avg / 255) * 0.05; 
+            // И в свечение (от 50px до 120px)
+            let glow = 50 + (avg / 255) * 70;
+            
+            snippetHero.style.transform = `scale(${scale})`;
+            snippetHero.style.boxShadow = `0 0 ${glow}px rgba(0, 255, 102, 0.3), inset 0 0 ${glow/2}px rgba(0, 255, 102, 0.2)`;
+        }
 
-                        setTimeout(() => {
-                            promoInputWrap.style.transition = '';
-                            promoInputWrap.style.transform = '';
-                        }, 600);
-                    });
-                });
-            }, 500);
-        };
-
-        // ===== АУДИОПЛЕЕР (СЕКРЕТНЫЙ ТРЕК) =====
-        const secretAudio = document.getElementById('secretAudio');
-        const secretPlayBtnIcon = document.querySelector('#secretPlayBtn i');
-        const secretProgressBar = document.getElementById('secretProgressBar');
-        const secretProgressContainer = document.getElementById('secretProgressContainer');
-        const secretTimeDisplay = document.getElementById('secretTimeDisplay');
+        // === АУДИОПЛЕЕР С ИСПРАВЛЕННОЙ ПЕРЕМОТКОЙ ===
+        const playBtnIcon = document.querySelector('#playBtn i');
+        const progressBar = document.getElementById('progressBar');
+        const progressContainer = document.getElementById('progressContainer');
+        const timeDisplay = document.getElementById('timeDisplay');
         let isDragging = false;
 
-        function toggleSecretPlay() {
-            if (secretAudio.paused) {
-                secretAudio.play();
-                secretPlayBtnIcon.className = 'fa-solid fa-pause';
+        function togglePlay() {
+            if (!isAudioSetup) setupAudio(); // Инициализация контекста при первом клике
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+            if (snippetAudio.paused) {
+                snippetAudio.play();
+                playBtnIcon.className = 'fa-solid fa-pause';
             } else {
-                secretAudio.pause();
-                secretPlayBtnIcon.className = 'fa-solid fa-play';
+                snippetAudio.pause();
+                playBtnIcon.className = 'fa-solid fa-play';
+                // Сбрасываем масштаб при паузе
+                snippetHero.style.transform = `scale(1)`;
+                snippetHero.style.boxShadow = `0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1)`;
             }
         }
 
-        function formatTime(s) {
-            if (!s || isNaN(s)) return "00:00";
-            const m = Math.floor(s / 60);
-            const sec = Math.floor(s % 60);
-            return `${m < 10 ? '0' : ''}${m}:${sec < 10 ? '0' : ''}${sec}`;
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return "00:00";
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
         }
 
-        secretAudio.addEventListener('loadedmetadata', () => {
-            secretTimeDisplay.textContent = `00:00 / ${formatTime(secretAudio.duration)}`;
+        snippetAudio.addEventListener('loadedmetadata', () => {
+            timeDisplay.textContent = `00:00 / ${formatTime(snippetAudio.duration)}`;
         });
 
         function updateProgress(clientX) {
-            const rect = secretProgressContainer.getBoundingClientRect();
-            let offsetX = Math.max(0, Math.min(clientX - rect.left, rect.width));
-            const pct = offsetX / rect.width;
-            secretProgressBar.style.width = (pct * 100) + '%';
-            if (secretAudio.duration) {
-                secretAudio.currentTime = pct * secretAudio.duration;
-                secretTimeDisplay.textContent = `${formatTime(secretAudio.currentTime)} / ${formatTime(secretAudio.duration)}`;
+            const rect = progressContainer.getBoundingClientRect();
+            let offsetX = clientX - rect.left;
+            const width = rect.width;
+            
+            if (offsetX < 0) offsetX = 0;
+            if (offsetX > width) offsetX = width;
+            
+            const percentage = offsetX / width;
+            progressBar.style.width = (percentage * 100) + '%';
+            
+            if (snippetAudio.duration) {
+                const targetTime = percentage * snippetAudio.duration;
+                timeDisplay.textContent = `${formatTime(targetTime)} / ${formatTime(snippetAudio.duration)}`;
+                snippetAudio.currentTime = targetTime;
             }
         }
 
-        secretProgressContainer.addEventListener('mousedown', e => { isDragging = true; updateProgress(e.clientX); });
-        window.addEventListener('mousemove', e => { if (isDragging) updateProgress(e.clientX); });
+        // Мышь (ПК)
+        progressContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            updateProgress(e.clientX);
+        });
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) { e.preventDefault(); updateProgress(e.clientX); }
+        });
         window.addEventListener('mouseup', () => { isDragging = false; });
-        secretProgressContainer.addEventListener('touchstart', e => { isDragging = true; updateProgress(e.touches[0].clientX); }, { passive: false });
-        window.addEventListener('touchmove', e => { if (isDragging) { updateProgress(e.touches[0].clientX); e.preventDefault(); } }, { passive: false });
-        window.addEventListener('touchend', () => { isDragging = false; });
 
-        secretAudio.addEventListener('timeupdate', () => {
-            if (!isDragging && secretAudio.duration) {
-                secretProgressBar.style.width = `${(secretAudio.currentTime / secretAudio.duration) * 100}%`;
-                secretTimeDisplay.textContent = `${formatTime(secretAudio.currentTime)} / ${formatTime(secretAudio.duration)}`;
+        // Тач (Телефоны) - touch-action: none в CSS решает проблему скролла страницы
+        progressContainer.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            updateProgress(e.touches[0].clientX);
+        }, { passive: false });
+        
+        progressContainer.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                e.preventDefault(); // Запрещаем браузеру любые действия
+                updateProgress(e.touches[0].clientX);
+            }
+        }, { passive: false });
+        
+        progressContainer.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+        // Движение ползунка само по себе
+        snippetAudio.addEventListener('timeupdate', () => {
+            if (snippetAudio.duration && !isDragging) {
+                const progressPercent = (snippetAudio.currentTime / snippetAudio.duration) * 100;
+                progressBar.style.width = `${progressPercent}%`;
+                timeDisplay.textContent = `${formatTime(snippetAudio.currentTime)} / ${formatTime(snippetAudio.duration)}`;
             }
         });
 
-        secretAudio.addEventListener('ended', () => {
-            secretPlayBtnIcon.className = 'fa-solid fa-play';
-            secretProgressBar.style.width = '0%';
-            secretAudio.currentTime = 0;
-            secretTimeDisplay.textContent = `00:00 / ${formatTime(secretAudio.duration)}`;
+        snippetAudio.addEventListener('ended', () => {
+            playBtnIcon.className = 'fa-solid fa-play';
+            progressBar.style.width = '0%';
+            snippetAudio.currentTime = 0;
+            timeDisplay.textContent = `00:00 / ${formatTime(snippetAudio.duration)}`;
+            snippetHero.style.transform = `scale(1)`;
+            snippetHero.style.boxShadow = `0 0 50px rgba(0, 255, 102, 0.15), inset 0 0 20px rgba(0, 255, 102, 0.1)`;
         });
     </script>
-
 </body>
 </html>
