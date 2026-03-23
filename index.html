@@ -116,14 +116,14 @@
         .cd-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .cd-colon { font-size: 2rem; font-weight: 900; color: rgba(255,255,255,0.2); align-self: center; margin-top: -15px; }
 
-        /* ГЛАВНЫЙ РЕЛИЗ: NCL */
+        /* ГЛАВНЫЙ РЕЛИЗ: NCL - СВЕЖИЙ РЕДИЗАЙН */
         .hero-release {
-            background: linear-gradient(135deg, rgba(30,30,40,0.7) 0%, rgba(10,10,15,0.8) 100%);
+            background: linear-gradient(135deg, rgba(20,20,35,0.8) 0%, rgba(5,5,15,0.9) 100%);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border); border-radius: 30px; padding: 40px; display: flex; gap: 40px; align-items: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1); position: relative; overflow: hidden;
+            border: 2px solid var(--neon-cyan); border-radius: 30px; padding: 40px; display: flex; gap: 40px; align-items: center;
+            box-shadow: 0 0 40px rgba(0, 198, 255, 0.25), inset 0 0 20px rgba(0, 198, 255, 0.1); position: relative; overflow: hidden;
         }
-        .hero-release::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(255,0,127,0.1) 0%, transparent 50%); animation: rotate 10s linear infinite; pointer-events: none; z-index: 0; }
+        .hero-release::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(0,198,255,0.15) 0%, transparent 60%); animation: rotate 15s linear infinite; pointer-events: none; z-index: 0; }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
 
         .hero-cover-wrap { position: relative; flex-shrink: 0; width: 350px; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
@@ -131,8 +131,8 @@
         .hero-cover-wrap:hover .hero-cover { transform: scale(1.05); }
 
         .hero-info { flex: 1; z-index: 1; display: flex; flex-direction: column; gap: 20px; }
-        .hero-badge { display: inline-block; background: rgba(0, 255, 102, 0.15); color: var(--neon-green); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--neon-green); align-self: flex-start; }
-        .hero-info h2 { font-size: 3rem; font-weight: 900; line-height: 1.1; background: linear-gradient(to right, #fff, #ccc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-badge { display: inline-block; background: rgba(0, 255, 102, 0.15); color: var(--neon-green); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--neon-green); align-self: flex-start; box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); }
+        .hero-info h2 { font-size: 3.5rem; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.4); letter-spacing: 1px; }
 
         /* Аудиоплеер */
         .audio-player { background: rgba(0,0,0,0.5); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
@@ -155,9 +155,13 @@
         .platform-link:hover::before { opacity: 1; }
         .platform-link:hover { transform: translateY(-3px); border-color: transparent; }
         .yt { border-color: rgba(255,0,0,0.4); background: rgba(255,0,0,0.05); } .yt::before { background: linear-gradient(45deg, #cc0000, #ff4d4d); }
-        .yam { border-color: rgba(255,204,0,0.4); background: rgba(255,204,0,0.05); } .yam::before { background: linear-gradient(45deg, #e6b800, #ffcc00); } .yam:hover { color: #000; }
         .spot { border-color: rgba(29,185,84,0.4); background: rgba(29,185,84,0.05); } .spot::before { background: linear-gradient(45deg, #14833b, #1DB954); }
         .vkm { border-color: rgba(0,119,255,0.4); background: rgba(0,119,255,0.05); } .vkm::before { background: linear-gradient(45deg, #005ce6, #0077FF); }
+        
+        /* ПЕРЕЧЕРКНУТЫЙ ЯНДЕКС */
+        .yam { border-color: rgba(255,204,0,0.2); background: rgba(255,204,0,0.02); color: rgba(255,255,255,0.3); text-decoration: line-through; cursor: not-allowed; }
+        .yam::before { display: none; }
+        .yam:hover { transform: none; border-color: rgba(255,204,0,0.2); }
 
         /* СЕТКА КЛИПОВ */
         .tracks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
@@ -249,7 +253,7 @@
         .sidebar.active { left: 0; }
         .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .sidebar-link i.icon-main { color: var(--neon-cyan); font-size: 1.4rem; transition: 0.3s; }
-        .sidebar-link:hover { color: var(--neon-cyan); padding-left: 10px; border-bottom-color: rgba(0,198,255,0.3); }
+        .sidebar-link:hover, .sidebar-link.active { color: var(--neon-cyan); padding-left: 10px; border-bottom-color: rgba(0,198,255,0.3); }
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
         #menuBanLock { color: var(--neon-red); font-size: 1rem; text-shadow: 0 0 10px rgba(255,0,51,0.8); margin-left: auto; display: none; animation: pulseRed 2s infinite; }
@@ -265,7 +269,7 @@
             .hero-cover-wrap { width: 100%; max-width: 300px; }
             .promo-cover-wrap { width: 200px; height: 200px; }
             .hero-badge, .promo-badge { align-self: center; }
-            .hero-info h2 { font-size: 2.2rem; }
+            .hero-info h2 { font-size: 2.8rem; }
             .promo-info h2 { font-size: 2.8rem; }
             .platform-grid { grid-template-columns: 1fr 1fr; }
             .download-btn { width: 100%; }
@@ -312,6 +316,8 @@
         <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
             МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.5rem; cursor: pointer; color: white; transition: 0.3s;"></i>
         </div>
+        <a href="https://dxtrslizze.xyz/" class="sidebar-link active"><i class="fa-solid fa-home icon-main"></i> Главная</a>
+        <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music icon-main"></i> Муз. каталог</a>
         <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info icon-main"></i> О нас</a>
         <a href="#" class="sidebar-link" id="sidebarSupportBtn">
             <i class="fa-solid fa-headset icon-main"></i> Тех. поддержка
@@ -327,6 +333,7 @@
     <nav class="top-nav fade-in">
         <a href="https://dxtrslizze.xyz/" class="nav-link active">Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="nav-link">Муз. каталог</a>
+        <a href="https://dxtrslizze.xyz/about" class="nav-link">О нас</a>
     </nav>
 
     <div class="close-btn" id="closeBtn" style="display: none;">×</div>
@@ -407,7 +414,7 @@
 
                 <div class="platform-grid">
                     <a href="javascript:void(0)" onclick="openVideo('M9TwVLCdEiM')" class="platform-link yt"><i class="fa-brands fa-youtube"></i> YouTube</a>
-                    <a href="https://music.yandex.ru/album/41053328/track/149038623" target="_blank" class="platform-link yam"><i class="fa-solid fa-music"></i> Я.Музыка</a>
+                    <a href="javascript:void(0)" class="platform-link yam" title="Временно недоступно"><i class="fa-solid fa-music"></i> Я.Музыка</a>
                     <a href="https://open.spotify.com/track/5mvN7HfEXmxy1wH8V2r216" target="_blank" class="platform-link spot"><i class="fa-brands fa-spotify"></i> Spotify</a>
                     <a href="https://vk.ru/audio-2001553364_147553364_69b1b8413dbf4d1f2e" target="_blank" class="platform-link vkm"><i class="fa-brands fa-vk"></i> VK Music</a>
                 </div>
