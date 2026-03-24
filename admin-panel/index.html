@@ -38,7 +38,7 @@
         .burger-btn:hover { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-color); border-color: var(--theme-color); }
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(2, 6, 2, 0.95); backdrop-filter: blur(25px); border-right: 1px solid var(--theme-glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
-        .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; text-transform: uppercase; letter-spacing: 1px; }
+        .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
         .sidebar-link i { color: var(--theme-color); font-size: 1.4rem; }
         .sidebar-link:hover { color: var(--theme-color); padding-left: 10px; border-bottom-color: var(--theme-glow); }
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s; }
@@ -68,7 +68,7 @@
             color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 2px; 
             box-shadow: inset 0 0 15px rgba(255,255,255,0.05); 
             backdrop-filter: blur(15px); 
-            transition: all 0.3s ease; /* Добавили транзицию для плавного появления рамки */
+            transition: all 0.3s ease;
         }
         .admin-input::placeholder { color: var(--text-muted); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
         
@@ -130,7 +130,6 @@
         .card-code { font-size: 1.2rem; font-weight: 900; color: var(--theme-color); letter-spacing: 1px; }
         .card-title { font-size: 1.1rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* МИНИ ПЛЕЕР В КАРТОЧКЕ */
         .mini-player { display: flex; align-items: center; gap: 10px; margin-top: 5px; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
         .mini-play-btn { background: transparent; color: var(--theme-color); border: none; font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
         .mini-play-btn:hover { color: #fff; transform: scale(1.1); }
@@ -166,6 +165,31 @@
         .m-btn-confirm-edit { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-glow); }
         .m-btn-confirm-edit:hover { background: #fff; box-shadow: 0 0 25px rgba(255,255,255,0.8); transform: scale(1.05); }
 
+        /* === ТЕХПОДДЕРЖКА (ЧАТ) === */
+        .support-btn { position: fixed; bottom: 25px; right: 25px; z-index: 9000; background: var(--glass-bg); border: 1px solid var(--theme-glass-border); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); transition: 0.3s; }
+        .support-btn:hover { background: var(--theme-color); color: #000; transform: scale(1.1); box-shadow: 0 0 25px var(--theme-glow); }
+        .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--error-red); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: bold; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--error-red); }
+        
+        .chat-window { position: fixed; bottom: 100px; right: 25px; width: 350px; height: 450px; background: rgba(5, 10, 5, 0.95); border: 1px solid var(--theme-glass-border); border-radius: 20px; z-index: 9000; display: none; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(20px); overflow: hidden; transform: translateY(20px); opacity: 0; transition: all 0.3s ease; }
+        .chat-window.active { display: flex; transform: translateY(0); opacity: 1; }
+        .chat-header { background: rgba(0,0,0,0.5); padding: 15px 20px; border-bottom: 1px solid var(--theme-glass-border); display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: var(--theme-color); letter-spacing: 1px; text-transform: uppercase; }
+        .close-chat { cursor: pointer; font-size: 1.2rem; color: #fff; transition: 0.3s; }
+        .close-chat:hover { color: var(--error-red); }
+        
+        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 85%; padding: 10px 15px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
+        .msg-user { align-self: flex-end; background: rgba(0, 198, 255, 0.1); border: 1px solid var(--theme-color); color: #fff; border-bottom-right-radius: 2px; }
+        .msg-admin { align-self: flex-start; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-bottom-left-radius: 2px; }
+        .msg-warning { align-self: flex-start; background: rgba(204, 68, 68, 0.2); border: 1px solid var(--error-red); color: #fff; }
+        .msg-success { align-self: flex-start; background: rgba(0, 255, 102, 0.2); border: 1px solid #00ff66; color: #fff; }
+        
+        .chat-input { display: flex; padding: 15px; background: rgba(0,0,0,0.5); border-top: 1px solid var(--theme-glass-border); gap: 10px; }
+        .chat-input input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 10px; color: #fff; outline: none; font-family: 'Montserrat'; transition: 0.3s; }
+        .chat-input input:focus { border-color: var(--theme-color); }
+        .chat-input button { background: var(--theme-color); color: #000; border: none; width: 45px; height: 45px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; transition: 0.3s; display: flex; justify-content: center; align-items: center; }
+        .chat-input button:hover { box-shadow: 0 0 15px var(--theme-glow); transform: scale(1.05); background: #fff; }
+        .chat-input button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: #333; color: #888; }
+
         @media (max-width: 600px) {
             header h1 { font-size: 2.2rem; letter-spacing: 5px; }
             .auth-box { margin-top: 5vh; }
@@ -175,6 +199,9 @@
             .promo-card { flex-direction: column; align-items: flex-start; }
             .card-cover { width: 100%; height: 150px; }
             .card-actions { top: 20px; right: 20px; }
+            
+            .chat-window { width: calc(100vw - 40px); right: 20px; bottom: 90px; height: 60vh; }
+            .support-btn { width: 50px; height: 50px; right: 20px; bottom: 20px; font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -191,6 +218,24 @@
         <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home"></i> Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
         <a href="https://dxtrslizze.xyz/promocode" class="sidebar-link"><i class="fa-solid fa-terminal"></i> Ввод промокода</a>
+        <a class="sidebar-link" id="menuSupportBtn"><i class="fa-solid fa-headset"></i> Поддержка</a>
+    </div>
+
+    <div class="support-btn" id="supportBtn">
+        <i class="fa-solid fa-headset"></i>
+        <div class="unread-badge" id="unreadBadge">!</div>
+    </div>
+
+    <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+            <div><i class="fa-solid fa-headset"></i> ТЕХ. ПОДДЕРЖКА</div>
+            <i class="fa-solid fa-xmark close-chat" id="closeChat"></i>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Введите сообщение..." autocomplete="off">
+            <button id="chatSend"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
     </div>
 
     <header>
@@ -327,7 +372,74 @@
         function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
         burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
 
-        // ========== СИСТЕМА БАНОВ ==========
+        // ========== ЧАТ ТЕХПОДДЕРЖКИ ==========
+        const supportBtn = document.getElementById('supportBtn');
+        const chatWindow = document.getElementById('chatWindow');
+        const closeChat = document.getElementById('closeChat');
+        const menuSupportBtn = document.getElementById('menuSupportBtn');
+        const unreadBadge = document.getElementById('unreadBadge');
+        
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSend = document.getElementById('chatSend');
+        
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory_dxtr') || '[]');
+        let isSupportBanned = false;
+
+        function toggleChat() {
+            if (chatWindow.style.display === 'flex') {
+                chatWindow.classList.remove('active');
+                setTimeout(() => chatWindow.style.display = 'none', 300);
+            } else {
+                chatWindow.style.display = 'flex';
+                setTimeout(() => chatWindow.classList.add('active'), 10);
+                unreadBadge.style.display = 'none';
+                scrollToBottom();
+            }
+        }
+        
+        supportBtn.onclick = toggleChat;
+        closeChat.onclick = toggleChat;
+        menuSupportBtn.onclick = (e) => { e.preventDefault(); toggleMenu(); toggleChat(); };
+
+        function renderHistory() {
+            chatMessages.innerHTML = '';
+            chatHistory.forEach(m => addMessageToUI(m.text, m.type));
+            scrollToBottom();
+        }
+        renderHistory();
+
+        function addMessageToUI(text, type) {
+            const div = document.createElement('div');
+            div.className = `msg msg-${type}`;
+            div.innerHTML = text; 
+            chatMessages.appendChild(div);
+            scrollToBottom();
+        }
+
+        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
+
+        function saveMessage(text, type) {
+            chatHistory.push({ text, type });
+            if (chatHistory.length > 50) chatHistory.shift();
+            localStorage.setItem('chatHistory_dxtr', JSON.stringify(chatHistory));
+        }
+
+        chatSend.onclick = () => {
+            if (isSupportBanned || !chatInput.value.trim()) return;
+            const text = chatInput.value.trim();
+            addMessageToUI(text, 'user');
+            saveMessage(text, 'user');
+            socket.emit('send_message', { clientId, text });
+            chatInput.value = '';
+        };
+
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') chatSend.click();
+        });
+
+
+        // ========== СИСТЕМА БАНОВ И СОКЕТЫ ==========
         let socket;
         let fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FP => FP.load());
         let clientId = localStorage.getItem('dxtrAdminClientId') || 'admin_' + Math.random().toString(36).substr(2, 9);
@@ -339,9 +451,15 @@
             socket.on('connect', () => {
                 fpPromise.then(fp => fp.get()).then(r => {
                     fingerprintHash = r.visitorId;
+                    
+                    // Регистрация для проверки бана админки
                     socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
+                    
+                    // Регистрация для чата тех. поддержки
+                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
                 });
             });
+            
             socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
             
             socket.on('admin_unbanned', () => {
@@ -377,6 +495,30 @@
                 descEl.style.color = '#fff';
 
                 setTimeout(() => { location.reload(); }, 3000);
+            });
+
+            // Слушаем входящие сообщения техподдержки
+            socket.on('receive_message', (data) => {
+                const type = data.isWarning ? 'warning' : (data.isSuccess ? 'success' : 'admin');
+                addMessageToUI(data.text, type);
+                saveMessage(data.text, type);
+                if (chatWindow.style.display !== 'flex') {
+                    unreadBadge.style.display = 'flex';
+                }
+            });
+
+            // Слушаем бан именно в техподдержке
+            socket.on('ban_status', (data) => {
+                isSupportBanned = data.isBanned;
+                if (isSupportBanned) {
+                    chatInput.disabled = true;
+                    chatSend.disabled = true;
+                    chatInput.placeholder = "Доступ к чату ограничен";
+                } else {
+                    chatInput.disabled = false;
+                    chatSend.disabled = false;
+                    chatInput.placeholder = "Введите сообщение...";
+                }
             });
 
         } catch(e) {}
@@ -453,7 +595,7 @@
             e.preventDefault(); 
 
             if (!isLoginVerified) {
-                if (loginInput.value.trim() === 'DSWork') {
+                if (loginInput.value.trim() === 'DXTR_admin') {
                     isLoginVerified = true;
                     passWrapper.classList.add('show');
                     passInput.setAttribute('required', 'true');
@@ -462,7 +604,6 @@
                     loginInput.disabled = true;
                     loginWrapper.querySelector('.auth-submit-btn').style.display = 'none';
                     
-                    // --- ВОТ ОН, ФИКС ДЛЯ ОТРЕЗАННОГО КРАЯ ---
                     loginInput.style.borderRight = '2px solid var(--theme-color)';
                     loginInput.style.borderRadius = '20px';
                     
@@ -498,7 +639,7 @@
             }
         };
 
-        // ========== ОСТАЛЬНАЯ ЛОГИКА (БЕЗ ИЗМЕНЕНИЙ) ==========
+        // ========== ОСТАЛЬНАЯ ЛОГИКА АДМИН ПАНЕЛИ ==========
         const createForm = document.getElementById('createForm');
         const submitBtn = document.getElementById('submitBtn');
         const coverInput = document.getElementById('newCover');
