@@ -510,6 +510,8 @@
         const lockBadge = document.getElementById('lockBadge');
         const trackTitle = document.getElementById('trackTitle');
 
+        let currentAudioBlobUrl = null; // Для хранения трека в памяти
+
         async function checkPromo() {
             const val = promoInput.value.trim();
             if (!val) return;
@@ -524,17 +526,28 @@
                 
                 if (res.ok) {
                     const data = await res.json();
-                    
-                    // ДОБАВЛЯЕМ ДОМЕН СЕРВЕРА К ССЫЛКАМ НА МЕДИА
                     const BASE_URL = "https://dxtrslizze.onrender.com";
                     
+                    // ФИКС ПЕРЕМОТКИ: Загружаем трек целиком как локальный Blob
+                    // Это позволяет браузеру знать точную длину и свободно перематывать
+                    try {
+                        const audioRes = await fetch(BASE_URL + data.trackUrl);
+                        const audioBlob = await audioRes.blob();
+                        
+                        if (currentAudioBlobUrl) URL.revokeObjectURL(currentAudioBlobUrl); // Очищаем старый трек
+                        currentAudioBlobUrl = URL.createObjectURL(audioBlob);
+                        
+                        const audioObj = document.getElementById('snippetAudio');
+                        audioObj.src = currentAudioBlobUrl;
+                        audioObj.load();
+                    } catch(e) {
+                        // Резервный вариант, если Blob не загрузился
+                        document.getElementById('snippetAudio').src = BASE_URL + data.trackUrl;
+                    }
+
                     // Обновляем данные на странице перед открытием
                     document.getElementById('trackTitle').textContent = data.title;
                     document.getElementById('realCover').src = BASE_URL + data.coverUrl;
-                    
-                    const audioObj = document.getElementById('snippetAudio');
-                    audioObj.src = BASE_URL + data.trackUrl;
-                    audioObj.load(); // Важно для загрузки метаданных
                     
                     promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
                     
@@ -631,7 +644,7 @@
             snippetHero.style.boxShadow = `0 0 ${glow}px rgba(0,255,102,0.3), inset 0 0 ${glow/2}px rgba(0,255,102,0.2)`;
         }
 
-        // ========== ПЛЕЕР ==========
+        // ========== ПЛЕЕР И ПЕРЕМОТКА ==========
         const playBtnIcon = document.querySelector('#playBtn i');
         const progressBar = document.getElementById('progressBar');
         const progressContainer = document.getElementById('progressContainer');
@@ -650,17 +663,23 @@
         }
 
         function fmt(s) {
-            if (!s || isNaN(s)) return '00:00';
+            if (!s || isNaN(s) || !isFinite(s)) return '00:00';
             return `${Math.floor(s/60)<10?'0':''}${Math.floor(s/60)}:${Math.floor(s%60)<10?'0':''}${Math.floor(s%60)}`;
         }
 
-        snippetAudio.addEventListener('loadedmetadata', () => { timeDisplay.textContent = `00:00 / ${fmt(snippetAudio.duration)}`; });
+        snippetAudio.addEventListener('loadedmetadata', () => { 
+            if (isFinite(snippetAudio.duration)) {
+                timeDisplay.textContent = `00:00 / ${fmt(snippetAudio.duration)}`; 
+            }
+        });
 
         function updateProg(x) {
             const r = progressContainer.getBoundingClientRect();
             const pct = Math.max(0, Math.min((x - r.left) / r.width, 1));
             progressBar.style.width = (pct * 100) + '%';
-            if (snippetAudio.duration) {
+            
+            // Защита от NaN при перемотке
+            if (snippetAudio.duration && isFinite(snippetAudio.duration)) {
                 snippetAudio.currentTime = pct * snippetAudio.duration;
                 timeDisplay.textContent = `${fmt(snippetAudio.currentTime)} / ${fmt(snippetAudio.duration)}`;
             }
@@ -669,12 +688,14 @@
         progressContainer.addEventListener('mousedown', e => { isDragging = true; updateProg(e.clientX); });
         window.addEventListener('mousemove', e => { if (isDragging) { e.preventDefault(); updateProg(e.clientX); } });
         window.addEventListener('mouseup', () => isDragging = false);
+        
+        // Мобильные касания
         progressContainer.addEventListener('touchstart', e => { isDragging = true; updateProg(e.touches[0].clientX); }, { passive: false });
         progressContainer.addEventListener('touchmove', e => { if (isDragging) { e.preventDefault(); updateProg(e.touches[0].clientX); } }, { passive: false });
         progressContainer.addEventListener('touchend', () => isDragging = false);
 
         snippetAudio.addEventListener('timeupdate', () => {
-            if (snippetAudio.duration && !isDragging) {
+            if (snippetAudio.duration && isFinite(snippetAudio.duration) && !isDragging) {
                 progressBar.style.width = `${(snippetAudio.currentTime / snippetAudio.duration) * 100}%`;
                 timeDisplay.textContent = `${fmt(snippetAudio.currentTime)} / ${fmt(snippetAudio.duration)}`;
             }
@@ -684,7 +705,9 @@
             playBtnIcon.className = 'fa-solid fa-play';
             progressBar.style.width = '0%';
             snippetAudio.currentTime = 0;
-            timeDisplay.textContent = `00:00 / ${fmt(snippetAudio.duration)}`;
+            if (isFinite(snippetAudio.duration)) {
+                timeDisplay.textContent = `00:00 / ${fmt(snippetAudio.duration)}`;
+            }
             if (snippetHero) snippetHero.style.transform = 'scale(1)';
         });
     </script>
