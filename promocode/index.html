@@ -525,13 +525,16 @@
                 if (res.ok) {
                     const data = await res.json();
                     
+                    // ДОБАВЛЯЕМ ДОМЕН СЕРВЕРА К ССЫЛКАМ НА МЕДИА
+                    const BASE_URL = "https://dxtrslizze.onrender.com";
+                    
                     // Обновляем данные на странице перед открытием
                     document.getElementById('trackTitle').textContent = data.title;
-                    document.getElementById('realCover').src = data.coverUrl;
+                    document.getElementById('realCover').src = BASE_URL + data.coverUrl;
                     
                     const audioObj = document.getElementById('snippetAudio');
-                    audioObj.src = data.trackUrl;
-                    audioObj.load(); // Важно для загрузки метаданных по новой ссылке
+                    audioObj.src = BASE_URL + data.trackUrl;
+                    audioObj.load(); // Важно для загрузки метаданных
                     
                     promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
                     
