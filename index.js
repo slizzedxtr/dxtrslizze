@@ -146,6 +146,31 @@ app.delete('/api/promo/:code', async (req, res) => {
     res.json({ success: true, message: 'Удалено' });
 });
 
+// 4. Редактировать промокод (название и сам код)
+app.put('/api/promo/:code', async (req, res) => {
+    try {
+        const { password, newCode, newTitle } = req.body;
+        if (password !== (process.env.ADMIN_PASS || 'DXTR-promo777!')) return res.status(403).json({ error: 'Неверный пароль' });
+
+        const promo = await Promo.findOne({ code: req.params.code });
+        if (!promo) return res.status(404).json({ error: 'Код не найден' });
+
+        // Если админ решил изменить сам промокод, проверяем, не занят ли новый
+        if (newCode !== promo.code) {
+            const existing = await Promo.findOne({ code: newCode });
+            if (existing) return res.status(400).json({ error: 'Такой код уже занят' });
+        }
+
+        promo.code = newCode || promo.code;
+        promo.title = newTitle || promo.title;
+        await promo.save();
+
+        res.json({ success: true, message: 'Изменено' });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера при редактировании' });
+    }
+});
+
 // ==========================================
 // === API МАРШРУТЫ ДЛЯ СТРАНИЦЫ ФАНАТОВ ====
 // ==========================================
