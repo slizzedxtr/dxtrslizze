@@ -160,8 +160,7 @@
         <h1>ADMIN PANEL</h1>
     </header>
 
-    <main>
-        <div class="view-section active" id="authSection">
+    <div class="view-section active" id="authSection">
             <form id="authForm" class="auth-box">
                 <div class="input-wrapper">
                     <input type="text" id="adminLogin" class="admin-input" placeholder="ЛОГИН" autocomplete="off" spellcheck="false" required>
@@ -169,7 +168,7 @@
                 <div class="input-wrapper" id="passWrapper">
                     <input type="password" id="adminPass" class="admin-input" placeholder="ПАРОЛЬ">
                 </div>
-                <button type="submit" style="display: none;"></button>
+                <button type="submit" style="position: absolute; left: -9999px; opacity: 0;"></button>
             </form>
             <div class="sys-msg" id="sysMsg">Ожидание ввода...</div>
         </div>
