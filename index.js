@@ -4,26 +4,36 @@ const { Server } = require('socket.io');
 const TelegramBot = require('node-telegram-bot-api');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const { GridFSBucket, ObjectId } = require('mongodb');
+const { Readable } = require('stream');
 
 const app = express();
 app.use(cors());
+app.use(express.json()); // ВАЖНО для получения JSON (паролей) в API
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
 const token = process.env.BOT_TOKEN;
 const adminId = process.env.ADMIN_CHAT_ID;
 const mongoURI = process.env.MONGODB_URI;
+const ADMIN_PASS = process.env.ADMIN_PASS || 'DXTR-promo777!'; // Пароль админки
 const bot = new TelegramBot(token, { polling: true });
+
+let gfsBucket;
 
 // --- ПОДКЛЮЧЕНИЕ К БАЗЕ ---
 mongoose.connect(mongoURI)
-    .then(() => console.log('Connected to MongoDB!'))
+    .then(() => {
+        console.log('Connected to MongoDB!');
+        gfsBucket = new GridFSBucket(mongoose.connection.db, { bucketName: 'promomedia' });
+    })
     .catch(err => console.error('MongoDB error:', err));
 
-// --- МОДЕЛИ ДАННЫХ (БАЗА) ---
+// --- МОДЕЛИ ДАННЫХ (ДЛЯ ЧАТА ТЕХПОДДЕРЖКИ) ---
 const UserSchema = new mongoose.Schema({
     clientId: { type: String, unique: true },
-    fpHash: String, // ОТПЕЧАТОК БРАУЗЕРА
+    fpHash: String,
     nickname: String,
     isBanned: { type: Boolean, default: false },
     banExpireAt: { type: Number, default: 0 },
@@ -49,7 +59,124 @@ const PendingMsgSchema = new mongoose.Schema({
 });
 const PendingMsg = mongoose.model('PendingMsg', PendingMsgSchema);
 
-const EXPIRATION_TIME = 60 * 60 * 1000; // 1 час на доставку
+const EXPIRATION_TIME = 60 * 60 * 1000;
+
+// --- МОДЕЛИ ДАННЫХ (ДЛЯ ПРОМОКОДОВ) ---
+const PromoSchema = new mongoose.Schema({
+    code: { type: String, required: true, unique: true },
+    title: { type: String, required: true },
+    coverId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    trackId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+const Promo = mongoose.model('Promo', PromoSchema);
+
+const AdminBanSchema = new mongoose.Schema({
+    fpHash: { type: String, required: true, unique: true },
+    expiresAt: { type: Date, required: true }
+});
+const AdminBan = mongoose.model('AdminBan', AdminBanSchema);
+
+// --- НАСТРОЙКА MULTER (Для приема файлов в память) ---
+const upload = multer({ storage: multer.memoryStorage() });
+
+function uploadToGridFS(file) {
+    return new Promise((resolve, reject) => {
+        const readableStream = new Readable();
+        readableStream.push(file.buffer);
+        readableStream.push(null);
+        
+        const uploadStream = gfsBucket.openUploadStream(file.originalname, { contentType: file.mimetype });
+        readableStream.pipe(uploadStream)
+            .on('error', reject)
+            .on('finish', () => resolve(uploadStream.id));
+    });
+}
+
+// ==========================================
+// === API МАРШРУТЫ ДЛЯ АДМИН ПАНЕЛИ ========
+// ==========================================
+
+// 1. Создать промокод
+app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'track', maxCount: 1 }]), async (req, res) => {
+    try {
+        const { password, promo, title } = req.body;
+        if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+        
+        const existing = await Promo.findOne({ code: promo });
+        if (existing) return res.status(400).json({ error: 'Промокод уже существует' });
+
+        const coverFile = req.files['cover'][0];
+        const trackFile = req.files['track'][0];
+
+        const coverId = await uploadToGridFS(coverFile);
+        const trackId = await uploadToGridFS(trackFile);
+
+        const newPromo = new Promo({ code: promo, title, coverId, trackId });
+        await newPromo.save();
+
+        res.json({ success: true, message: 'Промокод успешно создан' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера при создании' });
+    }
+});
+
+// 2. Получить список всех промокодов
+app.post('/api/promos-list', async (req, res) => {
+    const { password } = req.body;
+    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+    
+    const promos = await Promo.find().sort({ createdAt: -1 });
+    res.json(promos);
+});
+
+// 3. Удалить промокод и его файлы
+app.delete('/api/promo/:code', async (req, res) => {
+    const { password } = req.body;
+    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+
+    const promo = await Promo.findOne({ code: req.params.code });
+    if (!promo) return res.status(404).json({ error: 'Не найдено' });
+
+    try { await gfsBucket.delete(new ObjectId(promo.coverId)); } catch(e){}
+    try { await gfsBucket.delete(new ObjectId(promo.trackId)); } catch(e){}
+    
+    await Promo.deleteOne({ _id: promo._id });
+    res.json({ success: true, message: 'Удалено' });
+});
+
+// ==========================================
+// === API МАРШРУТЫ ДЛЯ СТРАНИЦЫ ФАНАТОВ ====
+// ==========================================
+
+// 1. Проверить промокод при вводе
+app.get('/api/check/:code', async (req, res) => {
+    const promo = await Promo.findOne({ code: req.params.code });
+    if (!promo) return res.status(404).json({ error: 'Неверный код' });
+    
+    res.json({
+        title: promo.title,
+        coverUrl: `/api/media/${promo.coverId}`,
+        trackUrl: `/api/media/${promo.trackId}`
+    });
+});
+
+// 2. Отдать сам файл (картинку или MP3)
+app.get('/api/media/:id', async (req, res) => {
+    try {
+        const fileId = new ObjectId(req.params.id);
+        const files = await gfsBucket.find({ _id: fileId }).toArray();
+        if (!files || files.length === 0) return res.status(404).send('Файл не найден');
+        
+        res.set('Content-Type', files[0].contentType);
+        const downloadStream = gfsBucket.openDownloadStream(fileId);
+        downloadStream.pipe(res);
+    } catch (err) {
+        res.status(404).send('Некорректный ID файла');
+    }
+});
+
 
 // --- ВЕБ-СОКЕТЫ (САЙТ) ---
 io.on('connection', (socket) => {
@@ -59,33 +186,53 @@ io.on('connection', (socket) => {
         io.emit('online_update', io.engine.clientsCount);
     });
 
+    // === СОКЕТЫ ДЛЯ АДМИН-ПАНЕЛИ (БАНЫ) ===
+    socket.on('check_admin_ban', async (data) => {
+        if (!data.fpHash) return;
+        const ban = await AdminBan.findOne({ fpHash: data.fpHash });
+        if (ban) {
+            if (ban.expiresAt > Date.now()) {
+                const timeLeft = Math.ceil((ban.expiresAt - Date.now()) / 1000);
+                socket.emit('admin_ban_status', { isBanned: true, timeRemaining: timeLeft });
+            } else {
+                await AdminBan.deleteOne({ _id: ban._id }); // Бан истек
+                socket.emit('admin_ban_status', { isBanned: false });
+            }
+        }
+    });
+
+    socket.on('trigger_admin_ban', async (data) => {
+        if (!data.fpHash || !data.duration) return;
+        const expiresAt = new Date(Date.now() + data.duration * 1000);
+        await AdminBan.findOneAndUpdate(
+            { fpHash: data.fpHash },
+            { expiresAt },
+            { upsert: true, new: true }
+        );
+    });
+
+    // === ОРИГИНАЛЬНАЯ ЛОГИКА ТЕХПОДДЕРЖКИ ===
     socket.on('register_client', async (data) => {
-        // Поддержка старых клиентов (передавали строку) и новых (передают объект)
         const clientId = typeof data === 'string' ? data : data.clientId;
         const fpHash = typeof data === 'object' ? data.fpHash : null;
 
         socket.join(clientId);
         
-        // Ищем юзера
         let user = await User.findOne({ clientId });
         if (!user) {
             user = await User.create({ clientId, fpHash });
         } else if (fpHash && user.fpHash !== fpHash) {
-            // Обновляем отпечаток, если он появился или изменился
             user.fpHash = fpHash;
             await user.save();
         }
 
-        // КРОСС-БАН: Если этот clientId чист, но его отпечаток fpHash забанен на другом аккаунте
         if (!user.isBanned && fpHash) {
             const bannedTwin = await User.findOne({ fpHash, isBanned: true });
             if (bannedTwin) {
-                // Проверяем, не истек ли бан у двойника
                 if (bannedTwin.banExpireAt !== 0 && bannedTwin.banExpireAt < Date.now()) {
                     bannedTwin.isBanned = false;
                     await bannedTwin.save();
                 } else {
-                    // Заражаем текущего юзера баном
                     user.isBanned = true;
                     user.banExpireAt = bannedTwin.banExpireAt;
                     user.banReason = bannedTwin.banReason;
@@ -96,7 +243,6 @@ io.on('connection', (socket) => {
             }
         }
 
-        // Проверка снятия бана по времени для текущего юзера
         if (user.isBanned) {
             if (user.banExpireAt !== 0 && user.banExpireAt < Date.now()) {
                 user.isBanned = false;
@@ -110,7 +256,6 @@ io.on('connection', (socket) => {
 
         socket.emit('user_data', { nickname: user.nickname || null, isBanned: user.isBanned });
 
-        // Проверка отложенных сообщений
         const pending = await PendingMsg.find({ clientId });
         if (pending.length > 0) {
             const now = Date.now();
@@ -188,12 +333,10 @@ bot.on('callback_query', async (query) => {
         const mapped = await MessageMap.findOne({ tgMsgId: query.message.message_id });
         const reason = mapped ? mapped.text : "Нарушение правил";
 
-        // Баним основной clientId
         const bannedUser = await User.findOneAndUpdate({ clientId }, { 
             isBanned: true, banExpireAt: expireAt, banReason: reason, banDurationText: isPerm ? "Навсегда" : "1 час" 
         }, { new: true, upsert: true });
         
-        // Массовый бан: Если у этого юзера есть fpHash, баним всех юзеров с таким же отпечатком
         if (bannedUser && bannedUser.fpHash) {
             await User.updateMany(
                 { fpHash: bannedUser.fpHash }, 
@@ -235,10 +378,8 @@ bot.on('callback_query', async (query) => {
     if (query.data.startsWith('unban_')) {
         const clientId = query.data.replace('unban_', '');
         
-        // Разбаниваем юзера
         const unbannedUser = await User.findOneAndUpdate({ clientId }, { isBanned: false }, { new: true });
         
-        // Разбаниваем всех его клонов по железу (fpHash)
         if (unbannedUser && unbannedUser.fpHash) {
             await User.updateMany({ fpHash: unbannedUser.fpHash }, { isBanned: false });
         }
