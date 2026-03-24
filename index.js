@@ -184,7 +184,7 @@ io.on('connection', (socket) => {
 
     socket.on('check_admin_ban', async (data) => {
         if (!data.fpHash) return;
-        socket.join(`fp_${data.fpHash}`); // Добавили юзера в комнату его отпечатка
+        socket.join(`fp_${data.fpHash}`); 
         const ban = await AdminBan.findOne({ fpHash: data.fpHash });
         if (ban) {
             if (ban.expiresAt > Date.now()) {
@@ -201,11 +201,41 @@ io.on('connection', (socket) => {
         if (!data.fpHash || !data.duration) return;
         const expiresAt = new Date(Date.now() + data.duration * 1000);
         socket.join(`fp_${data.fpHash}`);
-        await AdminBan.findOneAndUpdate(
+        
+        const ban = await AdminBan.findOneAndUpdate(
             { fpHash: data.fpHash },
             { expiresAt, clientId: data.clientId },
             { upsert: true, new: true }
         );
+
+        // Ищем юзера в БД поддержки для подтягивания ника
+        const user = await User.findOne({ fpHash: data.fpHash }) || await User.findOne({ clientId: data.clientId });
+        const nickStr = (user && user.nickname) ? user.nickname : "Без ника";
+        const displayId = data.clientId || data.fpHash.substring(0, 10);
+        
+        const m = Math.floor(data.duration / 60);
+        const s = data.duration % 60;
+
+        const tgText = `
+🚨 <b>АВТОБАН: ПОПЫТКА ВЗЛОМА АДМИНКИ!</b>
+
+👤 <b>${nickStr}</b> (<code>${displayId}</code>)
+💬 <b>Причина:</b> <i>Многократные попытки подбора пароля</i>
+⏳ <b>Авторазбан через:</b> ${m} мин ${s} сек
+
+💡 <i>Ответь реплаем на это сообщение, чтобы отправить юзеру сообщение в чат тех.поддержки (он увидит его, когда зайдет на сайт), или используй /nick для смены имени.</i>`;
+
+        bot.sendMessage(adminId, tgText, {
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: [
+                    [{text: "🔓 Разблокировать доступ", callback_data: `alert_apunban_${ban._id}`}]
+                ]
+            }
+        }).then(async (msg) => {
+            // Привязываем алерт к юзеру, чтобы работал реплай
+            await MessageMap.create({ tgMsgId: msg.message_id, clientId: displayId, text: "Автобан в админке" });
+        });
     });
 
     socket.on('register_client', async (data) => {
@@ -403,17 +433,33 @@ bot.on('callback_query', async (query) => {
         bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
     }
 
+    // Разбан из списка /apban
     if (query.data.startsWith('apunban_')) {
         const banId = query.data.replace('apunban_', '');
         const ban = await AdminBan.findByIdAndDelete(banId);
 
-        // Отправляем сигнал разбана ВСЕМ, у кого такой же Fingerprint
         if (ban && ban.fpHash) {
             io.to(`fp_${ban.fpHash}`).emit('admin_unbanned');
         }
 
         bot.answerCallbackQuery(query.id, {text: "Доступ в админку открыт!"});
         sendApBannedMenu(adminId, query.message.message_id);
+    }
+
+    // Разбан прямо из быстрого уведомления (алерта)
+    if (query.data.startsWith('alert_apunban_')) {
+        const banId = query.data.replace('alert_apunban_', '');
+        const ban = await AdminBan.findByIdAndDelete(banId);
+
+        if (ban && ban.fpHash) {
+            io.to(`fp_${ban.fpHash}`).emit('admin_unbanned');
+        }
+
+        bot.answerCallbackQuery(query.id, {text: "Доступ в админку открыт!"});
+        // Убираем кнопку с сообщения
+        bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
+        // Отправляем ответ админу
+        bot.sendMessage(adminId, "✅ <b>Доступ восстановлен.</b>", { parse_mode: 'HTML', reply_to_message_id: query.message.message_id });
     }
 });
 
