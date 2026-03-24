@@ -240,7 +240,6 @@
 
     <canvas id="matrixCanvas"></canvas>
 
-    <!-- ХЭЛЛОУИН ОВЕРЛЕЙ -->
     <div id="horror-overlay">
         <div id="horror-fog"></div>
     </div>
@@ -275,7 +274,7 @@
             <div class="hero-release" id="snippetHero">
                 <div class="hero-cover-wrap">
                     <div class="cover-placeholder" id="coverPlaceholder"><i class="fa-solid fa-question"></i></div>
-                    <img src="../logo_Dance_Girl.jpeg" id="realCover" alt="Dance Girl" onerror="this.src='../dslogo.png'">
+                    <img src="" id="realCover" alt="Cover" onerror="this.src='../dslogo.png'">
                 </div>
                 <div class="hero-info">
                     <div class="hero-badge locked-badge" id="lockBadge"><i class="fa-solid fa-lock"></i> Контент заблокирован</div>
@@ -283,7 +282,7 @@
                     <div class="audio-player-container">
                         <div class="audio-player">
                             <button class="play-pause-btn" id="playBtn" onclick="togglePlay()"><i class="fa-solid fa-play"></i></button>
-                            <audio id="snippetAudio" src="../snippet_Dance_Girl.mp3" preload="metadata" crossorigin="anonymous"></audio>
+                            <audio id="snippetAudio" src="" preload="metadata" crossorigin="anonymous"></audio>
                             <div class="progress-container" id="progressContainer">
                                 <div class="progress-bar" id="progressBar"></div>
                             </div>
@@ -316,10 +315,9 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         // ==========================================
-        // ======= НАСТРОЙКИ ПРОМОКОДА ==============
+        // ======= НАСТРОЙКИ СЕРВЕРА ================
         // ==========================================
-        const SECRET_PROMOCODE = "D&S_Dance";
-        // ==========================================
+        const API_URL = "https://dxtrslizze.onrender.com/api";
 
         // ========== МАТРИЦА ==========
         const canvas = document.getElementById('matrixCanvas');
@@ -330,7 +328,6 @@
         const FONT_SIZE = 16;
         let columns = Math.floor(canvas.width / FONT_SIZE);
         let drops = [];
-        // Цвет каждого столбца: 0 = зелёный, 1 = красный
         let colColor = [];
 
         function initMatrix() {
@@ -345,7 +342,6 @@
         initMatrix();
 
         function drawMatrix() {
-            // Фон чуть темнее когда красный
             const hasSomeRed = colColor.some(c => c === 1);
             ctx.fillStyle = hasSomeRed ? 'rgba(5, 1, 1, 0.08)' : 'rgba(2, 6, 2, 0.08)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -354,7 +350,6 @@
             for (let i = 0; i < drops.length; i++) {
                 const char = Math.random() > 0.5 ? '1' : '0';
                 const isRed = colColor[i] === 1;
-                // Яркий «голова» символ
                 const headRow = Math.floor(drops[i]);
                 const currentRow = headRow;
                 ctx.fillStyle = isRed
@@ -386,7 +381,6 @@
             if (horrorActive) return;
             horrorActive = true;
 
-            // Волна красного по матрице слева направо
             let wavePos = 0;
             waveIntervalId = setInterval(() => {
                 for (let i = wavePos; i < Math.min(wavePos + 5, columns); i++) colColor[i] = 1;
@@ -394,19 +388,12 @@
                 if (wavePos >= columns) clearInterval(waveIntervalId);
             }, 15);
 
-            // Показываем оверлей
             horrorOverlay.classList.add('active');
-
-            // Заголовок → ERROR с глитчем
             pageTitle.textContent = 'ERROR';
             pageTitle.classList.add('glitch-title');
 
-            // Через 5.2с — всё возвращается
             setTimeout(() => {
-                // Скрываем оверлей
                 horrorOverlay.classList.remove('active');
-
-                // Волна зелёного обратно
                 let waveBack = 0;
                 const waveBackId = setInterval(() => {
                     for (let i = waveBack; i < Math.min(waveBack + 5, columns); i++) colColor[i] = 0;
@@ -414,15 +401,11 @@
                     if (waveBack >= columns) clearInterval(waveBackId);
                 }, 15);
 
-                // Восстанавливаем заголовок
                 pageTitle.textContent = 'PROMOCODE';
                 pageTitle.classList.remove('glitch-title');
-
                 horrorActive = false;
             }, 5200);
         }
-
-        // Каждые 30 секунд
         setInterval(triggerHorrorEvent, 30000);
 
         // ========== МЕНЮ ==========
@@ -516,7 +499,7 @@
         }
         (JSON.parse(localStorage.getItem('dxtrChatHistory') || '[]')).forEach(m => addChatMessage(m.sender, m.text, m.align, false));
 
-        // ========== ПРОМОКОД ==========
+        // ========== ПРОМОКОД (СВЯЗЬ С СЕРВЕРОМ) ==========
         const promoInput = document.getElementById('promoInput');
         const promoSubmit = document.getElementById('promoSubmit');
         const promoError = document.getElementById('promoError');
@@ -527,32 +510,65 @@
         const lockBadge = document.getElementById('lockBadge');
         const trackTitle = document.getElementById('trackTitle');
 
-        function checkPromo() {
+        async function checkPromo() {
             const val = promoInput.value.trim();
             if (!val) return;
-            if (val === SECRET_PROMOCODE) {
-                promoError.classList.remove('visible');
-                promoBox.classList.add('collapsing');
-                setTimeout(() => {
-                    promoBox.style.opacity = '0';
-                    splashRing.classList.add('animate');
+
+            // Анимация загрузки
+            promoSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            promoError.classList.remove('visible');
+
+            try {
+                // Делаем запрос на сервер Render
+                const res = await fetch(`${API_URL}/check/${encodeURIComponent(val)}`);
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    // Обновляем данные на странице перед открытием
+                    document.getElementById('trackTitle').textContent = data.title;
+                    document.getElementById('realCover').src = data.coverUrl;
+                    
+                    const audioObj = document.getElementById('snippetAudio');
+                    audioObj.src = data.trackUrl;
+                    audioObj.load(); // Важно для загрузки метаданных по новой ссылке
+                    
+                    promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
+                    
+                    // Запускаем анимацию открытия
+                    promoBox.classList.add('collapsing');
                     setTimeout(() => {
-                        promoWrapper.classList.add('hidden');
-                        snippetWrapper.classList.add('unlocked');
-                        lockBadge.classList.remove('locked-badge');
-                        lockBadge.classList.add('unlocked-badge');
-                        lockBadge.innerHTML = '<i class="fa-solid fa-lock-open"></i> Доступ открыт';
-                        trackTitle.textContent = 'Dance Girl';
-                    }, 200);
-                }, 600);
-            } else {
-                promoError.classList.add('visible');
-                promoBox.style.transition = 'transform 0.1s';
-                ['-10px','10px','-10px','0px'].forEach((x, i) => {
-                    setTimeout(() => promoBox.style.transform = `translateX(${x})`, i * 100);
-                });
-                setTimeout(() => promoBox.style.transition = '', 400);
+                        promoBox.style.opacity = '0';
+                        splashRing.classList.add('animate');
+                        setTimeout(() => {
+                            promoWrapper.classList.add('hidden');
+                            snippetWrapper.classList.add('unlocked');
+                            lockBadge.classList.remove('locked-badge');
+                            lockBadge.classList.add('unlocked-badge');
+                            lockBadge.innerHTML = '<i class="fa-solid fa-lock-open"></i> Доступ открыт';
+                        }, 200);
+                    }, 600);
+                } else {
+                    // Код не найден
+                    promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
+                    promoError.textContent = "Данный промокод не существует";
+                    triggerErrorAnim();
+                }
+            } catch (err) {
+                // Ошибка интернета/сервера
+                promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
+                promoError.textContent = "Ошибка соединения с сервером";
+                triggerErrorAnim();
             }
+        }
+
+        function triggerErrorAnim() {
+            promoError.classList.add('visible');
+            promoBox.style.transition = 'transform 0.1s';
+            ['-10px','10px','-10px','0px'].forEach((x, i) => {
+                setTimeout(() => promoBox.style.transform = `translateX(${x})`, i * 100);
+            });
+            setTimeout(() => promoBox.style.transition = '', 400);
         }
 
         promoSubmit.onclick = checkPromo;
