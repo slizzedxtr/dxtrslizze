@@ -340,7 +340,7 @@
             activateBanUI(banTime);
         }
 
-        // ========== АВТОРИЗАЦИЯ ==========
+        // ========== АВТОРИЗАЦИЯ (ФИКС ДЛЯ МОБИЛЬНЫХ) ==========
         const authForm = document.getElementById('authForm');
         const loginInput = document.getElementById('adminLogin');
         const passInput = document.getElementById('adminPass');
@@ -372,17 +372,18 @@
             passInput.value = '';
         }
 
-        authForm.onsubmit = async (e) => {
-            e.preventDefault();
+        // Выносим сабмит в отдельную функцию
+        async function handleAuthSubmit(e) {
+            if (e) e.preventDefault(); // Блокируем стандартную перезагрузку страницы
 
             if (!isLoginVerified) {
-                if (loginInput.value === 'DXTR_admin') {
+                if (loginInput.value.trim() === 'DXTR_admin') {
                     isLoginVerified = true;
                     passWrapper.classList.add('show');
                     passInput.setAttribute('required', 'true');
                     sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.';
                     loginInput.disabled = true;
-                    passInput.focus();
+                    passInput.focus(); // Автоматически переводим фокус на пароль
                 } else {
                     triggerError();
                 }
@@ -414,7 +415,21 @@
                     sysMsg.style.color = 'var(--error-red)';
                 }
             }
+        }
+
+        // Вешаем обработчик на саму форму (для ПК)
+        authForm.onsubmit = handleAuthSubmit;
+
+        // ЖЕСТКИЙ ПЕРЕХВАТ ENTER ДЛЯ МОБИЛОК
+        const forceEnter = (e) => {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                e.preventDefault(); // Не даём клавиатуре сделать перенос строки
+                handleAuthSubmit(); // Принудительно запускаем вход
+            }
         };
+        loginInput.addEventListener('keypress', forceEnter);
+        passInput.addEventListener('keypress', forceEnter);
+
 
         // ========== ФОРМА СОЗДАНИЯ ПРОМОКОДА ==========
         const createForm = document.getElementById('createForm');
@@ -491,7 +506,6 @@
             promos.forEach(p => {
                 const audioUrl = `${API_URL}/media/${p.trackId}`;
                 const coverUrl = `${API_URL}/media/${p.coverId}`;
-                // Экранируем одинарные кавычки в названии для функции JS
                 const safeTitle = p.title.replace(/'/g, "\\'");
                 
                 const card = document.createElement('div');
@@ -616,6 +630,5 @@
             } catch (err) { alert('Ошибка соединения с сервером'); }
             btn.innerHTML = 'Сохранить';
         };
-    </script>
 </body>
 </html>
