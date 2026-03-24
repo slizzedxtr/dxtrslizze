@@ -22,7 +22,6 @@ const bot = new TelegramBot(token, { polling: true });
 
 let gfsBucket;
 
-// --- ПОДКЛЮЧЕНИЕ К БАЗЕ ---
 mongoose.connect(mongoURI)
     .then(() => {
         console.log('Connected to MongoDB!');
@@ -30,7 +29,6 @@ mongoose.connect(mongoURI)
     })
     .catch(err => console.error('MongoDB error:', err));
 
-// --- МОДЕЛИ ДАННЫХ (ДЛЯ ЧАТА ТЕХПОДДЕРЖКИ) ---
 const UserSchema = new mongoose.Schema({
     clientId: { type: String, unique: true },
     fpHash: String,
@@ -61,7 +59,6 @@ const PendingMsg = mongoose.model('PendingMsg', PendingMsgSchema);
 
 const EXPIRATION_TIME = 60 * 60 * 1000;
 
-// --- МОДЕЛИ ДАННЫХ (ДЛЯ ПРОМОКОДОВ И АДМИНКИ) ---
 const PromoSchema = new mongoose.Schema({
     code: { type: String, required: true, unique: true },
     title: { type: String, required: true },
@@ -73,12 +70,11 @@ const Promo = mongoose.model('Promo', PromoSchema);
 
 const AdminBanSchema = new mongoose.Schema({
     fpHash: { type: String, required: true, unique: true },
-    clientId: String, // Добавили, чтобы знать, кого баним в админке
+    clientId: String,
     expiresAt: { type: Date, required: true }
 });
 const AdminBan = mongoose.model('AdminBan', AdminBanSchema);
 
-// --- НАСТРОЙКА MULTER ---
 const upload = multer({ storage: multer.memoryStorage() });
 
 function uploadToGridFS(file) {
@@ -94,10 +90,7 @@ function uploadToGridFS(file) {
     });
 }
 
-// ==========================================
-// === API МАРШРУТЫ ДЛЯ АДМИН ПАНЕЛИ ========
-// ==========================================
-
+// ================= API =================
 app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'track', maxCount: 1 }]), async (req, res) => {
     try {
         const { password, promo, title } = req.body;
@@ -116,16 +109,12 @@ app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 't
         await newPromo.save();
 
         res.json({ success: true, message: 'Промокод успешно создан' });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Ошибка сервера при создании' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Ошибка сервера при создании' }); }
 });
 
 app.post('/api/promos-list', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
-    
     const promos = await Promo.find().sort({ createdAt: -1 });
     res.json(promos);
 });
@@ -162,14 +151,8 @@ app.put('/api/promo/:code', async (req, res) => {
         await promo.save();
 
         res.json({ success: true, message: 'Изменено' });
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера при редактировании' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Ошибка сервера при редактировании' }); }
 });
-
-// ==========================================
-// === API МАРШРУТЫ ДЛЯ СТРАНИЦЫ ФАНАТОВ ====
-// ==========================================
 
 app.get('/api/check/:code', async (req, res) => {
     const promo = await Promo.findOne({ code: req.params.code });
@@ -191,22 +174,17 @@ app.get('/api/media/:id', async (req, res) => {
         res.set('Content-Type', files[0].contentType);
         const downloadStream = gfsBucket.openDownloadStream(fileId);
         downloadStream.pipe(res);
-    } catch (err) {
-        res.status(404).send('Некорректный ID файла');
-    }
+    } catch (err) { res.status(404).send('Некорректный ID файла'); }
 });
 
-// --- ВЕБ-СОКЕТЫ (САЙТ) ---
+// ================= SOCKETS =================
 io.on('connection', (socket) => {
     io.emit('online_update', io.engine.clientsCount);
+    socket.on('disconnect', () => { io.emit('online_update', io.engine.clientsCount); });
 
-    socket.on('disconnect', () => {
-        io.emit('online_update', io.engine.clientsCount);
-    });
-
-    // === СОКЕТЫ ДЛЯ АДМИН-ПАНЕЛИ (БАНЫ) ===
     socket.on('check_admin_ban', async (data) => {
         if (!data.fpHash) return;
+        socket.join(`fp_${data.fpHash}`); // Добавили юзера в комнату его отпечатка
         const ban = await AdminBan.findOne({ fpHash: data.fpHash });
         if (ban) {
             if (ban.expiresAt > Date.now()) {
@@ -222,14 +200,14 @@ io.on('connection', (socket) => {
     socket.on('trigger_admin_ban', async (data) => {
         if (!data.fpHash || !data.duration) return;
         const expiresAt = new Date(Date.now() + data.duration * 1000);
+        socket.join(`fp_${data.fpHash}`);
         await AdminBan.findOneAndUpdate(
             { fpHash: data.fpHash },
-            { expiresAt, clientId: data.clientId }, // Сохраняем clientId
+            { expiresAt, clientId: data.clientId },
             { upsert: true, new: true }
         );
     });
 
-    // === ОРИГИНАЛЬНАЯ ЛОГИКА ТЕХПОДДЕРЖКИ ===
     socket.on('register_client', async (data) => {
         const clientId = typeof data === 'string' ? data : data.clientId;
         const fpHash = typeof data === 'object' ? data.fpHash : null;
@@ -293,36 +271,20 @@ io.on('connection', (socket) => {
 
     socket.on('send_message', async (data) => {
         const user = await User.findOne({ clientId: data.clientId });
-        
         if (user && user.isBanned) {
             if (user.banExpireAt === 0 || user.banExpireAt > Date.now()) return;
-            else {
-                user.isBanned = false;
-                await user.save();
-            }
+            else { user.isBanned = false; await user.save(); }
         }
 
         const nickStr = (user && user.nickname) ? ` (<b>${user.nickname}</b>)` : '';
-        const tgText = `
-🌐 <b>Новый запрос с сайта!</b>
-
-💬 <i>«${data.text}»</i>
-
-👤 ID: <code>${data.clientId}</code>${nickStr}
-➖➖➖➖➖➖➖➖➖
-💡 <i>Ответь реплаем (или используй /nick для имени), либо выбери действие:</i>`;
+        const tgText = `🌐 <b>Новый запрос с сайта!</b>\n\n💬 <i>«${data.text}»</i>\n\n👤 ID: <code>${data.clientId}</code>${nickStr}\n➖➖➖➖➖➖➖➖➖\n💡 <i>Ответь реплаем (или используй /nick для имени), либо выбери действие:</i>`;
 
         bot.sendMessage(adminId, tgText, {
             parse_mode: 'HTML',
             reply_markup: { 
                 inline_keyboard: [
-                    [
-                        { text: "Ban 1h ⏳", callback_data: `ban1h_${data.clientId}` },
-                        { text: "Ban Perm 🚫", callback_data: `banperm_${data.clientId}` }
-                    ],
-                    [
-                        { text: "Spam ⚠️", callback_data: `spam_${data.clientId}` }
-                    ]
+                    [ { text: "Ban 1h ⏳", callback_data: `ban1h_${data.clientId}` }, { text: "Ban Perm 🚫", callback_data: `banperm_${data.clientId}` } ],
+                    [ { text: "Spam ⚠️", callback_data: `spam_${data.clientId}` } ]
                 ] 
             }
         }).then(async (msg) => {
@@ -331,7 +293,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// --- КНОПКИ В ТЕЛЕГРАМЕ ---
+// ================= TELEGRAM =================
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
     
@@ -390,9 +352,7 @@ bot.on('callback_query', async (query) => {
         bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
     }
 
-    if (query.data === 'banlist') {
-        sendBannedMenu(adminId, query.message.message_id);
-    }
+    if (query.data === 'banlist') { sendBannedMenu(adminId, query.message.message_id); }
 
     if (query.data.startsWith('unban_')) {
         const clientId = query.data.replace('unban_', '');
@@ -410,9 +370,7 @@ bot.on('callback_query', async (query) => {
     }
 
     // --- ОБРАБОТКА БАНОВ АДМИН ПАНЕЛИ (/apban) ---
-    if (query.data === 'apbanlist') {
-        sendApBannedMenu(adminId, query.message.message_id);
-    }
+    if (query.data === 'apbanlist') { sendApBannedMenu(adminId, query.message.message_id); }
 
     if (query.data.startsWith('apbaninfo_')) {
         const banId = query.data.replace('apbaninfo_', '');
@@ -423,7 +381,6 @@ bot.on('callback_query', async (query) => {
             return bot.answerCallbackQuery(query.id, {text: "Пользователь уже разбанен (срок истек)"});
         }
 
-        // Пытаемся подтянуть ник из базы поддержки по fpHash или clientId
         const user = await User.findOne({ fpHash: ban.fpHash });
         const nick = (user && user.nickname) ? user.nickname : "Без ника";
         const displayId = ban.clientId || ban.fpHash.substring(0, 10);
@@ -448,27 +405,24 @@ bot.on('callback_query', async (query) => {
 
     if (query.data.startsWith('apunban_')) {
         const banId = query.data.replace('apunban_', '');
-        await AdminBan.findByIdAndDelete(banId);
+        const ban = await AdminBan.findByIdAndDelete(banId);
+
+        // Отправляем сигнал разбана ВСЕМ, у кого такой же Fingerprint
+        if (ban && ban.fpHash) {
+            io.to(`fp_${ban.fpHash}`).emit('admin_unbanned');
+        }
 
         bot.answerCallbackQuery(query.id, {text: "Доступ в админку открыт!"});
         sendApBannedMenu(adminId, query.message.message_id);
     }
 });
 
-// --- КОМАНДЫ И РЕПЛАИ ---
 bot.on('message', async (msg) => {
     if (msg.from.id.toString() !== adminId.toString()) return;
     const text = msg.text || '';
 
-    if (text === '/bans') {
-        sendBannedMenu(msg.chat.id);
-        return;
-    }
-
-    if (text === '/apban') {
-        sendApBannedMenu(msg.chat.id);
-        return;
-    }
+    if (text === '/bans') { sendBannedMenu(msg.chat.id); return; }
+    if (text === '/apban') { sendApBannedMenu(msg.chat.id); return; }
 
     if (msg.reply_to_message) {
         const mapped = await MessageMap.findOne({ tgMsgId: msg.reply_to_message.message_id });
@@ -523,7 +477,6 @@ async function sendToUser(clientId, text, type, msgId, action) {
     }
 }
 
-// Меню банов тех. поддержки
 async function sendBannedMenu(chatId, messageId = null) {
     const bannedUsers = await User.find({ isBanned: true });
     const validBans = [];
@@ -532,9 +485,7 @@ async function sendBannedMenu(chatId, messageId = null) {
         if (u.banExpireAt > 0 && u.banExpireAt < Date.now()) {
             u.isBanned = false;
             await u.save();
-        } else {
-            validBans.push(u);
-        }
+        } else { validBans.push(u); }
     }
 
     if (validBans.length === 0) {
@@ -557,18 +508,14 @@ async function sendBannedMenu(chatId, messageId = null) {
     else bot.sendMessage(chatId, title, opts);
 }
 
-// Меню банов админ панели
 async function sendApBannedMenu(chatId, messageId = null) {
     const adminBans = await AdminBan.find();
     const validBans = [];
     const now = Date.now();
     
     for (const ban of adminBans) {
-        if (ban.expiresAt.getTime() < now) {
-            await AdminBan.deleteOne({ _id: ban._id });
-        } else {
-            validBans.push(ban);
-        }
+        if (ban.expiresAt.getTime() < now) { await AdminBan.deleteOne({ _id: ban._id }); } 
+        else { validBans.push(ban); }
     }
 
     if (validBans.length === 0) {
