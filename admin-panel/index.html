@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HQ ADMIN | DXTR | SlizZe</title>
+    <title>ADMIN PANEL | DXTR | SlizZe</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,42 +11,20 @@
     <style>
         /* БАЗОВЫЕ ПЕРЕМЕННЫЕ И ТЕМЫ */
         :root {
-            --bg-dark: #020602;
-            --glass-bg: rgba(5, 15, 5, 0.7);
-            --text-main: #ffffff;
-            --theme-color: #00c6ff; /* Синий по умолчанию */
-            --theme-glow: rgba(0, 198, 255, 0.4);
-            --theme-glass-border: rgba(0, 198, 255, 0.2);
-            --text-muted: #8a9ba8;
-            --error-red: #cc4444; 
-        }
-
-        body.theme-blue {
+            --bg-dark: #020602; --glass-bg: rgba(5, 15, 5, 0.7); --text-main: #ffffff;
             --theme-color: #00c6ff; --theme-glow: rgba(0, 198, 255, 0.4);
-            --theme-glass-border: rgba(0, 198, 255, 0.3); --text-muted: #8a9ba8;
+            --theme-glass-border: rgba(0, 198, 255, 0.2); --text-muted: #8a9ba8; --error-red: #cc4444; 
         }
-        body.theme-red {
-            --theme-color: #ff0033; --theme-glow: rgba(255, 0, 51, 0.4);
-            --theme-glass-border: rgba(255, 0, 51, 0.3); --text-muted: #a88a8a;
-        }
-        body.theme-green {
-            --theme-color: #00ff66; --theme-glow: rgba(0, 255, 102, 0.4);
-            --theme-glass-border: rgba(0, 255, 102, 0.3); --text-muted: #8aa88a;
-        }
+        body.theme-blue { --theme-color: #00c6ff; --theme-glow: rgba(0, 198, 255, 0.4); --theme-glass-border: rgba(0, 198, 255, 0.3); --text-muted: #8a9ba8; }
+        body.theme-red { --theme-color: #ff0033; --theme-glow: rgba(255, 0, 51, 0.4); --theme-glass-border: rgba(255, 0, 51, 0.3); --text-muted: #a88a8a; }
+        body.theme-green { --theme-color: #00ff66; --theme-glow: rgba(0, 255, 102, 0.4); --theme-glass-border: rgba(0, 255, 102, 0.3); --text-muted: #8aa88a; }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; transition: color 0.5s, border-color 0.5s, box-shadow 0.5s, background-color 0.5s; }
-
-        body {
-            background-color: var(--bg-dark); color: var(--text-main);
-            display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative;
-        }
+        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative; }
 
         /* МАТРИЦА ФОН */
         #matrixCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; opacity: 0.6; }
-        body::before {
-            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
-            background: radial-gradient(circle at center, transparent 30%, var(--bg-dark) 100%);
-        }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; background: radial-gradient(circle at center, transparent 30%, var(--bg-dark) 100%); }
 
         /* МЕНЮ */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; backdrop-filter: blur(10px); }
@@ -69,7 +47,7 @@
         .view-section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ВХОД (АВТОРИЗАЦИЯ) */
+        /* ВХОД (АВТОРИЗАЦИЯ) - ТЕПЕРЬ ФОРМА */
         .auth-box { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 20px; margin-top: 10vh; }
         .input-wrapper { position: relative; width: 100%; }
         .admin-input { width: 100%; height: 70px; background: var(--glass-bg); border: 2px solid var(--theme-color); border-radius: 20px; outline: none; padding: 0 25px; color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 2px; box-shadow: 0 0 30px var(--theme-glow), inset 0 0 15px rgba(255,255,255,0.05); backdrop-filter: blur(15px); }
@@ -77,7 +55,6 @@
         
         #passWrapper { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #passWrapper.show { max-height: 100px; opacity: 1; margin-top: 10px; }
-        
         .sys-msg { color: var(--theme-color); font-size: 0.95rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; height: 20px; text-shadow: 0 0 10px var(--theme-glow); }
 
         /* БАН ЭКРАН */
@@ -88,7 +65,7 @@
         .ban-text { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase; }
         .ban-timer { font-size: 3rem; font-weight: 900; color: var(--error-red); margin-top: 10px; font-variant-numeric: tabular-nums; }
 
-        /* ПАНЕЛЬ УПРАВЛЕНИЯ (DASHBOARD) */
+        /* ПАНЕЛЬ УПРАВЛЕНИЯ */
         .dash-nav { display: flex; gap: 15px; margin-bottom: 30px; background: var(--glass-bg); padding: 10px; border-radius: 16px; border: 1px solid var(--theme-glass-border); backdrop-filter: blur(10px); width: 100%; max-width: 600px; justify-content: center; }
         .dash-btn { background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 10px 25px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .dash-btn.active, .dash-btn:hover { background: rgba(0, 255, 102, 0.15); border-color: var(--theme-color); color: var(--theme-color); box-shadow: 0 0 15px var(--theme-glow); }
@@ -121,12 +98,10 @@
         .mini-play-btn:hover { color: #fff; transform: scale(1.1); }
         .mini-progress { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 5px; position: relative; cursor: pointer; }
         .mini-bar { height: 100%; width: 0%; background: var(--theme-color); border-radius: 5px; pointer-events: none; box-shadow: 0 0 10px var(--theme-glow); }
-        .mini-time { font-size: 0.75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 700; }
+        .mini-time { font-size: 0.75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 70px; text-align: right; }
 
-        /* КНОПКИ УПРАВЛЕНИЯ КАРТОЧКОЙ */
         .card-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; }
         .action-icon { background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
-        .action-icon.edit:hover { color: var(--theme-color); border-color: var(--theme-color); box-shadow: 0 0 10px var(--theme-glow); }
         .action-icon.delete:hover { color: var(--error-red); border-color: var(--error-red); box-shadow: 0 0 10px rgba(204,68,68,0.4); }
 
         /* МОДАЛКА УДАЛЕНИЯ */
@@ -171,19 +146,20 @@
     </div>
 
     <header>
-        <h1>HQ ADMIN</h1>
+        <h1>ADMIN PANEL</h1>
     </header>
 
     <main>
         <div class="view-section active" id="authSection">
-            <div class="auth-box">
+            <form id="authForm" class="auth-box">
                 <div class="input-wrapper">
-                    <input type="text" id="adminLogin" class="admin-input" placeholder="ЛОГИН" autocomplete="off" spellcheck="false">
+                    <input type="text" id="adminLogin" class="admin-input" placeholder="ЛОГИН" autocomplete="off" spellcheck="false" required>
                 </div>
                 <div class="input-wrapper" id="passWrapper">
                     <input type="password" id="adminPass" class="admin-input" placeholder="ПАРОЛЬ">
                 </div>
-            </div>
+                <button type="submit" style="display: none;"></button>
+            </form>
             <div class="sys-msg" id="sysMsg">Ожидание ввода...</div>
         </div>
 
@@ -228,40 +204,7 @@
             </form>
 
             <div class="promo-list" id="promoList" style="display: none;">
-                <div class="promo-card">
-                    <img src="../logo_Dance_Girl.jpeg" class="card-cover" alt="Cover" onerror="this.src='../dslogo.png'">
-                    <div class="card-info">
-                        <div class="card-code">#D&S_Dance</div>
-                        <div class="card-title">Dance Girl</div>
-                        <div class="mini-player">
-                            <button class="mini-play-btn"><i class="fa-solid fa-play"></i></button>
-                            <div class="mini-progress"><div class="mini-bar" style="width: 30%;"></div></div>
-                            <span class="mini-time">00:45 / 02:10</span>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <div class="action-icon edit" title="Редактировать"><i class="fa-solid fa-pen"></i></div>
-                        <div class="action-icon delete" title="Удалить" onclick="openDeleteModal('D&S_Dance')"><i class="fa-solid fa-xmark"></i></div>
-                    </div>
                 </div>
-                
-                <div class="promo-card">
-                    <img src="../logo_GUSTO.jpeg" class="card-cover" alt="Cover" onerror="this.src='../dslogo.png'">
-                    <div class="card-info">
-                        <div class="card-code">#GUSTO2026</div>
-                        <div class="card-title">GUSTO (Snippet)</div>
-                        <div class="mini-player">
-                            <button class="mini-play-btn"><i class="fa-solid fa-play"></i></button>
-                            <div class="mini-progress"><div class="mini-bar" style="width: 0%;"></div></div>
-                            <span class="mini-time">00:00 / 01:15</span>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <div class="action-icon edit" title="Редактировать"><i class="fa-solid fa-pen"></i></div>
-                        <div class="action-icon delete" title="Удалить" onclick="openDeleteModal('GUSTO2026')"><i class="fa-solid fa-xmark"></i></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 
@@ -271,14 +214,18 @@
             <p>Удалить промокод <span class="modal-code" id="modalCodeName">#XXX</span> навсегда? Трек и обложка будут стерты из базы.</p>
             <div class="modal-btns">
                 <button class="m-btn m-btn-cancel" onclick="closeDeleteModal()">Отмена</button>
-                <button class="m-btn m-btn-confirm" onclick="confirmDelete()">Удалить</button>
+                <button class="m-btn m-btn-confirm" id="confirmDeleteBtn">Удалить</button>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        // ========== МАТРИЦА (АДАПТИВНАЯ ПОД ТЕМУ) ==========
+        // === НАСТРОЙКА API СЕРВЕРА (Замени на свой URL Render, если отличается) ===
+        const API_URL = "https://dxtrslizze.onrender.com/api";
+        let sessionPassword = ""; // Храним пароль для запросов после входа
+
+        // ========== МАТРИЦА И МЕНЮ ==========
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -288,26 +235,16 @@
         for (let i = 0; i < columns; i++) drops[i] = Math.random() * -60;
 
         function drawMatrix() {
-            // Читаем текущую тему из body
             const isRed = document.body.classList.contains('theme-red');
             const isGreen = document.body.classList.contains('theme-green');
-            
             ctx.fillStyle = isRed ? 'rgba(5, 1, 1, 0.08)' : (isGreen ? 'rgba(2, 6, 2, 0.08)' : 'rgba(1, 4, 8, 0.08)');
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.font = FONT_SIZE + 'px monospace';
-
             for (let i = 0; i < drops.length; i++) {
                 const char = Math.random() > 0.5 ? '1' : '0';
-                
-                // Настройка цвета цифр в зависимости от темы
-                if (isRed) {
-                    ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#ff5555' : '#cc0000';
-                } else if (isGreen) {
-                    ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#afffbf' : '#00ff66';
-                } else {
-                    ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#aadeff' : '#00c6ff'; // Синий
-                }
-                
+                if (isRed) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#ff5555' : '#cc0000';
+                else if (isGreen) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#afffbf' : '#00ff66';
+                else ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#aadeff' : '#00c6ff';
                 ctx.fillText(char, i * FONT_SIZE, drops[i] * FONT_SIZE);
                 if (drops[i] * FONT_SIZE > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
@@ -316,15 +253,11 @@
         setInterval(drawMatrix, 50);
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; columns = Math.floor(canvas.width / FONT_SIZE); drops = []; for (let i = 0; i < columns; i++) drops[i] = Math.random() * -60; });
 
-        // ========== МЕНЮ ==========
-        const burgerBtn = document.getElementById('burgerBtn');
-        const sidebar = document.getElementById('sidebar');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const closeSidebar = document.getElementById('closeSidebar');
+        const burgerBtn = document.getElementById('burgerBtn'), sidebar = document.getElementById('sidebar'), sidebarOverlay = document.getElementById('sidebarOverlay'), closeSidebar = document.getElementById('closeSidebar');
         function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
         burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
 
-        // ========== СИСТЕМА БАНОВ (Подготовка к серверу) ==========
+        // ========== СИСТЕМА БАНОВ ==========
         let socket;
         let fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FP => FP.load());
         let clientId = localStorage.getItem('dxtrAdminClientId') || 'admin_' + Math.random().toString(36).substr(2, 9);
@@ -336,33 +269,20 @@
             socket.on('connect', () => {
                 fpPromise.then(fp => fp.get()).then(r => {
                     fingerprintHash = r.visitorId;
-                    // Отправляем запрос: "Эй сервер, а я не в бане ли для админки?"
                     socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
                 });
             });
-            
-            // Если сервер отвечает, что мы в бане:
-            socket.on('admin_ban_status', data => {
-                if (data.isBanned) {
-                    activateBanUI(data.timeRemaining); // В секундах
-                }
-            });
-        } catch(e) { console.log("Сокеты пока не подключены"); }
+            socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
+        } catch(e) {}
 
-        // Локальная симуляция бана, пока сервер не готов
         let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
         let banEndTime = parseInt(localStorage.getItem('adminBanEndTime') || '0');
         let banTimerInterval;
 
         function checkLocalBan() {
             const now = Date.now();
-            if (banEndTime > now) {
-                activateBanUI(Math.floor((banEndTime - now) / 1000));
-            } else {
-                localStorage.removeItem('adminFailedAttempts');
-                localStorage.removeItem('adminBanEndTime');
-                failedAttempts = 0;
-            }
+            if (banEndTime > now) activateBanUI(Math.floor((banEndTime - now) / 1000));
+            else { localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; }
         }
         checkLocalBan();
 
@@ -370,37 +290,28 @@
             document.getElementById('authSection').classList.remove('active');
             document.getElementById('banScreen').classList.add('active');
             document.body.className = 'theme-red';
-            
-            clearInterval(banTimerInterval);
-            updateBanTimerDisplay(secondsLeft);
-            
+            clearInterval(banTimerInterval); updateBanTimerDisplay(secondsLeft);
             banTimerInterval = setInterval(() => {
                 secondsLeft--;
-                if (secondsLeft <= 0) {
-                    clearInterval(banTimerInterval);
-                    location.reload(); // Перезагрузка при окончании бана
-                } else {
-                    updateBanTimerDisplay(secondsLeft);
-                }
+                if (secondsLeft <= 0) { clearInterval(banTimerInterval); location.reload(); }
+                else updateBanTimerDisplay(secondsLeft);
             }, 1000);
         }
 
-        function updateBanTimerDisplay(totalSeconds) {
-            const m = Math.floor(totalSeconds / 60);
-            const s = totalSeconds % 60;
+        function updateBanTimerDisplay(totalSecs) {
+            const m = Math.floor(totalSecs / 60), s = totalSecs % 60;
             document.getElementById('banTimer').textContent = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
         }
 
         function triggerBan() {
-            // Бан на 1 час (3600 секунд)
             const banTime = 3600; 
             localStorage.setItem('adminBanEndTime', Date.now() + banTime * 1000);
-            // Тут мы отправим на сервер инфу о бане, чтобы он записал это в MongoDB
             if(socket) socket.emit('trigger_admin_ban', { clientId, fpHash: fingerprintHash, duration: banTime });
             activateBanUI(banTime);
         }
 
         // ========== АВТОРИЗАЦИЯ ==========
+        const authForm = document.getElementById('authForm');
         const loginInput = document.getElementById('adminLogin');
         const passInput = document.getElementById('adminPass');
         const passWrapper = document.getElementById('passWrapper');
@@ -409,66 +320,73 @@
         let redThemeTimeout;
 
         function triggerError() {
-            failedAttempts++;
-            localStorage.setItem('adminFailedAttempts', failedAttempts);
-            
-            if (failedAttempts >= 3) {
-                triggerBan();
-                return;
-            }
+            failedAttempts++; localStorage.setItem('adminFailedAttempts', failedAttempts);
+            if (failedAttempts >= 3) { triggerBan(); return; }
 
             sysMsg.textContent = `ОШИБКА ДОСТУПА. ПОПЫТОК: ${3 - failedAttempts}`;
             sysMsg.style.color = 'var(--error-red)';
-            document.body.className = 'theme-red'; // Врубаем красную тему
+            document.body.className = 'theme-red';
             
             clearTimeout(redThemeTimeout);
             redThemeTimeout = setTimeout(() => {
                 if(!document.body.classList.contains('theme-green')) {
-                    document.body.className = 'theme-blue'; // Возврат к синей через 5с
-                    sysMsg.textContent = 'Ожидание ввода...';
-                    sysMsg.style.color = 'var(--theme-color)';
+                    document.body.className = 'theme-blue'; sysMsg.textContent = 'Ожидание ввода...'; sysMsg.style.color = 'var(--theme-color)';
                 }
             }, 5000);
             
-            // Тряска инпутов
             const activeInput = isLoginVerified ? passInput : loginInput;
             activeInput.style.transform = 'translateX(-10px)';
             setTimeout(() => activeInput.style.transform = 'translateX(10px)', 100);
             setTimeout(() => activeInput.style.transform = 'translateX(-10px)', 200);
             setTimeout(() => activeInput.style.transform = 'translateX(0)', 300);
+            passInput.value = '';
         }
 
-        loginInput.addEventListener('keypress', e => {
-            if (e.key === 'Enter') {
+        authForm.onsubmit = async (e) => {
+            e.preventDefault(); // Останавливаем перезагрузку страницы
+
+            if (!isLoginVerified) {
                 if (loginInput.value === 'DXTR_admin') {
                     isLoginVerified = true;
                     passWrapper.classList.add('show');
+                    passInput.setAttribute('required', 'true');
                     sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.';
-                    loginInput.disabled = true; // Блокируем логин
+                    loginInput.disabled = true;
                     passInput.focus();
                 } else {
                     triggerError();
                 }
-            }
-        });
-
-        passInput.addEventListener('keypress', e => {
-            if (e.key === 'Enter') {
-                // ВАЖНО: Сейчас проверка пароля идет тут. Позже мы заменим это на fetch() запрос к Render!
-                if (passInput.value === 'DXTR-promo777!') {
-                    clearTimeout(redThemeTimeout);
-                    document.body.className = 'theme-green'; // Взлом успешен -> Зеленая тема навсегда
-                    failedAttempts = 0; localStorage.removeItem('adminFailedAttempts');
+            } else {
+                // Проверяем пароль реальным запросом на сервер
+                try {
+                    sysMsg.textContent = 'АВТОРИЗАЦИЯ...';
+                    const res = await fetch(`${API_URL}/promos-list`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password: passInput.value })
+                    });
                     
-                    document.getElementById('authSection').classList.remove('active');
-                    setTimeout(() => {
-                        document.getElementById('dashboardSection').classList.add('active');
-                    }, 300);
-                } else {
-                    triggerError();
+                    if (res.ok) {
+                        clearTimeout(redThemeTimeout);
+                        document.body.className = 'theme-green';
+                        failedAttempts = 0; localStorage.removeItem('adminFailedAttempts');
+                        sessionPassword = passInput.value; // Сохраняем пароль для будущих запросов
+                        
+                        document.getElementById('authSection').classList.remove('active');
+                        setTimeout(() => { document.getElementById('dashboardSection').classList.add('active'); }, 300);
+                        
+                        // Загружаем список из БД при старте
+                        const promos = await res.json();
+                        renderPromoList(promos);
+                    } else {
+                        triggerError();
+                    }
+                } catch (err) {
+                    sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ';
+                    sysMsg.style.color = 'var(--error-red)';
                 }
             }
-        });
+        };
 
         // ========== ФОРМА СОЗДАНИЯ ПРОМОКОДА ==========
         const createForm = document.getElementById('createForm');
@@ -476,70 +394,160 @@
         const coverInput = document.getElementById('newCover');
         const trackInput = document.getElementById('newTrack');
         
-        // Меняем текст при выборе файлов
         coverInput.onchange = () => document.getElementById('coverText').textContent = coverInput.files[0] ? coverInput.files[0].name : 'Загрузить обложку (JPG/PNG)';
         trackInput.onchange = () => document.getElementById('trackText').textContent = trackInput.files[0] ? trackInput.files[0].name : 'Загрузить трек (MP3)';
 
-        createForm.onsubmit = (e) => {
+        createForm.onsubmit = async (e) => {
             e.preventDefault();
-            // Тут мы будем отправлять FormData на Render
             
-            // Анимация кнопки
+            const formData = new FormData();
+            formData.append('password', sessionPassword);
+            formData.append('promo', document.getElementById('newCode').value);
+            formData.append('title', document.getElementById('newTitle').value);
+            formData.append('cover', coverInput.files[0]);
+            formData.append('track', trackInput.files[0]);
+
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Создание промокода..';
-            
-            // Симуляция ответа сервера (2 секунды)
-            setTimeout(() => {
-                submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Промокод добавлен';
-                submitBtn.style.background = '#fff';
-                
-                // Очистка формы через 3 секунды
-                setTimeout(() => {
-                    createForm.reset();
-                    document.getElementById('coverText').textContent = 'Загрузить обложку (JPG/PNG)';
-                    document.getElementById('trackText').textContent = 'Загрузить трек (MP3)';
+
+            try {
+                const res = await fetch(`${API_URL}/promo`, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (res.ok) {
+                    submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Промокод добавлен';
+                    submitBtn.style.background = '#fff';
+                    
+                    setTimeout(() => {
+                        createForm.reset();
+                        document.getElementById('coverText').textContent = 'Загрузить обложку (JPG/PNG)';
+                        document.getElementById('trackText').textContent = 'Загрузить трек (MP3)';
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть';
+                        submitBtn.style.background = '';
+                    }, 3000);
+                    
+                    // Обновляем список промокодов в фоне
+                    loadPromosFromServer();
+                } else {
+                    alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть';
-                    submitBtn.style.background = '';
-                }, 3000);
-            }, 2000);
+                }
+            } catch (err) {
+                alert('Ошибка соединения с сервером');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть';
+            }
         };
 
-        // ========== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ДАШБОРДА ==========
-        const btnCreate = document.getElementById('btnTabCreate');
-        const btnList = document.getElementById('btnTabList');
-        const formView = document.getElementById('createForm');
-        const listView = document.getElementById('promoList');
+        // ========== ЗАГРУЗКА И ОТОБРАЖЕНИЕ СПИСКА ==========
+        async function loadPromosFromServer() {
+            try {
+                const res = await fetch(`${API_URL}/promos-list`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: sessionPassword })
+                });
+                if (res.ok) renderPromoList(await res.json());
+            } catch (err) { console.error('Ошибка загрузки списка'); }
+        }
 
-        btnCreate.onclick = () => {
-            btnCreate.classList.add('active'); btnList.classList.remove('active');
-            formView.style.display = 'flex'; listView.style.display = 'none';
+        function renderPromoList(promos) {
+            const listDiv = document.getElementById('promoList');
+            listDiv.innerHTML = '';
+            
+            if (promos.length === 0) {
+                listDiv.innerHTML = '<p style="text-align:center; color: var(--text-muted); margin-top:20px;">Нет активных промокодов</p>';
+                return;
+            }
+
+            promos.forEach(p => {
+                const audioUrl = `${API_URL}/media/${p.trackId}`;
+                const coverUrl = `${API_URL}/media/${p.coverId}`;
+                
+                const card = document.createElement('div');
+                card.className = 'promo-card';
+                card.innerHTML = `
+                    <img src="${coverUrl}" class="card-cover" alt="Cover" onerror="this.src='../dslogo.png'">
+                    <div class="card-info">
+                        <div class="card-code">#${p.code}</div>
+                        <div class="card-title">${p.title}</div>
+                        <div class="mini-player">
+                            <audio src="${audioUrl}" preload="metadata" ontimeupdate="updateMiniProgress(this)" onloadedmetadata="initMiniPlayer(this)"></audio>
+                            <button class="mini-play-btn" onclick="toggleMiniPlay(this)"><i class="fa-solid fa-play"></i></button>
+                            <div class="mini-progress" onclick="seekMiniPlayer(event, this)"><div class="mini-bar" style="width: 0%;"></div></div>
+                            <span class="mini-time">00:00 / 00:00</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <div class="action-icon delete" title="Удалить" onclick="openDeleteModal('${p.code}')"><i class="fa-solid fa-xmark"></i></div>
+                    </div>
+                `;
+                listDiv.appendChild(card);
+            });
+        }
+
+        // --- МИНИ-ПЛЕЕРЫ В СПИСКЕ ---
+        function fmtTime(s) {
+            if (!s || isNaN(s)) return '00:00';
+            return `${Math.floor(s/60)<10?'0':''}${Math.floor(s/60)}:${Math.floor(s%60)<10?'0':''}${Math.floor(s%60)}`;
+        }
+        window.initMiniPlayer = (audio) => {
+            const timeDisplay = audio.parentElement.querySelector('.mini-time');
+            timeDisplay.textContent = `00:00 / ${fmtTime(audio.duration)}`;
         };
-        btnList.onclick = () => {
-            btnList.classList.add('active'); btnCreate.classList.remove('active');
-            listView.style.display = 'flex'; formView.style.display = 'none';
+        window.toggleMiniPlay = (btn) => {
+            const audio = btn.parentElement.querySelector('audio');
+            const icon = btn.querySelector('i');
+            // Ставим другие на паузу
+            document.querySelectorAll('.mini-player audio').forEach(a => { if(a !== audio) { a.pause(); a.parentElement.querySelector('i').className = 'fa-solid fa-play'; } });
+            
+            if (audio.paused) { audio.play(); icon.className = 'fa-solid fa-pause'; }
+            else { audio.pause(); icon.className = 'fa-solid fa-play'; }
         };
+        window.updateMiniProgress = (audio) => {
+            const bar = audio.parentElement.querySelector('.mini-bar');
+            const timeDisplay = audio.parentElement.querySelector('.mini-time');
+            if (audio.duration) {
+                bar.style.width = `${(audio.currentTime / audio.duration) * 100}%`;
+                timeDisplay.textContent = `${fmtTime(audio.currentTime)} / ${fmtTime(audio.duration)}`;
+            }
+            if (audio.ended) audio.parentElement.querySelector('i').className = 'fa-solid fa-play';
+        };
+        window.seekMiniPlayer = (e, progressDiv) => {
+            const audio = progressDiv.parentElement.querySelector('audio');
+            const rect = progressDiv.getBoundingClientRect();
+            const pct = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1));
+            if (audio.duration) audio.currentTime = pct * audio.duration;
+        };
+
+        // ========== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
+        const btnCreate = document.getElementById('btnTabCreate'), btnList = document.getElementById('btnTabList');
+        const formView = document.getElementById('createForm'), listView = document.getElementById('promoList');
+
+        btnCreate.onclick = () => { btnCreate.classList.add('active'); btnList.classList.remove('active'); formView.style.display = 'flex'; listView.style.display = 'none'; };
+        btnList.onclick = () => { btnList.classList.add('active'); btnCreate.classList.remove('active'); listView.style.display = 'flex'; formView.style.display = 'none'; loadPromosFromServer(); };
 
         // ========== МОДАЛКА УДАЛЕНИЯ ==========
         const modal = document.getElementById('deleteModal');
         let codeToDelete = '';
 
-        function openDeleteModal(code) {
-            codeToDelete = code;
-            document.getElementById('modalCodeName').textContent = '#' + code;
-            modal.classList.add('active');
-        }
-        function closeDeleteModal() {
-            modal.classList.remove('active');
-            codeToDelete = '';
-        }
-        function confirmDelete() {
-            // Тут отправим запрос на сервер на удаление из MongoDB
-            console.log("Удаляем код: " + codeToDelete);
-            closeDeleteModal();
-            // Временно: скрываем карточку визульно
-            alert('Симлуяция: Код ' + codeToDelete + ' удален с сервера.');
-        }
+        window.openDeleteModal = (code) => { codeToDelete = code; document.getElementById('modalCodeName').textContent = '#' + code; modal.classList.add('active'); };
+        window.closeDeleteModal = () => { modal.classList.remove('active'); codeToDelete = ''; };
+        
+        document.getElementById('confirmDeleteBtn').onclick = async () => {
+            const btn = document.getElementById('confirmDeleteBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            try {
+                const res = await fetch(`${API_URL}/promo/${codeToDelete}`, {
+                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: sessionPassword })
+                });
+                if (res.ok) { closeDeleteModal(); loadPromosFromServer(); }
+                else { alert('Ошибка при удалении'); }
+            } catch (err) { alert('Ошибка соединения'); }
+            btn.innerHTML = 'Удалить';
+        };
     </script>
 </body>
 </html>
