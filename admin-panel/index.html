@@ -68,6 +68,7 @@
             color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 2px; 
             box-shadow: inset 0 0 15px rgba(255,255,255,0.05); 
             backdrop-filter: blur(15px); 
+            transition: all 0.3s ease; /* Добавили транзицию для плавного появления рамки */
         }
         .admin-input::placeholder { color: var(--text-muted); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
         
@@ -343,7 +344,6 @@
             });
             socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
             
-            // --- АНИМАЦИЯ РАЗБАНА ЧЕРЕЗ ТЕЛЕГРАМ ---
             socket.on('admin_unbanned', () => {
                 localStorage.removeItem('adminFailedAttempts');
                 localStorage.removeItem('adminBanEndTime');
@@ -357,18 +357,16 @@
                 const timerEl = document.getElementById('banTimer');
                 const descEl = document.getElementById('banDescEl');
 
-                // Останавливаем пульсацию и начинаем вращение 360
                 shield.classList.remove('pulsing');
                 shield.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s';
                 shield.style.transform = 'rotate(360deg) scale(1.2)';
                 shield.style.color = 'var(--theme-color)';
                 shield.style.textShadow = '0 0 30px rgba(0, 255, 102, 0.8)';
                 
-                // На середине вращения меняем иконку
                 setTimeout(() => {
                     shield.classList.remove('fa-shield-halved');
                     shield.classList.add('fa-check');
-                    shield.style.transform = 'rotate(720deg) scale(1)'; // мягкое приземление
+                    shield.style.transform = 'rotate(720deg) scale(1)'; 
                 }, 300);
 
                 textEl.textContent = 'ДОСТУП ВОССТАНОВЛЕН';
@@ -378,7 +376,6 @@
                 descEl.innerHTML = 'Доступ открыт преждевременно администрацией.<br><br>Инициализация системы...';
                 descEl.style.color = '#fff';
 
-                // Через 3 секунды релоад чтобы войти
                 setTimeout(() => { location.reload(); }, 3000);
             });
 
@@ -398,7 +395,7 @@
         function activateBanUI(secondsLeft) {
             document.getElementById('authSection').classList.remove('active');
             document.getElementById('banScreen').classList.add('active');
-            document.body.className = 'theme-red'; // Моментально станет красным из-за CSS
+            document.body.className = 'theme-red'; 
             clearInterval(banTimerInterval); updateBanTimerDisplay(secondsLeft);
             banTimerInterval = setInterval(() => {
                 secondsLeft--;
@@ -431,7 +428,7 @@
 
         function triggerError() {
             failedAttempts++; localStorage.setItem('adminFailedAttempts', failedAttempts);
-            if (failedAttempts >= 3) { triggerBan(); return; } // Если баним - прерываем функцию, таймер смены темы не запустится
+            if (failedAttempts >= 3) { triggerBan(); return; } 
 
             sysMsg.textContent = `ОШИБКА ДОСТУПА. ПОПЫТОК: ${3 - failedAttempts}`;
             sysMsg.style.color = 'var(--error-red)';
@@ -461,8 +458,14 @@
                     passWrapper.classList.add('show');
                     passInput.setAttribute('required', 'true');
                     sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.';
+                    
                     loginInput.disabled = true;
                     loginWrapper.querySelector('.auth-submit-btn').style.display = 'none';
+                    
+                    // --- ВОТ ОН, ФИКС ДЛЯ ОТРЕЗАННОГО КРАЯ ---
+                    loginInput.style.borderRight = '2px solid var(--theme-color)';
+                    loginInput.style.borderRadius = '20px';
+                    
                     passInput.focus();
                 } else {
                     triggerError();
