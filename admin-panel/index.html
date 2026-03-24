@@ -160,7 +160,8 @@
         <h1>ADMIN PANEL</h1>
     </header>
 
-    <div class="view-section active" id="authSection">
+    <main>
+        <div class="view-section active" id="authSection">
             <form id="authForm" class="auth-box">
                 <div class="input-wrapper">
                     <input type="text" id="adminLogin" class="admin-input" placeholder="ЛОГИН" autocomplete="off" spellcheck="false" required>
@@ -168,7 +169,7 @@
                 <div class="input-wrapper" id="passWrapper">
                     <input type="password" id="adminPass" class="admin-input" placeholder="ПАРОЛЬ">
                 </div>
-                <button type="submit" style="position: absolute; left: -9999px; opacity: 0;"></button>
+                <button type="submit" style="position: absolute; left: -9999px; opacity: 0;" tabindex="-1"></button>
             </form>
             <div class="sys-msg" id="sysMsg">Ожидание ввода...</div>
         </div>
@@ -372,7 +373,6 @@
             passInput.value = '';
         }
 
-        // Выносим сабмит в отдельную функцию
         async function handleAuthSubmit(e) {
             if (e) e.preventDefault(); // Блокируем стандартную перезагрузку страницы
 
@@ -417,14 +417,14 @@
             }
         }
 
-        // Вешаем обработчик на саму форму (для ПК)
+        // Привязываем обработчик сабмита формы
         authForm.onsubmit = handleAuthSubmit;
 
-        // ЖЕСТКИЙ ПЕРЕХВАТ ENTER ДЛЯ МОБИЛОК
+        // Жесткий перехват клавиши Enter (для мобильных клавиатур)
         const forceEnter = (e) => {
             if (e.key === 'Enter' || e.keyCode === 13) {
-                e.preventDefault(); // Не даём клавиатуре сделать перенос строки
-                handleAuthSubmit(); // Принудительно запускаем вход
+                e.preventDefault(); 
+                handleAuthSubmit();
             }
         };
         loginInput.addEventListener('keypress', forceEnter);
@@ -630,5 +630,6 @@
             } catch (err) { alert('Ошибка соединения с сервером'); }
             btn.innerHTML = 'Сохранить';
         };
+    </script>
 </body>
 </html>
