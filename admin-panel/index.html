@@ -439,11 +439,37 @@
         });
 
 
-        // ========== СИСТЕМА БАНОВ И СОКЕТЫ ==========
+        // ========== СИСТЕМА БАНОВ, ID И СОКЕТЫ ==========
+        function setCookie(name, value, days) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+        }
+        function getCookie(name) {
+            let nameEQ = name + "=";
+            let ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
+            }
+            return null;
+        }
+
+        let lsId = localStorage.getItem('dxtrNumericId');
+        let cookieId = getCookie('dxtrNumericId');
+        let clientId = lsId || cookieId || null;
+        
+        if (clientId) {
+            localStorage.setItem('dxtrNumericId', clientId);
+            setCookie('dxtrNumericId', clientId, 365);
+        }
+
         let socket;
         let fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FP => FP.load());
-        let clientId = localStorage.getItem('dxtrAdminClientId') || 'admin_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('dxtrAdminClientId', clientId);
         let fingerprintHash = '';
 
         try {
@@ -452,12 +478,24 @@
                 fpPromise.then(fp => fp.get()).then(r => {
                     fingerprintHash = r.visitorId;
                     
-                    // Регистрация для проверки бана админки
+                    // Регистрация для проверки бана админки (используем общий ID)
                     socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
                     
                     // Регистрация для чата тех. поддержки
                     socket.emit('register_client', { clientId, fpHash: fingerprintHash });
+                }).catch(() => {
+                    fingerprintHash = 'blocked';
+                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
+                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
                 });
+            });
+
+            socket.on('assign_id', (data) => {
+                if (data && data.newId) {
+                    clientId = data.newId;
+                    localStorage.setItem('dxtrNumericId', clientId);
+                    setCookie('dxtrNumericId', clientId, 365);
+                }
             });
             
             socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
