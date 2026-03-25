@@ -29,6 +29,13 @@ mongoose.connect(mongoURI)
     })
     .catch(err => console.error('MongoDB error:', err));
 
+// --- Схема счетчика для числовых ID ---
+const CounterSchema = new mongoose.Schema({
+    _id: { type: String, required: true },
+    seq: { type: Number, default: 0 }
+});
+const Counter = mongoose.model('Counter', CounterSchema);
+
 const UserSchema = new mongoose.Schema({
     clientId: { type: String, unique: true },
     fpHash: String,
@@ -208,7 +215,6 @@ io.on('connection', (socket) => {
             { upsert: true, new: true }
         );
 
-        // Ищем юзера в БД поддержки для подтягивания ника
         const user = await User.findOne({ fpHash: data.fpHash }) || await User.findOne({ clientId: data.clientId });
         const nickStr = (user && user.nickname) ? user.nickname : "Без ника";
         const displayId = data.clientId || data.fpHash.substring(0, 10);
@@ -233,27 +239,72 @@ io.on('connection', (socket) => {
                 ]
             }
         }).then(async (msg) => {
-            // Привязываем алерт к юзеру, чтобы работал реплай
             await MessageMap.create({ tgMsgId: msg.message_id, clientId: displayId, text: "Автобан в админке" });
         });
     });
 
     socket.on('register_client', async (data) => {
-        const clientId = typeof data === 'string' ? data : data.clientId;
+        const rawClientId = typeof data === 'string' ? data : data.clientId;
         const fpHash = typeof data === 'object' ? data.fpHash : null;
+
+        let user = null;
+        let clientId = null;
+
+        // Проверяем, является ли предоставленный ID новым цифровым форматом
+        const isNumeric = /^\d+$/.test(rawClientId);
+
+        if (isNumeric) {
+            user = await User.findOne({ clientId: rawClientId });
+        }
+
+        if (!user) {
+            if (fpHash && fpHash !== 'blocked') {
+                user = await User.findOne({ fpHash });
+            }
+            
+            // Если юзер найден, но у него старый строковой ID, конвертируем в цифровой
+            if (user && !/^\d+$/.test(user.clientId)) {
+                const counter = await Counter.findByIdAndUpdate(
+                    { _id: 'userId' },
+                    { $inc: { seq: 1 } },
+                    { new: true, upsert: true }
+                );
+                clientId = counter.seq.toString();
+                
+                // Обновляем связанные коллекции на новый ID
+                await PendingMsg.updateMany({ clientId: user.clientId }, { clientId: clientId });
+                await AdminBan.updateMany({ clientId: user.clientId }, { clientId: clientId });
+                
+                user.clientId = clientId;
+                await user.save();
+                socket.emit('assign_id', { newId: clientId });
+            } else if (!user) {
+                // Создаем полностью нового пользователя с цифровым ID
+                const counter = await Counter.findByIdAndUpdate(
+                    { _id: 'userId' },
+                    { $inc: { seq: 1 } },
+                    { new: true, upsert: true }
+                );
+                clientId = counter.seq.toString();
+                user = await User.create({ clientId, fpHash });
+                socket.emit('assign_id', { newId: clientId });
+            } else {
+                // Найден по fpHash и ID уже цифровой
+                clientId = user.clientId;
+                socket.emit('assign_id', { newId: clientId });
+            }
+        } else {
+            clientId = user.clientId;
+            if (fpHash && fpHash !== 'blocked' && user.fpHash !== fpHash) {
+                user.fpHash = fpHash;
+                await user.save();
+            }
+        }
 
         socket.join(clientId);
         
-        let user = await User.findOne({ clientId });
-        if (!user) {
-            user = await User.create({ clientId, fpHash });
-        } else if (fpHash && user.fpHash !== fpHash) {
-            user.fpHash = fpHash;
-            await user.save();
-        }
-
-        if (!user.isBanned && fpHash) {
-            const bannedTwin = await User.findOne({ fpHash, isBanned: true });
+        if (!user.isBanned && fpHash && fpHash !== 'blocked') {
+            const bannedTwin = await User.findOne({ fpHash, isBanned: true, clientId: { $ne: clientId } });
             if (bannedTwin) {
                 if (bannedTwin.banExpireAt !== 0 && bannedTwin.banExpireAt < Date.now()) {
                     bannedTwin.isBanned = false;
@@ -264,7 +315,7 @@ io.on('connection', (socket) => {
                     user.banReason = bannedTwin.banReason;
                     user.banDurationText = bannedTwin.banDurationText;
                     await user.save();
-                    bot.sendMessage(adminId, `🛡 <b>Anti-Spam System:</b>\nПользователь пытался обойти блокировку сбросом кэша. Бан восстановлен по отпечатку железа (<code>${fpHash}</code>).`, { parse_mode: 'HTML' });
+                    bot.sendMessage(adminId, `🛡 <b>Anti-Spam System:</b>\nПользователь пытался обойти блокировку сбросом кэша. Бан восстановлен по отпечатку железа (<code>${fpHash}</code>). ID нарушителя: <code>${clientId}</code>`, { parse_mode: 'HTML' });
                 }
             }
         }
