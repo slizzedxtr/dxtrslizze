@@ -151,9 +151,13 @@
         .yt { border-color: rgba(255,0,0,0.4); background: rgba(255,0,0,0.05); } .yt::before { background: linear-gradient(45deg, #cc0000, #ff4d4d); }
         .spot { border-color: rgba(29,185,84,0.4); background: rgba(29,185,84,0.05); } .spot::before { background: linear-gradient(45deg, #14833b, #1DB954); }
         .vkm { border-color: rgba(0,119,255,0.4); background: rgba(0,119,255,0.05); } .vkm::before { background: linear-gradient(45deg, #005ce6, #0077FF); }
-        .yam { border-color: rgba(255,204,0,0.2); background: rgba(255,204,0,0.02); color: rgba(255,255,255,0.3); text-decoration: line-through; cursor: not-allowed; }
-        .yam::before { display: none; }
-        .yam:hover { transform: none; border-color: rgba(255,204,0,0.2); }
+        
+        /* Зачеркнутые стили платформ */
+        .platform-link.disabled-link { color: rgba(255,255,255,0.3) !important; text-decoration: line-through !important; cursor: not-allowed !important; transform: none !important; }
+        .platform-link.disabled-link::before { display: none !important; }
+        .yam { border-color: rgba(255,204,0,0.2) !important; background: rgba(255,204,0,0.02) !important; }
+        .spot.disabled-link { border-color: rgba(29,185,84,0.2) !important; background: rgba(29,185,84,0.02) !important; }
+        .vkm.disabled-link { border-color: rgba(0,119,255,0.2) !important; background: rgba(0,119,255,0.02) !important; }
 
         /* СЕТКА КЛИПОВ (ДИНАМИЧЕСКАЯ) */
         .tracks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
@@ -254,23 +258,30 @@
         #chat-send { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
         #chat-send:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 0 25px rgba(0,198,255,0.6); }
 
-        /* ИНТЕРФЕЙСНЫЕ МЕХАНИКИ (МЕНЮ) */
+        /* ИНТЕРФЕЙСНЫЕ МЕХАНИКИ (МЕНЮ И ВЕРХНЯЯ ПАНЕЛЬ) */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan); }
+        
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid rgba(0, 198, 255, 0.2); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
         .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .sidebar-link i.icon-main { color: var(--neon-cyan); font-size: 1.4rem; transition: 0.3s; }
         .sidebar-link:hover, .sidebar-link.active { color: var(--neon-cyan); padding-left: 10px; border-bottom-color: rgba(0,198,255,0.3); }
+        
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
         #menuBanLock { color: var(--neon-red); font-size: 1rem; text-shadow: 0 0 10px rgba(255,0,51,0.8); margin-left: auto; display: none; animation: pulseRed 2s infinite; }
         
-        .online-counter { position: fixed; top: 25px; right: 25px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); z-index: 20; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; }
+        .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 15px; }
+        .online-counter { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; }
         .pulse-dot { width: 10px; height: 10px; background-color: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: pulseGreen 2s infinite; }
         @keyframes pulseGreen { 0%, 100% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.4); } 50% { box-shadow: 0 0 0 6px rgba(0, 255, 102, 0); } }
         .online-text { font-size: 0.85rem; font-weight: 700; color: #fff; letter-spacing: 1px; text-transform: uppercase; }
         .online-num { color: var(--neon-green); font-weight: 900; }
+        
+        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--neon-cyan); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-dark); transition: 0.3s; box-shadow: 0 0 10px rgba(0,198,255,0.3); text-decoration: none; }
+        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--neon-cyan); border-color: #fff; }
 
         @media (max-width: 900px) {
             .hero-release, .promo-banner { flex-direction: column; text-align: center; padding: 30px 20px; }
@@ -296,7 +307,10 @@
 
             .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
             .online-word { display: none; }
-            .online-counter { top: 15px; right: 15px; padding: 8px 15px; }
+            .top-controls { top: 15px; right: 15px; gap: 10px; }
+            .online-counter { padding: 8px 15px; }
+            .profile-btn { width: 40px; height: 40px; }
+            
             .footer-buttons { flex-direction: column; }
 
             #chat-window { 
@@ -307,18 +321,20 @@
             .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
             .drag-handle { display: none; }
         }
+        @media (max-height: 400px) {
+            .secret-rift { display: none !important; }
+        }
         @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* === СЕКРЕТНЫЙ РАЗЛОМ (РВАНАЯ ТРЕЩИНА) === */
+        /* === СЕКРЕТНЫЙ РАЗЛОМ (ГОРИЗОНТАЛЬНЫЙ) === */
         .secret-rift {
-            position: fixed;
+            position: absolute; /* Теперь привязано к странице, а не экрану */
             z-index: 10005;
-            width: clamp(40px, 8vw, 70px);
-            height: clamp(120px, 20vh, 180px);
+            width: clamp(120px, 20vw, 180px); /* Горизонтальные размеры */
+            height: clamp(40px, 8vw, 70px);
             cursor: pointer;
             opacity: 0;
-            /* Начинается со сжатой точки */
-            transform: scaleY(0.1) scaleX(0.1) rotate(0deg);
+            transform: scale(0.1);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-in;
             pointer-events: none;
             display: flex;
@@ -327,16 +343,17 @@
         }
         .secret-rift.active {
             opacity: 1;
-            /* Разрастается до нормальных размеров */
-            transform: scaleY(1) scaleX(1) rotate(var(--rot));
+            transform: scale(1);
             pointer-events: auto;
         }
         
-        /* Рисуем рваные края трещины */
+        /* Вращается только сама SVG, чтобы частицы падали ровно вниз */
         .rift-svg {
             width: 100%;
             height: 100%;
+            transform: rotate(var(--rot));
             filter: drop-shadow(0 0 5px var(--neon-green)) drop-shadow(0 0 15px var(--neon-green));
+            transition: transform 0.4s ease;
         }
         .rift-svg path {
             fill: #020602;
@@ -345,7 +362,6 @@
             vector-effect: non-scaling-stroke;
         }
 
-        /* Выпадающие цифры */
         .rift-particle {
             position: absolute;
             color: var(--neon-green);
@@ -356,12 +372,11 @@
             text-shadow: 0 0 10px var(--neon-green);
             top: 50%;
             left: 50%;
-            /* Анимация осыпания */
             animation: dropFade 0.7s ease-out forwards;
         }
         @keyframes dropFade {
             0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
-            /* Разлетаются по координатам, заданным из JS, и растворяются */
+            /* Падают строго вниз (dy), так как сам контейнер частиц не повернут */
             100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); opacity: 0; }
         }
     </style>
@@ -399,9 +414,14 @@
         </a>
     </div>
 
-    <div class="online-counter fade-in">
-        <div class="pulse-dot"></div>
-        <div class="online-text"><span class="online-num" id="onlineCount">1</span><span class="online-word"> онлайн</span></div>
+    <div class="top-controls fade-in">
+        <div class="online-counter">
+            <div class="pulse-dot"></div>
+            <div class="online-text"><span class="online-num" id="onlineCount">1</span><span class="online-word"> онлайн</span></div>
+        </div>
+        <a href="https://dxtrslizze.xyz/profile" class="profile-btn" title="Профиль">
+            <img src="dslogo.png" alt="Profile" id="userAvatar">
+        </a>
     </div>
 
     <nav class="top-nav fade-in">
@@ -488,9 +508,9 @@
 
                 <div class="platform-grid">
                     <a href="javascript:void(0)" onclick="openVideo('M9TwVLCdEiM')" class="platform-link yt"><i class="fa-brands fa-youtube"></i> YouTube</a>
-                    <a href="javascript:void(0)" class="platform-link yam" title="Временно недоступно"><i class="fa-solid fa-music"></i> Я.Музыка</a>
-                    <a href="https://open.spotify.com/track/5mvN7HfEXmxy1wH8V2r216" target="_blank" class="platform-link spot"><i class="fa-brands fa-spotify"></i> Spotify</a>
-                    <a href="https://vk.ru/audio-2001553364_147553364_69b1b8413dbf4d1f2e" target="_blank" class="platform-link vkm"><i class="fa-brands fa-vk"></i> VK Music</a>
+                    <a href="javascript:void(0)" class="platform-link disabled-link yam" title="Временно недоступно"><i class="fa-solid fa-music"></i> Я.Музыка</a>
+                    <a href="javascript:void(0)" class="platform-link disabled-link spot" title="Временно недоступно"><i class="fa-brands fa-spotify"></i> Spotify</a>
+                    <a href="javascript:void(0)" class="platform-link disabled-link vkm" title="Временно недоступно"><i class="fa-brands fa-vk"></i> VK Music</a>
                 </div>
             </div>
         </div>
@@ -546,7 +566,6 @@
         }, 1000);
 
         // === ДИНАМИЧЕСКИЕ КЛИПЫ YOUTUBE (без шортсов) ===
-        // База данных всех доступных клипов
         const ytDatabase = [
             { id: "NZdm_FnmTQ8", title: "Music", cover: "logo_Music.png" },
             { id: "rDByUUm7eaE", title: "FastRap", cover: "logo_FastRap.jpeg" },
@@ -570,14 +589,12 @@
             const grid = document.getElementById('randomTracksGrid');
             grid.innerHTML = '';
             
-            // Перемешиваем массив (Алгоритм Фишера-Йетса)
             let shuffled = [...ytDatabase];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
             }
             
-            // Берем первые 6 треков
             const selectedTracks = shuffled.slice(0, 6);
 
             selectedTracks.forEach((track, index) => {
@@ -595,25 +612,22 @@
             });
         }
         
-        // Запускаем рендер при загрузке страницы
         window.addEventListener('DOMContentLoaded', renderRandomTracks);
 
         // === PWA: ДОБАВИТЬ НА РАБОЧИЙ СТОЛ ===
         let deferredPrompt;
         const installModal = document.getElementById('installModal');
 
-        // Перехватываем системный ивент для Chrome/Android
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
         });
 
-        // Проверяем, заходил ли юзер ранее
         if (!localStorage.getItem('dxtr_visited_v2')) {
             setTimeout(() => {
                 installModal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
-            }, 2500); // Показываем через 2.5 сек
+            }, 2500); 
         }
 
         function closeInstallModal() {
@@ -624,13 +638,11 @@
 
         function triggerInstall() {
             if (deferredPrompt) {
-                // Если поддерживается системное окно (Android Chrome)
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
                     deferredPrompt = null;
                 });
             } else {
-                // Для iOS Safari или браузеров ПК
                 alert("Чтобы добавить на рабочий стол:\n\n🍏 iOS (Safari): Нажми иконку 'Поделиться' (квадрат со стрелочкой) внизу и выбери 'На экран Домой'.\n\n🤖 Android / ПК: Нажми три точки в меню браузера и выбери 'Добавить на гл. экран' или иконку установки в строке адреса.");
             }
             closeInstallModal();
@@ -768,7 +780,7 @@
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        // Drag and drop для чата (только для ПК)
+        // Drag and drop для чата
         let isDraggingChat = false, chatOffsetX, chatOffsetY;
         chatHeader.addEventListener('mousedown', (e) => {
             if (window.innerWidth <= 600 || e.target.id === 'chat-close') return;
@@ -796,7 +808,7 @@
         });
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        // === АНТИ-БАН СИСТЕМА И СОКЕТЫ ===
+        // === АНТИ-БАН СИСТЕМА, ID СТРОГОГО ФОРМАТА И СОКЕТЫ ===
         const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
         window.userNickname = localStorage.getItem('dxtrUserNickname') || null; 
 
@@ -819,12 +831,15 @@
             return null;
         }
 
-        let lsId = localStorage.getItem('dxtrClientId');
-        let cookieId = getCookie('dxtrClientId');
-        let clientId = lsId || cookieId || 'user_' + Math.random().toString(36).substr(2, 9); 
+        // Обновленная логика ID: ждем генерации от сервера
+        let lsId = localStorage.getItem('dxtrNumericId');
+        let cookieId = getCookie('dxtrNumericId');
+        let clientId = lsId || cookieId || null; 
         
-        localStorage.setItem('dxtrClientId', clientId);
-        setCookie('dxtrClientId', clientId, 365);
+        if (clientId) {
+            localStorage.setItem('dxtrNumericId', clientId);
+            setCookie('dxtrNumericId', clientId, 365);
+        }
         
         const socket = io("https://dxtrslizze.onrender.com/");
 
@@ -838,6 +853,15 @@
                     socket.emit('register_client', { clientId: clientId, fpHash: 'blocked' });
                 });
         }); 
+
+        // Получаем присвоенный числовой ID от сервера
+        socket.on('assign_id', (data) => {
+            if (data && data.newId) {
+                clientId = data.newId;
+                localStorage.setItem('dxtrNumericId', clientId);
+                setCookie('dxtrNumericId', clientId, 365);
+            }
+        });
 
         const onlineCountEl = document.getElementById('onlineCount');
         socket.on('online_update', c => { if(onlineCountEl) onlineCountEl.textContent = c; });
@@ -855,6 +879,10 @@
                     if(el.textContent === 'Вы') el.textContent = d.nickname;
                 });
             } 
+            if (d.avatarUrl) {
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg) avatarImg.src = d.avatarUrl;
+            }
         });
         
         socket.on('ban_status', d => { 
@@ -944,17 +972,17 @@
         
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
 
-        // === СЕКРЕТНЫЙ РАЗЛОМ (РВАНАЯ ТРЕЩИНА) ===
+        // === СЕКРЕТНЫЙ РАЗЛОМ (ГОРИЗОНТАЛЬНЫЙ) ===
         (function() {
             const rift = document.createElement('div');
             rift.id = 'secretRift';
             rift.className = 'secret-rift';
             rift.onclick = () => window.location.href = 'https://dxtrslizze.xyz/promocode';
             
-            // Вставляем SVG настоящей рваной трещины
+            // Новая горизонтальная SVG
             rift.innerHTML = `
-                <svg viewBox="0 0 100 200" class="rift-svg" preserveAspectRatio="none">
-                    <path d="M50,0 L65,25 L40,60 L70,110 L35,160 L50,200 L45,160 L60,110 L30,60 L55,25 Z" />
+                <svg viewBox="0 0 200 100" class="rift-svg" preserveAspectRatio="none">
+                    <path d="M0,50 L30,35 L60,60 L100,20 L140,65 L180,40 L200,50 L180,45 L140,75 L100,35 L60,70 L30,45 Z" />
                 </svg>
             `;
             document.body.appendChild(rift);
@@ -966,48 +994,45 @@
                 p.className = 'rift-particle';
                 p.textContent = Math.random() > 0.5 ? '1' : '0';
                 
-                // Легкий разлет в стороны (от -30px до +30px) и падение вниз (от 30px до 80px)
-                const dx = (Math.random() - 0.5) * 60; 
-                const dy = 30 + Math.random() * 50;    
+                // Распространяются по ширине контейнера, и падают только вниз
+                const dx = (Math.random() - 0.5) * 80; 
+                const dy = 20 + Math.random() * 60;    
                 p.style.setProperty('--dx', dx + 'px');
                 p.style.setProperty('--dy', dy + 'px');
                 
-                // Цифры появляются в случайных местах по высоте самой трещины
-                p.style.top = (10 + Math.random() * 80) + '%';
+                // Рандомный спавн по горизонтали самого разлома
+                p.style.left = (10 + Math.random() * 80) + '%';
                 
                 rift.appendChild(p);
-                // Удаляем элемент после завершения анимации падения
                 setTimeout(() => { if (p.parentNode) p.remove() }, 700);
             }
 
             function triggerRift() {
-                const w = window.innerWidth;
-                const h = window.innerHeight;
-                // Спавним с отступами, чтобы трещина не обрезалась краем экрана
-                const x = 50 + Math.random() * (w - 150);
-                const y = 50 + Math.random() * (h - 250);
-                const rot = -20 + Math.random() * 40; // Легкий наклон трещины
+                // Привязка к странице: берем полную высоту и ширину контента страницы
+                const w = document.documentElement.scrollWidth;
+                const h = document.documentElement.scrollHeight;
+                
+                const x = 50 + Math.random() * (w - 200);
+                const y = 50 + Math.random() * (h - 200);
+                
+                // Максимальное отклонение +- 15 градусов
+                const rot = -15 + Math.random() * 30; 
 
                 rift.style.left = x + 'px';
                 rift.style.top = y + 'px';
                 rift.style.setProperty('--rot', rot + 'deg');
 
-                // Показываем трещину
                 rift.classList.add('active');
 
-                // Запускаем высыпание цифр
                 particleInterval = setInterval(createParticle, 30);
 
-                // Ровно через 2 секунды плавно закрываем и прекращаем спавн
                 setTimeout(() => {
                     rift.classList.remove('active');
                     clearInterval(particleInterval);
                 }, 2000);
             }
 
-            // Первый разлом покажется через 3 секунды после захода на сайт
             setTimeout(triggerRift, 3000);
-            // Далее — ровно каждые 30 секунд
             setInterval(triggerRift, 30000);
         })();
     </script>
