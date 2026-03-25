@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN PANEL | DXTR | SlizZe</title>
+    <title>В РАЗРАБОТКЕ | DXTR | SlizZe</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -25,13 +25,10 @@
         /* МАТРИЦА ФОН */
         #matrixCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; opacity: 0.6; }
         
-        /* Цветовой фильтр */
         body::after {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
             background: transparent; transition: background 0.3s ease;
         }
-        body.theme-red::after { background: rgba(255, 0, 51, 0.1); }
-        body.theme-green::after { background: rgba(0, 255, 102, 0.08); }
 
         /* МЕНЮ И ПРОФИЛЬ */
         .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 15px; }
@@ -48,127 +45,6 @@
         .sidebar-link:hover { color: var(--theme-color); padding-left: 10px; border-bottom-color: var(--theme-glow); }
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
-
-        header { text-align: center; padding: 8vh 20px 2vh; position: relative; z-index: 10; }
-        header h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; text-transform: uppercase; letter-spacing: 10px; color: var(--theme-color); text-shadow: 0 0 25px var(--theme-glow); margin-bottom: 10px; }
-
-        main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 40px; z-index: 10; display: flex; flex-direction: column; align-items: center; position: relative; }
-
-        /* СКРЫТИЕ/ОТОБРАЖЕНИЕ БЛОКОВ */
-        .view-section { width: 100%; display: none; flex-direction: column; align-items: center; animation: fadeIn 0.5s ease forwards; }
-        .view-section.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ВХОД (АВТОРИЗАЦИЯ) */
-        .auth-box { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 15px; margin-top: 10vh; }
-        .input-wrapper { display: flex; width: 100%; align-items: center; transition: transform 0.3s; }
-        
-        .admin-input { 
-            flex: 1; height: 70px; 
-            background: var(--glass-bg); 
-            border: 2px solid var(--theme-color); 
-            border-right: none; 
-            border-radius: 20px 0 0 20px; 
-            outline: none; padding: 0 20px; 
-            color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 2px; 
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.05); 
-            backdrop-filter: blur(15px); 
-            transition: all 0.3s ease;
-        }
-        .admin-input::placeholder { color: var(--text-muted); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
-        
-        .auth-submit-btn { 
-            width: 70px; height: 70px; 
-            background: rgba(0,0,0,0.6); 
-            border: 2px solid var(--theme-color); 
-            border-radius: 0 20px 20px 0; 
-            color: var(--theme-color); 
-            font-size: 1.5rem; 
-            cursor: pointer; transition: 0.3s; 
-            display: flex; justify-content: center; align-items: center; 
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.05);
-            backdrop-filter: blur(15px);
-        }
-        .auth-submit-btn:hover, .auth-submit-btn:active { 
-            background: var(--theme-color); color: var(--bg-dark); box-shadow: 0 0 20px var(--theme-glow); 
-        }
-
-        #passWrapper { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #passWrapper.show { max-height: 100px; opacity: 1; margin-top: 5px; overflow: visible; }
-
-        .sys-msg { color: var(--theme-color); font-size: 0.95rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; height: 20px; text-shadow: 0 0 10px var(--theme-glow); }
-
-        /* БАН ЭКРАН */
-        #banScreen { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 10vh; }
-        #banScreen.active { display: flex; }
-        .ban-icon { font-size: 5rem; color: var(--error-red); margin-bottom: 20px; text-shadow: 0 0 30px rgba(204, 68, 68, 0.6); display: inline-block; }
-        .ban-icon.pulsing { animation: pulseBan 2s infinite; }
-        @keyframes pulseBan { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        
-        .ban-text { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase; transition: color 0.3s; }
-        .ban-timer { font-size: 3rem; font-weight: 900; color: var(--error-red); margin-top: 10px; font-variant-numeric: tabular-nums; }
-
-        /* ПАНЕЛЬ УПРАВЛЕНИЯ */
-        .dash-nav { display: flex; gap: 15px; margin-bottom: 30px; background: var(--glass-bg); padding: 10px; border-radius: 16px; border: 1px solid var(--theme-glass-border); backdrop-filter: blur(10px); width: 100%; max-width: 600px; justify-content: center; flex-wrap: wrap; }
-        .dash-btn { background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 10px 25px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; flex: 1; min-width: 120px; }
-        .dash-btn.active, .dash-btn:hover { background: rgba(0, 255, 102, 0.15); border-color: var(--theme-color); color: var(--theme-color); box-shadow: 0 0 15px var(--theme-glow); }
-
-        /* ФОРМА СОЗДАНИЯ / ПРОФИЛЬ */
-        .create-form { background: var(--glass-bg); border: 1px solid var(--theme-glass-border); padding: 30px; border-radius: 20px; width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-label { font-size: 0.8rem; font-weight: 800; color: var(--theme-color); text-transform: uppercase; letter-spacing: 1px; }
-        .form-input { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; color: #fff; font-family: 'Montserrat'; outline: none; transition: 0.3s; }
-        .form-input:focus { border-color: var(--theme-color); box-shadow: inset 0 0 10px var(--theme-glow); }
-        .form-file { background: rgba(0,0,0,0.6); border: 1px dashed var(--theme-color); padding: 15px; border-radius: 12px; color: var(--text-muted); cursor: pointer; text-align: center; transition: 0.3s; }
-        .form-file:hover { background: rgba(0,255,102,0.1); color: #fff; }
-        .form-file input { display: none; }
-        
-        .submit-btn { background: var(--theme-color); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
-        .submit-btn:hover { box-shadow: 0 0 25px var(--theme-glow); transform: translateY(-2px); background: #fff; }
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: var(--theme-color); color: #000; }
-
-        /* СПИСОК ПРОМОКОДОВ (КАРТОЧКИ) */
-        .promo-list { width: 100%; display: flex; flex-direction: column; gap: 20px; }
-        .promo-card { background: linear-gradient(135deg, rgba(5,20,10,0.8), rgba(2,10,5,0.9)); border: 1px solid var(--theme-glass-border); border-radius: 20px; padding: 20px; display: flex; gap: 20px; align-items: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
-        .card-cover { width: 100px; height: 100px; border-radius: 12px; object-fit: cover; flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
-        .card-info { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-        .card-code { font-size: 1.2rem; font-weight: 900; color: var(--theme-color); letter-spacing: 1px; }
-        .card-title { font-size: 1.1rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .mini-player { display: flex; align-items: center; gap: 10px; margin-top: 5px; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .mini-play-btn { background: transparent; color: var(--theme-color); border: none; font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
-        .mini-play-btn:hover { color: #fff; transform: scale(1.1); }
-        .mini-progress { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 5px; position: relative; cursor: pointer; }
-        .mini-bar { height: 100%; width: 0%; background: var(--theme-color); border-radius: 5px; pointer-events: none; box-shadow: 0 0 10px var(--theme-glow); }
-        .mini-time { font-size: 0.75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 70px; text-align: right; }
-
-        .card-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; }
-        .action-icon { background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
-        .action-icon.edit:hover { color: #fff; border-color: var(--theme-color); background: var(--theme-color); box-shadow: 0 0 10px var(--theme-glow); }
-        .action-icon.delete:hover { color: #fff; border-color: var(--error-red); background: var(--error-red); box-shadow: 0 0 10px rgba(204,68,68,0.4); }
-
-        /* МОДАЛКИ (УДАЛЕНИЕ И РЕДАКТИРОВАНИЕ) */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 10005; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-box { background: rgba(20, 0, 0, 0.9); border: 2px solid; border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s; }
-        .modal-overlay.active .modal-box { transform: scale(1); }
-        
-        #deleteModal .modal-box { border-color: var(--error-red); box-shadow: 0 0 50px rgba(204,68,68,0.2); }
-        #deleteModal h3 { color: #fff; font-size: 1.3rem; margin-bottom: 15px; text-transform: uppercase; }
-        #deleteModal p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5; }
-        .modal-code { color: var(--error-red); font-weight: 900; font-size: 1.2rem; }
-        
-        #editModal .modal-box { border-color: var(--theme-color); box-shadow: 0 0 50px var(--theme-glow); }
-        #editModal h3 { color: var(--theme-color); font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; text-shadow: 0 0 10px var(--theme-glow); }
-
-        .modal-btns { display: flex; gap: 15px; justify-content: center; }
-        .m-btn { padding: 12px 25px; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; border: none; transition: 0.3s; flex: 1; }
-        .m-btn-cancel { background: rgba(255,255,255,0.1); color: white; }
-        .m-btn-cancel:hover { background: rgba(255,255,255,0.2); }
-        .m-btn-confirm-del { background: var(--error-red); color: white; box-shadow: 0 0 15px rgba(204,68,68,0.5); }
-        .m-btn-confirm-del:hover { background: #ff0000; box-shadow: 0 0 25px rgba(255,0,0,0.8); transform: scale(1.05); }
-        .m-btn-confirm-edit { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-glow); }
-        .m-btn-confirm-edit:hover { background: #fff; box-shadow: 0 0 25px rgba(255,255,255,0.8); transform: scale(1.05); }
 
         /* === ТЕХПОДДЕРЖКА (ЧАТ) === */
         .support-btn { position: fixed; bottom: 25px; right: 25px; z-index: 9000; background: var(--glass-bg); border: 1px solid var(--theme-glass-border); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); transition: 0.3s; }
@@ -195,21 +71,118 @@
         .chat-input button:hover { box-shadow: 0 0 15px var(--theme-glow); transform: scale(1.05); background: #fff; }
         .chat-input button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: #333; color: #888; }
 
+        /* === БЛОК В РАЗРАБОТКЕ === */
+        main { flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px; z-index: 10; }
+        
+        .dev-container {
+            background: var(--glass-bg);
+            border: 1px solid var(--theme-glass-border);
+            border-radius: 25px;
+            padding: 50px 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+            backdrop-filter: blur(20px);
+            animation: floatUp 0.8s ease forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes floatUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dev-icon {
+            font-size: 4rem;
+            color: var(--theme-color);
+            text-shadow: 0 0 25px var(--theme-glow);
+            margin-bottom: 20px;
+            animation: pulseIcon 2s infinite alternate;
+        }
+
+        @keyframes pulseIcon {
+            from { transform: scale(1); opacity: 0.8; }
+            to { transform: scale(1.1); opacity: 1; }
+        }
+
+        .dev-title {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .dev-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 35px;
+            line-height: 1.5;
+        }
+
+        .loading-bar-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .loading-bar-fill {
+            height: 100%;
+            width: 65%; /* Визуальный прогресс */
+            background: linear-gradient(90deg, transparent, var(--theme-color));
+            border-radius: 10px;
+            box-shadow: 0 0 15px var(--theme-glow);
+            animation: loadingPulse 2s infinite;
+        }
+
+        @keyframes loadingPulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            color: #fff;
+            border: 2px solid var(--theme-color);
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: var(--theme-color);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--theme-glow);
+            transform: translateY(-3px);
+        }
+
         @media (max-width: 600px) {
-            header h1 { font-size: 2.2rem; letter-spacing: 5px; }
-            .auth-box { margin-top: 5vh; }
-            .admin-input { height: 60px; font-size: 1rem; }
-            .auth-submit-btn { width: 60px; height: 60px; font-size: 1.3rem; }
-            .create-form { padding: 20px; }
-            .promo-card { flex-direction: column; align-items: flex-start; }
-            .card-cover { width: 100%; height: 150px; }
-            .card-actions { top: 20px; right: 20px; }
-            
-            .chat-window { width: calc(100vw - 40px); right: 20px; bottom: 90px; height: 60vh; }
-            .support-btn { width: 50px; height: 50px; right: 20px; bottom: 20px; font-size: 1.2rem; }
-            
             .top-controls { top: 15px; right: 15px; gap: 10px; }
             .profile-btn { width: 40px; height: 40px; }
+            .chat-window { width: calc(100vw - 40px); right: 20px; bottom: 90px; height: 60vh; }
+            .support-btn { width: 50px; height: 50px; right: 20px; bottom: 20px; font-size: 1.2rem; }
+            .dev-container { padding: 40px 20px; }
         }
     </style>
 </head>
@@ -219,7 +192,7 @@
 
     <div class="top-controls">
         <a href="https://dxtrslizze.xyz/profile" class="profile-btn" title="Профиль">
-            <img src="../dslogo.png" alt="Profile" id="userAvatar">
+            <img src="../dslogo.png" alt="Profile" id="userAvatar" onerror="this.src='https://via.placeholder.com/100/000000/00c6ff?text=D%26S'">
         </a>
     </div>
 
@@ -252,133 +225,25 @@
         </div>
     </div>
 
-    <header>
-        <h1>ADMIN PANEL</h1>
-    </header>
-
     <main>
-        <div class="view-section active" id="authSection">
-            <form id="authForm" class="auth-box">
-                <div class="input-wrapper" id="loginWrapper">
-                    <input type="text" id="adminLogin" class="admin-input" placeholder="ЛОГИН" autocomplete="off" spellcheck="false" required>
-                    <button type="submit" class="auth-submit-btn"><i class="fa-solid fa-terminal"></i></button>
-                </div>
-                
-                <div class="input-wrapper" id="passWrapper">
-                    <input type="password" id="adminPass" class="admin-input" placeholder="ПАРОЛЬ">
-                    <button type="submit" class="auth-submit-btn"><i class="fa-solid fa-terminal"></i></button>
-                </div>
-            </form>
-            <div class="sys-msg" id="sysMsg">Ожидание ввода...</div>
-        </div>
-
-        <div id="banScreen">
-            <i class="fa-solid fa-shield-halved ban-icon pulsing" id="shieldIcon"></i>
-            <div class="ban-text" id="banTextEl">Доступ заблокирован</div>
-            <div class="ban-timer" id="banTimer">60:00</div>
-            <div id="banDescEl" style="color: var(--text-muted); margin-top: 15px; max-width: 400px; line-height: 1.5;">
-                Превышено количество попыток. Запрос отправлен на сервер. Ваш IP и Fingerprint занесены во временный черный список.
-            </div>
-        </div>
-
-        <div class="view-section" id="dashboardSection">
-            <div class="dash-nav">
-                <button class="dash-btn active" id="btnTabCreate">Создать</button>
-                <button class="dash-btn" id="btnTabList">Промокоды</button>
-                <button class="dash-btn" id="btnTabProfile">Профиль</button>
+        <div class="dev-container">
+            <i class="fa-solid fa-screwdriver-wrench dev-icon"></i>
+            <h1 class="dev-title">ДОСТУП ЗАКРЫТ</h1>
+            <p class="dev-subtitle">Сектор находится в стадии активной разработки и компиляции.</p>
+            
+            <div class="loading-bar-container">
+                <div class="loading-bar-fill"></div>
             </div>
 
-            <form class="create-form" id="createForm">
-                <div class="form-group">
-                    <label class="form-label">Промокод</label>
-                    <input type="text" id="newCode" class="form-input" placeholder="Напр: GUSTO2026 (Без #)" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Название трека</label>
-                    <input type="text" id="newTitle" class="form-input" placeholder="Напр: GUSTO (Snippet)" required>
-                </div>
-                
-                <label class="form-file" id="coverLabel">
-                    <i class="fa-solid fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="coverText">Загрузить обложку (JPG/PNG)</span>
-                    <input type="file" id="newCover" accept="image/*" required>
-                </label>
-
-                <label class="form-file" id="trackLabel">
-                    <i class="fa-solid fa-file-audio" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="trackText">Загрузить трек (MP3)</span>
-                    <input type="file" id="newTrack" accept="audio/mpeg" required>
-                </label>
-
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    <i class="fa-solid fa-upload"></i> Запустить в сеть
-                </button>
-            </form>
-
-            <div class="promo-list" id="promoList" style="display: none;"></div>
-
-            <div id="profileSection" style="display: none; width: 100%; max-width: 600px; flex-direction: column; align-items: center; text-align: center;" class="create-form">
-                <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--theme-color); margin-bottom: 15px; overflow: hidden; box-shadow: 0 0 20px var(--theme-glow);">
-                    <img src="../dslogo.png" alt="Avatar" onerror="this.src='https://via.placeholder.com/100/000000/00c6ff?text=D%26S'" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                <h2 id="profNick" style="font-size: 1.8rem; margin-bottom: 5px;">Загрузка...</h2>
-                <div style="color: var(--theme-color); font-weight: 800; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; font-size: 0.8rem;">Системный администратор</div>
-                
-                <div style="width: 100%; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; border: 1px solid var(--theme-glass-border); text-align: left; display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: var(--text-muted);">Ваш системный ID:</span>
-                        <span style="color: #fff; font-family: monospace; font-weight: 900;" id="profId">---</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: var(--text-muted);">Статус связи:</span>
-                        <span style="color: var(--theme-color);" id="profStatus"><i class="fa-solid fa-circle-check"></i> Connected</span>
-                    </div>
-                </div>
-                
-                <button class="submit-btn" style="width: 100%; margin-top: 20px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="location.reload()">
-                    <i class="fa-solid fa-arrow-rotate-right"></i> Обновить сессию
-                </button>
-            </div>
+            <a href="https://dxtrslizze.xyz/" class="back-btn">
+                <i class="fa-solid fa-chevron-left"></i> ВЕРНУТЬСЯ В ШТАБ
+            </a>
         </div>
     </main>
 
-    <div class="modal-overlay" id="deleteModal">
-        <div class="modal-box">
-            <h3>Подтверждение</h3>
-            <p>Удалить промокод <span class="modal-code" id="modalCodeName">#XXX</span> навсегда? Трек и обложка будут стерты из базы.</p>
-            <div class="modal-btns">
-                <button class="m-btn m-btn-cancel" onclick="closeDeleteModal()">Отмена</button>
-                <button class="m-btn m-btn-confirm-del" id="confirmDeleteBtn">Удалить</button>
-            </div>
-        </div>
-    </div>
-    <div class="modal-overlay" id="editModal">
-        <div class="modal-box">
-            <h3>Редактировать</h3>
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Новый Промокод</label>
-                <input type="text" id="editCodeInput" class="form-input" placeholder="Без #">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 25px;">
-                <label class="form-label">Новое Название трека</label>
-                <input type="text" id="editTitleInput" class="form-input">
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 25px;">
-                *Чтобы заменить аудио или обложку, удалите промокод и создайте его заново.
-            </div>
-            <div class="modal-btns">
-                <button class="m-btn m-btn-cancel" onclick="closeEditModal()">Отмена</button>
-                <button class="m-btn m-btn-confirm-edit" id="confirmEditBtn">Сохранить</button>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        const API_URL = "https://dxtrslizze.onrender.com/api";
-        let sessionPassword = ""; 
-
-        // ========== МАТРИЦА И МЕНЮ ==========
+        // ========== МАТРИЦА ==========
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -406,6 +271,7 @@
         setInterval(drawMatrix, 50);
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; columns = Math.floor(canvas.width / FONT_SIZE); drops = []; for (let i = 0; i < columns; i++) drops[i] = Math.random() * -60; });
 
+        // ========== МЕНЮ ==========
         const burgerBtn = document.getElementById('burgerBtn'), sidebar = document.getElementById('sidebar'), sidebarOverlay = document.getElementById('sidebarOverlay'), closeSidebar = document.getElementById('closeSidebar');
         function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
         burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
@@ -468,7 +334,7 @@
             const text = chatInput.value.trim();
             addMessageToUI(text, 'user');
             saveMessage(text, 'user');
-            socket.emit('send_message', { clientId, text });
+            if (window.socket) window.socket.emit('send_message', { clientId: window.clientId, text });
             chatInput.value = '';
         };
 
@@ -476,8 +342,7 @@
             if (e.key === 'Enter') chatSend.click();
         });
 
-
-        // ========== СИСТЕМА БАНОВ, ID И СОКЕТЫ ==========
+        // ========== СИСТЕМА ID И СОКЕТЫ ==========
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
@@ -499,52 +364,42 @@
 
         let lsId = localStorage.getItem('dxtrNumericId');
         let cookieId = getCookie('dxtrNumericId');
-        let clientId = lsId || cookieId || null;
+        window.clientId = lsId || cookieId || null;
         window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
         
-        if (clientId) {
-            localStorage.setItem('dxtrNumericId', clientId);
-            setCookie('dxtrNumericId', clientId, 365);
+        if (window.clientId) {
+            localStorage.setItem('dxtrNumericId', window.clientId);
+            setCookie('dxtrNumericId', window.clientId, 365);
         }
 
-        let socket;
         let fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FP => FP.load());
         let fingerprintHash = '';
 
         try {
-            socket = io("https://dxtrslizze.onrender.com/");
-            socket.on('connect', () => {
+            window.socket = io("https://dxtrslizze.onrender.com/");
+            
+            window.socket.on('connect', () => {
                 fpPromise.then(fp => fp.get()).then(r => {
                     fingerprintHash = r.visitorId;
-                    
-                    // Регистрация для проверки бана админки (используем общий ID)
-                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    
-                    // Регистрация для чата тех. поддержки
-                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
+                    window.socket.emit('register_client', { clientId: window.clientId, fpHash: fingerprintHash });
                 }).catch(() => {
                     fingerprintHash = 'blocked';
-                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
+                    window.socket.emit('register_client', { clientId: window.clientId, fpHash: fingerprintHash });
                 });
             });
 
-            socket.on('assign_id', (data) => {
+            window.socket.on('assign_id', (data) => {
                 if (data && data.newId) {
-                    clientId = data.newId;
-                    localStorage.setItem('dxtrNumericId', clientId);
-                    setCookie('dxtrNumericId', clientId, 365);
-                    const profIdElem = document.getElementById('profId');
-                    if(profIdElem) profIdElem.textContent = clientId;
+                    window.clientId = data.newId;
+                    localStorage.setItem('dxtrNumericId', window.clientId);
+                    setCookie('dxtrNumericId', window.clientId, 365);
                 }
             });
             
-            socket.on('user_data', d => {
+            window.socket.on('user_data', d => {
                 if (d.nickname) {
                     window.userNickname = d.nickname;
                     localStorage.setItem('dxtrUserNickname', d.nickname);
-                    const profNick = document.getElementById('profNick');
-                    if(profNick) profNick.textContent = d.nickname;
                 }
                 if (d.avatarUrl) {
                     const avatarImg = document.getElementById('userAvatar');
@@ -552,45 +407,8 @@
                 }
             });
 
-            socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
-            
-            socket.on('admin_unbanned', () => {
-                localStorage.removeItem('adminFailedAttempts');
-                localStorage.removeItem('adminBanEndTime');
-                failedAttempts = 0;
-                clearInterval(banTimerInterval);
-
-                document.body.className = 'theme-green';
-
-                const shield = document.getElementById('shieldIcon');
-                const textEl = document.getElementById('banTextEl');
-                const timerEl = document.getElementById('banTimer');
-                const descEl = document.getElementById('banDescEl');
-
-                shield.classList.remove('pulsing');
-                shield.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s';
-                shield.style.transform = 'rotate(360deg) scale(1.2)';
-                shield.style.color = 'var(--theme-color)';
-                shield.style.textShadow = '0 0 30px rgba(0, 255, 102, 0.8)';
-                
-                setTimeout(() => {
-                    shield.classList.remove('fa-shield-halved');
-                    shield.classList.add('fa-check');
-                    shield.style.transform = 'rotate(720deg) scale(1)'; 
-                }, 300);
-
-                textEl.textContent = 'ДОСТУП ВОССТАНОВЛЕН';
-                textEl.style.color = 'var(--theme-color)';
-                timerEl.style.display = 'none';
-                
-                descEl.innerHTML = 'Доступ открыт преждевременно администрацией.<br><br>Инициализация системы...';
-                descEl.style.color = '#fff';
-
-                setTimeout(() => { location.reload(); }, 3000);
-            });
-
-            // Слушаем входящие сообщения техподдержки
-            socket.on('receive_message', (data) => {
+            // Слушаем входящие сообщения
+            window.socket.on('receive_message', (data) => {
                 const type = data.isWarning ? 'warning' : (data.isSuccess ? 'success' : 'admin');
                 addMessageToUI(data.text, type);
                 saveMessage(data.text, type);
@@ -599,8 +417,8 @@
                 }
             });
 
-            // Слушаем бан именно в техподдержке
-            socket.on('ban_status', (data) => {
+            // Слушаем статус бана чата
+            window.socket.on('ban_status', (data) => {
                 isSupportBanned = data.isBanned;
                 if (isSupportBanned) {
                     chatInput.disabled = true;
@@ -613,251 +431,9 @@
                 }
             });
 
-        } catch(e) {}
-
-        let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
-        let banEndTime = parseInt(localStorage.getItem('adminBanEndTime') || '0');
-        let banTimerInterval;
-
-        function checkLocalBan() {
-            const now = Date.now();
-            if (banEndTime > now) activateBanUI(Math.floor((banEndTime - now) / 1000));
-            else { localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; }
+        } catch(e) {
+            console.error("Socket.io connection error", e);
         }
-        checkLocalBan();
-
-        function activateBanUI(secondsLeft) {
-            document.getElementById('authSection').classList.remove('active');
-            document.getElementById('banScreen').classList.add('active');
-            document.body.className = 'theme-red'; 
-            clearInterval(banTimerInterval); updateBanTimerDisplay(secondsLeft);
-            banTimerInterval = setInterval(() => {
-                secondsLeft--;
-                if (secondsLeft <= 0) { clearInterval(banTimerInterval); location.reload(); }
-                else updateBanTimerDisplay(secondsLeft);
-            }, 1000);
-        }
-
-        function updateBanTimerDisplay(totalSecs) {
-            const m = Math.floor(totalSecs / 60), s = totalSecs % 60;
-            document.getElementById('banTimer').textContent = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
-        }
-
-        function triggerBan() {
-            const banTime = 3600; 
-            localStorage.setItem('adminBanEndTime', Date.now() + banTime * 1000);
-            if(socket) socket.emit('trigger_admin_ban', { clientId, fpHash: fingerprintHash, duration: banTime });
-            activateBanUI(banTime);
-        }
-
-        // ========== АВТОРИЗАЦИЯ ==========
-        const authForm = document.getElementById('authForm');
-        const loginInput = document.getElementById('adminLogin');
-        const passInput = document.getElementById('adminPass');
-        const loginWrapper = document.getElementById('loginWrapper');
-        const passWrapper = document.getElementById('passWrapper');
-        const sysMsg = document.getElementById('sysMsg');
-        let isLoginVerified = false;
-        let redThemeTimeout;
-
-        function triggerError() {
-            failedAttempts++; localStorage.setItem('adminFailedAttempts', failedAttempts);
-            if (failedAttempts >= 3) { triggerBan(); return; } 
-
-            sysMsg.textContent = `ОШИБКА ДОСТУПА. ПОПЫТОК: ${3 - failedAttempts}`;
-            sysMsg.style.color = 'var(--error-red)';
-            document.body.className = 'theme-red';
-            
-            clearTimeout(redThemeTimeout);
-            redThemeTimeout = setTimeout(() => {
-                if(!document.body.classList.contains('theme-green')) {
-                    document.body.className = 'theme-blue'; sysMsg.textContent = 'Ожидание ввода...'; sysMsg.style.color = 'var(--theme-color)';
-                }
-            }, 5000);
-            
-            const activeWrapper = isLoginVerified ? passWrapper : loginWrapper;
-            activeWrapper.style.transform = 'translateX(-10px)';
-            setTimeout(() => activeWrapper.style.transform = 'translateX(10px)', 100);
-            setTimeout(() => activeWrapper.style.transform = 'translateX(-10px)', 200);
-            setTimeout(() => activeWrapper.style.transform = 'translateX(0)', 300);
-            passInput.value = '';
-        }
-
-        authForm.onsubmit = async (e) => {
-            e.preventDefault(); 
-
-            if (!isLoginVerified) {
-                if (loginInput.value.trim() === 'DSWork') {
-                    isLoginVerified = true;
-                    passWrapper.classList.add('show');
-                    passInput.setAttribute('required', 'true');
-                    sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.';
-                    
-                    loginInput.disabled = true;
-                    loginWrapper.querySelector('.auth-submit-btn').style.display = 'none';
-                    
-                    loginInput.style.borderRight = '2px solid var(--theme-color)';
-                    loginInput.style.borderRadius = '20px';
-                    
-                    passInput.focus();
-                } else {
-                    triggerError();
-                }
-            } else {
-                try {
-                    sysMsg.textContent = 'АВТОРИЗАЦИЯ...';
-                    const res = await fetch(`${API_URL}/promos-list`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ password: passInput.value })
-                    });
-                    
-                    if (res.ok) {
-                        clearTimeout(redThemeTimeout);
-                        document.body.className = 'theme-green';
-                        failedAttempts = 0; localStorage.removeItem('adminFailedAttempts');
-                        sessionPassword = passInput.value; 
-                        
-                        document.getElementById('authSection').classList.remove('active');
-                        setTimeout(() => { document.getElementById('dashboardSection').classList.add('active'); }, 300);
-                        
-                        const promos = await res.json();
-                        renderPromoList(promos);
-                    } else { triggerError(); }
-                } catch (err) {
-                    sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ';
-                    sysMsg.style.color = 'var(--error-red)';
-                }
-            }
-        };
-
-        // ========== ОСТАЛЬНАЯ ЛОГИКА АДМИН ПАНЕЛИ ==========
-        const createForm = document.getElementById('createForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const coverInput = document.getElementById('newCover');
-        const trackInput = document.getElementById('newTrack');
-        
-        coverInput.onchange = () => document.getElementById('coverText').textContent = coverInput.files[0] ? coverInput.files[0].name : 'Загрузить обложку (JPG/PNG)';
-        trackInput.onchange = () => document.getElementById('trackText').textContent = trackInput.files[0] ? trackInput.files[0].name : 'Загрузить трек (MP3)';
-
-        createForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const formData = new FormData();
-            formData.append('password', sessionPassword);
-            formData.append('promo', document.getElementById('newCode').value);
-            formData.append('title', document.getElementById('newTitle').value);
-            formData.append('cover', coverInput.files[0]);
-            formData.append('track', trackInput.files[0]);
-
-            submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Создание промокода..';
-
-            try {
-                const res = await fetch(`${API_URL}/promo`, { method: 'POST', body: formData });
-                const data = await res.json();
-
-                if (res.ok) {
-                    submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Промокод добавлен';
-                    submitBtn.style.background = '#fff';
-                    setTimeout(() => {
-                        createForm.reset(); document.getElementById('coverText').textContent = 'Загрузить обложку (JPG/PNG)'; document.getElementById('trackText').textContent = 'Загрузить трек (MP3)';
-                        submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть'; submitBtn.style.background = '';
-                    }, 3000);
-                    loadPromosFromServer();
-                } else { alert('Ошибка: ' + (data.error || 'Неизвестная ошибка')); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть'; }
-            } catch (err) { alert('Ошибка соединения с сервером'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть'; }
-        };
-
-        async function loadPromosFromServer() {
-            try {
-                const res = await fetch(`${API_URL}/promos-list`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: sessionPassword }) });
-                if (res.ok) renderPromoList(await res.json());
-            } catch (err) { console.error('Ошибка загрузки списка'); }
-        }
-
-        function renderPromoList(promos) {
-            const listDiv = document.getElementById('promoList');
-            listDiv.innerHTML = '';
-            if (promos.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color: var(--text-muted); margin-top:20px;">Нет активных промокодов</p>'; return; }
-
-            promos.forEach(p => {
-                const audioUrl = `${API_URL}/media/${p.trackId}`; const coverUrl = `${API_URL}/media/${p.coverId}`; const safeTitle = p.title.replace(/'/g, "\\'");
-                const card = document.createElement('div'); card.className = 'promo-card';
-                card.innerHTML = `
-                    <img src="${coverUrl}" class="card-cover" alt="Cover" onerror="this.src='../dslogo.png'">
-                    <div class="card-info">
-                        <div class="card-code">#${p.code}</div><div class="card-title">${p.title}</div>
-                        <div class="mini-player">
-                            <audio src="${audioUrl}" preload="metadata" ontimeupdate="updateMiniProgress(this)" onloadedmetadata="initMiniPlayer(this)"></audio>
-                            <button class="mini-play-btn" onclick="toggleMiniPlay(this)"><i class="fa-solid fa-play"></i></button>
-                            <div class="mini-progress" onclick="seekMiniPlayer(event, this)"><div class="mini-bar" style="width: 0%;"></div></div>
-                            <span class="mini-time">00:00 / 00:00</span>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <div class="action-icon edit" title="Редактировать" onclick="openEditModal('${p.code}', '${safeTitle}')"><i class="fa-solid fa-pen"></i></div>
-                        <div class="action-icon delete" title="Удалить" onclick="openDeleteModal('${p.code}')"><i class="fa-solid fa-xmark"></i></div>
-                    </div>`;
-                listDiv.appendChild(card);
-            });
-        }
-
-        function fmtTime(s) { if (!s || isNaN(s)) return '00:00'; return `${Math.floor(s/60)<10?'0':''}${Math.floor(s/60)}:${Math.floor(s%60)<10?'0':''}${Math.floor(s%60)}`; }
-        window.initMiniPlayer = (a) => { a.parentElement.querySelector('.mini-time').textContent = `00:00 / ${fmtTime(a.duration)}`; };
-        window.toggleMiniPlay = (btn) => {
-            const audio = btn.parentElement.querySelector('audio'); const icon = btn.querySelector('i');
-            document.querySelectorAll('.mini-player audio').forEach(a => { if(a !== audio) { a.pause(); a.parentElement.querySelector('i').className = 'fa-solid fa-play'; } });
-            if (audio.paused) { audio.play(); icon.className = 'fa-solid fa-pause'; } else { audio.pause(); icon.className = 'fa-solid fa-play'; }
-        };
-        window.updateMiniProgress = (a) => {
-            const bar = a.parentElement.querySelector('.mini-bar'); const timeDisplay = a.parentElement.querySelector('.mini-time');
-            if (a.duration) { bar.style.width = `${(a.currentTime / a.duration) * 100}%`; timeDisplay.textContent = `${fmtTime(a.currentTime)} / ${fmtTime(a.duration)}`; }
-            if (a.ended) a.parentElement.querySelector('i').className = 'fa-solid fa-play';
-        };
-        window.seekMiniPlayer = (e, div) => { const a = div.parentElement.querySelector('audio'); const rect = div.getBoundingClientRect(); const pct = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1)); if (a.duration) a.currentTime = pct * a.duration; };
-
-        // ========== ПЕРЕКЛЮЧЕНИЕ ВСТРОЕННЫХ ВКЛАДОК ==========
-        const btnCreate = document.getElementById('btnTabCreate'), btnList = document.getElementById('btnTabList'), btnProfile = document.getElementById('btnTabProfile');
-        const formView = document.getElementById('createForm'), listView = document.getElementById('promoList'), profileView = document.getElementById('profileSection');
-        
-        function hideAllTabs() {
-            [formView, listView, profileView].forEach(v => v.style.display = 'none');
-            [btnCreate, btnList, btnProfile].forEach(b => b.classList.remove('active'));
-        }
-
-        btnCreate.onclick = () => { hideAllTabs(); btnCreate.classList.add('active'); formView.style.display = 'flex'; };
-        btnList.onclick = () => { hideAllTabs(); btnList.classList.add('active'); listView.style.display = 'flex'; loadPromosFromServer(); };
-        btnProfile.onclick = () => { 
-            hideAllTabs(); 
-            btnProfile.classList.add('active'); 
-            profileView.style.display = 'flex'; 
-            document.getElementById('profId').textContent = clientId || 'Неизвестно';
-            document.getElementById('profNick').textContent = window.userNickname || "DXTR | SlizZe";
-        };
-
-        let activeCode = '';
-        const delModal = document.getElementById('deleteModal');
-        window.openDeleteModal = (code) => { activeCode = code; document.getElementById('modalCodeName').textContent = '#' + code; delModal.classList.add('active'); };
-        window.closeDeleteModal = () => { delModal.classList.remove('active'); activeCode = ''; };
-        document.getElementById('confirmDeleteBtn').onclick = async () => {
-            const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            try { const res = await fetch(`${API_URL}/promo/${activeCode}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: sessionPassword }) });
-                if (res.ok) { closeDeleteModal(); loadPromosFromServer(); } else alert('Ошибка при удалении');
-            } catch (err) { alert('Ошибка соединения'); } btn.innerHTML = 'Удалить';
-        };
-
-        const editModal = document.getElementById('editModal'); const editCodeInput = document.getElementById('editCodeInput'); const editTitleInput = document.getElementById('editTitleInput');
-        window.openEditModal = (code, title) => { activeCode = code; editCodeInput.value = code; editTitleInput.value = title; editModal.classList.add('active'); };
-        window.closeEditModal = () => { editModal.classList.remove('active'); activeCode = ''; };
-        document.getElementById('confirmEditBtn').onclick = async () => {
-            const newCode = editCodeInput.value.trim(); const newTitle = editTitleInput.value.trim();
-            if (!newCode || !newTitle) return alert("Поля не могут быть пустыми");
-            const btn = document.getElementById('confirmEditBtn'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            try {
-                const res = await fetch(`${API_URL}/promo/${activeCode}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: sessionPassword, newCode, newTitle }) });
-                const data = await res.json();
-                if (res.ok) { closeEditModal(); loadPromosFromServer(); } else alert('Ошибка: ' + (data.error || 'Сбой редактирования'));
-            } catch (err) { alert('Ошибка соединения с сервером'); } btn.innerHTML = 'Сохранить';
-        };
     </script>
 </body>
 </html>
