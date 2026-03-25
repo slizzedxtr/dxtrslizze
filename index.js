@@ -29,7 +29,7 @@ mongoose.connect(mongoURI)
     })
     .catch(err => console.error('MongoDB error:', err));
 
-// --- Схема счетчика для числовых ID ---
+// --- Схемы БД ---
 const CounterSchema = new mongoose.Schema({
     _id: { type: String, required: true },
     seq: { type: Number, default: 0 }
@@ -75,9 +75,10 @@ const PromoSchema = new mongoose.Schema({
 });
 const Promo = mongoose.model('Promo', PromoSchema);
 
+// ИЗМЕНЕНИЕ 1: Теперь уникальным ключом является clientId
 const AdminBanSchema = new mongoose.Schema({
-    fpHash: { type: String, required: true, unique: true },
-    clientId: String,
+    clientId: { type: String, required: true, unique: true },
+    fpHash: String,
     expiresAt: { type: Date, required: true }
 });
 const AdminBan = mongoose.model('AdminBan', AdminBanSchema);
@@ -189,10 +190,12 @@ io.on('connection', (socket) => {
     io.emit('online_update', io.engine.clientsCount);
     socket.on('disconnect', () => { io.emit('online_update', io.engine.clientsCount); });
 
+    // ИЗМЕНЕНИЕ 2: Проверка бана админки теперь идет по clientId
     socket.on('check_admin_ban', async (data) => {
-        if (!data.fpHash) return;
-        socket.join(`fp_${data.fpHash}`); 
-        const ban = await AdminBan.findOne({ fpHash: data.fpHash });
+        if (!data.clientId) return;
+        socket.join(`admin_${data.clientId}`); // Отдельная комната для событий админки этого юзера
+        
+        const ban = await AdminBan.findOne({ clientId: data.clientId });
         if (ban) {
             if (ban.expiresAt > Date.now()) {
                 const timeLeft = Math.ceil((ban.expiresAt - Date.now()) / 1000);
@@ -204,20 +207,23 @@ io.on('connection', (socket) => {
         }
     });
 
+    // ИЗМЕНЕНИЕ 3: Выдача бана админки теперь привязывается к clientId
     socket.on('trigger_admin_ban', async (data) => {
-        if (!data.fpHash || !data.duration) return;
+        if (!data.clientId || !data.duration) return;
         const expiresAt = new Date(Date.now() + data.duration * 1000);
-        socket.join(`fp_${data.fpHash}`);
+        socket.join(`admin_${data.clientId}`);
         
+        const fpToSave = (data.fpHash && data.fpHash !== 'blocked') ? data.fpHash : null;
+
         const ban = await AdminBan.findOneAndUpdate(
-            { fpHash: data.fpHash },
-            { expiresAt, clientId: data.clientId },
+            { clientId: data.clientId },
+            { expiresAt, fpHash: fpToSave },
             { upsert: true, new: true }
         );
 
-        const user = await User.findOne({ fpHash: data.fpHash }) || await User.findOne({ clientId: data.clientId });
+        const user = await User.findOne({ clientId: data.clientId });
         const nickStr = (user && user.nickname) ? user.nickname : "Без ника";
-        const displayId = data.clientId || data.fpHash.substring(0, 10);
+        const displayId = data.clientId;
         
         const m = Math.floor(data.duration / 60);
         const s = data.duration % 60;
@@ -229,7 +235,7 @@ io.on('connection', (socket) => {
 💬 <b>Причина:</b> <i>Многократные попытки подбора пароля</i>
 ⏳ <b>Авторазбан через:</b> ${m} мин ${s} сек
 
-💡 <i>Ответь реплаем на это сообщение, чтобы отправить юзеру сообщение в чат тех.поддержки (он увидит его, когда зайдет на сайт), или используй /nick для смены имени.</i>`;
+💡 <i>Ответь реплаем на это сообщение, чтобы отправить юзеру сообщение в чат тех.поддержки, или используй /nick для смены имени.</i>`;
 
         bot.sendMessage(adminId, tgText, {
             parse_mode: 'HTML',
@@ -250,7 +256,6 @@ io.on('connection', (socket) => {
         let user = null;
         let clientId = null;
 
-        // Проверяем, является ли предоставленный ID новым цифровым форматом
         const isNumeric = /^\d+$/.test(rawClientId);
 
         if (isNumeric) {
@@ -262,7 +267,6 @@ io.on('connection', (socket) => {
                 user = await User.findOne({ fpHash });
             }
             
-            // Если юзер найден, но у него старый строковой ID, конвертируем в цифровой
             if (user && !/^\d+$/.test(user.clientId)) {
                 const counter = await Counter.findByIdAndUpdate(
                     { _id: 'userId' },
@@ -271,7 +275,6 @@ io.on('connection', (socket) => {
                 );
                 clientId = counter.seq.toString();
                 
-                // Обновляем связанные коллекции на новый ID
                 await PendingMsg.updateMany({ clientId: user.clientId }, { clientId: clientId });
                 await AdminBan.updateMany({ clientId: user.clientId }, { clientId: clientId });
                 
@@ -279,17 +282,15 @@ io.on('connection', (socket) => {
                 await user.save();
                 socket.emit('assign_id', { newId: clientId });
             } else if (!user) {
-                // Создаем полностью нового пользователя с цифровым ID
                 const counter = await Counter.findByIdAndUpdate(
                     { _id: 'userId' },
                     { $inc: { seq: 1 } },
                     { new: true, upsert: true }
                 );
                 clientId = counter.seq.toString();
-                user = await User.create({ clientId, fpHash });
+                user = await User.create({ clientId, fpHash: (fpHash !== 'blocked' ? fpHash : null) });
                 socket.emit('assign_id', { newId: clientId });
             } else {
-                // Найден по fpHash и ID уже цифровой
                 clientId = user.clientId;
                 socket.emit('assign_id', { newId: clientId });
             }
@@ -315,7 +316,7 @@ io.on('connection', (socket) => {
                     user.banReason = bannedTwin.banReason;
                     user.banDurationText = bannedTwin.banDurationText;
                     await user.save();
-                    bot.sendMessage(adminId, `🛡 <b>Anti-Spam System:</b>\nПользователь пытался обойти блокировку сбросом кэша. Бан восстановлен по отпечатку железа (<code>${fpHash}</code>). ID нарушителя: <code>${clientId}</code>`, { parse_mode: 'HTML' });
+                    bot.sendMessage(adminId, `🛡 <b>Anti-Spam System:</b>\nПользователь пытался обойти блокировку чата сбросом кэша. Бан восстановлен по отпечатку железа (<code>${fpHash}</code>). ID нарушителя: <code>${clientId}</code>`, { parse_mode: 'HTML' });
                 }
             }
         }
@@ -407,10 +408,10 @@ bot.on('callback_query', async (query) => {
         }
 
         io.to(clientId).emit('ban_status', { isBanned: true });
-        await sendToUser(clientId, banMsg, 'warning', query.message.message_id, "Блокировка");
+        await sendToUser(clientId, banMsg, 'warning', query.message.message_id, "Блокировка чата");
         
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
-        bot.answerCallbackQuery(query.id, { text: isPerm ? "Выдан перманентный бан" : "Выдан бан на 1 час" });
+        bot.answerCallbackQuery(query.id, { text: isPerm ? "Выдан перманентный бан чата" : "Выдан бан чата на 1 час" });
     }
 
     if (query.data.startsWith('baninfo_')) {
@@ -446,7 +447,7 @@ bot.on('callback_query', async (query) => {
         io.to(clientId).emit('ban_status', { isBanned: false });
         await sendToUser(clientId, "Ограничение снято. Администратор досрочно снял блокировку с вас. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
 
-        bot.answerCallbackQuery(query.id, {text: "Разблокирован!"});
+        bot.answerCallbackQuery(query.id, {text: "Чат разблокирован!"});
         sendBannedMenu(adminId, query.message.message_id);
     }
 
@@ -462,9 +463,9 @@ bot.on('callback_query', async (query) => {
             return bot.answerCallbackQuery(query.id, {text: "Пользователь уже разбанен (срок истек)"});
         }
 
-        const user = await User.findOne({ fpHash: ban.fpHash });
+        const user = await User.findOne({ clientId: ban.clientId });
         const nick = (user && user.nickname) ? user.nickname : "Без ника";
-        const displayId = ban.clientId || ban.fpHash.substring(0, 10);
+        const displayId = ban.clientId;
 
         const timeLeft = Math.ceil((ban.expiresAt.getTime() - Date.now()) / 1000);
         const m = Math.floor(timeLeft / 60);
@@ -484,13 +485,13 @@ bot.on('callback_query', async (query) => {
         bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
     }
 
-    // Разбан из списка /apban
+    // ИЗМЕНЕНИЕ 4: Разбан отправляется в комнату admin_ID
     if (query.data.startsWith('apunban_')) {
         const banId = query.data.replace('apunban_', '');
         const ban = await AdminBan.findByIdAndDelete(banId);
 
-        if (ban && ban.fpHash) {
-            io.to(`fp_${ban.fpHash}`).emit('admin_unbanned');
+        if (ban && ban.clientId) {
+            io.to(`admin_${ban.clientId}`).emit('admin_unbanned');
         }
 
         bot.answerCallbackQuery(query.id, {text: "Доступ в админку открыт!"});
@@ -502,14 +503,12 @@ bot.on('callback_query', async (query) => {
         const banId = query.data.replace('alert_apunban_', '');
         const ban = await AdminBan.findByIdAndDelete(banId);
 
-        if (ban && ban.fpHash) {
-            io.to(`fp_${ban.fpHash}`).emit('admin_unbanned');
+        if (ban && ban.clientId) {
+            io.to(`admin_${ban.clientId}`).emit('admin_unbanned');
         }
 
         bot.answerCallbackQuery(query.id, {text: "Доступ в админку открыт!"});
-        // Убираем кнопку с сообщения
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
-        // Отправляем ответ админу
         bot.sendMessage(adminId, "✅ <b>Доступ восстановлен.</b>", { parse_mode: 'HTML', reply_to_message_id: query.message.message_id });
     }
 });
@@ -552,7 +551,7 @@ bot.on('message', async (msg) => {
             }
             
             io.to(clientId).emit('ban_status', { isBanned: true });
-            await sendToUser(clientId, banMsg, 'warning', msg.message_id, "Блокировка");
+            await sendToUser(clientId, banMsg, 'warning', msg.message_id, "Блокировка чата");
             return;
         }
 
@@ -599,7 +598,7 @@ async function sendBannedMenu(chatId, messageId = null) {
     }
 
     const opts = { reply_markup: { inline_keyboard: keyboard }, parse_mode: 'HTML' };
-    const title = "🚫 <b>Заблокированные пользователи:</b>";
+    const title = "🚫 <b>Заблокированные в техподдержке:</b>";
     
     if (messageId) bot.editMessageText(title, { chat_id: chatId, message_id: messageId, ...opts });
     else bot.sendMessage(chatId, title, opts);
@@ -624,9 +623,9 @@ async function sendApBannedMenu(chatId, messageId = null) {
 
     const keyboard = [];
     for (const ban of validBans) {
-        const user = await User.findOne({ fpHash: ban.fpHash });
+        const user = await User.findOne({ clientId: ban.clientId });
         const nick = (user && user.nickname) ? user.nickname : "Без ника";
-        const displayId = ban.clientId || ban.fpHash.substring(0, 10);
+        const displayId = ban.clientId;
         keyboard.push([{ text: `🔐 ${nick} ( ${displayId} )`, callback_data: `apbaninfo_${ban._id}` }]);
     }
 
