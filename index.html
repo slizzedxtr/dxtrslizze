@@ -128,7 +128,10 @@
         .hero-cover-wrap:hover .hero-cover { transform: scale(1.05); }
 
         .hero-info { flex: 1; z-index: 1; display: flex; flex-direction: column; gap: 20px; }
-        .hero-badge { display: inline-block; background: rgba(0, 255, 102, 0.15); color: var(--neon-green); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--neon-green); align-self: flex-start; box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); }
+        
+        #heroBadgeContainer { display: flex; flex-direction: row; align-items: center; gap: 15px; align-self: flex-start; }
+        .hero-badge { display: inline-block; background: rgba(0, 255, 102, 0.15); color: var(--neon-green); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); }
+        
         .hero-info h2 { font-size: 3.5rem; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.4); letter-spacing: 1px; }
 
         .audio-player { background: rgba(0,0,0,0.5); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
@@ -288,7 +291,10 @@
             .hero-release, .promo-banner { flex-direction: column; text-align: center; padding: 30px 20px; }
             .hero-cover-wrap { width: 100%; max-width: 300px; }
             .promo-cover-wrap { width: 200px; height: 200px; }
-            .hero-badge, .promo-badge { align-self: center; }
+            
+            #heroBadgeContainer { align-self: center; flex-direction: column; gap: 10px; }
+            .promo-badge { align-self: center; }
+            
             .hero-info h2, .promo-info h2 { font-size: 2.8rem; }
             .platform-grid { grid-template-columns: 1fr 1fr; }
             .download-btn { width: 100%; }
@@ -577,13 +583,13 @@
             document.getElementById('heroTitle').innerText = track.title;
             document.getElementById('localAudio').src = track.mp3_url;
             
-            // Бейджики (18+ или Свежий релиз)
+            // Бейджики (Главный релиз + 18+ если есть)
             const badgeContainer = document.getElementById('heroBadgeContainer');
+            let badgesHTML = `<div class="hero-badge">Главный релиз</div>`;
             if (track.is_18) {
-                badgeContainer.innerHTML = `<div class="hero-badge" style="background: rgba(255, 0, 0, 0.15); color: #ff3333; border-color: #ff3333;">18+ (Explicit)</div>`;
-            } else {
-                badgeContainer.innerHTML = `<div class="hero-badge">Главный релиз</div>`;
+                badgesHTML += `<div class="hero-badge" style="background: rgba(255, 0, 0, 0.15); color: #ff3333; border-color: #ff3333; box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);">18+ (Explicit)</div>`;
             }
+            badgeContainer.innerHTML = badgesHTML;
 
             // YouTube клип
             const ytId = extractYtId(track.yt_link);
