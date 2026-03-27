@@ -141,7 +141,7 @@
         .m-btn-danger { background: var(--error-red); color: white; box-shadow: 0 0 15px rgba(204,68,68,0.5); }
         .m-btn-danger:hover { background: #ff0000; box-shadow: 0 0 25px rgba(255,0,0,0.8); transform: scale(1.05); }
 
-        /* === ТЕХПОДДЕРЖКА (ЧАТ) ОСТАВЛЕНА БЕЗ ИЗМЕНЕНИЙ === */
+        /* === ТЕХПОДДЕРЖКА (ЧАТ) === */
         .support-btn { position: fixed; bottom: 25px; right: 25px; z-index: 9000; background: var(--glass-bg); border: 1px solid var(--theme-glass-border); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); transition: 0.3s; }
         .support-btn:hover { background: var(--theme-color); color: #000; transform: scale(1.1); box-shadow: 0 0 25px var(--theme-glow); }
         .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--error-red); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: bold; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--error-red); }
@@ -235,7 +235,7 @@
             <div class="ban-text" id="banTextEl">Доступ заблокирован</div>
             <div class="ban-timer" id="banTimer">60:00</div>
             <div id="banDescEl" style="color: var(--text-muted); margin-top: 15px; max-width: 400px; line-height: 1.5;">
-                Превышено количество попыток.
+                Превышено количество попыток. Запрос отправлен на сервер. Ваш IP и Fingerprint занесены во временный черный список.
             </div>
         </div>
 
@@ -266,8 +266,7 @@
                 <button class="submit-btn" style="max-width: 400px; margin-bottom: 30px;" onclick="showAddMusicForm()">
                     <i class="fa-solid fa-plus"></i> ДОБАВИТЬ ТРЕК
                 </button>
-                <div class="data-list" id="musicList">
-                    </div>
+                <div class="data-list" id="musicList"></div>
             </div>
 
             <form class="create-form" id="musicAddForm" style="display: none;">
@@ -342,7 +341,7 @@
 
             <div class="data-list" id="profilesList">
                 <div class="empty-neon">Загрузка профилей...</div>
-                </div>
+            </div>
         </div>
 
         <div class="view-section" id="promoSection">
@@ -392,7 +391,12 @@
                 </div>
                 <h2 id="profNick" style="font-size: 1.8rem; margin-bottom: 5px;">DXTR | SlizZe</h2>
                 <div style="color: var(--theme-color); font-weight: 800; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; font-size: 0.8rem;">Системный администратор</div>
-                <button class="m-btn m-btn-danger" style="width: 100%;" onclick="logout()">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+                
+                <a href="https://dxtrslizze.xyz/profile" class="m-btn m-btn-confirm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; margin-bottom: 15px; box-sizing: border-box; color: #000; font-size: 1.1rem; height: 50px;">
+                    <i class="fa-solid fa-user"></i> ПЕРЕЙТИ В ПРОФИЛЬ
+                </a>
+
+                <button class="m-btn m-btn-danger" style="width: 100%; height: 50px;" onclick="logout()">ВЫЙТИ ИЗ СИСТЕМЫ</button>
             </div>
         </div>
     </main>
@@ -431,97 +435,171 @@
         const API_URL = "https://dxtrslizze.onrender.com/api";
         let sessionPassword = localStorage.getItem('adminPass') || ""; 
 
-        // ========== НАВИГАЦИЯ ПО РАЗДЕЛАМ ==========
+        // ========== НАВИГАЦИЯ ==========
         function openSection(sectionId) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
-
-            // Загрузка данных при входе в раздел
             if(sectionId === 'musicSection') loadMusicFromServer();
             if(sectionId === 'profileSection') loadProfilesFromServer();
             if(sectionId === 'promoSection') loadPromosFromServer();
         }
+        function logout() { localStorage.removeItem('adminPass'); location.reload(); }
 
-        function logout() {
-            localStorage.removeItem('adminPass');
-            location.reload();
-        }
-
-        // ========== МАТРИЦА (ФОН) ==========
-        const canvas = document.getElementById('matrixCanvas');
-        const ctx = canvas.getContext('2d');
+        // ========== МАТРИЦА И МЕНЮ ==========
+        const canvas = document.getElementById('matrixCanvas'); const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const FONT_SIZE = 16;
-        let columns = Math.floor(canvas.width / FONT_SIZE);
-        let drops = [];
+        const FONT_SIZE = 16; let columns = Math.floor(canvas.width / FONT_SIZE); let drops = [];
         for (let i = 0; i < columns; i++) drops[i] = Math.random() * -60;
-
         function drawMatrix() {
-            const isRed = document.body.classList.contains('theme-red');
-            const isGreen = document.body.classList.contains('theme-green');
+            const isRed = document.body.classList.contains('theme-red'); const isGreen = document.body.classList.contains('theme-green');
             ctx.fillStyle = isRed ? 'rgba(5, 1, 1, 0.08)' : (isGreen ? 'rgba(2, 6, 2, 0.08)' : 'rgba(1, 4, 8, 0.08)');
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = FONT_SIZE + 'px monospace';
+            ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.font = FONT_SIZE + 'px monospace';
             for (let i = 0; i < drops.length; i++) {
                 const char = Math.random() > 0.5 ? '1' : '0';
-                if (isRed) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#ff5555' : '#cc0000';
-                else if (isGreen) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#afffbf' : '#00ff66';
-                else ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#aadeff' : '#00c6ff';
+                if (isRed) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#ff5555' : '#cc0000'; else if (isGreen) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#afffbf' : '#00ff66'; else ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#aadeff' : '#00c6ff';
                 ctx.fillText(char, i * FONT_SIZE, drops[i] * FONT_SIZE);
-                if (drops[i] * FONT_SIZE > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
+                if (drops[i] * FONT_SIZE > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++;
             }
         }
         setInterval(drawMatrix, 50);
 
-        // ========== АВТОРИЗАЦИЯ ==========
-        const authForm = document.getElementById('authForm');
-        const loginInput = document.getElementById('adminLogin');
-        const passInput = document.getElementById('adminPass');
-        const loginWrapper = document.getElementById('loginWrapper');
-        const passWrapper = document.getElementById('passWrapper');
-        const sysMsg = document.getElementById('sysMsg');
-        let isLoginVerified = false;
+        // ВОССТАНОВЛЕННАЯ ЛОГИКА МЕНЮ
+        const burgerBtn = document.getElementById('burgerBtn'), sidebar = document.getElementById('sidebar'), sidebarOverlay = document.getElementById('sidebarOverlay'), closeSidebar = document.getElementById('closeSidebar');
+        function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
+        burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
 
-        // Авто-вход если есть пароль
-        if(sessionPassword) {
-            document.getElementById('authSection').classList.remove('active');
-            document.body.className = 'theme-green';
-            openSection('mainMenuSection');
+        // ========== ЧАТ ТЕХПОДДЕРЖКИ (ВОССТАНОВЛЕНО) ==========
+        const supportBtn = document.getElementById('supportBtn'), chatWindow = document.getElementById('chatWindow'), closeChat = document.getElementById('closeChat'), menuSupportBtn = document.getElementById('menuSupportBtn'), unreadBadge = document.getElementById('unreadBadge'), chatMessages = document.getElementById('chatMessages'), chatInput = document.getElementById('chatInput'), chatSend = document.getElementById('chatSend');
+        let chatHistory = JSON.parse(localStorage.getItem('chatHistory_dxtr') || '[]');
+        let isSupportBanned = false;
+        
+        function toggleChat() {
+            if (chatWindow.style.display === 'flex') {
+                chatWindow.classList.remove('active'); setTimeout(() => chatWindow.style.display = 'none', 300);
+            } else {
+                chatWindow.style.display = 'flex'; setTimeout(() => chatWindow.classList.add('active'), 10);
+                unreadBadge.style.display = 'none'; scrollToBottom();
+            }
         }
+        supportBtn.onclick = toggleChat; closeChat.onclick = toggleChat; menuSupportBtn.onclick = (e) => { e.preventDefault(); toggleMenu(); toggleChat(); };
+        
+        function renderHistory() { chatMessages.innerHTML = ''; chatHistory.forEach(m => addMessageToUI(m.text, m.type)); scrollToBottom(); }
+        renderHistory();
+        function addMessageToUI(text, type) { const div = document.createElement('div'); div.className = `msg msg-${type}`; div.innerHTML = text; chatMessages.appendChild(div); scrollToBottom(); }
+        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
+        function saveMessage(text, type) { chatHistory.push({ text, type }); if (chatHistory.length > 50) chatHistory.shift(); localStorage.setItem('chatHistory_dxtr', JSON.stringify(chatHistory)); }
+        
+        chatSend.onclick = () => {
+            if (isSupportBanned || !chatInput.value.trim()) return;
+            const text = chatInput.value.trim();
+            addMessageToUI(text, 'user'); saveMessage(text, 'user');
+            if (typeof socket !== 'undefined' && socket) socket.emit('send_message', { clientId, text });
+            chatInput.value = '';
+        };
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') chatSend.click(); });
+
+        // ========== СИСТЕМА БАНОВ, ID И СОКЕТЫ (ВОССТАНОВЛЕНО) ==========
+        function setCookie(name, value, days) { let expires = ""; if (days) { let date = new Date(); date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString(); } document.cookie = name + "=" + (value || "")  + expires + "; path=/"; }
+        function getCookie(name) { let nameEQ = name + "="; let ca = document.cookie.split(';'); for(let i=0;i < ca.length;i++) { let c = ca[i].trim(); if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length); } return null; }
+
+        let lsId = localStorage.getItem('dxtrNumericId'); let cookieId = getCookie('dxtrNumericId'); let clientId = lsId || cookieId || null;
+        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
+        if (clientId) { localStorage.setItem('dxtrNumericId', clientId); setCookie('dxtrNumericId', clientId, 365); }
+
+        let socket; let fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FP => FP.load()); let fingerprintHash = '';
+
+        try {
+            socket = io("https://dxtrslizze.onrender.com/");
+            socket.on('connect', () => {
+                fpPromise.then(fp => fp.get()).then(r => {
+                    fingerprintHash = r.visitorId;
+                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
+                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
+                }).catch(() => {
+                    fingerprintHash = 'blocked';
+                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
+                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
+                });
+            });
+            socket.on('assign_id', (data) => { if (data && data.newId) { clientId = data.newId; localStorage.setItem('dxtrNumericId', clientId); setCookie('dxtrNumericId', clientId, 365); } });
+            socket.on('user_data', d => { if (d.nickname) { window.userNickname = d.nickname; localStorage.setItem('dxtrUserNickname', d.nickname); } if (d.avatarUrl) { const avatarImg = document.getElementById('userAvatar'); if (avatarImg) avatarImg.src = d.avatarUrl; } });
+            socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
+            socket.on('admin_unbanned', () => {
+                localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; clearInterval(banTimerInterval);
+                document.body.className = 'theme-green';
+                const shield = document.getElementById('shieldIcon'); const textEl = document.getElementById('banTextEl'); const timerEl = document.getElementById('banTimer'); const descEl = document.getElementById('banDescEl');
+                shield.classList.remove('pulsing'); shield.style.transition = 'transform 0.6s, color 0.3s'; shield.style.transform = 'rotate(360deg) scale(1.2)'; shield.style.color = 'var(--theme-color)'; shield.style.textShadow = '0 0 30px rgba(0, 255, 102, 0.8)';
+                setTimeout(() => { shield.classList.remove('fa-shield-halved'); shield.classList.add('fa-check'); shield.style.transform = 'rotate(720deg) scale(1)'; }, 300);
+                textEl.textContent = 'ДОСТУП ВОССТАНОВЛЕН'; textEl.style.color = 'var(--theme-color)'; timerEl.style.display = 'none';
+                descEl.innerHTML = 'Доступ открыт преждевременно.<br><br>Инициализация...'; descEl.style.color = '#fff';
+                setTimeout(() => { location.reload(); }, 3000);
+            });
+            socket.on('receive_message', (data) => {
+                const type = data.isWarning ? 'warning' : (data.isSuccess ? 'success' : 'admin');
+                addMessageToUI(data.text, type); saveMessage(data.text, type);
+                if (chatWindow.style.display !== 'flex') unreadBadge.style.display = 'flex';
+            });
+            socket.on('ban_status', (data) => {
+                isSupportBanned = data.isBanned;
+                if (isSupportBanned) { chatInput.disabled = true; chatSend.disabled = true; chatInput.placeholder = "Доступ ограничен"; }
+                else { chatInput.disabled = false; chatSend.disabled = false; chatInput.placeholder = "Введите сообщение..."; }
+            });
+        } catch(e) {}
+
+        let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
+        let banEndTime = parseInt(localStorage.getItem('adminBanEndTime') || '0');
+        let banTimerInterval;
+
+        function checkLocalBan() { const now = Date.now(); if (banEndTime > now) activateBanUI(Math.floor((banEndTime - now) / 1000)); else { localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; } }
+        checkLocalBan();
+
+        function activateBanUI(secondsLeft) {
+            document.getElementById('authSection').classList.remove('active'); document.getElementById('banScreen').classList.add('active'); document.body.className = 'theme-red'; 
+            clearInterval(banTimerInterval); updateBanTimerDisplay(secondsLeft);
+            banTimerInterval = setInterval(() => {
+                secondsLeft--; if (secondsLeft <= 0) { clearInterval(banTimerInterval); location.reload(); } else updateBanTimerDisplay(secondsLeft);
+            }, 1000);
+        }
+        function updateBanTimerDisplay(totalSecs) { const m = Math.floor(totalSecs / 60), s = totalSecs % 60; document.getElementById('banTimer').textContent = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`; }
+
+        function triggerBan() {
+            const banTime = 3600; localStorage.setItem('adminBanEndTime', Date.now() + banTime * 1000);
+            if(socket) socket.emit('trigger_admin_ban', { clientId, fpHash: fingerprintHash, duration: banTime });
+            activateBanUI(banTime);
+        }
+
+        // ========== АВТОРИЗАЦИЯ ==========
+        const authForm = document.getElementById('authForm'), loginInput = document.getElementById('adminLogin'), passInput = document.getElementById('adminPass'), loginWrapper = document.getElementById('loginWrapper'), passWrapper = document.getElementById('passWrapper'), sysMsg = document.getElementById('sysMsg');
+        let isLoginVerified = false; let redThemeTimeout;
+
+        function triggerError() {
+            failedAttempts++; localStorage.setItem('adminFailedAttempts', failedAttempts);
+            if (failedAttempts >= 3) { triggerBan(); return; } 
+            sysMsg.textContent = `ОШИБКА ДОСТУПА. ПОПЫТОК: ${3 - failedAttempts}`; sysMsg.style.color = 'var(--error-red)'; document.body.className = 'theme-red';
+            clearTimeout(redThemeTimeout); redThemeTimeout = setTimeout(() => { if(!document.body.classList.contains('theme-green')) { document.body.className = 'theme-blue'; sysMsg.textContent = 'Ожидание ввода...'; sysMsg.style.color = 'var(--theme-color)'; } }, 5000);
+            const activeWrapper = isLoginVerified ? passWrapper : loginWrapper;
+            activeWrapper.style.transform = 'translateX(-10px)'; setTimeout(() => activeWrapper.style.transform = 'translateX(10px)', 100); setTimeout(() => activeWrapper.style.transform = 'translateX(-10px)', 200); setTimeout(() => activeWrapper.style.transform = 'translateX(0)', 300);
+            passInput.value = '';
+        }
+
+        if(sessionPassword) { document.getElementById('authSection').classList.remove('active'); document.body.className = 'theme-green'; openSection('mainMenuSection'); }
 
         authForm.onsubmit = async (e) => {
             e.preventDefault(); 
             if (!isLoginVerified) {
                 if (loginInput.value.trim() === 'DSWork') {
-                    isLoginVerified = true;
-                    passWrapper.classList.add('show');
-                    passInput.setAttribute('required', 'true');
-                    sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.';
-                    loginInput.disabled = true;
-                    loginWrapper.querySelector('.auth-submit-btn').style.display = 'none';
-                    loginInput.style.borderRight = '2px solid var(--theme-color)';
-                    loginInput.style.borderRadius = '20px';
-                    passInput.focus();
-                } else {
-                    sysMsg.textContent = 'ОШИБКА ЛОГИНА'; sysMsg.style.color = 'var(--error-red)';
-                }
+                    isLoginVerified = true; passWrapper.classList.add('show'); passInput.setAttribute('required', 'true'); sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.'; loginInput.disabled = true; loginWrapper.querySelector('.auth-submit-btn').style.display = 'none'; loginInput.style.borderRight = '2px solid var(--theme-color)'; loginInput.style.borderRadius = '20px'; passInput.focus();
+                } else { triggerError(); }
             } else {
-                sysMsg.textContent = 'ПРОВЕРКА...';
+                sysMsg.textContent = 'АВТОРИЗАЦИЯ...';
                 try {
-                    const res = await fetch(`${API_URL}/promos-list`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: passInput.value })
-                    });
+                    const res = await fetch(`${API_URL}/promos-list`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: passInput.value }) });
                     if (res.ok) {
-                        sessionPassword = passInput.value;
-                        localStorage.setItem('adminPass', sessionPassword);
-                        document.body.className = 'theme-green';
-                        document.getElementById('authSection').classList.remove('active');
-                        openSection('mainMenuSection');
-                    } else {
-                        sysMsg.textContent = 'НЕВЕРНЫЙ ПАРОЛЬ'; sysMsg.style.color = 'var(--error-red)';
-                    }
-                } catch(e) { sysMsg.textContent = 'ОШИБКА СЕРВЕРА'; }
+                        clearTimeout(redThemeTimeout); document.body.className = 'theme-green'; failedAttempts = 0; localStorage.removeItem('adminFailedAttempts');
+                        sessionPassword = passInput.value; localStorage.setItem('adminPass', sessionPassword);
+                        document.getElementById('authSection').classList.remove('active'); openSection('mainMenuSection');
+                    } else { triggerError(); }
+                } catch (err) { sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ'; sysMsg.style.color = 'var(--error-red)'; }
             }
         };
 
@@ -543,18 +621,14 @@
         mMp3Input.onchange = () => document.getElementById('mMp3Text').textContent = mMp3Input.files[0] ? mMp3Input.files[0].name : 'Трек (MP3)';
         mWavInput.onchange = () => document.getElementById('mWavText').textContent = mWavInput.files[0] ? mWavInput.files[0].name : 'Трек (WAV)';
 
-        // Логика 1.1.4: Главный релиз -> Площадки включены и обязательны
         mMainCheckbox.addEventListener('change', (e) => {
             if(e.target.checked) {
                 mHasPlatforms.checked = true;
-                mHasPlatforms.disabled = true; // Блокируем снятие галочки
+                mHasPlatforms.disabled = true; 
                 mHasPlatforms.dispatchEvent(new Event('change'));
-            } else {
-                mHasPlatforms.disabled = false;
-            }
+            } else { mHasPlatforms.disabled = false; }
         });
 
-        // Логика 1.1.6 и 1.1.7: Показ полей площадок и обязательность
         mHasPlatforms.addEventListener('change', (e) => {
             if (e.target.checked) {
                 platformsContainer.style.display = 'flex';
@@ -569,30 +643,20 @@
         document.getElementById('musicAddForm').onsubmit = function(e) {
             e.preventDefault();
             let platformsJson = "{}";
-            if (mHasPlatforms.checked) {
-                platformsJson = JSON.stringify({ spotify: linkSpotify.value, vk: linkVk.value, yandex: linkYandex.value });
-            }
+            if (mHasPlatforms.checked) { platformsJson = JSON.stringify({ spotify: linkSpotify.value, vk: linkVk.value, yandex: linkYandex.value }); }
             
             const formData = new FormData();
-            formData.append('password', sessionPassword);
-            formData.append('title', document.getElementById('mTitle').value);
-            formData.append('yt_link', document.getElementById('mYt').value);
-            formData.append('platforms', platformsJson);
-            formData.append('is_18', document.getElementById('m18').checked);
-            formData.append('is_main', mMainCheckbox.checked);
-            formData.append('cover', mCoverInput.files[0]);
-            formData.append('mp3', mMp3Input.files[0]);
-            formData.append('wav', mWavInput.files[0]); // Теперь WAV передается всегда (required стоит в HTML)
+            formData.append('password', sessionPassword); formData.append('title', document.getElementById('mTitle').value); formData.append('yt_link', document.getElementById('mYt').value);
+            formData.append('platforms', platformsJson); formData.append('is_18', document.getElementById('m18').checked); formData.append('is_main', mMainCheckbox.checked);
+            formData.append('cover', mCoverInput.files[0]); formData.append('mp3', mMp3Input.files[0]); formData.append('wav', mWavInput.files[0]);
 
             const xhr = new XMLHttpRequest();
-            document.getElementById('mSubmitBtn').disabled = true;
-            document.getElementById('mProgressContainer').style.display = 'block';
+            document.getElementById('mSubmitBtn').disabled = true; document.getElementById('mProgressContainer').style.display = 'block';
             
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
                     const pct = Math.round((e.loaded / e.total) * 100);
-                    document.getElementById('mProgressBar').style.width = pct + '%';
-                    document.getElementById('mStatusText').innerText = `Загрузка: ${pct}%`;
+                    document.getElementById('mProgressBar').style.width = pct + '%'; document.getElementById('mStatusText').innerText = `Загрузка: ${pct}%`;
                 }
             });
 
@@ -600,16 +664,12 @@
                 if (xhr.status === 200) {
                     document.getElementById('mStatusText').innerText = 'Успешно!';
                     setTimeout(() => { document.getElementById('musicAddForm').reset(); hideAddMusicForm(); loadMusicFromServer(); }, 1500);
-                } else {
-                    document.getElementById('mStatusText').innerText = 'Ошибка загрузки';
-                }
+                } else { document.getElementById('mStatusText').innerText = 'Ошибка загрузки'; }
                 document.getElementById('mSubmitBtn').disabled = false;
             });
-            xhr.open('POST', `${API_URL}/music`, true);
-            xhr.send(formData);
+            xhr.open('POST', `${API_URL}/music`, true); xhr.send(formData);
         };
 
-        // Загрузка треков
         async function loadMusicFromServer() {
             const list = document.getElementById('musicList');
             list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
@@ -623,7 +683,6 @@
                         let badges = '';
                         if(t.is_main) badges += '<div class="card-badge">Главный релиз</div> ';
                         if(t.is_18) badges += '<div class="card-badge badge-red">18+</div> ';
-                        
                         list.innerHTML += `
                             <div class="data-card">
                                 <img src="${t.cover_url}" class="card-cover">
@@ -642,12 +701,10 @@
             } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения с БД</div>'; }
         }
 
-
         // ========== 2. ПРОФИЛИ ==========
         async function loadProfilesFromServer() {
             const list = document.getElementById('profilesList');
             list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
-            // Внимание: Этот роут мы добавим в index.js на следующем шаге
             try {
                 const res = await fetch(`${API_URL}/users-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
                 if(res.ok) {
@@ -658,8 +715,7 @@
                         list.innerHTML += `
                             <div class="profile-card">
                                 <div class="prof-info">
-                                    <h4>${u.nickname || 'Без ника'}</h4>
-                                    <p>ID: ${u.clientId}</p>
+                                    <h4>${u.nickname || 'Без ника'}</h4><p>ID: ${u.clientId}</p>
                                     <span style="font-size:0.8rem; color:${u.isBanned ? 'var(--error-red)' : 'var(--theme-color)'};">Статус: ${u.isBanned ? 'Бан' : 'Активен'}</span>
                                 </div>
                                 <div class="card-actions">
@@ -674,79 +730,47 @@
         }
 
         let editProfDbId = '';
-        function openEditProfile(dbId, clientId, nick) {
-            editProfDbId = dbId;
-            document.getElementById('editProfIdInput').value = clientId;
-            document.getElementById('editProfNickInput').value = nick;
-            document.getElementById('editProfileModal').classList.add('active');
-        }
+        function openEditProfile(dbId, clientId, nick) { editProfDbId = dbId; document.getElementById('editProfIdInput').value = clientId; document.getElementById('editProfNickInput').value = nick; document.getElementById('editProfileModal').classList.add('active'); }
         function closeEditProfileModal() { document.getElementById('editProfileModal').classList.remove('active'); }
         
         document.getElementById('confirmEditProfileBtn').onclick = async () => {
-            const newId = document.getElementById('editProfIdInput').value.trim();
-            const newNick = document.getElementById('editProfNickInput').value.trim();
+            const newId = document.getElementById('editProfIdInput').value.trim(), newNick = document.getElementById('editProfNickInput').value.trim();
             if(!newId) return alert('ID не может быть пустым');
-            
             try {
-                // Маршрут редактирования добавим в index.js в след шаге
-                const res = await fetch(`${API_URL}/user/${editProfDbId}`, { 
-                    method: 'PUT', headers: {'Content-Type':'application/json'}, 
-                    body: JSON.stringify({password: sessionPassword, newClientId: newId, newNickname: newNick})
-                });
-                if(res.ok) { closeEditProfileModal(); loadProfilesFromServer(); }
-                else { alert('Сбой редактирования (Возможно маршрут еще не создан)'); }
+                const res = await fetch(`${API_URL}/user/${editProfDbId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword, newClientId: newId, newNickname: newNick}) });
+                if(res.ok) { closeEditProfileModal(); loadProfilesFromServer(); } else { alert('Сбой редактирования (Возможно маршрут еще не создан)'); }
             } catch(e) {}
         };
 
-
-        // ========== УНИВЕРСАЛЬНОЕ УДАЛЕНИЕ (Трек, Профиль, Промо) ==========
+        // ========== УНИВЕРСАЛЬНОЕ УДАЛЕНИЕ ==========
         let deleteType = ''; let deleteId = '';
         function confirmDelete(type, id, name) {
-            deleteType = type; deleteId = id;
-            document.getElementById('modalCodeName').textContent = name;
+            deleteType = type; deleteId = id; document.getElementById('modalCodeName').textContent = name;
             let text = 'Удалить этот элемент?';
-            if(type === 'music') text = 'Удалить трек из Supabase? Файлы будут стерты.';
-            if(type === 'profile') text = 'Удалить пользователя навсегда?';
-            if(type === 'promo') text = 'Удалить промокод навсегда?';
-            document.getElementById('deleteModalText').innerText = text;
-            document.getElementById('deleteModal').classList.add('active');
+            if(type === 'music') text = 'Удалить трек из Supabase? Файлы будут стерты.'; if(type === 'profile') text = 'Удалить пользователя навсегда?'; if(type === 'promo') text = 'Удалить промокод навсегда?';
+            document.getElementById('deleteModalText').innerText = text; document.getElementById('deleteModal').classList.add('active');
         }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
         
         document.getElementById('confirmDeleteBtn').onclick = async () => {
             const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '...';
             let url = '';
-            if(deleteType === 'music') url = `${API_URL}/music/${deleteId}`; // Добавим в index.js
-            if(deleteType === 'profile') url = `${API_URL}/user/${deleteId}`; // Добавим в index.js
-            if(deleteType === 'promo') url = `${API_URL}/promo/${deleteId}`;  // Уже есть
-
+            if(deleteType === 'music') url = `${API_URL}/music/${deleteId}`; if(deleteType === 'profile') url = `${API_URL}/user/${deleteId}`; if(deleteType === 'promo') url = `${API_URL}/promo/${deleteId}`;
             try {
                 const res = await fetch(url, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
-                if(res.ok) {
-                    closeDeleteModal();
-                    if(deleteType === 'music') loadMusicFromServer();
-                    if(deleteType === 'profile') loadProfilesFromServer();
-                    if(deleteType === 'promo') loadPromosFromServer();
-                } else { alert('Ошибка (Возможно, маршрут удаления еще не добавлен на сервер)'); }
+                if(res.ok) { closeDeleteModal(); if(deleteType === 'music') loadMusicFromServer(); if(deleteType === 'profile') loadProfilesFromServer(); if(deleteType === 'promo') loadPromosFromServer(); } 
+                else { alert('Ошибка'); }
             } catch(e) {}
             btn.innerHTML = 'Удалить';
         };
 
-        // ========== 3. ПРОМОКОДЫ (Оставили старую логику) ==========
+        // ========== 3. ПРОМОКОДЫ ==========
         document.getElementById('promoAddForm').onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData();
-            formData.append('password', sessionPassword);
-            formData.append('promo', document.getElementById('newCode').value);
-            formData.append('title', document.getElementById('newTitle').value);
-            formData.append('cover', document.getElementById('newCover').files[0]);
-            formData.append('track', document.getElementById('newTrack').files[0]);
+            formData.append('password', sessionPassword); formData.append('promo', document.getElementById('newCode').value); formData.append('title', document.getElementById('newTitle').value); formData.append('cover', document.getElementById('newCover').files[0]); formData.append('track', document.getElementById('newTrack').files[0]);
             const btn = document.getElementById('submitBtn'); btn.disabled = true;
-            try {
-                const res = await fetch(`${API_URL}/promo`, { method: 'POST', body: formData });
-                if (res.ok) { document.getElementById('promoAddForm').reset(); loadPromosFromServer(); } 
-                else alert('Ошибка');
-            } catch(e){} btn.disabled = false;
+            try { const res = await fetch(`${API_URL}/promo`, { method: 'POST', body: formData }); if (res.ok) { document.getElementById('promoAddForm').reset(); loadPromosFromServer(); } else alert('Ошибка'); } catch(e){} btn.disabled = false;
         };
 
         async function loadPromosFromServer() {
@@ -754,8 +778,7 @@
             try {
                 const res = await fetch(`${API_URL}/promos-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
                 if(res.ok) {
-                    const promos = await res.json();
-                    list.innerHTML = '';
+                    const promos = await res.json(); list.innerHTML = '';
                     promos.forEach(p => {
                         list.innerHTML += `
                             <div class="data-card">
