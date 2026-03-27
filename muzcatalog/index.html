@@ -1093,9 +1093,28 @@
         
         function openDownloadModal(t, mp3, wav) { 
             document.getElementById('modalTitle').textContent = t; 
-            document.getElementById('linkMp3').href = mp3; 
-            document.getElementById('linkWav').href = wav; 
-            dM.style.display = 'flex'; document.body.style.overflow = 'hidden'; 
+            
+            // Формируем красивое имя файла
+            const safeTitle = t.replace(/\s+/g, '_');
+            const mp3FileName = encodeURIComponent(`DXTR_SlizZe_-_${safeTitle}.mp3`);
+            const wavFileName = encodeURIComponent(`DXTR_SlizZe_-_${safeTitle}.wav`);
+
+            // Добавляем параметр download для Supabase
+            const mp3DlUrl = mp3.includes('?') ? `${mp3}&download=${mp3FileName}` : `${mp3}?download=${mp3FileName}`;
+            const wavDlUrl = wav.includes('?') ? `${wav}&download=${wavFileName}` : `${wav}?download=${wavFileName}`;
+
+            const linkMp3 = document.getElementById('linkMp3');
+            const linkWav = document.getElementById('linkWav');
+
+            linkMp3.href = mp3DlUrl; 
+            linkWav.href = wavDlUrl; 
+            
+            // Автоматически закрываем модалку при клике на любую из кнопок
+            linkMp3.onclick = () => closeModal('downloadModal');
+            linkWav.onclick = () => closeModal('downloadModal');
+
+            dM.style.display = 'flex'; 
+            document.body.style.overflow = 'hidden'; 
         }
         
         function openPlatformsModal(pStr) { 
