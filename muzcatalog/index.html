@@ -88,12 +88,14 @@
         .track-counter { font-size: 1.1rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
         .track-counter .neon-text { color: var(--neon-yellow); text-shadow: 0 0 10px rgba(255, 204, 0, 0.5); font-size: 1.4rem; margin-left: 5px; }
 
-        /* СООБЩЕНИЕ О ПУСТОМ ПОИСКЕ */
+        /* СООБЩЕНИЕ О ПУСТОМ ПОИСКЕ / ЗАГРУЗКЕ */
         .empty-state { display: none; text-align: center; padding: 60px 20px; opacity: 0; transition: opacity 0.3s ease; }
         .empty-state.show { display: block; opacity: 1; }
         .empty-icon { font-size: 4rem; color: var(--text-muted); margin-bottom: 20px; opacity: 0.6; }
         .empty-text { font-size: 1.3rem; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; }
         .empty-subtext { font-size: 0.95rem; color: var(--text-muted); opacity: 0.7; }
+        
+        .loading-neon { text-align: center; color: var(--neon-cyan); font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; margin: 60px 0; text-shadow: 0 0 15px var(--neon-cyan); animation: pulseRed 1.5s infinite; }
 
         /* КАРТОЧКА ТРЕКА */
         .catalog-item { background: linear-gradient(135deg, rgba(30,30,40,0.7) 0%, rgba(10,10,15,0.8) 100%); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px 25px; display: flex; align-items: center; gap: 20px; transition: all 0.3s; box-shadow: 0 15px 35px rgba(0,0,0,0.5); position: relative; overflow: hidden; margin-bottom: 12px; }
@@ -118,11 +120,13 @@
         .catalog-item.playing .ci-play-btn { opacity: 1; background: var(--neon-purple); color: #fff; box-shadow: 0 0 20px var(--neon-purple); }
 
         .ci-center { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding-right: 15px; justify-content: center; pointer-events: none; }
-        .ci-title-wrap { display: flex; align-items: center; gap: 10px; }
+        .ci-title-wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .ci-title { font-size: 1.2rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.3s; }
         .catalog-item.playing .ci-title { color: var(--neon-purple); text-shadow: 0 0 10px rgba(112,0,255,0.3); }
         
         .badge-18 { display: inline-flex; justify-content: center; align-items: center; background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.5); color: #ff3333; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 12px; backdrop-filter: blur(4px); box-shadow: 0 0 10px rgba(255,0,0,0.2); vertical-align: middle; flex-shrink: 0; }
+        .badge-main { display: inline-flex; justify-content: center; align-items: center; background: rgba(0, 198, 255, 0.1); border: 1px solid rgba(0, 198, 255, 0.5); color: var(--neon-cyan); font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 12px; backdrop-filter: blur(4px); box-shadow: 0 0 10px rgba(0, 198, 255, 0.2); vertical-align: middle; flex-shrink: 0; text-transform: uppercase; }
+        
         .ci-artist { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
         .ci-player-controls { display: flex; align-items: center; gap: 15px; width: 100%; margin-top: 5px; pointer-events: auto; }
@@ -548,9 +552,9 @@
         <div class="modal-inner" style="border: 2px solid var(--neon-purple); box-shadow: 0 0 50px rgba(112,0,255,0.3);">
             <div class="close-btn" onclick="closeModal('platformsModal')">×</div>
             <div class="modal-title">Слушать на площадках</div>
-            <a href="https://music.yandex.ru/album/41053328/track/149038623" target="_blank" class="plat-btn btn-yam"><i class="fa-brands fa-yandex"></i> Яндекс Музыка</a>
-            <a href="https://open.spotify.com/track/5mvN7HfEXmxy1wH8V2r216" target="_blank" class="plat-btn btn-spo"><i class="fa-brands fa-spotify"></i> Spotify</a>
-            <a href="https://vk.ru/audio-2001553364_147553364_69b1b8413dbf4d1f2e" target="_blank" class="plat-btn btn-vk"><i class="fa-brands fa-vk"></i> VK Music</a>
+            <a href="#" target="_blank" class="plat-btn btn-yam" id="platYam"><i class="fa-brands fa-yandex"></i> Яндекс Музыка</a>
+            <a href="#" target="_blank" class="plat-btn btn-spo" id="platSpo"><i class="fa-brands fa-spotify"></i> Spotify</a>
+            <a href="#" target="_blank" class="plat-btn btn-vk" id="platVk"><i class="fa-brands fa-vk"></i> VK Music</a>
         </div>
     </div>
 
@@ -585,7 +589,11 @@
             </div>
             <div class="track-counter">Найдено: <span class="neon-text" id="trackCount">0</span></div>
         </div>
-        <div id="track-list"></div>
+        
+        <div id="track-list">
+            <div class="loading-neon">СИНХРОНИЗАЦИЯ С БАЗОЙ...</div>
+        </div>
+        
         <div class="empty-state" id="emptyState">
             <div class="empty-icon"><i class="fa-solid fa-compact-disc"></i></div>
             <div class="empty-text">Ничего не найдено</div>
@@ -669,31 +677,110 @@
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        const tracks = [
-            { title: "Music", cover: "../logo_Music.png", mp3: "../mp3_Music.mp3", wav: "../wav_Music.wav", yt: "https://www.youtube.com/watch?v=NZdm_FnmTQ8" },
-            { title: "FastRap", cover: "../logo_FastRap.jpeg", mp3: "../mp3_FastRap.mp3", wav: "../wav_FastRap.wav", yt: "https://www.youtube.com/watch?v=rDByUUm7eaE" },
-            { title: "Night City Lights", cover: "../logo_Night_City_Lights.png", mp3: "../mp3_Night_City_Lights.mp3", wav: "../wav_Night_City_Lights.wav", yt: "https://www.youtube.com/watch?v=M9TwVLCdEiM" },
-            { title: "Mafia", cover: "../logo_Mafia.png", mp3: "../mp3_Mafia.mp3", wav: "../wav_Mafia.wav", yt: "https://www.youtube.com/watch?v=SCCUhxNEi8w" },
-            { title: "Brawl Stars", cover: "../logo_Brawl_Stars.jpeg", mp3: "../mp3_Brawl_Stars.mp3", wav: "../wav_Brawl_Stars.wav", yt: "https://www.youtube.com/watch?v=_bT2_wmJ6tc" },
-            { title: "Night Club", cover: "../logo_Night_Club.jpeg", mp3: "../mp3_Night_Club.mp3", wav: "../wav_Night_Club.wav", yt: "https://www.youtube.com/watch?v=zaDFqj5H7R4" },
-            { title: "Minecraft", cover: "../logo_Minecraft.jpeg", mp3: "../mp3_Minecraft.mp3", wav: "../wav_Minecraft.wav", yt: "https://www.youtube.com/watch?v=NX0QOM2-OKE" },
-            { title: "Friday", cover: "../logo_Friday.jpeg", mp3: "../mp3_Friday.mp3", wav: "../wav_Friday.wav", yt: "https://www.youtube.com/watch?v=RyRbNoU2nPc" },
-            { title: "F90", cover: "../logo_F90.jpeg", mp3: "../mp3_F90.mp3", wav: "../wav_F90.wav", yt: "https://www.youtube.com/watch?v=1YC9JlxU-zg" },
-            { title: "Dying Light", cover: "../logo_Dying_Light.jpeg", mp3: "../mp3_Dying_Light.mp3", wav: "../wav_Dying_Light.wav", yt: "https://www.youtube.com/watch?v=gyPCJrQGeKg" },
-            { title: "Cefiro Reload", cover: "../logo_Cefiro_Reload.jpeg", mp3: "../mp3_Cefiro_Reload.mp3", wav: "../wav_Cefiro_Reload.wav", yt: "https://www.youtube.com/watch?v=TMn7k7XM4I0" },
-            { title: "Casino", cover: "../logo_Casino.jpeg", mp3: "../mp3_Casino.mp3", wav: "../wav_Casino.wav", yt: "https://www.youtube.com/watch?v=qj1nzYAte0Y" },
-            { title: "New Year", cover: "../logo_New_Year.jpeg", mp3: "../mp3_New_Year.mp3", wav: "../wav_New_Year.wav", yt: "https://www.youtube.com/watch?v=ylW3c41lAUA" },
-            { title: "Выход из Сна", cover: "../logo_VIS.jpeg", mp3: "../mp3_VIS.mp3", wav: "../wav_VIS.wav", yt: "https://www.youtube.com/watch?v=k7QO9_nLI5A" },
-            { title: "Carnaval", cover: "../logo_Carnaval.jpeg", mp3: "../mp3_Carnaval.mp3", wav: "../wav_Carnaval.wav", yt: "https://www.youtube.com/watch?v=XE-bKULqNVQ" },
-            { title: "Life Simulator", cover: "../logo_Life_Simulator.jpeg", mp3: "../mp3_Life_Simulator.mp3", wav: "../wav_Life_Simulator.wav", yt: "https://www.youtube.com/watch?v=ksahwYBQgrs" },
-            { title: "Amazing Online", cover: "../logo_Amazing_Online.jpeg", mp3: "../mp3_Amazing_Online.mp3", wav: "../wav_Amazing_Online.wav", yt: "https://www.youtube.com/watch?v=qFm89V9JjFU" }
-        ];
+        // ==========================================
+        // ЛОГИКА ЗАГРУЗКИ ТРЕКОВ ИЗ SUPABASE
+        // ==========================================
         
-        const explicitTracks = ["Music", "FastRap", "Night Club", "Cefiro Reload"];
+        let tracks = []; // Пустой массив, который заполнится из БД
+        
+        async function fetchTracks() {
+            try {
+                // Обращаемся напрямую к базе Supabase через публичный ключ
+                const res = await fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=*&order=id.desc', {
+                    headers: {
+                        'apikey': 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h',
+                        'Authorization': 'Bearer sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'
+                    }
+                });
+                
+                if (res.ok) {
+                    tracks = await res.json();
+                    renderTracks();
+                } else {
+                    document.getElementById('track-list').innerHTML = '<div class="loading-neon" style="color:var(--neon-red); text-shadow:0 0 15px var(--neon-red);">ОШИБКА ДОСТУПА К БАЗЕ ДАННЫХ (Проверьте RLS)</div>';
+                }
+            } catch(e) {
+                document.getElementById('track-list').innerHTML = '<div class="loading-neon" style="color:var(--neon-red); text-shadow:0 0 15px var(--neon-red);">СЕРВЕР НЕДОСТУПЕН</div>';
+            }
+        }
 
+        const trackListContainer = document.getElementById('track-list');
+
+        function renderTracks() {
+            trackListContainer.innerHTML = '';
+            document.getElementById('trackCount').textContent = tracks.length;
+
+            if (tracks.length === 0) {
+                document.getElementById('emptyState').classList.add('show');
+                return;
+            }
+
+            tracks.forEach((track, index) => {
+                const num = index + 1 < 10 ? `0${index + 1}` : index + 1;
+                
+                // Проверяем, есть ли площадки
+                let pltBtn = '';
+                if(track.platforms && Object.keys(track.platforms).length > 0) {
+                    const pStr = encodeURIComponent(JSON.stringify(track.platforms));
+                    pltBtn = `<button class="action-btn-sm plt-btn" onclick="event.stopPropagation(); openPlatformsModal('${pStr}')"><i class="fa-solid fa-compact-disc"></i> Площадки</button>`;
+                }
+                
+                const explicitBadge = track.is_18 ? `<span class="badge-18">18+</span>` : '';
+                const mainBadge = track.is_main ? `<span class="badge-main" style="margin-left: 5px;">Главный релиз</span>` : '';
+                
+                const trackHTML = `
+                    <div class="catalog-item fade-in" id="card-${index}" style="animation-delay: ${index * 0.03}s" onclick="playTrack(${index})">
+                        <div class="ci-left">
+                            <div class="ci-number">${num}</div>
+                            <div class="ci-cover-wrapper" onclick="event.stopPropagation(); playTrack(${index});">
+                                <img src="${track.cover_url}" alt="${track.title}" onerror="this.src='../dslogo.png'">
+                                <div class="ci-play-btn"><i class="fa-solid fa-play" id="cardIcon-${index}"></i></div>
+                            </div>
+                        </div>
+                        <div class="ci-center">
+                            <div class="ci-title-wrap">
+                                <div class="ci-title">${track.title}</div>
+                                ${explicitBadge}
+                                ${mainBadge}
+                            </div>
+                            <div class="ci-artist">DXTR | SlizZe</div>
+                            <div class="ci-player-controls">
+                                <div class="progress-container" data-index="${index}" onclick="event.stopPropagation()">
+                                    <div class="progress-bar" id="cardBar-${index}"></div>
+                                </div>
+                                <div class="time-display-card" id="ci-time-${index}">--:--</div>
+                            </div>
+                        </div>
+                        <div class="ci-right">
+                            <a href="${track.yt_link}" target="_blank" class="action-btn-sm yt-btn" onclick="event.stopPropagation();"><i class="fa-brands fa-youtube"></i> Клип</a>
+                            ${pltBtn}
+                            <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); openDownloadModal('${track.title}', '${track.mp3_url}', '${track.wav_url}')"><i class="fa-solid fa-download"></i> Скачать</button>
+                        </div>
+                    </div>
+                `;
+                trackListContainer.insertAdjacentHTML('beforeend', trackHTML);
+
+                // Загружаем длительность трека
+                const tempAudio = new Audio();
+                tempAudio.preload = 'metadata';
+                tempAudio.src = track.mp3_url;
+                tempAudio.onloadedmetadata = () => {
+                    track.durationStr = formatTime(tempAudio.duration);
+                    const timeEl = document.getElementById(`ci-time-${index}`);
+                    if (timeEl && currentTrackIndex !== index) timeEl.textContent = track.durationStr;
+                };
+            });
+        }
+
+        // Запускаем загрузку при старте
+        fetchTracks();
+
+
+        // ==========================================
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ПЛЕЕРА И УТИЛИТЫ
+        // ==========================================
         const globalAudio = document.getElementById('globalAudio');
         let currentTrackIndex = -1, isMinimized = false, hasPlayed = false;
-        
         window.justScrubbed = false;
 
         function formatTime(sec) {
@@ -702,61 +789,15 @@
             return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
         }
 
-        const trackListContainer = document.getElementById('track-list');
-        tracks.forEach((track, index) => {
-            const num = index + 1 < 10 ? `0${index + 1}` : index + 1;
-            const pltBtn = (track.title === "Night City Lights") ? `<button class="action-btn-sm plt-btn" onclick="event.stopPropagation(); openPlatformsModal()"><i class="fa-solid fa-compact-disc"></i> Площадки</button>` : '';
-            const explicitBadge = explicitTracks.includes(track.title) ? `<span class="badge-18">18+</span>` : '';
-            
-            const trackHTML = `
-                <div class="catalog-item fade-in" id="card-${index}" style="animation-delay: ${index * 0.03}s" onclick="playTrack(${index})">
-                    <div class="ci-left">
-                        <div class="ci-number">${num}</div>
-                        <div class="ci-cover-wrapper" onclick="event.stopPropagation(); playTrack(${index});">
-                            <img src="${track.cover}" alt="${track.title}" onerror="this.src='../dslogo.png'">
-                            <div class="ci-play-btn"><i class="fa-solid fa-play" id="cardIcon-${index}"></i></div>
-                        </div>
-                    </div>
-                    <div class="ci-center">
-                        <div class="ci-title-wrap">
-                            <div class="ci-title">${track.title}</div>
-                            ${explicitBadge}
-                        </div>
-                        <div class="ci-artist">DXTR | SlizZe</div>
-                        <div class="ci-player-controls">
-                            <div class="progress-container" data-index="${index}" onclick="event.stopPropagation()">
-                                <div class="progress-bar" id="cardBar-${index}"></div>
-                            </div>
-                            <div class="time-display-card" id="ci-time-${index}">--:--</div>
-                        </div>
-                    </div>
-                    <div class="ci-right">
-                        <a href="${track.yt}" target="_blank" class="action-btn-sm yt-btn" onclick="event.stopPropagation();"><i class="fa-brands fa-youtube"></i> Клип</a>
-                        ${pltBtn}
-                        <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); openDownloadModal('${track.title}', '${track.mp3}', '${track.wav}')"><i class="fa-solid fa-download"></i> Скачать</button>
-                    </div>
-                </div>
-            `;
-            trackListContainer.insertAdjacentHTML('beforeend', trackHTML);
-
-            const tempAudio = new Audio();
-            tempAudio.preload = 'metadata';
-            tempAudio.src = track.mp3;
-            tempAudio.onloadedmetadata = () => {
-                track.durationStr = formatTime(tempAudio.duration);
-                const timeEl = document.getElementById(`ci-time-${index}`);
-                if (timeEl && currentTrackIndex !== index) timeEl.textContent = track.durationStr;
-            };
-        });
-        document.getElementById('trackCount').textContent = tracks.length;
-
         const gp = document.getElementById('globalPlayer');
         const gpPlayBtn = document.getElementById('gpPlay'), gpPlayIcon = document.getElementById('gpPlayIcon');
         const miniOrb = document.getElementById('miniOrb');
         const gpBadge18 = document.getElementById('gpBadge18');
         const gpBgGlow = document.getElementById('gpBgGlow');
 
+        // ==========================================
         // ЛОГИКА ПЛЕЕРА
+        // ==========================================
         function playTrack(index) {
             if (window.justScrubbed) return; 
             
@@ -767,13 +808,15 @@
             } else {
                 if (currentTrackIndex !== -1) resetCardUI(currentTrackIndex);
                 currentTrackIndex = index;
-                globalAudio.src = tracks[index].mp3;
+                
+                // Используем ссылки из Supabase
+                globalAudio.src = tracks[index].mp3_url;
                 document.getElementById('gpTitle').textContent = tracks[index].title;
-                document.getElementById('gpCover').src = tracks[index].cover;
+                document.getElementById('gpCover').src = tracks[index].cover_url;
                 
-                gpBgGlow.style.backgroundImage = `url('${tracks[index].cover}')`;
+                gpBgGlow.style.backgroundImage = `url('${tracks[index].cover_url}')`;
                 
-                if(explicitTracks.includes(tracks[index].title)) { gpBadge18.style.display = 'inline-flex'; }
+                if(tracks[index].is_18) { gpBadge18.style.display = 'inline-flex'; }
                 else { gpBadge18.style.display = 'none'; }
 
                 globalAudio.play();
@@ -884,9 +927,7 @@
             const idx = cont.getAttribute('data-index');
             if (idx !== null) {
                 const parsedIdx = parseInt(idx);
-                if (parsedIdx !== currentTrackIndex) {
-                    playTrack(parsedIdx);
-                }
+                if (parsedIdx !== currentTrackIndex) playTrack(parsedIdx);
             } else if (cont.getAttribute('data-global') !== 'true') {
                 return;
             }
@@ -896,7 +937,6 @@
             activeScrubberContainer = cont;
             document.querySelectorAll('.progress-container').forEach(c => c.classList.add('dragging'));
             scrubProgress(e);
-
             e.stopPropagation();
         }
 
@@ -911,9 +951,7 @@
                 } else if (e.changedTouches && e.changedTouches.length > 0) {
                     clientX = e.changedTouches[0].clientX;
                 }
-            } else {
-                clientX = e.clientX;
-            }
+            } else { clientX = e.clientX; }
             
             let p = (clientX - rect.left) / rect.width;
             p = Math.max(0, Math.min(1, p));
@@ -921,14 +959,11 @@
             progressDragHappened = true;
             updateProgressBarUI(p * 100, p * globalAudio.duration);
             
-            if(e.cancelable && (e.type === 'mousemove' || e.type === 'touchmove')) {
-                e.preventDefault();
-            }
+            if(e.cancelable && (e.type === 'mousemove' || e.type === 'touchmove')) e.preventDefault();
         }
 
         document.addEventListener('mousemove', scrubProgress);
         document.addEventListener('touchmove', scrubProgress, {passive: false});
-
         document.addEventListener('mouseup', endProgressDrag);
         document.addEventListener('touchend', endProgressDrag);
 
@@ -945,12 +980,8 @@
             
             let clientX = 0;
             if (e.type.includes('touch')) {
-                if (e.changedTouches && e.changedTouches.length > 0) {
-                    clientX = e.changedTouches[0].clientX;
-                }
-            } else {
-                clientX = e.clientX;
-            }
+                if (e.changedTouches && e.changedTouches.length > 0) { clientX = e.changedTouches[0].clientX; }
+            } else { clientX = e.clientX; }
             
             let p = (clientX - rect.left) / rect.width;
             p = Math.max(0, Math.min(1, p));
@@ -959,7 +990,7 @@
             progressDragHappened = false;
         }
 
-        // ГРОМКОСТЬ С ДИНАМИЧЕСКОЙ ИКОНКОЙ
+        // ГРОМКОСТЬ
         const volIcon = document.getElementById('volIcon'), volNode = document.getElementById('gpMute');
         const volWrap = document.getElementById('volWrap'), volBarBg = document.getElementById('volBarBg'), volBarFill = document.getElementById('volBarFill'), volThumb = document.getElementById('volThumb'), volTextVal = document.getElementById('volTextVal');
         let currentVolume = 1, lastVolume = 1, isDraggingVol = false;
@@ -971,10 +1002,7 @@
             volTextVal.textContent = p;
             
             volNode.classList.remove('muted');
-            if(v === 0) { 
-                volIcon.className = 'fa-solid fa-volume-xmark'; 
-                volNode.classList.add('muted');
-            }
+            if(v === 0) { volIcon.className = 'fa-solid fa-volume-xmark'; volNode.classList.add('muted'); }
             else if(v <= 0.35) { volIcon.className = 'fa-solid fa-volume-off'; }
             else if(v <= 0.70) { volIcon.className = 'fa-solid fa-volume-low'; }
             else { volIcon.className = 'fa-solid fa-volume-high'; }
@@ -989,18 +1017,11 @@
 
         function handleVolScrub(e) {
             const rect = volBarBg.getBoundingClientRect();
-            
             let clientX = 0;
             if (e.type.includes('touch')) {
-                if (e.touches && e.touches.length > 0) {
-                    clientX = e.touches[0].clientX;
-                } else if (e.changedTouches && e.changedTouches.length > 0) {
-                    clientX = e.changedTouches[0].clientX;
-                }
-            } else {
-                clientX = e.clientX;
-            }
-            
+                if (e.touches && e.touches.length > 0) { clientX = e.touches[0].clientX; } 
+                else if (e.changedTouches && e.changedTouches.length > 0) { clientX = e.changedTouches[0].clientX; }
+            } else { clientX = e.clientX; }
             let p = (clientX - rect.left) / rect.width;
             setVolume(p);
         }
@@ -1023,10 +1044,7 @@
             if (e.code === 'ArrowLeft') { e.preventDefault(); handlePrevClick(); }
             if (e.code === 'ArrowUp') { e.preventDefault(); setVolume(currentVolume + 0.1); }
             if (e.code === 'ArrowDown') { e.preventDefault(); setVolume(currentVolume - 0.1); }
-            if (e.code === 'KeyM' || e.key.toLowerCase() === 'm' || e.key.toLowerCase() === 'ь') { 
-                e.preventDefault(); 
-                toggleMute(); 
-            }
+            if (e.code === 'KeyM' || e.key.toLowerCase() === 'm' || e.key.toLowerCase() === 'ь') { e.preventDefault(); toggleMute(); }
         });
 
         // DRAG & DROP ДЛЯ МИНИ-ПЛЕЕРА
@@ -1056,55 +1074,68 @@
         function toggleSBar() { sBar.classList.toggle('active'); sOver.classList.toggle('active'); }
         bBtn.onclick = toggleSBar; cSBar.onclick = toggleSBar; sOver.onclick = toggleSBar;
 
-        // ПОИСК С ПУСТЫМ СОСТОЯНИЕМ
+        // ПОИСК (Ищет по загруженным трекам)
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase(); 
             let count = 0;
             document.querySelectorAll('.catalog-item').forEach(item => { 
                 if(item.querySelector('.ci-title').textContent.toLowerCase().includes(q)) { 
-                    item.style.display = 'flex'; 
-                    count++; 
-                } else { 
-                    item.style.display = 'none'; 
-                } 
+                    item.style.display = 'flex'; count++; 
+                } else { item.style.display = 'none'; } 
             });
             document.getElementById('trackCount').textContent = count;
-            
             const emptyState = document.getElementById('emptyState');
-            if(count === 0) {
-                emptyState.classList.add('show');
-            } else {
-                emptyState.classList.remove('show');
-            }
+            if(count === 0) { emptyState.classList.add('show'); } else { emptyState.classList.remove('show'); }
         });
 
+        // МОДАЛЬНЫЕ ОКНА (ДИНАМИЧЕСКИЕ ДАННЫЕ)
         const dM = document.getElementById('downloadModal'), pM = document.getElementById('platformsModal');
-        function openDownloadModal(t, mp3, wav) { document.getElementById('modalTitle').textContent = t; document.getElementById('linkMp3').href = mp3; document.getElementById('linkWav').href = wav; dM.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
-        function openPlatformsModal() { pM.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+        
+        function openDownloadModal(t, mp3, wav) { 
+            document.getElementById('modalTitle').textContent = t; 
+            document.getElementById('linkMp3').href = mp3; 
+            document.getElementById('linkWav').href = wav; 
+            dM.style.display = 'flex'; document.body.style.overflow = 'hidden'; 
+        }
+        
+        function openPlatformsModal(pStr) { 
+            // Декодируем и парсим JSON ссылок
+            const p = JSON.parse(decodeURIComponent(pStr));
+            const yam = document.getElementById('platYam');
+            const spo = document.getElementById('platSpo');
+            const vk = document.getElementById('platVk');
+
+            // Показываем кнопку только если ссылка есть
+            yam.style.display = p.yandex ? 'flex' : 'none';
+            yam.href = p.yandex || '#';
+
+            spo.style.display = p.spotify ? 'flex' : 'none';
+            spo.href = p.spotify || '#';
+
+            vk.style.display = p.vk ? 'flex' : 'none';
+            vk.href = p.vk || '#';
+
+            pM.style.display = 'flex'; 
+            document.body.style.overflow = 'hidden'; 
+        }
+        
         function closeModal(m) { document.getElementById(m).style.display = 'none'; document.body.style.overflow = 'auto'; }
         window.onclick = e => { if(e.target === dM) closeModal('downloadModal'); if(e.target === pM) closeModal('platformsModal'); }
 
         // === ЧАТ ТЕХПОДДЕРЖКИ И СИСТЕМА ID ===
         const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
-
         window.userNickname = localStorage.getItem('dxtrUserNickname') || null; 
         
         function setCookie(name, value, days) {
             let expires = "";
             if (days) {
-                let date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
+                let date = new Date(); date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString();
             }
             document.cookie = name + "=" + (value || "")  + expires + "; path=/";
         }
         function getCookie(name) {
-            let nameEQ = name + "=";
-            let ca = document.cookie.split(';');
-            for(let i=0;i < ca.length;i++) {
-                let c = ca[i].trim();
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
-            }
+            let nameEQ = name + "="; let ca = document.cookie.split(';');
+            for(let i=0;i < ca.length;i++) { let c = ca[i].trim(); if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length); }
             return null;
         }
 
@@ -1112,24 +1143,17 @@
         let cookieId = getCookie('dxtrNumericId');
         let clientId = lsId || cookieId || null; 
         
-        if (clientId) {
-            localStorage.setItem('dxtrNumericId', clientId);
-            setCookie('dxtrNumericId', clientId, 365);
-        }
+        if (clientId) { localStorage.setItem('dxtrNumericId', clientId); setCookie('dxtrNumericId', clientId, 365); }
         
         const socket = io("https://dxtrslizze.onrender.com/");
         const chatWindow = document.getElementById('chat-window'), chatClose = document.getElementById('chat-close'), chatMessages = document.getElementById('chat-messages'), chatInput = document.getElementById('chat-input'), chatSendBtn = document.getElementById('chat-send'), chatHeader = document.getElementById('chat-header');
         
         document.getElementById('sidebarSupportBtn').onclick = (e) => { 
-            e.preventDefault(); 
-            toggleSBar(); 
+            e.preventDefault(); toggleSBar(); 
             setTimeout(() => { 
                 chatWindow.style.display = 'flex'; 
                 if(window.innerWidth > 800) { 
-                    chatWindow.style.left = 'auto'; 
-                    chatWindow.style.top = 'auto'; 
-                    chatWindow.style.right = '30px'; 
-                    chatWindow.style.bottom = '30px'; 
+                    chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px'; 
                 } 
                 setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 50);
             }, 300); 
@@ -1140,90 +1164,47 @@
 
         chatHeader.addEventListener('mousedown', (e) => {
             if (window.innerWidth <= 800 || e.target.id === 'chat-close') return;
-            isDraggingChat = true;
-            chatWindow.style.animation = 'none';
-            chatWindow.style.transform = 'none';
-            const rect = chatWindow.getBoundingClientRect();
-            chatOffsetX = e.clientX - rect.left;
-            chatOffsetY = e.clientY - rect.top;
-            chatWindow.style.right = 'auto';
-            chatWindow.style.bottom = 'auto';
-            chatWindow.style.margin = '0';
-            chatWindow.style.left = rect.left + 'px';
-            chatWindow.style.top = rect.top + 'px';
+            isDraggingChat = true; chatWindow.style.animation = 'none'; chatWindow.style.transform = 'none';
+            const rect = chatWindow.getBoundingClientRect(); chatOffsetX = e.clientX - rect.left; chatOffsetY = e.clientY - rect.top;
+            chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto'; chatWindow.style.margin = '0';
+            chatWindow.style.left = rect.left + 'px'; chatWindow.style.top = rect.top + 'px';
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (!isDraggingChat) return;
-            e.preventDefault();
-            let newX = e.clientX - chatOffsetX;
-            let newY = e.clientY - chatOffsetY;
+            if (!isDraggingChat) return; e.preventDefault();
+            let newX = e.clientX - chatOffsetX; let newY = e.clientY - chatOffsetY;
             newX = Math.max(0, Math.min(newX, window.innerWidth - chatWindow.offsetWidth));
             newY = Math.max(0, Math.min(newY, window.innerHeight - chatWindow.offsetHeight));
-            chatWindow.style.left = `${newX}px`;
-            chatWindow.style.top = `${newY}px`;
+            chatWindow.style.left = `${newX}px`; chatWindow.style.top = `${newY}px`;
         });
 
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
         socket.on('connect', () => { 
-            fpPromise
-                .then(fp => fp.get())
-                .then(result => {
-                    const visitorId = result.visitorId;
-                    socket.emit('register_client', { clientId: clientId, fpHash: visitorId });
-                })
-                .catch(error => {
-                    socket.emit('register_client', { clientId: clientId, fpHash: 'blocked' });
-                });
+            fpPromise.then(fp => fp.get()).then(result => { const visitorId = result.visitorId; socket.emit('register_client', { clientId: clientId, fpHash: visitorId }); })
+                     .catch(error => { socket.emit('register_client', { clientId: clientId, fpHash: 'blocked' }); });
         }); 
 
         socket.on('assign_id', (data) => {
-            if (data && data.newId) {
-                clientId = data.newId;
-                localStorage.setItem('dxtrNumericId', clientId);
-                setCookie('dxtrNumericId', clientId, 365);
-            }
+            if (data && data.newId) { clientId = data.newId; localStorage.setItem('dxtrNumericId', clientId); setCookie('dxtrNumericId', clientId, 365); }
         });
 
         socket.on('online_update', c => document.getElementById('onlineCount').textContent = c);
         
         socket.on('user_data', d => { 
             if (d.nickname) { 
-                window.userNickname = d.nickname; 
-                localStorage.setItem('dxtrUserNickname', d.nickname); 
+                window.userNickname = d.nickname; localStorage.setItem('dxtrUserNickname', d.nickname); 
                 document.getElementById('chatGreeting').innerHTML = `Чат тех. поддержки. Приветствую, <b>${d.nickname}</b>!`; 
-                document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => {
-                    if(el.textContent === 'Вы') el.textContent = d.nickname;
-                });
+                document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => { if(el.textContent === 'Вы') el.textContent = d.nickname; });
             } 
-            if (d.avatarUrl) {
-                const avatarImg = document.getElementById('userAvatar');
-                if (avatarImg) avatarImg.src = d.avatarUrl;
-            }
+            if (d.avatarUrl) { const avatarImg = document.getElementById('userAvatar'); if (avatarImg) avatarImg.src = d.avatarUrl; }
         });
         
         socket.on('ban_status', d => { 
             if (d.isBanned) { 
-                document.getElementById('menuBanLock').style.display = 'inline-block'; 
-                document.getElementById('chatBanNotice').style.display = 'block'; 
-                document.getElementById('chatGreeting').style.display = 'none'; 
-                chatInput.disabled = true; 
-                chatInput.placeholder = "Доступ ограничен."; 
-                chatInput.style.borderColor = "var(--neon-red)"; 
-                chatSendBtn.disabled = true; 
-                chatSendBtn.style.background = '#333'; 
-                chatSendBtn.style.color = '#555'; 
+                document.getElementById('menuBanLock').style.display = 'inline-block'; document.getElementById('chatBanNotice').style.display = 'block'; document.getElementById('chatGreeting').style.display = 'none'; chatInput.disabled = true; chatInput.placeholder = "Доступ ограничен."; chatInput.style.borderColor = "var(--neon-red)"; chatSendBtn.disabled = true; chatSendBtn.style.background = '#333'; chatSendBtn.style.color = '#555'; 
             } else { 
-                document.getElementById('menuBanLock').style.display = 'none'; 
-                document.getElementById('chatBanNotice').style.display = 'none'; 
-                document.getElementById('chatGreeting').style.display = 'block'; 
-                chatInput.disabled = false; 
-                chatInput.placeholder = "Опишите проблему..."; 
-                chatInput.style.borderColor = "rgba(255,255,255,0.1)"; 
-                chatSendBtn.disabled = false; 
-                chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; 
-                chatSendBtn.style.color = '#fff'; 
+                document.getElementById('menuBanLock').style.display = 'none'; document.getElementById('chatBanNotice').style.display = 'none'; document.getElementById('chatGreeting').style.display = 'block'; chatInput.disabled = false; chatInput.placeholder = "Опишите проблему..."; chatInput.style.borderColor = "rgba(255,255,255,0.1)"; chatSendBtn.disabled = false; chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; chatSendBtn.style.color = '#fff'; 
             } 
         });
         
@@ -1244,37 +1225,19 @@
         }
         
         function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { 
-            const wrapper = document.createElement('div'); 
-            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; 
+            const wrapper = document.createElement('div'); wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; 
+            const nameLab = document.createElement('span'); nameLab.className = 'chat-msg-name'; nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; 
+            const bubble = document.createElement('div'); bubble.className = 'chat-msg-bubble'; bubble.textContent = text; 
             
-            const nameLab = document.createElement('span'); 
-            nameLab.className = 'chat-msg-name'; 
-            nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; 
+            if (isWarn) { nameLab.style.color = 'var(--neon-red)'; bubble.style.background = 'rgba(255,0,51,0.1)'; bubble.style.border = '1px solid var(--neon-red)'; } 
+            else if (isSucc) { nameLab.style.color = 'var(--neon-green)'; bubble.style.background = 'rgba(0,255,102,0.1)'; bubble.style.border = '1px solid var(--neon-green)'; } 
             
-            const bubble = document.createElement('div'); 
-            bubble.className = 'chat-msg-bubble'; 
-            bubble.textContent = text; 
-            
-            if (isWarn) { 
-                nameLab.style.color = 'var(--neon-red)'; 
-                bubble.style.background = 'rgba(255,0,51,0.1)'; 
-                bubble.style.border = '1px solid var(--neon-red)'; 
-            } else if (isSucc) { 
-                nameLab.style.color = 'var(--neon-green)'; 
-                bubble.style.background = 'rgba(0,255,102,0.1)'; 
-                bubble.style.border = '1px solid var(--neon-green)'; 
-            } 
-            
-            wrapper.appendChild(nameLab); 
-            wrapper.appendChild(bubble); 
-            chatMessages.appendChild(wrapper); 
-            chatMessages.scrollTop = chatMessages.scrollHeight; 
+            wrapper.appendChild(nameLab); wrapper.appendChild(bubble); chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight; 
             
             if (save) { 
                 const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; 
                 h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); 
-                if (h.length > 50) h.shift(); 
-                localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); 
+                if (h.length > 50) h.shift(); localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); 
             } 
         }
         
