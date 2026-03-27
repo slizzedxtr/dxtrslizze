@@ -24,23 +24,19 @@
 
         /* МАТРИЦА ФОН */
         #matrixCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; opacity: 0.6; }
-        
-        /* Цветовой фильтр */
-        body::after {
-            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
-            background: transparent; transition: background 0.3s ease;
-        }
+        body::after { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; background: transparent; transition: background 0.3s ease; }
         body.theme-red::after { background: rgba(255, 0, 51, 0.1); }
         body.theme-green::after { background: rgba(0, 255, 102, 0.08); }
 
-        /* МЕНЮ И ПРОФИЛЬ */
+        /* МЕНЮ И ПРОФИЛЬ (ВЕРХНИЕ КНОПКИ) */
         .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 15px; }
-        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--theme-color); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-dark); transition: 0.3s; box-shadow: 0 0 10px var(--theme-glow); text-decoration: none; }
+        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--theme-color); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-dark); transition: 0.3s; box-shadow: 0 0 10px var(--theme-glow); text-decoration: none; cursor: pointer; }
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
         .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--theme-color); border-color: #fff; }
 
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-color); border-color: var(--theme-color); }
+        
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(2, 6, 2, 0.95); backdrop-filter: blur(25px); border-right: 1px solid var(--theme-glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
         .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
@@ -55,47 +51,19 @@
         main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 40px; z-index: 10; display: flex; flex-direction: column; align-items: center; position: relative; }
 
         /* СКРЫТИЕ/ОТОБРАЖЕНИЕ БЛОКОВ */
-        .view-section { width: 100%; display: none; flex-direction: column; align-items: center; animation: fadeIn 0.5s ease forwards; }
+        .view-section { width: 100%; display: none; flex-direction: column; align-items: center; animation: fadeIn 0.4s ease forwards; }
         .view-section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ВХОД (АВТОРИЗАЦИЯ) */
         .auth-box { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 15px; margin-top: 10vh; }
         .input-wrapper { display: flex; width: 100%; align-items: center; transition: transform 0.3s; }
-        
-        .admin-input { 
-            flex: 1; height: 70px; 
-            background: var(--glass-bg); 
-            border: 2px solid var(--theme-color); 
-            border-right: none; 
-            border-radius: 20px 0 0 20px; 
-            outline: none; padding: 0 20px; 
-            color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 2px; 
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.05); 
-            backdrop-filter: blur(15px); 
-            transition: all 0.3s ease;
-        }
+        .admin-input { flex: 1; height: 70px; background: var(--glass-bg); border: 2px solid var(--theme-color); border-right: none; border-radius: 20px 0 0 20px; outline: none; padding: 0 20px; color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 2px; box-shadow: inset 0 0 15px rgba(255,255,255,0.05); backdrop-filter: blur(15px); transition: all 0.3s ease; }
         .admin-input::placeholder { color: var(--text-muted); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
-        
-        .auth-submit-btn { 
-            width: 70px; height: 70px; 
-            background: rgba(0,0,0,0.6); 
-            border: 2px solid var(--theme-color); 
-            border-radius: 0 20px 20px 0; 
-            color: var(--theme-color); 
-            font-size: 1.5rem; 
-            cursor: pointer; transition: 0.3s; 
-            display: flex; justify-content: center; align-items: center; 
-            box-shadow: inset 0 0 15px rgba(255,255,255,0.05);
-            backdrop-filter: blur(15px);
-        }
-        .auth-submit-btn:hover, .auth-submit-btn:active { 
-            background: var(--theme-color); color: var(--bg-dark); box-shadow: 0 0 20px var(--theme-glow); 
-        }
-
+        .auth-submit-btn { width: 70px; height: 70px; background: rgba(0,0,0,0.6); border: 2px solid var(--theme-color); border-radius: 0 20px 20px 0; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 0 15px rgba(255,255,255,0.05); backdrop-filter: blur(15px); }
+        .auth-submit-btn:hover, .auth-submit-btn:active { background: var(--theme-color); color: var(--bg-dark); box-shadow: 0 0 20px var(--theme-glow); }
         #passWrapper { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         #passWrapper.show { max-height: 100px; opacity: 1; margin-top: 5px; overflow: visible; }
-
         .sys-msg { color: var(--theme-color); font-size: 0.95rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; height: 20px; text-shadow: 0 0 10px var(--theme-glow); }
 
         /* БАН ЭКРАН */
@@ -104,90 +72,90 @@
         .ban-icon { font-size: 5rem; color: var(--error-red); margin-bottom: 20px; text-shadow: 0 0 30px rgba(204, 68, 68, 0.6); display: inline-block; }
         .ban-icon.pulsing { animation: pulseBan 2s infinite; }
         @keyframes pulseBan { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        
         .ban-text { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase; transition: color 0.3s; }
         .ban-timer { font-size: 3rem; font-weight: 900; color: var(--error-red); margin-top: 10px; font-variant-numeric: tabular-nums; }
 
-        /* ПАНЕЛЬ УПРАВЛЕНИЯ */
-        .dash-nav { display: flex; gap: 15px; margin-bottom: 30px; background: var(--glass-bg); padding: 10px; border-radius: 16px; border: 1px solid var(--theme-glass-border); backdrop-filter: blur(10px); width: 100%; max-width: 600px; justify-content: center; flex-wrap: wrap; }
-        .dash-btn { background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 10px 25px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; flex: 1; min-width: 120px; }
-        .dash-btn.active, .dash-btn:hover { background: rgba(0, 255, 102, 0.15); border-color: var(--theme-color); color: var(--theme-color); box-shadow: 0 0 15px var(--theme-glow); }
+        /* === ГЛАВНОЕ МЕНЮ (ВЫБОР ОТДЕЛА) === */
+        .menu-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 500px; margin-top: 30px; }
+        .menu-btn { background: var(--glass-bg); border: 1px solid var(--theme-glass-border); padding: 25px; border-radius: 20px; color: #fff; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
+        .menu-btn i { font-size: 1.8rem; color: var(--theme-color); transition: 0.3s; }
+        .menu-btn:hover { border-color: var(--theme-color); box-shadow: 0 0 25px var(--theme-glow); transform: translateY(-5px); background: rgba(0, 198, 255, 0.1); }
+        .menu-btn:hover i { transform: scale(1.2); text-shadow: 0 0 15px var(--theme-color); }
 
-        /* ФОРМА СОЗДАНИЯ / ПРОФИЛЬ */
-        .create-form { background: var(--glass-bg); border: 1px solid var(--theme-glass-border); padding: 30px; border-radius: 20px; width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        /* ШАПКА РАЗДЕЛОВ (КНОПКА НАЗАД) */
+        .section-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--theme-glass-border); }
+        .back-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--text-muted); padding: 10px 20px; border-radius: 12px; color: var(--text-main); font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+        .back-btn:hover { background: var(--theme-color); color: #000; border-color: var(--theme-color); box-shadow: 0 0 15px var(--theme-glow); }
+        .section-title { font-size: 1.5rem; font-weight: 900; color: var(--theme-color); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--theme-glow); }
+
+        /* ФОРМЫ */
+        .create-form { background: var(--glass-bg); border: 1px solid var(--theme-glass-border); padding: 30px; border-radius: 20px; width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
+        .form-group { display: flex; flex-direction: column; gap: 8px; width: 100%; }
         .form-label { font-size: 0.8rem; font-weight: 800; color: var(--theme-color); text-transform: uppercase; letter-spacing: 1px; }
-        .form-input { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; color: #fff; font-family: 'Montserrat'; outline: none; transition: 0.3s; }
+        .form-input { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; color: #fff; font-family: 'Montserrat'; outline: none; transition: 0.3s; width: 100%; }
         .form-input:focus { border-color: var(--theme-color); box-shadow: inset 0 0 10px var(--theme-glow); }
-        .form-file { background: rgba(0,0,0,0.6); border: 1px dashed var(--theme-color); padding: 15px; border-radius: 12px; color: var(--text-muted); cursor: pointer; text-align: center; transition: 0.3s; }
+        .form-file { background: rgba(0,0,0,0.6); border: 1px dashed var(--theme-color); padding: 15px; border-radius: 12px; color: var(--text-muted); cursor: pointer; text-align: center; transition: 0.3s; width: 100%; }
         .form-file:hover { background: rgba(0,255,102,0.1); color: #fff; }
         .form-file input { display: none; }
         
-        .submit-btn { background: var(--theme-color); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
+        .submit-btn { background: var(--theme-color); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; width: 100%; }
         .submit-btn:hover { box-shadow: 0 0 25px var(--theme-glow); transform: translateY(-2px); background: #fff; }
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: var(--theme-color); color: #000; }
 
-        /* СПИСОК ПРОМОКОДОВ (КАРТОЧКИ) */
-        .promo-list { width: 100%; display: flex; flex-direction: column; gap: 20px; }
-        .promo-card { background: linear-gradient(135deg, rgba(5,20,10,0.8), rgba(2,10,5,0.9)); border: 1px solid var(--theme-glass-border); border-radius: 20px; padding: 20px; display: flex; gap: 20px; align-items: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+        /* СПИСКИ КАРТОЧЕК (МУЗЫКА И ПРОМО) */
+        .data-list { width: 100%; display: flex; flex-direction: column; gap: 20px; max-width: 800px; }
+        .data-card { background: linear-gradient(135deg, rgba(5,20,10,0.8), rgba(2,10,5,0.9)); border: 1px solid var(--theme-glass-border); border-radius: 20px; padding: 20px; display: flex; gap: 20px; align-items: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
         .card-cover { width: 100px; height: 100px; border-radius: 12px; object-fit: cover; flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
         .card-info { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-        .card-code { font-size: 1.2rem; font-weight: 900; color: var(--theme-color); letter-spacing: 1px; }
-        .card-title { font-size: 1.1rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 5px; background: var(--theme-color); color: #000; font-weight: 900; text-transform: uppercase; display: inline-block; width: fit-content; }
+        .badge-red { background: var(--error-red); color: white; }
+        .card-title { font-size: 1.2rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .mini-player { display: flex; align-items: center; gap: 10px; margin-top: 5px; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .mini-play-btn { background: transparent; color: var(--theme-color); border: none; font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
-        .mini-play-btn:hover { color: #fff; transform: scale(1.1); }
-        .mini-progress { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 5px; position: relative; cursor: pointer; }
-        .mini-bar { height: 100%; width: 0%; background: var(--theme-color); border-radius: 5px; pointer-events: none; box-shadow: 0 0 10px var(--theme-glow); }
-        .mini-time { font-size: 0.75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; font-weight: 700; min-width: 70px; text-align: right; }
-
-        .card-actions { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; }
-        .action-icon { background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); width: 35px; height: 35px; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
-        .action-icon.edit:hover { color: #fff; border-color: var(--theme-color); background: var(--theme-color); box-shadow: 0 0 10px var(--theme-glow); }
+        .card-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px; }
+        .action-icon { background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: center; align-items: center; gap: 5px; color: var(--text-muted); cursor: pointer; transition: 0.3s; font-size: 0.9rem; font-weight: 700; }
+        .action-icon:hover { color: #fff; border-color: var(--theme-color); background: var(--theme-color); box-shadow: 0 0 10px var(--theme-glow); }
         .action-icon.delete:hover { color: #fff; border-color: var(--error-red); background: var(--error-red); box-shadow: 0 0 10px rgba(204,68,68,0.4); }
 
-        /* МОДАЛКИ (УДАЛЕНИЕ И РЕДАКТИРОВАНИЕ) */
+        .empty-neon { text-align: center; color: var(--theme-color); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 40px 0; text-shadow: 0 0 15px var(--theme-glow); opacity: 0.7; }
+
+        /* ПРОФИЛИ */
+        .profile-card { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .prof-info h4 { color: #fff; font-size: 1.2rem; margin-bottom: 5px; }
+        .prof-info p { color: var(--text-muted); font-family: monospace; }
+
+        /* МОДАЛКИ */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 10005; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-box { background: rgba(20, 0, 0, 0.9); border: 2px solid; border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s; }
+        .modal-box { background: rgba(20, 0, 0, 0.9); border: 2px solid var(--theme-color); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s; box-shadow: 0 0 50px var(--theme-glow); }
         .modal-overlay.active .modal-box { transform: scale(1); }
+        .modal-box.danger { border-color: var(--error-red); box-shadow: 0 0 50px rgba(204,68,68,0.2); }
         
-        #deleteModal .modal-box { border-color: var(--error-red); box-shadow: 0 0 50px rgba(204,68,68,0.2); }
-        #deleteModal h3 { color: #fff; font-size: 1.3rem; margin-bottom: 15px; text-transform: uppercase; }
-        #deleteModal p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5; }
-        .modal-code { color: var(--error-red); font-weight: 900; font-size: 1.2rem; }
-        
-        #editModal .modal-box { border-color: var(--theme-color); box-shadow: 0 0 50px var(--theme-glow); }
-        #editModal h3 { color: var(--theme-color); font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; text-shadow: 0 0 10px var(--theme-glow); }
-
-        .modal-btns { display: flex; gap: 15px; justify-content: center; }
+        .modal-box h3 { color: var(--theme-color); font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; }
+        .modal-box.danger h3 { color: var(--error-red); }
+        .modal-btns { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
         .m-btn { padding: 12px 25px; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; border: none; transition: 0.3s; flex: 1; }
         .m-btn-cancel { background: rgba(255,255,255,0.1); color: white; }
         .m-btn-cancel:hover { background: rgba(255,255,255,0.2); }
-        .m-btn-confirm-del { background: var(--error-red); color: white; box-shadow: 0 0 15px rgba(204,68,68,0.5); }
-        .m-btn-confirm-del:hover { background: #ff0000; box-shadow: 0 0 25px rgba(255,0,0,0.8); transform: scale(1.05); }
-        .m-btn-confirm-edit { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-glow); }
-        .m-btn-confirm-edit:hover { background: #fff; box-shadow: 0 0 25px rgba(255,255,255,0.8); transform: scale(1.05); }
+        .m-btn-confirm { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-glow); }
+        .m-btn-confirm:hover { background: #fff; box-shadow: 0 0 25px rgba(255,255,255,0.8); transform: scale(1.05); }
+        .m-btn-danger { background: var(--error-red); color: white; box-shadow: 0 0 15px rgba(204,68,68,0.5); }
+        .m-btn-danger:hover { background: #ff0000; box-shadow: 0 0 25px rgba(255,0,0,0.8); transform: scale(1.05); }
 
-        /* === ТЕХПОДДЕРЖКА (ЧАТ) === */
+        /* === ТЕХПОДДЕРЖКА (ЧАТ) ОСТАВЛЕНА БЕЗ ИЗМЕНЕНИЙ === */
         .support-btn { position: fixed; bottom: 25px; right: 25px; z-index: 9000; background: var(--glass-bg); border: 1px solid var(--theme-glass-border); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); transition: 0.3s; }
         .support-btn:hover { background: var(--theme-color); color: #000; transform: scale(1.1); box-shadow: 0 0 25px var(--theme-glow); }
         .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--error-red); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: bold; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--error-red); }
-        
         .chat-window { position: fixed; bottom: 100px; right: 25px; width: 350px; height: 450px; background: rgba(5, 10, 5, 0.95); border: 1px solid var(--theme-glass-border); border-radius: 20px; z-index: 9000; display: none; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(20px); overflow: hidden; transform: translateY(20px); opacity: 0; transition: all 0.3s ease; }
         .chat-window.active { display: flex; transform: translateY(0); opacity: 1; }
         .chat-header { background: rgba(0,0,0,0.5); padding: 15px 20px; border-bottom: 1px solid var(--theme-glass-border); display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: var(--theme-color); letter-spacing: 1px; text-transform: uppercase; }
         .close-chat { cursor: pointer; font-size: 1.2rem; color: #fff; transition: 0.3s; }
         .close-chat:hover { color: var(--error-red); }
-        
         .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .msg { max-width: 85%; padding: 10px 15px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
         .msg-user { align-self: flex-end; background: rgba(0, 198, 255, 0.1); border: 1px solid var(--theme-color); color: #fff; border-bottom-right-radius: 2px; }
         .msg-admin { align-self: flex-start; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-bottom-left-radius: 2px; }
         .msg-warning { align-self: flex-start; background: rgba(204, 68, 68, 0.2); border: 1px solid var(--error-red); color: #fff; }
         .msg-success { align-self: flex-start; background: rgba(0, 255, 102, 0.2); border: 1px solid #00ff66; color: #fff; }
-        
         .chat-input { display: flex; padding: 15px; background: rgba(0,0,0,0.5); border-top: 1px solid var(--theme-glass-border); gap: 10px; }
         .chat-input input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 10px; color: #fff; outline: none; font-family: 'Montserrat'; transition: 0.3s; }
         .chat-input input:focus { border-color: var(--theme-color); }
@@ -200,16 +168,8 @@
             .auth-box { margin-top: 5vh; }
             .admin-input { height: 60px; font-size: 1rem; }
             .auth-submit-btn { width: 60px; height: 60px; font-size: 1.3rem; }
-            .create-form { padding: 20px; }
-            .promo-card { flex-direction: column; align-items: flex-start; }
-            .card-cover { width: 100%; height: 150px; }
-            .card-actions { top: 20px; right: 20px; }
-            
+            .menu-btn { padding: 20px; font-size: 1rem; }
             .chat-window { width: calc(100vw - 40px); right: 20px; bottom: 90px; height: 60vh; }
-            .support-btn { width: 50px; height: 50px; right: 20px; bottom: 20px; font-size: 1.2rem; }
-            
-            .top-controls { top: 15px; right: 15px; gap: 10px; }
-            .profile-btn { width: 40px; height: 40px; }
         }
     </style>
 </head>
@@ -218,9 +178,9 @@
     <canvas id="matrixCanvas"></canvas>
 
     <div class="top-controls">
-        <a href="https://dxtrslizze.xyz/profile" class="profile-btn" title="Профиль">
+        <div class="profile-btn" title="Профиль Администратора" onclick="openSection('adminProfileSection')">
             <img src="../dslogo.png" alt="Profile" id="userAvatar">
-        </a>
+        </div>
     </div>
 
     <div class="burger-btn" id="burgerBtn"><i class="fa-solid fa-bars"></i></div>
@@ -231,7 +191,6 @@
         </div>
         <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home"></i> Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
-        <a href="https://dxtrslizze.xyz/promocode" class="sidebar-link"><i class="fa-solid fa-terminal"></i> Ввод промокода</a>
         <a class="sidebar-link" id="menuSupportBtn"><i class="fa-solid fa-headset"></i> Поддержка</a>
     </div>
 
@@ -263,7 +222,6 @@
                     <input type="text" id="adminLogin" class="admin-input" placeholder="ЛОГИН" autocomplete="off" spellcheck="false" required>
                     <button type="submit" class="auth-submit-btn"><i class="fa-solid fa-terminal"></i></button>
                 </div>
-                
                 <div class="input-wrapper" id="passWrapper">
                     <input type="password" id="adminPass" class="admin-input" placeholder="ПАРОЛЬ">
                     <button type="submit" class="auth-submit-btn"><i class="fa-solid fa-terminal"></i></button>
@@ -277,40 +235,64 @@
             <div class="ban-text" id="banTextEl">Доступ заблокирован</div>
             <div class="ban-timer" id="banTimer">60:00</div>
             <div id="banDescEl" style="color: var(--text-muted); margin-top: 15px; max-width: 400px; line-height: 1.5;">
-                Превышено количество попыток. Запрос отправлен на сервер. Ваш IP и Fingerprint занесены во временный черный список.
+                Превышено количество попыток.
             </div>
         </div>
 
-        <div class="view-section" id="dashboardSection">
-            <div class="dash-nav">
-                <button class="dash-btn active" id="btnTabMusic">Музыка</button>
-                <button class="dash-btn" id="btnTabCreate">Промо</button>
-                <button class="dash-btn" id="btnTabList">Архив Промо</button>
-                <button class="dash-btn" id="btnTabProfile">Профиль</button>
+        <div class="view-section" id="mainMenuSection">
+            <div class="section-title" style="margin-bottom: 10px;">СИСТЕМА УПРАВЛЕНИЯ</div>
+            <div style="color: var(--text-muted); text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px;">Выберите нужный отдел</div>
+            
+            <div class="menu-grid">
+                <div class="menu-btn" onclick="openSection('musicSection')">
+                    <i class="fa-solid fa-compact-disc"></i> <span>Муз. Каталог</span>
+                </div>
+                <div class="menu-btn" onclick="openSection('profileSection')">
+                    <i class="fa-solid fa-users"></i> <span>Профили</span>
+                </div>
+                <div class="menu-btn" onclick="openSection('promoSection')">
+                    <i class="fa-solid fa-ticket"></i> <span>Промокоды</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="view-section" id="musicSection">
+            <div class="section-header">
+                <button class="back-btn" onclick="openSection('mainMenuSection')"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+                <div class="section-title">МУЗЫКА</div>
             </div>
 
-            <form class="create-form" id="musicForm">
+            <div id="musicListContainer" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <button class="submit-btn" style="max-width: 400px; margin-bottom: 30px;" onclick="showAddMusicForm()">
+                    <i class="fa-solid fa-plus"></i> ДОБАВИТЬ ТРЕК
+                </button>
+                <div class="data-list" id="musicList">
+                    </div>
+            </div>
+
+            <form class="create-form" id="musicAddForm" style="display: none;">
                 <div style="color: var(--theme-color); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 10px;">
                     <i class="fa-solid fa-database"></i> Загрузка в Supabase
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Название трека</label>
+                    <label class="form-label">1.1.1 Название трека</label>
                     <input type="text" id="mTitle" class="form-input" placeholder="Напр: Night City Lights" required>
                 </div>
+                
                 <div class="form-group">
-                    <label class="form-label">YouTube Ссылка (Обязательно)</label>
+                    <label class="form-label">1.1.8 YouTube Клип (ОБЯЗАТЕЛЬНО)</label>
                     <input type="url" id="mYt" class="form-input" placeholder="https://youtube.com/..." required>
                 </div>
                 
-                <div style="display: flex; gap: 20px; color: var(--text-main); font-weight: 700; flex-wrap: wrap; margin-top: 10px;">
-                    <label style="cursor: pointer;"><input type="checkbox" id="m18"> 18+ (Explicit)</label>
-                    <label style="cursor: pointer;"><input type="checkbox" id="mMain"> Главный релиз</label>
-                    <label style="cursor: pointer; color: var(--theme-color);"><input type="checkbox" id="mHasPlatforms"> Доступен на площадках</label>
+                <div style="display: flex; gap: 20px; color: var(--text-main); font-weight: 700; flex-wrap: wrap; margin-top: 10px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <label style="cursor: pointer;"><input type="checkbox" id="m18"> 18+ (Explicit) [1.1.3]</label>
+                    <label style="cursor: pointer;"><input type="checkbox" id="mMain"> Главный релиз [1.1.4]</label>
+                    <label style="cursor: pointer; color: var(--theme-color);"><input type="checkbox" id="mHasPlatforms"> Кнопка "Площадки" [1.1.6]</label>
                 </div>
 
-                <div id="platformsContainer" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px; padding: 15px; background: rgba(0, 198, 255, 0.05); border: 1px dashed var(--theme-color); border-radius: 12px;">
-                    <div style="font-size: 0.8rem; font-weight: 800; color: var(--theme-color); text-transform: uppercase; margin-bottom: 5px;">Ссылки на площадки</div>
+                <div id="platformsContainer" style="display: none; flex-direction: column; gap: 8px; margin-top: 5px; padding: 15px; background: rgba(0, 198, 255, 0.05); border: 1px dashed var(--theme-color); border-radius: 12px;">
+                    <div style="font-size: 0.8rem; font-weight: 800; color: var(--theme-color); text-transform: uppercase; margin-bottom: 5px;">Ссылки на площадки (Обязательно)</div>
                     <input type="url" id="linkSpotify" class="form-input" placeholder="Ссылка Spotify">
                     <input type="url" id="linkVk" class="form-input" placeholder="Ссылка VK Музыка">
                     <input type="url" id="linkYandex" class="form-input" placeholder="Ссылка Яндекс Музыка">
@@ -318,114 +300,128 @@
 
                 <label class="form-file" id="mCoverLabel" style="margin-top: 10px;">
                     <i class="fa-solid fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="mCoverText">Обложка (JPG/PNG - Обязательно)</span>
+                    <span id="mCoverText">Обложка (JPG/PNG - ОБЯЗАТЕЛЬНО)</span>
                     <input type="file" id="mCover" accept="image/*" required>
                 </label>
-                <label class="form-file" id="mMp3Label">
-                    <i class="fa-solid fa-file-audio" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="mMp3Text">Трек (MP3 - Обязательно)</span>
-                    <input type="file" id="mMp3" accept=".mp3" required>
-                </label>
-                <label class="form-file" id="mWavLabel">
-                    <i class="fa-solid fa-file-waveform" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="mWavText">Трек (WAV - Обязательно)</span>
-                    <input type="file" id="mWav" accept=".wav" required>
-                </label>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <label class="form-file" id="mMp3Label" style="flex:1; min-width: 250px;">
+                        <i class="fa-solid fa-file-audio" style="font-size: 1.5rem; margin-bottom: 10px;"></i><br>
+                        <span id="mMp3Text">Трек (MP3 - ОБЯЗАТЕЛЬНО)</span>
+                        <input type="file" id="mMp3" accept=".mp3" required>
+                    </label>
+                    <label class="form-file" id="mWavLabel" style="flex:1; min-width: 250px; border-color: var(--theme-color);">
+                        <i class="fa-solid fa-file-waveform" style="font-size: 1.5rem; margin-bottom: 10px; color: var(--theme-color);"></i><br>
+                        <span id="mWavText" style="color: #fff;">Трек (WAV - ОБЯЗАТЕЛЬНО)</span>
+                        <input type="file" id="mWav" accept=".wav" required>
+                    </label>
+                </div>
 
                 <div id="mProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px;">
                     <div id="mProgressBar" style="height:100%; width:0%; background:var(--theme-color); box-shadow:0 0 10px var(--theme-glow); transition:width 0.2s;"></div>
                 </div>
                 <div id="mStatusText" style="text-align:center; font-size:0.8rem; color:var(--theme-color); font-weight:bold; margin-top:5px;"></div>
 
-                <button type="submit" class="submit-btn" id="mSubmitBtn">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> Загрузить в каталог
-                </button>
+                <div style="display: flex; gap: 15px; margin-top: 10px;">
+                    <button type="button" class="m-btn m-btn-cancel" onclick="hideAddMusicForm()">Отмена</button>
+                    <button type="submit" class="submit-btn" id="mSubmitBtn" style="margin-top: 0; flex: 2;">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Загрузить
+                    </button>
+                </div>
             </form>
+        </div>
 
-            <form class="create-form" id="createForm" style="display: none;">
+        <div class="view-section" id="profileSection">
+            <div class="section-header">
+                <button class="back-btn" onclick="openSection('mainMenuSection')"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+                <div class="section-title">ПРОФИЛИ</div>
+            </div>
+            
+            <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; text-align: center;">
+                Управление базой пользователей (MongoDB)
+            </div>
+
+            <div class="data-list" id="profilesList">
+                <div class="empty-neon">Загрузка профилей...</div>
+                </div>
+        </div>
+
+        <div class="view-section" id="promoSection">
+            <div class="section-header">
+                <button class="back-btn" onclick="openSection('mainMenuSection')"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+                <div class="section-title">ПРОМОКОДЫ</div>
+            </div>
+
+            <form class="create-form" id="promoAddForm" style="margin-bottom: 30px;">
                 <div style="color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 10px;">
-                    <i class="fa-solid fa-leaf"></i> Загрузка в MongoDB
+                    <i class="fa-solid fa-ticket"></i> Новый промокод
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Промокод</label>
-                    <input type="text" id="newCode" class="form-input" placeholder="Напр: GUSTO2026 (Без #)" required>
+                    <input type="text" id="newCode" class="form-input" placeholder="Код: GUSTO2026 (Без #)" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Название трека</label>
-                    <input type="text" id="newTitle" class="form-input" placeholder="Напр: GUSTO (Snippet)" required>
+                    <input type="text" id="newTitle" class="form-input" placeholder="Название: GUSTO (Snippet)" required>
                 </div>
                 
-                <label class="form-file" id="coverLabel">
-                    <i class="fa-solid fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="coverText">Загрузить обложку (JPG/PNG)</span>
-                    <input type="file" id="newCover" accept="image/*" required>
-                </label>
-
-                <label class="form-file" id="trackLabel">
-                    <i class="fa-solid fa-file-audio" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="trackText">Загрузить трек (MP3)</span>
-                    <input type="file" id="newTrack" accept="audio/mpeg" required>
-                </label>
-
+                <div style="display: flex; gap: 10px;">
+                    <label class="form-file" id="coverLabel">
+                        <i class="fa-solid fa-image"></i> <span id="coverText">Обложка</span>
+                        <input type="file" id="newCover" accept="image/*" required>
+                    </label>
+                    <label class="form-file" id="trackLabel">
+                        <i class="fa-solid fa-file-audio"></i> <span id="trackText">Трек MP3</span>
+                        <input type="file" id="newTrack" accept="audio/mpeg" required>
+                    </label>
+                </div>
                 <button type="submit" class="submit-btn" id="submitBtn">
-                    <i class="fa-solid fa-upload"></i> Создать промокод
+                    <i class="fa-solid fa-plus"></i> Создать
                 </button>
             </form>
 
-            <div class="promo-list" id="promoList" style="display: none;"></div>
+            <div class="section-title" style="font-size: 1.2rem; margin-bottom: 15px;">АКТИВНЫЕ ПРОМОКОДЫ</div>
+            <div class="data-list" id="promoList"></div>
+        </div>
 
-            <div id="profileSection" style="display: none; width: 100%; max-width: 600px; flex-direction: column; align-items: center; text-align: center;" class="create-form">
+        <div class="view-section" id="adminProfileSection">
+            <div class="section-header">
+                <button class="back-btn" onclick="openSection('mainMenuSection')"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+                <div class="section-title">АДМИНИСТРАТОР</div>
+            </div>
+            <div class="create-form" style="align-items: center; text-align: center;">
                 <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--theme-color); margin-bottom: 15px; overflow: hidden; box-shadow: 0 0 20px var(--theme-glow);">
                     <img src="../dslogo.png" alt="Avatar" onerror="this.src='https://via.placeholder.com/100/000000/00c6ff?text=D%26S'" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
-                <h2 id="profNick" style="font-size: 1.8rem; margin-bottom: 5px;">Загрузка...</h2>
+                <h2 id="profNick" style="font-size: 1.8rem; margin-bottom: 5px;">DXTR | SlizZe</h2>
                 <div style="color: var(--theme-color); font-weight: 800; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; font-size: 0.8rem;">Системный администратор</div>
-                
-                <div style="width: 100%; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; border: 1px solid var(--theme-glass-border); text-align: left; display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: var(--text-muted);">Ваш системный ID:</span>
-                        <span style="color: #fff; font-family: monospace; font-weight: 900;" id="profId">---</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: var(--text-muted);">Статус связи:</span>
-                        <span style="color: var(--theme-color);" id="profStatus"><i class="fa-solid fa-circle-check"></i> Connected</span>
-                    </div>
-                </div>
-                
-                <button class="submit-btn" style="width: 100%; margin-top: 20px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="location.reload()">
-                    <i class="fa-solid fa-arrow-rotate-right"></i> Обновить сессию
-                </button>
+                <button class="m-btn m-btn-danger" style="width: 100%;" onclick="logout()">ВЫЙТИ ИЗ СИСТЕМЫ</button>
             </div>
         </div>
     </main>
 
     <div class="modal-overlay" id="deleteModal">
-        <div class="modal-box">
+        <div class="modal-box danger">
             <h3>Подтверждение</h3>
-            <p>Удалить промокод <span class="modal-code" id="modalCodeName">#XXX</span> навсегда? Трек и обложка будут стерты из базы.</p>
+            <p id="deleteModalText">Удалить элемент <span class="modal-code" id="modalCodeName">#XXX</span> навсегда?</p>
             <div class="modal-btns">
                 <button class="m-btn m-btn-cancel" onclick="closeDeleteModal()">Отмена</button>
-                <button class="m-btn m-btn-confirm-del" id="confirmDeleteBtn">Удалить</button>
+                <button class="m-btn m-btn-danger" id="confirmDeleteBtn">Удалить</button>
             </div>
         </div>
     </div>
-    <div class="modal-overlay" id="editModal">
+
+    <div class="modal-overlay" id="editProfileModal">
         <div class="modal-box">
-            <h3>Редактировать</h3>
+            <h3>Изменить профиль</h3>
             <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Новый Промокод</label>
-                <input type="text" id="editCodeInput" class="form-input" placeholder="Без #">
+                <label class="form-label">Цифровой ID [2.3.2]</label>
+                <input type="text" id="editProfIdInput" class="form-input">
             </div>
             <div class="form-group" style="text-align: left; margin-bottom: 25px;">
-                <label class="form-label">Новое Название трека</label>
-                <input type="text" id="editTitleInput" class="form-input">
-            </div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 25px;">
-                *Чтобы заменить аудио или обложку, удалите промокод и создайте его заново.
+                <label class="form-label">Никнейм [2.3.1]</label>
+                <input type="text" id="editProfNickInput" class="form-input" placeholder="Пусто = удалить ник">
             </div>
             <div class="modal-btns">
-                <button class="m-btn m-btn-cancel" onclick="closeEditModal()">Отмена</button>
-                <button class="m-btn m-btn-confirm-edit" id="confirmEditBtn">Сохранить</button>
+                <button class="m-btn m-btn-cancel" onclick="closeEditProfileModal()">Отмена</button>
+                <button class="m-btn m-btn-confirm" id="confirmEditProfileBtn">Сохранить</button>
             </div>
         </div>
     </div>
@@ -433,9 +429,25 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         const API_URL = "https://dxtrslizze.onrender.com/api";
-        let sessionPassword = ""; 
+        let sessionPassword = localStorage.getItem('adminPass') || ""; 
 
-        // ========== МАТРИЦА И МЕНЮ ==========
+        // ========== НАВИГАЦИЯ ПО РАЗДЕЛАМ ==========
+        function openSection(sectionId) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+
+            // Загрузка данных при входе в раздел
+            if(sectionId === 'musicSection') loadMusicFromServer();
+            if(sectionId === 'profileSection') loadProfilesFromServer();
+            if(sectionId === 'promoSection') loadPromosFromServer();
+        }
+
+        function logout() {
+            localStorage.removeItem('adminPass');
+            location.reload();
+        }
+
+        // ========== МАТРИЦА (ФОН) ==========
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth; canvas.height = window.innerHeight;
@@ -461,246 +473,6 @@
             }
         }
         setInterval(drawMatrix, 50);
-        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; columns = Math.floor(canvas.width / FONT_SIZE); drops = []; for (let i = 0; i < columns; i++) drops[i] = Math.random() * -60; });
-
-        const burgerBtn = document.getElementById('burgerBtn'), sidebar = document.getElementById('sidebar'), sidebarOverlay = document.getElementById('sidebarOverlay'), closeSidebar = document.getElementById('closeSidebar');
-        function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
-        burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
-
-        // ========== ЧАТ ТЕХПОДДЕРЖКИ ==========
-        const supportBtn = document.getElementById('supportBtn');
-        const chatWindow = document.getElementById('chatWindow');
-        const closeChat = document.getElementById('closeChat');
-        const menuSupportBtn = document.getElementById('menuSupportBtn');
-        const unreadBadge = document.getElementById('unreadBadge');
-        
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const chatSend = document.getElementById('chatSend');
-        
-        let chatHistory = JSON.parse(localStorage.getItem('chatHistory_dxtr') || '[]');
-        let isSupportBanned = false;
-
-        function toggleChat() {
-            if (chatWindow.style.display === 'flex') {
-                chatWindow.classList.remove('active');
-                setTimeout(() => chatWindow.style.display = 'none', 300);
-            } else {
-                chatWindow.style.display = 'flex';
-                setTimeout(() => chatWindow.classList.add('active'), 10);
-                unreadBadge.style.display = 'none';
-                scrollToBottom();
-            }
-        }
-        
-        supportBtn.onclick = toggleChat;
-        closeChat.onclick = toggleChat;
-        menuSupportBtn.onclick = (e) => { e.preventDefault(); toggleMenu(); toggleChat(); };
-
-        function renderHistory() {
-            chatMessages.innerHTML = '';
-            chatHistory.forEach(m => addMessageToUI(m.text, m.type));
-            scrollToBottom();
-        }
-        renderHistory();
-
-        function addMessageToUI(text, type) {
-            const div = document.createElement('div');
-            div.className = `msg msg-${type}`;
-            div.innerHTML = text; 
-            chatMessages.appendChild(div);
-            scrollToBottom();
-        }
-
-        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
-
-        function saveMessage(text, type) {
-            chatHistory.push({ text, type });
-            if (chatHistory.length > 50) chatHistory.shift();
-            localStorage.setItem('chatHistory_dxtr', JSON.stringify(chatHistory));
-        }
-
-        chatSend.onclick = () => {
-            if (isSupportBanned || !chatInput.value.trim()) return;
-            const text = chatInput.value.trim();
-            addMessageToUI(text, 'user');
-            saveMessage(text, 'user');
-            socket.emit('send_message', { clientId, text });
-            chatInput.value = '';
-        };
-
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') chatSend.click();
-        });
-
-
-        // ========== СИСТЕМА БАНОВ, ID И СОКЕТЫ ==========
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                let date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-        }
-        function getCookie(name) {
-            let nameEQ = name + "=";
-            let ca = document.cookie.split(';');
-            for(let i=0;i < ca.length;i++) {
-                let c = ca[i].trim();
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
-            }
-            return null;
-        }
-
-        let lsId = localStorage.getItem('dxtrNumericId');
-        let cookieId = getCookie('dxtrNumericId');
-        let clientId = lsId || cookieId || null;
-        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
-        
-        if (clientId) {
-            localStorage.setItem('dxtrNumericId', clientId);
-            setCookie('dxtrNumericId', clientId, 365);
-        }
-
-        let socket;
-        let fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FP => FP.load());
-        let fingerprintHash = '';
-
-        try {
-            socket = io("https://dxtrslizze.onrender.com/");
-            socket.on('connect', () => {
-                fpPromise.then(fp => fp.get()).then(r => {
-                    fingerprintHash = r.visitorId;
-                    
-                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
-                }).catch(() => {
-                    fingerprintHash = 'blocked';
-                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
-                });
-            });
-
-            socket.on('assign_id', (data) => {
-                if (data && data.newId) {
-                    clientId = data.newId;
-                    localStorage.setItem('dxtrNumericId', clientId);
-                    setCookie('dxtrNumericId', clientId, 365);
-                    const profIdElem = document.getElementById('profId');
-                    if(profIdElem) profIdElem.textContent = clientId;
-                }
-            });
-            
-            socket.on('user_data', d => {
-                if (d.nickname) {
-                    window.userNickname = d.nickname;
-                    localStorage.setItem('dxtrUserNickname', d.nickname);
-                    const profNick = document.getElementById('profNick');
-                    if(profNick) profNick.textContent = d.nickname;
-                }
-                if (d.avatarUrl) {
-                    const avatarImg = document.getElementById('userAvatar');
-                    if (avatarImg) avatarImg.src = d.avatarUrl;
-                }
-            });
-
-            socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
-            
-            socket.on('admin_unbanned', () => {
-                localStorage.removeItem('adminFailedAttempts');
-                localStorage.removeItem('adminBanEndTime');
-                failedAttempts = 0;
-                clearInterval(banTimerInterval);
-
-                document.body.className = 'theme-green';
-
-                const shield = document.getElementById('shieldIcon');
-                const textEl = document.getElementById('banTextEl');
-                const timerEl = document.getElementById('banTimer');
-                const descEl = document.getElementById('banDescEl');
-
-                shield.classList.remove('pulsing');
-                shield.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s';
-                shield.style.transform = 'rotate(360deg) scale(1.2)';
-                shield.style.color = 'var(--theme-color)';
-                shield.style.textShadow = '0 0 30px rgba(0, 255, 102, 0.8)';
-                
-                setTimeout(() => {
-                    shield.classList.remove('fa-shield-halved');
-                    shield.classList.add('fa-check');
-                    shield.style.transform = 'rotate(720deg) scale(1)'; 
-                }, 300);
-
-                textEl.textContent = 'ДОСТУП ВОССТАНОВЛЕН';
-                textEl.style.color = 'var(--theme-color)';
-                timerEl.style.display = 'none';
-                
-                descEl.innerHTML = 'Доступ открыт преждевременно администрацией.<br><br>Инициализация системы...';
-                descEl.style.color = '#fff';
-
-                setTimeout(() => { location.reload(); }, 3000);
-            });
-
-            socket.on('receive_message', (data) => {
-                const type = data.isWarning ? 'warning' : (data.isSuccess ? 'success' : 'admin');
-                addMessageToUI(data.text, type);
-                saveMessage(data.text, type);
-                if (chatWindow.style.display !== 'flex') {
-                    unreadBadge.style.display = 'flex';
-                }
-            });
-
-            socket.on('ban_status', (data) => {
-                isSupportBanned = data.isBanned;
-                if (isSupportBanned) {
-                    chatInput.disabled = true;
-                    chatSend.disabled = true;
-                    chatInput.placeholder = "Доступ к чату ограничен";
-                } else {
-                    chatInput.disabled = false;
-                    chatSend.disabled = false;
-                    chatInput.placeholder = "Введите сообщение...";
-                }
-            });
-
-        } catch(e) {}
-
-        let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
-        let banEndTime = parseInt(localStorage.getItem('adminBanEndTime') || '0');
-        let banTimerInterval;
-
-        function checkLocalBan() {
-            const now = Date.now();
-            if (banEndTime > now) activateBanUI(Math.floor((banEndTime - now) / 1000));
-            else { localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; }
-        }
-        checkLocalBan();
-
-        function activateBanUI(secondsLeft) {
-            document.getElementById('authSection').classList.remove('active');
-            document.getElementById('banScreen').classList.add('active');
-            document.body.className = 'theme-red'; 
-            clearInterval(banTimerInterval); updateBanTimerDisplay(secondsLeft);
-            banTimerInterval = setInterval(() => {
-                secondsLeft--;
-                if (secondsLeft <= 0) { clearInterval(banTimerInterval); location.reload(); }
-                else updateBanTimerDisplay(secondsLeft);
-            }, 1000);
-        }
-
-        function updateBanTimerDisplay(totalSecs) {
-            const m = Math.floor(totalSecs / 60), s = totalSecs % 60;
-            document.getElementById('banTimer').textContent = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`;
-        }
-
-        function triggerBan() {
-            const banTime = 3600; 
-            localStorage.setItem('adminBanEndTime', Date.now() + banTime * 1000);
-            if(socket) socket.emit('trigger_admin_ban', { clientId, fpHash: fingerprintHash, duration: banTime });
-            activateBanUI(banTime);
-        }
 
         // ========== АВТОРИЗАЦИЯ ==========
         const authForm = document.getElementById('authForm');
@@ -710,150 +482,95 @@
         const passWrapper = document.getElementById('passWrapper');
         const sysMsg = document.getElementById('sysMsg');
         let isLoginVerified = false;
-        let redThemeTimeout;
 
-        function triggerError() {
-            failedAttempts++; localStorage.setItem('adminFailedAttempts', failedAttempts);
-            if (failedAttempts >= 3) { triggerBan(); return; } 
-
-            sysMsg.textContent = `ОШИБКА ДОСТУПА. ПОПЫТОК: ${3 - failedAttempts}`;
-            sysMsg.style.color = 'var(--error-red)';
-            document.body.className = 'theme-red';
-            
-            clearTimeout(redThemeTimeout);
-            redThemeTimeout = setTimeout(() => {
-                if(!document.body.classList.contains('theme-green')) {
-                    document.body.className = 'theme-blue'; sysMsg.textContent = 'Ожидание ввода...'; sysMsg.style.color = 'var(--theme-color)';
-                }
-            }, 5000);
-            
-            const activeWrapper = isLoginVerified ? passWrapper : loginWrapper;
-            activeWrapper.style.transform = 'translateX(-10px)';
-            setTimeout(() => activeWrapper.style.transform = 'translateX(10px)', 100);
-            setTimeout(() => activeWrapper.style.transform = 'translateX(-10px)', 200);
-            setTimeout(() => activeWrapper.style.transform = 'translateX(0)', 300);
-            passInput.value = '';
+        // Авто-вход если есть пароль
+        if(sessionPassword) {
+            document.getElementById('authSection').classList.remove('active');
+            document.body.className = 'theme-green';
+            openSection('mainMenuSection');
         }
 
         authForm.onsubmit = async (e) => {
             e.preventDefault(); 
-
             if (!isLoginVerified) {
                 if (loginInput.value.trim() === 'DSWork') {
                     isLoginVerified = true;
                     passWrapper.classList.add('show');
                     passInput.setAttribute('required', 'true');
                     sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.';
-                    
                     loginInput.disabled = true;
                     loginWrapper.querySelector('.auth-submit-btn').style.display = 'none';
-                    
                     loginInput.style.borderRight = '2px solid var(--theme-color)';
                     loginInput.style.borderRadius = '20px';
-                    
                     passInput.focus();
                 } else {
-                    triggerError();
+                    sysMsg.textContent = 'ОШИБКА ЛОГИНА'; sysMsg.style.color = 'var(--error-red)';
                 }
             } else {
+                sysMsg.textContent = 'ПРОВЕРКА...';
                 try {
-                    sysMsg.textContent = 'АВТОРИЗАЦИЯ...';
                     const res = await fetch(`${API_URL}/promos-list`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ password: passInput.value })
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: passInput.value })
                     });
-                    
                     if (res.ok) {
-                        clearTimeout(redThemeTimeout);
+                        sessionPassword = passInput.value;
+                        localStorage.setItem('adminPass', sessionPassword);
                         document.body.className = 'theme-green';
-                        failedAttempts = 0; localStorage.removeItem('adminFailedAttempts');
-                        sessionPassword = passInput.value; 
-                        
                         document.getElementById('authSection').classList.remove('active');
-                        setTimeout(() => { document.getElementById('dashboardSection').classList.add('active'); }, 300);
-                        
-                        const promos = await res.json();
-                        renderPromoList(promos);
-                    } else { triggerError(); }
-                } catch (err) {
-                    sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ';
-                    sysMsg.style.color = 'var(--error-red)';
-                }
+                        openSection('mainMenuSection');
+                    } else {
+                        sysMsg.textContent = 'НЕВЕРНЫЙ ПАРОЛЬ'; sysMsg.style.color = 'var(--error-red)';
+                    }
+                } catch(e) { sysMsg.textContent = 'ОШИБКА СЕРВЕРА'; }
             }
         };
 
-        // ========== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
-        const btnMusic = document.getElementById('btnTabMusic');
-        const btnCreate = document.getElementById('btnTabCreate');
-        const btnList = document.getElementById('btnTabList');
-        const btnProfile = document.getElementById('btnTabProfile');
-        
-        const musicView = document.getElementById('musicForm');
-        const formView = document.getElementById('createForm');
-        const listView = document.getElementById('promoList');
-        const profileView = document.getElementById('profileSection');
-        
-        function hideAllTabs() {
-            [musicView, formView, listView, profileView].forEach(v => v.style.display = 'none');
-            [btnMusic, btnCreate, btnList, btnProfile].forEach(b => b.classList.remove('active'));
-        }
-
-        btnMusic.onclick = () => { hideAllTabs(); btnMusic.classList.add('active'); musicView.style.display = 'flex'; };
-        btnCreate.onclick = () => { hideAllTabs(); btnCreate.classList.add('active'); formView.style.display = 'flex'; };
-        btnList.onclick = () => { hideAllTabs(); btnList.classList.add('active'); listView.style.display = 'flex'; loadPromosFromServer(); };
-        btnProfile.onclick = () => { 
-            hideAllTabs(); 
-            btnProfile.classList.add('active'); 
-            profileView.style.display = 'flex'; 
-            document.getElementById('profId').textContent = clientId || 'Неизвестно';
-            document.getElementById('profNick').textContent = window.userNickname || "DXTR | SlizZe";
-        };
-
-        // ========== ЛОГИКА SUPABASE МУЗЫКИ ==========
+        // ========== 1. МУЗЫКАЛЬНЫЙ КАТАЛОГ ==========
         const mCoverInput = document.getElementById('mCover');
         const mMp3Input = document.getElementById('mMp3');
         const mWavInput = document.getElementById('mWav');
-        
+        const mMainCheckbox = document.getElementById('mMain');
         const mHasPlatforms = document.getElementById('mHasPlatforms');
         const platformsContainer = document.getElementById('platformsContainer');
         const linkSpotify = document.getElementById('linkSpotify');
         const linkVk = document.getElementById('linkVk');
         const linkYandex = document.getElementById('linkYandex');
-        
-        mCoverInput.onchange = () => document.getElementById('mCoverText').textContent = mCoverInput.files[0] ? mCoverInput.files[0].name : 'Обложка (JPG/PNG - Обязательно)';
-        mMp3Input.onchange = () => document.getElementById('mMp3Text').textContent = mMp3Input.files[0] ? mMp3Input.files[0].name : 'Трек (MP3 - Обязательно)';
-        mWavInput.onchange = () => document.getElementById('mWavText').textContent = mWavInput.files[0] ? mWavInput.files[0].name : 'Трек (WAV - Обязательно)';
 
-        // Логика чекбокса "Площадки"
-        mHasPlatforms.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                platformsContainer.style.display = 'flex';
-                linkSpotify.required = true;
-                linkVk.required = true;
-                linkYandex.required = true;
+        function showAddMusicForm() { document.getElementById('musicListContainer').style.display = 'none'; document.getElementById('musicAddForm').style.display = 'flex'; }
+        function hideAddMusicForm() { document.getElementById('musicAddForm').style.display = 'none'; document.getElementById('musicListContainer').style.display = 'flex'; }
+
+        mCoverInput.onchange = () => document.getElementById('mCoverText').textContent = mCoverInput.files[0] ? mCoverInput.files[0].name : 'Обложка (JPG/PNG)';
+        mMp3Input.onchange = () => document.getElementById('mMp3Text').textContent = mMp3Input.files[0] ? mMp3Input.files[0].name : 'Трек (MP3)';
+        mWavInput.onchange = () => document.getElementById('mWavText').textContent = mWavInput.files[0] ? mWavInput.files[0].name : 'Трек (WAV)';
+
+        // Логика 1.1.4: Главный релиз -> Площадки включены и обязательны
+        mMainCheckbox.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                mHasPlatforms.checked = true;
+                mHasPlatforms.disabled = true; // Блокируем снятие галочки
+                mHasPlatforms.dispatchEvent(new Event('change'));
             } else {
-                platformsContainer.style.display = 'none';
-                linkSpotify.required = false;
-                linkVk.required = false;
-                linkYandex.required = false;
-                linkSpotify.value = '';
-                linkVk.value = '';
-                linkYandex.value = '';
+                mHasPlatforms.disabled = false;
             }
         });
 
-        musicView.onsubmit = function(e) {
+        // Логика 1.1.6 и 1.1.7: Показ полей площадок и обязательность
+        mHasPlatforms.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                platformsContainer.style.display = 'flex';
+                linkSpotify.required = true; linkVk.required = true; linkYandex.required = true;
+            } else {
+                platformsContainer.style.display = 'none';
+                linkSpotify.required = false; linkVk.required = false; linkYandex.required = false;
+                linkSpotify.value = ''; linkVk.value = ''; linkYandex.value = '';
+            }
+        });
+
+        document.getElementById('musicAddForm').onsubmit = function(e) {
             e.preventDefault();
-            
-            // Если включены площадки, формируем JSON из 3 ссылок, иначе пусто
             let platformsJson = "{}";
             if (mHasPlatforms.checked) {
-                platformsJson = JSON.stringify({
-                    spotify: linkSpotify.value,
-                    vk: linkVk.value,
-                    yandex: linkYandex.value
-                });
+                platformsJson = JSON.stringify({ spotify: linkSpotify.value, vk: linkVk.value, yandex: linkYandex.value });
             }
             
             const formData = new FormData();
@@ -862,168 +579,199 @@
             formData.append('yt_link', document.getElementById('mYt').value);
             formData.append('platforms', platformsJson);
             formData.append('is_18', document.getElementById('m18').checked);
-            formData.append('is_main', document.getElementById('mMain').checked);
-            
+            formData.append('is_main', mMainCheckbox.checked);
             formData.append('cover', mCoverInput.files[0]);
             formData.append('mp3', mMp3Input.files[0]);
-            formData.append('wav', mWavInput.files[0]);
+            formData.append('wav', mWavInput.files[0]); // Теперь WAV передается всегда (required стоит в HTML)
 
             const xhr = new XMLHttpRequest();
-            const progContainer = document.getElementById('mProgressContainer');
-            const progBar = document.getElementById('mProgressBar');
-            const statusText = document.getElementById('mStatusText');
-            const submitBtn = document.getElementById('mSubmitBtn');
-
-            submitBtn.disabled = true;
-            progContainer.style.display = 'block';
-            statusText.innerText = 'Подготовка файлов...';
-            statusText.style.color = 'var(--theme-color)';
-
+            document.getElementById('mSubmitBtn').disabled = true;
+            document.getElementById('mProgressContainer').style.display = 'block';
+            
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
-                    const percent = Math.round((e.loaded / e.total) * 100);
-                    progBar.style.width = percent + '%';
-                    statusText.innerText = `Передача на сервер: ${percent}%`;
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('mProgressBar').style.width = pct + '%';
+                    document.getElementById('mStatusText').innerText = `Загрузка: ${pct}%`;
                 }
             });
 
             xhr.addEventListener('load', () => {
-                try {
-                    const res = JSON.parse(xhr.responseText);
-                    if (xhr.status === 200) {
-                        statusText.innerText = '[ УСПЕШНО ] Трек в Supabase!';
-                        statusText.style.color = '#00ff66';
-                        progBar.style.background = '#00ff66';
-                        setTimeout(() => location.reload(), 2000);
-                    } else {
-                        statusText.innerText = `[ ОШИБКА ] ${res.error}`;
-                        statusText.style.color = 'var(--error-red)';
-                        submitBtn.disabled = false;
-                    }
-                } catch(err) {
-                    statusText.innerText = 'Критическая ошибка сервера';
-                    statusText.style.color = 'var(--error-red)';
-                    submitBtn.disabled = false;
+                if (xhr.status === 200) {
+                    document.getElementById('mStatusText').innerText = 'Успешно!';
+                    setTimeout(() => { document.getElementById('musicAddForm').reset(); hideAddMusicForm(); loadMusicFromServer(); }, 1500);
+                } else {
+                    document.getElementById('mStatusText').innerText = 'Ошибка загрузки';
                 }
+                document.getElementById('mSubmitBtn').disabled = false;
             });
-
-            xhr.addEventListener('error', () => {
-                statusText.innerText = 'Ошибка сети';
-                statusText.style.color = 'var(--error-red)';
-                submitBtn.disabled = false;
-            });
-
             xhr.open('POST', `${API_URL}/music`, true);
             xhr.send(formData);
         };
 
-        // ========== СТАРАЯ ЛОГИКА ПРОМО MONGODB ==========
-        const coverInput = document.getElementById('newCover');
-        const trackInput = document.getElementById('newTrack');
-        
-        coverInput.onchange = () => document.getElementById('coverText').textContent = coverInput.files[0] ? coverInput.files[0].name : 'Загрузить обложку (JPG/PNG)';
-        trackInput.onchange = () => document.getElementById('trackText').textContent = trackInput.files[0] ? trackInput.files[0].name : 'Загрузить трек (MP3)';
+        // Загрузка треков
+        async function loadMusicFromServer() {
+            const list = document.getElementById('musicList');
+            list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
+            try {
+                const res = await fetch(`${API_URL}/music-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
+                if(res.ok) {
+                    const tracks = await res.json();
+                    if(tracks.length === 0) { list.innerHTML = '<div class="empty-neon">Каталог пуст. Добавьте первый трек!</div>'; return; }
+                    list.innerHTML = '';
+                    tracks.forEach(t => {
+                        let badges = '';
+                        if(t.is_main) badges += '<div class="card-badge">Главный релиз</div> ';
+                        if(t.is_18) badges += '<div class="card-badge badge-red">18+</div> ';
+                        
+                        list.innerHTML += `
+                            <div class="data-card">
+                                <img src="${t.cover_url}" class="card-cover">
+                                <div class="card-info">
+                                    <div class="card-title">${t.title}</div>
+                                    <div style="margin-bottom: 5px;">${badges}</div>
+                                    <div class="card-actions">
+                                        <button class="action-icon" title="Скачать MP3/WAV (Превью)"><i class="fa-solid fa-download"></i> Скачать</button>
+                                        <button class="action-icon delete" title="Удалить" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения с БД</div>'; }
+        }
 
-        formView.onsubmit = async (e) => {
+
+        // ========== 2. ПРОФИЛИ ==========
+        async function loadProfilesFromServer() {
+            const list = document.getElementById('profilesList');
+            list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
+            // Внимание: Этот роут мы добавим в index.js на следующем шаге
+            try {
+                const res = await fetch(`${API_URL}/users-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
+                if(res.ok) {
+                    const users = await res.json();
+                    if(users.length === 0) { list.innerHTML = '<div class="empty-neon">Нет пользователей</div>'; return; }
+                    list.innerHTML = '';
+                    users.forEach(u => {
+                        list.innerHTML += `
+                            <div class="profile-card">
+                                <div class="prof-info">
+                                    <h4>${u.nickname || 'Без ника'}</h4>
+                                    <p>ID: ${u.clientId}</p>
+                                    <span style="font-size:0.8rem; color:${u.isBanned ? 'var(--error-red)' : 'var(--theme-color)'};">Статус: ${u.isBanned ? 'Бан' : 'Активен'}</span>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="action-icon" title="Редактировать" onclick="openEditProfile('${u._id}', '${u.clientId}', '${u.nickname || ''}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="action-icon delete" title="Удалить" onclick="confirmDelete('profile', '${u._id}', '${u.clientId}')"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else { list.innerHTML = '<div class="empty-neon">Маршрут /users-list еще не создан на сервере</div>'; }
+            } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения</div>'; }
+        }
+
+        let editProfDbId = '';
+        function openEditProfile(dbId, clientId, nick) {
+            editProfDbId = dbId;
+            document.getElementById('editProfIdInput').value = clientId;
+            document.getElementById('editProfNickInput').value = nick;
+            document.getElementById('editProfileModal').classList.add('active');
+        }
+        function closeEditProfileModal() { document.getElementById('editProfileModal').classList.remove('active'); }
+        
+        document.getElementById('confirmEditProfileBtn').onclick = async () => {
+            const newId = document.getElementById('editProfIdInput').value.trim();
+            const newNick = document.getElementById('editProfNickInput').value.trim();
+            if(!newId) return alert('ID не может быть пустым');
+            
+            try {
+                // Маршрут редактирования добавим в index.js в след шаге
+                const res = await fetch(`${API_URL}/user/${editProfDbId}`, { 
+                    method: 'PUT', headers: {'Content-Type':'application/json'}, 
+                    body: JSON.stringify({password: sessionPassword, newClientId: newId, newNickname: newNick})
+                });
+                if(res.ok) { closeEditProfileModal(); loadProfilesFromServer(); }
+                else { alert('Сбой редактирования (Возможно маршрут еще не создан)'); }
+            } catch(e) {}
+        };
+
+
+        // ========== УНИВЕРСАЛЬНОЕ УДАЛЕНИЕ (Трек, Профиль, Промо) ==========
+        let deleteType = ''; let deleteId = '';
+        function confirmDelete(type, id, name) {
+            deleteType = type; deleteId = id;
+            document.getElementById('modalCodeName').textContent = name;
+            let text = 'Удалить этот элемент?';
+            if(type === 'music') text = 'Удалить трек из Supabase? Файлы будут стерты.';
+            if(type === 'profile') text = 'Удалить пользователя навсегда?';
+            if(type === 'promo') text = 'Удалить промокод навсегда?';
+            document.getElementById('deleteModalText').innerText = text;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+        
+        document.getElementById('confirmDeleteBtn').onclick = async () => {
+            const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '...';
+            let url = '';
+            if(deleteType === 'music') url = `${API_URL}/music/${deleteId}`; // Добавим в index.js
+            if(deleteType === 'profile') url = `${API_URL}/user/${deleteId}`; // Добавим в index.js
+            if(deleteType === 'promo') url = `${API_URL}/promo/${deleteId}`;  // Уже есть
+
+            try {
+                const res = await fetch(url, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
+                if(res.ok) {
+                    closeDeleteModal();
+                    if(deleteType === 'music') loadMusicFromServer();
+                    if(deleteType === 'profile') loadProfilesFromServer();
+                    if(deleteType === 'promo') loadPromosFromServer();
+                } else { alert('Ошибка (Возможно, маршрут удаления еще не добавлен на сервер)'); }
+            } catch(e) {}
+            btn.innerHTML = 'Удалить';
+        };
+
+        // ========== 3. ПРОМОКОДЫ (Оставили старую логику) ==========
+        document.getElementById('promoAddForm').onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData();
             formData.append('password', sessionPassword);
             formData.append('promo', document.getElementById('newCode').value);
             formData.append('title', document.getElementById('newTitle').value);
-            formData.append('cover', coverInput.files[0]);
-            formData.append('track', trackInput.files[0]);
-
-            const submitBtnPromo = document.getElementById('submitBtn');
-            submitBtnPromo.disabled = true; submitBtnPromo.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Создание промокода..';
-
+            formData.append('cover', document.getElementById('newCover').files[0]);
+            formData.append('track', document.getElementById('newTrack').files[0]);
+            const btn = document.getElementById('submitBtn'); btn.disabled = true;
             try {
                 const res = await fetch(`${API_URL}/promo`, { method: 'POST', body: formData });
-                const data = await res.json();
-
-                if (res.ok) {
-                    submitBtnPromo.innerHTML = '<i class="fa-solid fa-check"></i> Промокод добавлен';
-                    submitBtnPromo.style.background = '#fff';
-                    setTimeout(() => {
-                        formView.reset(); document.getElementById('coverText').textContent = 'Загрузить обложку (JPG/PNG)'; document.getElementById('trackText').textContent = 'Загрузить трек (MP3)';
-                        submitBtnPromo.disabled = false; submitBtnPromo.innerHTML = '<i class="fa-solid fa-upload"></i> Создать промокод'; submitBtnPromo.style.background = '';
-                    }, 3000);
-                    loadPromosFromServer();
-                } else { alert('Ошибка: ' + (data.error || 'Неизвестная ошибка')); submitBtnPromo.disabled = false; submitBtnPromo.innerHTML = '<i class="fa-solid fa-upload"></i> Создать промокод'; }
-            } catch (err) { alert('Ошибка соединения с сервером'); submitBtnPromo.disabled = false; submitBtnPromo.innerHTML = '<i class="fa-solid fa-upload"></i> Создать промокод'; }
+                if (res.ok) { document.getElementById('promoAddForm').reset(); loadPromosFromServer(); } 
+                else alert('Ошибка');
+            } catch(e){} btn.disabled = false;
         };
 
         async function loadPromosFromServer() {
+            const list = document.getElementById('promoList');
             try {
-                const res = await fetch(`${API_URL}/promos-list`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: sessionPassword }) });
-                if (res.ok) renderPromoList(await res.json());
-            } catch (err) { console.error('Ошибка загрузки списка'); }
+                const res = await fetch(`${API_URL}/promos-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
+                if(res.ok) {
+                    const promos = await res.json();
+                    list.innerHTML = '';
+                    promos.forEach(p => {
+                        list.innerHTML += `
+                            <div class="data-card">
+                                <img src="${API_URL}/media/${p.coverId}" class="card-cover">
+                                <div class="card-info">
+                                    <div class="card-code">#${p.code}</div><div class="card-title">${p.title}</div>
+                                    <div class="card-actions">
+                                        <button class="action-icon delete" title="Удалить" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch(e) {}
         }
-
-        function renderPromoList(promos) {
-            const listDiv = document.getElementById('promoList');
-            listDiv.innerHTML = '';
-            if (promos.length === 0) { listDiv.innerHTML = '<p style="text-align:center; color: var(--text-muted); margin-top:20px;">Нет активных промокодов</p>'; return; }
-
-            promos.forEach(p => {
-                const audioUrl = `${API_URL}/media/${p.trackId}`; const coverUrl = `${API_URL}/media/${p.coverId}`; const safeTitle = p.title.replace(/'/g, "\\'");
-                const card = document.createElement('div'); card.className = 'promo-card';
-                card.innerHTML = `
-                    <img src="${coverUrl}" class="card-cover" alt="Cover" onerror="this.src='../dslogo.png'">
-                    <div class="card-info">
-                        <div class="card-code">#${p.code}</div><div class="card-title">${p.title}</div>
-                        <div class="mini-player">
-                            <audio src="${audioUrl}" preload="metadata" ontimeupdate="updateMiniProgress(this)" onloadedmetadata="initMiniPlayer(this)"></audio>
-                            <button class="mini-play-btn" onclick="toggleMiniPlay(this)"><i class="fa-solid fa-play"></i></button>
-                            <div class="mini-progress" onclick="seekMiniPlayer(event, this)"><div class="mini-bar" style="width: 0%;"></div></div>
-                            <span class="mini-time">00:00 / 00:00</span>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <div class="action-icon edit" title="Редактировать" onclick="openEditModal('${p.code}', '${safeTitle}')"><i class="fa-solid fa-pen"></i></div>
-                        <div class="action-icon delete" title="Удалить" onclick="openDeleteModal('${p.code}')"><i class="fa-solid fa-xmark"></i></div>
-                    </div>`;
-                listDiv.appendChild(card);
-            });
-        }
-
-        function fmtTime(s) { if (!s || isNaN(s)) return '00:00'; return `${Math.floor(s/60)<10?'0':''}${Math.floor(s/60)}:${Math.floor(s%60)<10?'0':''}${Math.floor(s%60)}`; }
-        window.initMiniPlayer = (a) => { a.parentElement.querySelector('.mini-time').textContent = `00:00 / ${fmtTime(a.duration)}`; };
-        window.toggleMiniPlay = (btn) => {
-            const audio = btn.parentElement.querySelector('audio'); const icon = btn.querySelector('i');
-            document.querySelectorAll('.mini-player audio').forEach(a => { if(a !== audio) { a.pause(); a.parentElement.querySelector('i').className = 'fa-solid fa-play'; } });
-            if (audio.paused) { audio.play(); icon.className = 'fa-solid fa-pause'; } else { audio.pause(); icon.className = 'fa-solid fa-play'; }
-        };
-        window.updateMiniProgress = (a) => {
-            const bar = a.parentElement.querySelector('.mini-bar'); const timeDisplay = a.parentElement.querySelector('.mini-time');
-            if (a.duration) { bar.style.width = `${(a.currentTime / a.duration) * 100}%`; timeDisplay.textContent = `${fmtTime(a.currentTime)} / ${fmtTime(a.duration)}`; }
-            if (a.ended) a.parentElement.querySelector('i').className = 'fa-solid fa-play';
-        };
-        window.seekMiniPlayer = (e, div) => { const a = div.parentElement.querySelector('audio'); const rect = div.getBoundingClientRect(); const pct = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1)); if (a.duration) a.currentTime = pct * a.duration; };
-
-        let activeCode = '';
-        const delModal = document.getElementById('deleteModal');
-        window.openDeleteModal = (code) => { activeCode = code; document.getElementById('modalCodeName').textContent = '#' + code; delModal.classList.add('active'); };
-        window.closeDeleteModal = () => { delModal.classList.remove('active'); activeCode = ''; };
-        document.getElementById('confirmDeleteBtn').onclick = async () => {
-            const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            try { const res = await fetch(`${API_URL}/promo/${activeCode}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: sessionPassword }) });
-                if (res.ok) { closeDeleteModal(); loadPromosFromServer(); } else alert('Ошибка при удалении');
-            } catch (err) { alert('Ошибка соединения'); } btn.innerHTML = 'Удалить';
-        };
-
-        const editModal = document.getElementById('editModal'); const editCodeInput = document.getElementById('editCodeInput'); const editTitleInput = document.getElementById('editTitleInput');
-        window.openEditModal = (code, title) => { activeCode = code; editCodeInput.value = code; editTitleInput.value = title; editModal.classList.add('active'); };
-        window.closeEditModal = () => { editModal.classList.remove('active'); activeCode = ''; };
-        document.getElementById('confirmEditBtn').onclick = async () => {
-            const newCode = editCodeInput.value.trim(); const newTitle = editTitleInput.value.trim();
-            if (!newCode || !newTitle) return alert("Поля не могут быть пустыми");
-            const btn = document.getElementById('confirmEditBtn'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            try {
-                const res = await fetch(`${API_URL}/promo/${activeCode}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: sessionPassword, newCode, newTitle }) });
-                const data = await res.json();
-                if (res.ok) { closeEditModal(); loadPromosFromServer(); } else alert('Ошибка: ' + (data.error || 'Сбой редактирования'));
-            } catch (err) { alert('Ошибка соединения с сервером'); } btn.innerHTML = 'Сохранить';
-        };
     </script>
 </body>
 </html>
