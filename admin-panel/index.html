@@ -763,8 +763,14 @@
         let currentEditMusicId = null;
 
         function openEditMusic(id) {
-            const track = loadedTracks.find(t => t.id === id);
-            if(!track) return;
+            // ИСПРАВЛЕНИЕ: Приводим к строке (String), чтобы числа и строки совпадали корректно
+            const track = loadedTracks.find(t => String(t.id) === String(id));
+            
+            if(!track) {
+                console.error("Трек не найден! ID:", id);
+                return;
+            }
+            
             currentEditMusicId = id;
             
             document.getElementById('editMTitle').value = track.title;
