@@ -196,7 +196,88 @@ app.post('/api/music-list', async (req, res) => {
     res.json(data);
 });
 
-// НОВЫЙ МАРШРУТ: УДАЛЕНИЕ МУЗЫКИ ИЗ SUPABASE (БД + STORAGE)
+// НОВЫЙ МАРШРУТ: РЕДАКТИРОВАНИЕ МУЗЫКИ В SUPABASE
+app.put('/api/music/:id', upload.fields([
+    { name: 'cover', maxCount: 1 }, 
+    { name: 'mp3', maxCount: 1 }, 
+    { name: 'wav', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const { password, title, yt_link, is_18, is_main, platforms } = req.body;
+        if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+
+        const trackId = req.params.id;
+
+        // 1. Получаем текущие данные трека, чтобы знать старые ссылки
+        const { data: existingTrack, error: fetchError } = await supabase
+            .from('music')
+            .select('*')
+            .eq('id', trackId)
+            .single();
+
+        if (fetchError || !existingTrack) return res.status(404).json({ error: 'Трек не найден' });
+
+        // 2. Обрабатываем логику "Главного релиза"
+        const isMainRelease = is_main === 'true' || is_main === true;
+        if (isMainRelease) {
+            await supabase.from('music').update({ is_main: false }).eq('is_main', true);
+        }
+
+        // 3. Парсим площадки
+        let platformsData = {};
+        try { if (platforms) platformsData = JSON.parse(platforms); } catch(e){}
+
+        // 4. Обрабатываем новые файлы (если они загружены)
+        let cover_url = existingTrack.cover_url;
+        let mp3_url = existingTrack.mp3_url;
+        let wav_url = existingTrack.wav_url;
+        const filesToRemove = []; // Сюда соберем старые файлы для удаления
+
+        if (req.files['cover']) {
+            if (existingTrack.cover_url) filesToRemove.push(existingTrack.cover_url.split('/music-content/')[1]);
+            cover_url = await uploadToSupabase(req.files['cover'][0], 'covers');
+        }
+        if (req.files['mp3']) {
+            if (existingTrack.mp3_url) filesToRemove.push(existingTrack.mp3_url.split('/music-content/')[1]);
+            mp3_url = await uploadToSupabase(req.files['mp3'][0], 'tracks');
+        }
+        if (req.files['wav']) {
+            if (existingTrack.wav_url) filesToRemove.push(existingTrack.wav_url.split('/music-content/')[1]);
+            wav_url = await uploadToSupabase(req.files['wav'][0], 'tracks');
+        }
+
+        // 5. Удаляем старые замененные файлы из хранилища Storage
+        if (filesToRemove.length > 0) {
+            await supabase.storage.from('music-content').remove(filesToRemove);
+        }
+
+        // 6. Обновляем строку в базе данных
+        const { error: updateError } = await supabase
+            .from('music')
+            .update({
+                title,
+                cover_url,
+                mp3_url,
+                wav_url,
+                yt_link,
+                is_18: is_18 === 'true' || is_18 === true,
+                is_main: isMainRelease,
+                platforms: platformsData
+            })
+            .eq('id', trackId);
+
+        if (updateError) throw updateError;
+
+        res.json({ success: true, message: 'Трек успешно обновлен' });
+
+    } catch (err) {
+        console.error('Ошибка редактирования музыки:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+
+// УДАЛЕНИЕ МУЗЫКИ ИЗ SUPABASE (БД + STORAGE)
 app.delete('/api/music/:id', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
@@ -230,7 +311,6 @@ app.delete('/api/music/:id', async (req, res) => {
 
 // ================= ПРОФИЛИ =================
 
-// НОВЫЙ МАРШРУТ: ПОЛУЧИТЬ СПИСОК ВСЕХ ПРОФИЛЕЙ
 app.post('/api/users-list', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
@@ -243,7 +323,6 @@ app.post('/api/users-list', async (req, res) => {
     }
 });
 
-// НОВЫЙ МАРШРУТ: УДАЛИТЬ ПРОФИЛЬ
 app.delete('/api/user/:id', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
@@ -261,7 +340,6 @@ app.delete('/api/user/:id', async (req, res) => {
     }
 });
 
-// НОВЫЙ МАРШРУТ: РЕДАКТИРОВАТЬ ПРОФИЛЬ
 app.put('/api/user/:id', async (req, res) => {
     const { password, newClientId, newNickname } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
