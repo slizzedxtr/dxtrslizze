@@ -430,6 +430,62 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="editMusicModal">
+        <div class="modal-box" style="max-width: 500px; padding: 30px;">
+            <h3>Редактировать трек</h3>
+            
+            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
+                <label class="form-label">Название</label>
+                <input type="text" id="editMTitle" class="form-input">
+            </div>
+            
+            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
+                <label class="form-label">YouTube Клип</label>
+                <input type="url" id="editMYt" class="form-input">
+            </div>
+
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; text-align: left;">
+                <label style="cursor: pointer; color: #fff; font-size: 0.9rem;"><input type="checkbox" id="editM18"> 18+</label>
+                <label style="cursor: pointer; color: #fff; font-size: 0.9rem;"><input type="checkbox" id="editMMain"> Главный</label>
+                <label style="cursor: pointer; color: var(--theme-color); font-size: 0.9rem;"><input type="checkbox" id="editMHasPlatforms"> Площадки</label>
+            </div>
+
+            <div id="editPlatformsContainer" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 15px; text-align: left;">
+                <input type="url" id="editLinkSpotify" class="form-input" placeholder="Spotify">
+                <input type="url" id="editLinkVk" class="form-input" placeholder="VK Музыка">
+                <input type="url" id="editLinkYandex" class="form-input" placeholder="Яндекс Музыка">
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; text-align: left;">
+                * Оставьте поля файлов пустыми, если не хотите их менять.
+            </div>
+            
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+                <label class="form-file" style="padding: 10px; font-size: 0.8rem; flex: 1;">
+                    <span id="editMCoverText">Новая обложка</span>
+                    <input type="file" id="editMCover" accept="image/*">
+                </label>
+                <label class="form-file" style="padding: 10px; font-size: 0.8rem; flex: 1;">
+                    <span id="editMMp3Text">Новый MP3</span>
+                    <input type="file" id="editMMp3" accept=".mp3">
+                </label>
+                <label class="form-file" style="padding: 10px; font-size: 0.8rem; flex: 1;">
+                    <span id="editMWavText">Новый WAV</span>
+                    <input type="file" id="editMWav" accept=".wav">
+                </label>
+            </div>
+
+            <div id="editMProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin-bottom:15px;">
+                <div id="editMProgressBar" style="height:100%; width:0%; background:var(--theme-color);"></div>
+            </div>
+
+            <div class="modal-btns" style="margin-top: 0;">
+                <button class="m-btn m-btn-cancel" onclick="closeEditMusicModal()">Отмена</button>
+                <button class="m-btn m-btn-confirm" id="confirmEditMusicBtn">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         const API_URL = "https://dxtrslizze.onrender.com/api";
@@ -670,16 +726,19 @@
             xhr.open('POST', `${API_URL}/music`, true); xhr.send(formData);
         };
 
+        // --- ЛОГИКА ЗАГРУЗКИ И РЕДАКТИРОВАНИЯ ТРЕКОВ ---
+        let loadedTracks = []; // Храним загруженные треки для редактирования
+
         async function loadMusicFromServer() {
             const list = document.getElementById('musicList');
             list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
             try {
                 const res = await fetch(`${API_URL}/music-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
                 if(res.ok) {
-                    const tracks = await res.json();
-                    if(tracks.length === 0) { list.innerHTML = '<div class="empty-neon">Каталог пуст. Добавьте первый трек!</div>'; return; }
+                    loadedTracks = await res.json();
+                    if(loadedTracks.length === 0) { list.innerHTML = '<div class="empty-neon">Каталог пуст. Добавьте первый трек!</div>'; return; }
                     list.innerHTML = '';
-                    tracks.forEach(t => {
+                    loadedTracks.forEach(t => {
                         let badges = '';
                         if(t.is_main) badges += '<div class="card-badge">Главный релиз</div> ';
                         if(t.is_18) badges += '<div class="card-badge badge-red">18+</div> ';
@@ -690,7 +749,7 @@
                                     <div class="card-title">${t.title}</div>
                                     <div style="margin-bottom: 5px;">${badges}</div>
                                     <div class="card-actions">
-                                        <button class="action-icon" title="Скачать MP3/WAV (Превью)"><i class="fa-solid fa-download"></i> Скачать</button>
+                                        <button class="action-icon" title="Редактировать" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button>
                                         <button class="action-icon delete" title="Удалить" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </div>
@@ -700,6 +759,101 @@
                 }
             } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения с БД</div>'; }
         }
+
+        let currentEditMusicId = null;
+
+        function openEditMusic(id) {
+            const track = loadedTracks.find(t => t.id === id);
+            if(!track) return;
+            currentEditMusicId = id;
+            
+            document.getElementById('editMTitle').value = track.title;
+            document.getElementById('editMYt').value = track.yt_link || '';
+            document.getElementById('editM18').checked = track.is_18;
+            document.getElementById('editMMain').checked = track.is_main;
+            
+            const hasPlat = track.platforms && Object.keys(track.platforms).length > 0;
+            document.getElementById('editMHasPlatforms').checked = hasPlat;
+            document.getElementById('editPlatformsContainer').style.display = hasPlat ? 'flex' : 'none';
+            
+            if (hasPlat) {
+                document.getElementById('editLinkSpotify').value = track.platforms.spotify || '';
+                document.getElementById('editLinkVk').value = track.platforms.vk || '';
+                document.getElementById('editLinkYandex').value = track.platforms.yandex || '';
+            } else {
+                document.getElementById('editLinkSpotify').value = '';
+                document.getElementById('editLinkVk').value = '';
+                document.getElementById('editLinkYandex').value = '';
+            }
+
+            document.getElementById('editMCover').value = ''; document.getElementById('editMMp3').value = ''; document.getElementById('editMWav').value = '';
+            document.getElementById('editMCoverText').textContent = 'Новая обложка'; document.getElementById('editMMp3Text').textContent = 'Новый MP3'; document.getElementById('editMWavText').textContent = 'Новый WAV';
+
+            document.getElementById('editMusicModal').classList.add('active');
+        }
+
+        function closeEditMusicModal() { document.getElementById('editMusicModal').classList.remove('active'); document.getElementById('editMProgressBar').style.width = '0%'; }
+
+        document.getElementById('editMCover').onchange = (e) => document.getElementById('editMCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Новая обложка';
+        document.getElementById('editMMp3').onchange = (e) => document.getElementById('editMMp3Text').textContent = e.target.files[0] ? 'Выбрано' : 'Новый MP3';
+        document.getElementById('editMWav').onchange = (e) => document.getElementById('editMWavText').textContent = e.target.files[0] ? 'Выбрано' : 'Новый WAV';
+
+        document.getElementById('editMMain').addEventListener('change', (e) => {
+            if(e.target.checked) {
+                document.getElementById('editMHasPlatforms').checked = true;
+                document.getElementById('editMHasPlatforms').disabled = true;
+                document.getElementById('editPlatformsContainer').style.display = 'flex';
+            } else { document.getElementById('editMHasPlatforms').disabled = false; }
+        });
+        document.getElementById('editMHasPlatforms').addEventListener('change', (e) => {
+            document.getElementById('editPlatformsContainer').style.display = e.target.checked ? 'flex' : 'none';
+        });
+
+        document.getElementById('confirmEditMusicBtn').onclick = function() {
+            const formData = new FormData();
+            formData.append('password', sessionPassword);
+            formData.append('title', document.getElementById('editMTitle').value);
+            formData.append('yt_link', document.getElementById('editMYt').value);
+            formData.append('is_18', document.getElementById('editM18').checked);
+            formData.append('is_main', document.getElementById('editMMain').checked);
+
+            let platformsJson = "{}";
+            if (document.getElementById('editMHasPlatforms').checked) {
+                platformsJson = JSON.stringify({ spotify: document.getElementById('editLinkSpotify').value, vk: document.getElementById('editLinkVk').value, yandex: document.getElementById('editLinkYandex').value });
+            }
+            formData.append('platforms', platformsJson);
+
+            const coverFile = document.getElementById('editMCover').files[0];
+            const mp3File = document.getElementById('editMMp3').files[0];
+            const wavFile = document.getElementById('editMWav').files[0];
+
+            if (coverFile) formData.append('cover', coverFile);
+            if (mp3File) formData.append('mp3', mp3File);
+            if (wavFile) formData.append('wav', wavFile);
+
+            const xhr = new XMLHttpRequest();
+            document.getElementById('confirmEditMusicBtn').disabled = true;
+            document.getElementById('editMProgressContainer').style.display = 'block';
+            
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const pct = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('editMProgressBar').style.width = pct + '%';
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                document.getElementById('confirmEditMusicBtn').disabled = false;
+                document.getElementById('editMProgressContainer').style.display = 'none';
+                if (xhr.status === 200) {
+                    closeEditMusicModal();
+                    loadMusicFromServer();
+                } else { alert('Ошибка при сохранении трека'); }
+            });
+
+            xhr.open('PUT', `${API_URL}/music/${currentEditMusicId}`, true);
+            xhr.send(formData);
+        };
 
         // ========== 2. ПРОФИЛИ ==========
         async function loadProfilesFromServer() {
