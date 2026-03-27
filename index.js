@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const { GridFSBucket, ObjectId } = require('mongodb');
 const { Readable } = require('stream');
-const { createClient } = require('@supabase/supabase-js'); // Добавили Supabase
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.use(cors());
@@ -35,7 +35,7 @@ mongoose.connect(mongoURI)
     })
     .catch(err => console.error('MongoDB error:', err));
 
-// --- Схемы БД (СТАРЫЕ, БЕЗ ИЗМЕНЕНИЙ) ---
+// --- Схемы БД ---
 const CounterSchema = new mongoose.Schema({
     _id: { type: String, required: true },
     seq: { type: Number, default: 0 }
@@ -127,7 +127,7 @@ async function uploadToSupabase(file, folderName) {
 
 // ================= API =================
 
-// НОВЫЙ МАРШРУТ: ЗАГРУЗКА МУЗЫКИ В КАТАЛОГ
+// ЗАГРУЗКА МУЗЫКИ В КАТАЛОГ (SUPABASE)
 app.post('/api/music', upload.fields([
     { name: 'cover', maxCount: 1 }, 
     { name: 'mp3', maxCount: 1 }, 
@@ -136,21 +136,20 @@ app.post('/api/music', upload.fields([
     try {
         const { password, title, yt_link, is_18, is_main, platforms } = req.body;
         
-        // Проверка пароля админки
         if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
 
         const coverFile = req.files['cover'] ? req.files['cover'][0] : null;
         const mp3File = req.files['mp3'] ? req.files['mp3'][0] : null;
         const wavFile = req.files['wav'] ? req.files['wav'][0] : null;
 
-        if (!coverFile || !mp3File) {
-            return res.status(400).json({ error: 'Обложка и MP3 файл обязательны для загрузки.' });
+        if (!coverFile || !mp3File || !wavFile) {
+            return res.status(400).json({ error: 'Обложка, MP3 и WAV файлы обязательны для загрузки.' });
         }
 
         // 1. Загружаем файлы в Supabase Storage
         const cover_url = await uploadToSupabase(coverFile, 'covers');
         const mp3_url = await uploadToSupabase(mp3File, 'tracks');
-        const wav_url = await uploadToSupabase(wavFile, 'tracks'); // Может быть null, если не загружен
+        const wav_url = await uploadToSupabase(wavFile, 'tracks');
 
         // 2. Логика "Главного релиза" (снимаем галочку со старых)
         const isMainRelease = is_main === 'true' || is_main === true;
@@ -186,7 +185,7 @@ app.post('/api/music', upload.fields([
     }
 });
 
-// НОВЫЙ МАРШРУТ: ПОЛУЧЕНИЕ ВСЕХ ТРЕКОВ (ДЛЯ АДМИНКИ)
+// ПОЛУЧЕНИЕ ВСЕХ ТРЕКОВ (ДЛЯ АДМИНКИ)
 app.post('/api/music-list', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
@@ -197,7 +196,104 @@ app.post('/api/music-list', async (req, res) => {
     res.json(data);
 });
 
-// СТАРЫЕ МАРШРУТЫ ПРОМО (БЕЗ ИЗМЕНЕНИЙ)
+// НОВЫЙ МАРШРУТ: УДАЛЕНИЕ МУЗЫКИ ИЗ SUPABASE (БД + STORAGE)
+app.delete('/api/music/:id', async (req, res) => {
+    const { password } = req.body;
+    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+
+    try {
+        // 1. Получаем инфу о треке, чтобы узнать пути к файлам
+        const { data: track } = await supabase.from('music').select('*').eq('id', req.params.id).single();
+        
+        // 2. Удаляем файлы из хранилища Storage, чтобы не забивать место
+        if (track) {
+            const filesToRemove = [];
+            if (track.cover_url) filesToRemove.push(track.cover_url.split('/music-content/')[1]);
+            if (track.mp3_url) filesToRemove.push(track.mp3_url.split('/music-content/')[1]);
+            if (track.wav_url) filesToRemove.push(track.wav_url.split('/music-content/')[1]);
+            
+            if (filesToRemove.length > 0) {
+                await supabase.storage.from('music-content').remove(filesToRemove);
+            }
+        }
+
+        // 3. Удаляем строку из базы данных
+        const { error } = await supabase.from('music').delete().eq('id', req.params.id);
+        if (error) throw error;
+
+        res.json({ success: true, message: 'Удалено' });
+    } catch (err) {
+        console.error('Ошибка при удалении трека:', err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// ================= ПРОФИЛИ =================
+
+// НОВЫЙ МАРШРУТ: ПОЛУЧИТЬ СПИСОК ВСЕХ ПРОФИЛЕЙ
+app.post('/api/users-list', async (req, res) => {
+    const { password } = req.body;
+    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+    
+    try {
+        const users = await User.find().sort({ _id: -1 });
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// НОВЫЙ МАРШРУТ: УДАЛИТЬ ПРОФИЛЬ
+app.delete('/api/user/:id', async (req, res) => {
+    const { password } = req.body;
+    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+
+    try {
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Не найдено' });
+        
+        // Опционально: Очищаем его историю сообщений, чтобы не засорять БД
+        await PendingMsg.deleteMany({ clientId: user.clientId });
+        
+        res.json({ success: true, message: 'Удалено' });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+// НОВЫЙ МАРШРУТ: РЕДАКТИРОВАТЬ ПРОФИЛЬ
+app.put('/api/user/:id', async (req, res) => {
+    const { password, newClientId, newNickname } = req.body;
+    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+
+    try {
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'Код не найден' });
+
+        // Проверяем, не занят ли новый ID кем-то другим
+        if (newClientId && newClientId !== user.clientId) {
+            const existing = await User.findOne({ clientId: newClientId });
+            if (existing) return res.status(400).json({ error: 'Этот ID уже занят' });
+            
+            // Если ID изменился, меняем его и в истории сообщений (чтобы не потерять связь)
+            await PendingMsg.updateMany({ clientId: user.clientId }, { clientId: newClientId });
+            await MessageMap.updateMany({ clientId: user.clientId }, { clientId: newClientId });
+            await AdminBan.updateMany({ clientId: user.clientId }, { clientId: newClientId });
+        }
+
+        user.clientId = newClientId || user.clientId;
+        // Если прислали пустую строку в ник, ставим null (удаляем ник)
+        user.nickname = newNickname.trim() === '' ? null : newNickname;
+        
+        await user.save();
+        res.json({ success: true, message: 'Изменено' });
+    } catch (err) {
+        res.status(500).json({ error: 'Ошибка сервера при редактировании' });
+    }
+});
+
+// ================= ПРОМОКОДЫ =================
+
 app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'track', maxCount: 1 }]), async (req, res) => {
     try {
         const { password, promo, title } = req.body;
