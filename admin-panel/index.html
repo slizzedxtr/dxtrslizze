@@ -283,12 +283,64 @@
 
         <div class="view-section" id="dashboardSection">
             <div class="dash-nav">
-                <button class="dash-btn active" id="btnTabCreate">Создать</button>
-                <button class="dash-btn" id="btnTabList">Промокоды</button>
+                <button class="dash-btn active" id="btnTabMusic">Музыка</button>
+                <button class="dash-btn" id="btnTabCreate">Промо</button>
+                <button class="dash-btn" id="btnTabList">Архив Промо</button>
                 <button class="dash-btn" id="btnTabProfile">Профиль</button>
             </div>
 
-            <form class="create-form" id="createForm">
+            <form class="create-form" id="musicForm">
+                <div style="color: var(--theme-color); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 10px;">
+                    <i class="fa-solid fa-database"></i> Загрузка в Supabase
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Название трека</label>
+                    <input type="text" id="mTitle" class="form-input" placeholder="Напр: Night City Lights" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">YouTube Ссылка (Опционально)</label>
+                    <input type="text" id="mYt" class="form-input" placeholder="https://youtube.com/...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Площадки (JSON)</label>
+                    <textarea id="mPlatforms" class="form-input" style="resize:vertical;" rows="2" placeholder='{"spotify": "link", "vk": "link"}'></textarea>
+                </div>
+                <div style="display: flex; gap: 20px; color: var(--text-main); font-weight: 700; flex-wrap: wrap;">
+                    <label style="cursor: pointer;"><input type="checkbox" id="m18"> 18+ (Explicit)</label>
+                    <label style="cursor: pointer;"><input type="checkbox" id="mMain"> Главный релиз</label>
+                </div>
+
+                <label class="form-file" id="mCoverLabel">
+                    <i class="fa-solid fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                    <span id="mCoverText">Обложка (JPG/PNG)</span>
+                    <input type="file" id="mCover" accept="image/*" required>
+                </label>
+                <label class="form-file" id="mMp3Label">
+                    <i class="fa-solid fa-file-audio" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                    <span id="mMp3Text">Трек (MP3 - Обязательно)</span>
+                    <input type="file" id="mMp3" accept=".mp3" required>
+                </label>
+                <label class="form-file" id="mWavLabel">
+                    <i class="fa-solid fa-file-waveform" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
+                    <span id="mWavText">Трек (WAV - Опционально)</span>
+                    <input type="file" id="mWav" accept=".wav">
+                </label>
+
+                <div id="mProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px;">
+                    <div id="mProgressBar" style="height:100%; width:0%; background:var(--theme-color); box-shadow:0 0 10px var(--theme-glow); transition:width 0.2s;"></div>
+                </div>
+                <div id="mStatusText" style="text-align:center; font-size:0.8rem; color:var(--theme-color); font-weight:bold; margin-top:5px;"></div>
+
+                <button type="submit" class="submit-btn" id="mSubmitBtn">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Загрузить в каталог
+                </button>
+            </form>
+
+            <form class="create-form" id="createForm" style="display: none;">
+                <div style="color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 10px;">
+                    <i class="fa-solid fa-leaf"></i> Загрузка в MongoDB
+                </div>
                 <div class="form-group">
                     <label class="form-label">Промокод</label>
                     <input type="text" id="newCode" class="form-input" placeholder="Напр: GUSTO2026 (Без #)" required>
@@ -311,7 +363,7 @@
                 </label>
 
                 <button type="submit" class="submit-btn" id="submitBtn">
-                    <i class="fa-solid fa-upload"></i> Запустить в сеть
+                    <i class="fa-solid fa-upload"></i> Создать промокод
                 </button>
             </form>
 
@@ -517,10 +569,7 @@
                 fpPromise.then(fp => fp.get()).then(r => {
                     fingerprintHash = r.visitorId;
                     
-                    // Регистрация для проверки бана админки (используем общий ID)
                     socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    
-                    // Регистрация для чата тех. поддержки
                     socket.emit('register_client', { clientId, fpHash: fingerprintHash });
                 }).catch(() => {
                     fingerprintHash = 'blocked';
@@ -589,7 +638,6 @@
                 setTimeout(() => { location.reload(); }, 3000);
             });
 
-            // Слушаем входящие сообщения техподдержки
             socket.on('receive_message', (data) => {
                 const type = data.isWarning ? 'warning' : (data.isSuccess ? 'success' : 'admin');
                 addMessageToUI(data.text, type);
@@ -599,7 +647,6 @@
                 }
             });
 
-            // Слушаем бан именно в техподдержке
             socket.on('ban_status', (data) => {
                 isSupportBanned = data.isBanned;
                 if (isSupportBanned) {
@@ -731,16 +778,115 @@
             }
         };
 
-        // ========== ОСТАЛЬНАЯ ЛОГИКА АДМИН ПАНЕЛИ ==========
-        const createForm = document.getElementById('createForm');
-        const submitBtn = document.getElementById('submitBtn');
+        // ========== ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК ==========
+        const btnMusic = document.getElementById('btnTabMusic');
+        const btnCreate = document.getElementById('btnTabCreate');
+        const btnList = document.getElementById('btnTabList');
+        const btnProfile = document.getElementById('btnTabProfile');
+        
+        const musicView = document.getElementById('musicForm');
+        const formView = document.getElementById('createForm');
+        const listView = document.getElementById('promoList');
+        const profileView = document.getElementById('profileSection');
+        
+        function hideAllTabs() {
+            [musicView, formView, listView, profileView].forEach(v => v.style.display = 'none');
+            [btnMusic, btnCreate, btnList, btnProfile].forEach(b => b.classList.remove('active'));
+        }
+
+        btnMusic.onclick = () => { hideAllTabs(); btnMusic.classList.add('active'); musicView.style.display = 'flex'; };
+        btnCreate.onclick = () => { hideAllTabs(); btnCreate.classList.add('active'); formView.style.display = 'flex'; };
+        btnList.onclick = () => { hideAllTabs(); btnList.classList.add('active'); listView.style.display = 'flex'; loadPromosFromServer(); };
+        btnProfile.onclick = () => { 
+            hideAllTabs(); 
+            btnProfile.classList.add('active'); 
+            profileView.style.display = 'flex'; 
+            document.getElementById('profId').textContent = clientId || 'Неизвестно';
+            document.getElementById('profNick').textContent = window.userNickname || "DXTR | SlizZe";
+        };
+
+        // ========== ЛОГИКА SUPABASE МУЗЫКИ ==========
+        const mCoverInput = document.getElementById('mCover');
+        const mMp3Input = document.getElementById('mMp3');
+        const mWavInput = document.getElementById('mWav');
+        
+        mCoverInput.onchange = () => document.getElementById('mCoverText').textContent = mCoverInput.files[0] ? mCoverInput.files[0].name : 'Обложка (JPG/PNG)';
+        mMp3Input.onchange = () => document.getElementById('mMp3Text').textContent = mMp3Input.files[0] ? mMp3Input.files[0].name : 'Трек (MP3 - Обязательно)';
+        mWavInput.onchange = () => document.getElementById('mWavText').textContent = mWavInput.files[0] ? mWavInput.files[0].name : 'Трек (WAV - Опционально)';
+
+        musicView.onsubmit = function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('password', sessionPassword);
+            formData.append('title', document.getElementById('mTitle').value);
+            formData.append('yt_link', document.getElementById('mYt').value);
+            formData.append('platforms', document.getElementById('mPlatforms').value);
+            formData.append('is_18', document.getElementById('m18').checked);
+            formData.append('is_main', document.getElementById('mMain').checked);
+            
+            formData.append('cover', mCoverInput.files[0]);
+            formData.append('mp3', mMp3Input.files[0]);
+            if (mWavInput.files[0]) formData.append('wav', mWavInput.files[0]);
+
+            const xhr = new XMLHttpRequest();
+            const progContainer = document.getElementById('mProgressContainer');
+            const progBar = document.getElementById('mProgressBar');
+            const statusText = document.getElementById('mStatusText');
+            const submitBtn = document.getElementById('mSubmitBtn');
+
+            submitBtn.disabled = true;
+            progContainer.style.display = 'block';
+            statusText.innerText = 'Подготовка файлов...';
+            statusText.style.color = 'var(--theme-color)';
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    progBar.style.width = percent + '%';
+                    statusText.innerText = `Передача на сервер: ${percent}%`;
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                try {
+                    const res = JSON.parse(xhr.responseText);
+                    if (xhr.status === 200) {
+                        statusText.innerText = '[ УСПЕШНО ] Трек в Supabase!';
+                        statusText.style.color = '#00ff66';
+                        progBar.style.background = '#00ff66';
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        statusText.innerText = `[ ОШИБКА ] ${res.error}`;
+                        statusText.style.color = 'var(--error-red)';
+                        submitBtn.disabled = false;
+                    }
+                } catch(err) {
+                    statusText.innerText = 'Критическая ошибка сервера';
+                    statusText.style.color = 'var(--error-red)';
+                    submitBtn.disabled = false;
+                }
+            });
+
+            xhr.addEventListener('error', () => {
+                statusText.innerText = 'Ошибка сети';
+                statusText.style.color = 'var(--error-red)';
+                submitBtn.disabled = false;
+            });
+
+            // Отправляем на новый эндпоинт, который мы написали в index.js
+            xhr.open('POST', `${API_URL}/music`, true);
+            xhr.send(formData);
+        };
+
+        // ========== СТАРАЯ ЛОГИКА ПРОМО MONGODB ==========
         const coverInput = document.getElementById('newCover');
         const trackInput = document.getElementById('newTrack');
         
         coverInput.onchange = () => document.getElementById('coverText').textContent = coverInput.files[0] ? coverInput.files[0].name : 'Загрузить обложку (JPG/PNG)';
         trackInput.onchange = () => document.getElementById('trackText').textContent = trackInput.files[0] ? trackInput.files[0].name : 'Загрузить трек (MP3)';
 
-        createForm.onsubmit = async (e) => {
+        formView.onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData();
             formData.append('password', sessionPassword);
@@ -749,22 +895,23 @@
             formData.append('cover', coverInput.files[0]);
             formData.append('track', trackInput.files[0]);
 
-            submitBtn.disabled = true; submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Создание промокода..';
+            const submitBtnPromo = document.getElementById('submitBtn');
+            submitBtnPromo.disabled = true; submitBtnPromo.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Создание промокода..';
 
             try {
                 const res = await fetch(`${API_URL}/promo`, { method: 'POST', body: formData });
                 const data = await res.json();
 
                 if (res.ok) {
-                    submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Промокод добавлен';
-                    submitBtn.style.background = '#fff';
+                    submitBtnPromo.innerHTML = '<i class="fa-solid fa-check"></i> Промокод добавлен';
+                    submitBtnPromo.style.background = '#fff';
                     setTimeout(() => {
-                        createForm.reset(); document.getElementById('coverText').textContent = 'Загрузить обложку (JPG/PNG)'; document.getElementById('trackText').textContent = 'Загрузить трек (MP3)';
-                        submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть'; submitBtn.style.background = '';
+                        formView.reset(); document.getElementById('coverText').textContent = 'Загрузить обложку (JPG/PNG)'; document.getElementById('trackText').textContent = 'Загрузить трек (MP3)';
+                        submitBtnPromo.disabled = false; submitBtnPromo.innerHTML = '<i class="fa-solid fa-upload"></i> Создать промокод'; submitBtnPromo.style.background = '';
                     }, 3000);
                     loadPromosFromServer();
-                } else { alert('Ошибка: ' + (data.error || 'Неизвестная ошибка')); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть'; }
-            } catch (err) { alert('Ошибка соединения с сервером'); submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Запустить в сеть'; }
+                } else { alert('Ошибка: ' + (data.error || 'Неизвестная ошибка')); submitBtnPromo.disabled = false; submitBtnPromo.innerHTML = '<i class="fa-solid fa-upload"></i> Создать промокод'; }
+            } catch (err) { alert('Ошибка соединения с сервером'); submitBtnPromo.disabled = false; submitBtnPromo.innerHTML = '<i class="fa-solid fa-upload"></i> Создать промокод'; }
         };
 
         async function loadPromosFromServer() {
@@ -814,25 +961,6 @@
             if (a.ended) a.parentElement.querySelector('i').className = 'fa-solid fa-play';
         };
         window.seekMiniPlayer = (e, div) => { const a = div.parentElement.querySelector('audio'); const rect = div.getBoundingClientRect(); const pct = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1)); if (a.duration) a.currentTime = pct * a.duration; };
-
-        // ========== ПЕРЕКЛЮЧЕНИЕ ВСТРОЕННЫХ ВКЛАДОК ==========
-        const btnCreate = document.getElementById('btnTabCreate'), btnList = document.getElementById('btnTabList'), btnProfile = document.getElementById('btnTabProfile');
-        const formView = document.getElementById('createForm'), listView = document.getElementById('promoList'), profileView = document.getElementById('profileSection');
-        
-        function hideAllTabs() {
-            [formView, listView, profileView].forEach(v => v.style.display = 'none');
-            [btnCreate, btnList, btnProfile].forEach(b => b.classList.remove('active'));
-        }
-
-        btnCreate.onclick = () => { hideAllTabs(); btnCreate.classList.add('active'); formView.style.display = 'flex'; };
-        btnList.onclick = () => { hideAllTabs(); btnList.classList.add('active'); listView.style.display = 'flex'; loadPromosFromServer(); };
-        btnProfile.onclick = () => { 
-            hideAllTabs(); 
-            btnProfile.classList.add('active'); 
-            profileView.style.display = 'flex'; 
-            document.getElementById('profId').textContent = clientId || 'Неизвестно';
-            document.getElementById('profNick').textContent = window.userNickname || "DXTR | SlizZe";
-        };
 
         let activeCode = '';
         const delModal = document.getElementById('deleteModal');
