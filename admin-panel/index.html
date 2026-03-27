@@ -299,21 +299,26 @@
                     <input type="text" id="mTitle" class="form-input" placeholder="Напр: Night City Lights" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">YouTube Ссылка (Опционально)</label>
-                    <input type="text" id="mYt" class="form-input" placeholder="https://youtube.com/...">
+                    <label class="form-label">YouTube Ссылка (Обязательно)</label>
+                    <input type="url" id="mYt" class="form-input" placeholder="https://youtube.com/..." required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Площадки (JSON)</label>
-                    <textarea id="mPlatforms" class="form-input" style="resize:vertical;" rows="2" placeholder='{"spotify": "link", "vk": "link"}'></textarea>
-                </div>
-                <div style="display: flex; gap: 20px; color: var(--text-main); font-weight: 700; flex-wrap: wrap;">
+                
+                <div style="display: flex; gap: 20px; color: var(--text-main); font-weight: 700; flex-wrap: wrap; margin-top: 10px;">
                     <label style="cursor: pointer;"><input type="checkbox" id="m18"> 18+ (Explicit)</label>
                     <label style="cursor: pointer;"><input type="checkbox" id="mMain"> Главный релиз</label>
+                    <label style="cursor: pointer; color: var(--theme-color);"><input type="checkbox" id="mHasPlatforms"> Доступен на площадках</label>
                 </div>
 
-                <label class="form-file" id="mCoverLabel">
+                <div id="platformsContainer" style="display: none; flex-direction: column; gap: 8px; margin-top: 10px; padding: 15px; background: rgba(0, 198, 255, 0.05); border: 1px dashed var(--theme-color); border-radius: 12px;">
+                    <div style="font-size: 0.8rem; font-weight: 800; color: var(--theme-color); text-transform: uppercase; margin-bottom: 5px;">Ссылки на площадки</div>
+                    <input type="url" id="linkSpotify" class="form-input" placeholder="Ссылка Spotify">
+                    <input type="url" id="linkVk" class="form-input" placeholder="Ссылка VK Музыка">
+                    <input type="url" id="linkYandex" class="form-input" placeholder="Ссылка Яндекс Музыка">
+                </div>
+
+                <label class="form-file" id="mCoverLabel" style="margin-top: 10px;">
                     <i class="fa-solid fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="mCoverText">Обложка (JPG/PNG)</span>
+                    <span id="mCoverText">Обложка (JPG/PNG - Обязательно)</span>
                     <input type="file" id="mCover" accept="image/*" required>
                 </label>
                 <label class="form-file" id="mMp3Label">
@@ -323,8 +328,8 @@
                 </label>
                 <label class="form-file" id="mWavLabel">
                     <i class="fa-solid fa-file-waveform" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="mWavText">Трек (WAV - Опционально)</span>
-                    <input type="file" id="mWav" accept=".wav">
+                    <span id="mWavText">Трек (WAV - Обязательно)</span>
+                    <input type="file" id="mWav" accept=".wav" required>
                 </label>
 
                 <div id="mProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px;">
@@ -810,24 +815,58 @@
         const mMp3Input = document.getElementById('mMp3');
         const mWavInput = document.getElementById('mWav');
         
-        mCoverInput.onchange = () => document.getElementById('mCoverText').textContent = mCoverInput.files[0] ? mCoverInput.files[0].name : 'Обложка (JPG/PNG)';
+        const mHasPlatforms = document.getElementById('mHasPlatforms');
+        const platformsContainer = document.getElementById('platformsContainer');
+        const linkSpotify = document.getElementById('linkSpotify');
+        const linkVk = document.getElementById('linkVk');
+        const linkYandex = document.getElementById('linkYandex');
+        
+        mCoverInput.onchange = () => document.getElementById('mCoverText').textContent = mCoverInput.files[0] ? mCoverInput.files[0].name : 'Обложка (JPG/PNG - Обязательно)';
         mMp3Input.onchange = () => document.getElementById('mMp3Text').textContent = mMp3Input.files[0] ? mMp3Input.files[0].name : 'Трек (MP3 - Обязательно)';
-        mWavInput.onchange = () => document.getElementById('mWavText').textContent = mWavInput.files[0] ? mWavInput.files[0].name : 'Трек (WAV - Опционально)';
+        mWavInput.onchange = () => document.getElementById('mWavText').textContent = mWavInput.files[0] ? mWavInput.files[0].name : 'Трек (WAV - Обязательно)';
+
+        // Логика чекбокса "Площадки"
+        mHasPlatforms.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                platformsContainer.style.display = 'flex';
+                linkSpotify.required = true;
+                linkVk.required = true;
+                linkYandex.required = true;
+            } else {
+                platformsContainer.style.display = 'none';
+                linkSpotify.required = false;
+                linkVk.required = false;
+                linkYandex.required = false;
+                linkSpotify.value = '';
+                linkVk.value = '';
+                linkYandex.value = '';
+            }
+        });
 
         musicView.onsubmit = function(e) {
             e.preventDefault();
+            
+            // Если включены площадки, формируем JSON из 3 ссылок, иначе пусто
+            let platformsJson = "{}";
+            if (mHasPlatforms.checked) {
+                platformsJson = JSON.stringify({
+                    spotify: linkSpotify.value,
+                    vk: linkVk.value,
+                    yandex: linkYandex.value
+                });
+            }
             
             const formData = new FormData();
             formData.append('password', sessionPassword);
             formData.append('title', document.getElementById('mTitle').value);
             formData.append('yt_link', document.getElementById('mYt').value);
-            formData.append('platforms', document.getElementById('mPlatforms').value);
+            formData.append('platforms', platformsJson);
             formData.append('is_18', document.getElementById('m18').checked);
             formData.append('is_main', document.getElementById('mMain').checked);
             
             formData.append('cover', mCoverInput.files[0]);
             formData.append('mp3', mMp3Input.files[0]);
-            if (mWavInput.files[0]) formData.append('wav', mWavInput.files[0]);
+            formData.append('wav', mWavInput.files[0]);
 
             const xhr = new XMLHttpRequest();
             const progContainer = document.getElementById('mProgressContainer');
@@ -874,7 +913,6 @@
                 submitBtn.disabled = false;
             });
 
-            // Отправляем на новый эндпоинт, который мы написали в index.js
             xhr.open('POST', `${API_URL}/music`, true);
             xhr.send(formData);
         };
