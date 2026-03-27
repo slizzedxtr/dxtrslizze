@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const { GridFSBucket, ObjectId } = require('mongodb');
 const { Readable } = require('stream');
+const { createClient } = require('@supabase/supabase-js'); // Добавили Supabase
 
 const app = express();
 app.use(cors());
@@ -20,6 +21,11 @@ const mongoURI = process.env.MONGODB_URI;
 const ADMIN_PASS = process.env.ADMIN_PASS || 'DXTR-promo777!'; 
 const bot = new TelegramBot(token, { polling: true });
 
+// --- ИНИЦИАЛИЗАЦИЯ SUPABASE ---
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 let gfsBucket;
 
 mongoose.connect(mongoURI)
@@ -29,7 +35,7 @@ mongoose.connect(mongoURI)
     })
     .catch(err => console.error('MongoDB error:', err));
 
-// --- Схемы БД ---
+// --- Схемы БД (СТАРЫЕ, БЕЗ ИЗМЕНЕНИЙ) ---
 const CounterSchema = new mongoose.Schema({
     _id: { type: String, required: true },
     seq: { type: Number, default: 0 }
@@ -75,7 +81,6 @@ const PromoSchema = new mongoose.Schema({
 });
 const Promo = mongoose.model('Promo', PromoSchema);
 
-// ИЗМЕНЕНИЕ 1: Теперь уникальным ключом является clientId
 const AdminBanSchema = new mongoose.Schema({
     clientId: { type: String, required: true, unique: true },
     fpHash: String,
@@ -98,7 +103,101 @@ function uploadToGridFS(file) {
     });
 }
 
+// Вспомогательная функция для загрузки файлов в Supabase
+async function uploadToSupabase(file, folderName) {
+    if (!file) return null;
+    
+    // Создаем уникальное имя файла (чтобы не было конфликтов)
+    const ext = file.originalname.split('.').pop();
+    const fileName = `${folderName}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+    
+    const { data, error } = await supabase.storage
+        .from('music-content')
+        .upload(fileName, file.buffer, {
+            contentType: file.mimetype,
+            upsert: false
+        });
+
+    if (error) throw error;
+
+    // Получаем публичную прямую ссылку на файл
+    const { data: publicUrlData } = supabase.storage.from('music-content').getPublicUrl(fileName);
+    return publicUrlData.publicUrl;
+}
+
 // ================= API =================
+
+// НОВЫЙ МАРШРУТ: ЗАГРУЗКА МУЗЫКИ В КАТАЛОГ
+app.post('/api/music', upload.fields([
+    { name: 'cover', maxCount: 1 }, 
+    { name: 'mp3', maxCount: 1 }, 
+    { name: 'wav', maxCount: 1 }
+]), async (req, res) => {
+    try {
+        const { password, title, yt_link, is_18, is_main, platforms } = req.body;
+        
+        // Проверка пароля админки
+        if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+
+        const coverFile = req.files['cover'] ? req.files['cover'][0] : null;
+        const mp3File = req.files['mp3'] ? req.files['mp3'][0] : null;
+        const wavFile = req.files['wav'] ? req.files['wav'][0] : null;
+
+        if (!coverFile || !mp3File) {
+            return res.status(400).json({ error: 'Обложка и MP3 файл обязательны для загрузки.' });
+        }
+
+        // 1. Загружаем файлы в Supabase Storage
+        const cover_url = await uploadToSupabase(coverFile, 'covers');
+        const mp3_url = await uploadToSupabase(mp3File, 'tracks');
+        const wav_url = await uploadToSupabase(wavFile, 'tracks'); // Может быть null, если не загружен
+
+        // 2. Логика "Главного релиза" (снимаем галочку со старых)
+        const isMainRelease = is_main === 'true' || is_main === true;
+        if (isMainRelease) {
+            await supabase.from('music').update({ is_main: false }).eq('is_main', true);
+        }
+
+        // 3. Парсим площадки (JSON)
+        let platformsData = {};
+        try { if (platforms) platformsData = JSON.parse(platforms); } catch(e){}
+
+        // 4. Сохраняем информацию о треке в таблицу music
+        const { data, error } = await supabase
+            .from('music')
+            .insert([{
+                title,
+                cover_url,
+                mp3_url,
+                wav_url,
+                yt_link,
+                is_18: is_18 === 'true' || is_18 === true,
+                is_main: isMainRelease,
+                platforms: platformsData
+            }]);
+
+        if (error) throw error;
+
+        res.json({ success: true, message: 'Трек успешно добавлен в каталог!' });
+
+    } catch (err) {
+        console.error('Ошибка загрузки музыки:', err);
+        res.status(500).json({ error: 'Ошибка сервера при добавлении трека' });
+    }
+});
+
+// НОВЫЙ МАРШРУТ: ПОЛУЧЕНИЕ ВСЕХ ТРЕКОВ (ДЛЯ АДМИНКИ)
+app.post('/api/music-list', async (req, res) => {
+    const { password } = req.body;
+    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+    
+    const { data, error } = await supabase.from('music').select('*').order('id', { ascending: false });
+    if (error) return res.status(500).json({ error: 'Ошибка при получении списка' });
+    
+    res.json(data);
+});
+
+// СТАРЫЕ МАРШРУТЫ ПРОМО (БЕЗ ИЗМЕНЕНИЙ)
 app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'track', maxCount: 1 }]), async (req, res) => {
     try {
         const { password, promo, title } = req.body;
@@ -185,15 +284,14 @@ app.get('/api/media/:id', async (req, res) => {
     } catch (err) { res.status(404).send('Некорректный ID файла'); }
 });
 
-// ================= SOCKETS =================
+// ================= SOCKETS (БЕЗ ИЗМЕНЕНИЙ) =================
 io.on('connection', (socket) => {
     io.emit('online_update', io.engine.clientsCount);
     socket.on('disconnect', () => { io.emit('online_update', io.engine.clientsCount); });
 
-    // ИЗМЕНЕНИЕ 2: Проверка бана админки теперь идет по clientId
     socket.on('check_admin_ban', async (data) => {
         if (!data.clientId) return;
-        socket.join(`admin_${data.clientId}`); // Отдельная комната для событий админки этого юзера
+        socket.join(`admin_${data.clientId}`); 
         
         const ban = await AdminBan.findOne({ clientId: data.clientId });
         if (ban) {
@@ -207,7 +305,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // ИЗМЕНЕНИЕ 3: Выдача бана админки теперь привязывается к clientId
     socket.on('trigger_admin_ban', async (data) => {
         if (!data.clientId || !data.duration) return;
         const expiresAt = new Date(Date.now() + data.duration * 1000);
@@ -375,11 +472,10 @@ io.on('connection', (socket) => {
     });
 });
 
-// ================= TELEGRAM =================
+// ================= TELEGRAM (БЕЗ ИЗМЕНЕНИЙ) =================
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
     
-    // --- ОБРАБОТКА БАНОВ ТЕХПОДДЕРЖКИ ---
     if (query.data.startsWith('spam_')) {
         const cId = query.data.replace('spam_', '');
         await sendToUser(cId, "Пожалуйста, не присылайте сообщения которые не имеют смысл или не связаны с темой сайта.", 'warning', query.message.message_id, "Spam-фильтр");
@@ -451,7 +547,6 @@ bot.on('callback_query', async (query) => {
         sendBannedMenu(adminId, query.message.message_id);
     }
 
-    // --- ОБРАБОТКА БАНОВ АДМИН ПАНЕЛИ (/apban) ---
     if (query.data === 'apbanlist') { sendApBannedMenu(adminId, query.message.message_id); }
 
     if (query.data.startsWith('apbaninfo_')) {
@@ -485,7 +580,6 @@ bot.on('callback_query', async (query) => {
         bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
     }
 
-    // ИЗМЕНЕНИЕ 4: Разбан отправляется в комнату admin_ID
     if (query.data.startsWith('apunban_')) {
         const banId = query.data.replace('apunban_', '');
         const ban = await AdminBan.findByIdAndDelete(banId);
@@ -498,7 +592,6 @@ bot.on('callback_query', async (query) => {
         sendApBannedMenu(adminId, query.message.message_id);
     }
 
-    // Разбан прямо из быстрого уведомления (алерта)
     if (query.data.startsWith('alert_apunban_')) {
         const banId = query.data.replace('alert_apunban_', '');
         const ban = await AdminBan.findByIdAndDelete(banId);
@@ -636,4 +729,6 @@ async function sendApBannedMenu(chatId, messageId = null) {
     else bot.sendMessage(chatId, title, opts);
 }
 
-server.listen(process.env.PORT || 3000, () => console.log("Server running with MongoDB Active!"));
+server.listen(process.env.PORT || 3000, () => {
+    console.log("DXTR | SlizZe Server is ONLINE! MongoDB & Supabase Active!");
+});
