@@ -158,7 +158,8 @@
         
         .platform-link.disabled-link { color: rgba(255,255,255,0.3) !important; text-decoration: line-through !important; cursor: not-allowed !important; transform: none !important; }
         .platform-link.disabled-link::before { display: none !important; }
-        .yam { border-color: rgba(255,204,0,0.2) !important; background: rgba(255,204,0,0.02) !important; }
+        .yam { border-color: rgba(255,204,0,0.4); background: rgba(255,204,0,0.05); } .yam::before { background: linear-gradient(45deg, #ccaa00, #ffcc00); }
+        .yam.disabled-link { border-color: rgba(255,204,0,0.2) !important; background: rgba(255,204,0,0.02) !important; }
         .spot.disabled-link { border-color: rgba(29,185,84,0.2) !important; background: rgba(29,185,84,0.02) !important; }
         .vkm.disabled-link { border-color: rgba(0,119,255,0.2) !important; background: rgba(0,119,255,0.02) !important; }
 
@@ -591,10 +592,19 @@
             }
             badgeContainer.innerHTML = badgesHTML;
 
-            // YouTube клип
+           // YouTube клип
             const ytId = extractYtId(track.yt_link);
             document.getElementById('heroCoverWrap').onclick = () => openVideo(ytId);
-            document.getElementById('ytHeroLink').onclick = () => openVideo(ytId);
+            
+            const ytHeroLink = document.getElementById('ytHeroLink');
+            // Подставляем реальную ссылку, чтобы браузер показывал ее при наведении
+            ytHeroLink.href = track.yt_link ? track.yt_link : "javascript:void(0)";
+            ytHeroLink.onclick = (e) => {
+                if (ytId) {
+                    e.preventDefault(); // Блокируем стандартный переход по ссылке
+                    openVideo(ytId);    // Открываем модальное окно вместо перехода
+                }
+            };
 
             // Кнопки площадок
             const yam = document.getElementById('heroYam');
