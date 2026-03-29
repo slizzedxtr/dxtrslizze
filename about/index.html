@@ -168,7 +168,7 @@
         .close-btn { position: absolute; top: 25px; right: 40px; color: white; font-size: 3rem; cursor: pointer; z-index: 10000; transition: 0.3s; line-height: 1; }
         .close-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
 
-        /* ЧАТА ПОДДЕРЖКИ */
+        /* ЧАТ ПОДДЕРЖКИ */
         #chat-window {
             display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden;
             background: rgba(8, 8, 12, 0.85); border: 1px solid rgba(0, 198, 255, 0.4); border-radius: 20px;
@@ -209,13 +209,17 @@
         .msg-bot .chat-msg-name { color: var(--neon-purple); text-shadow: 0 0 5px rgba(112,0,255,0.5); }
         .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.08); border: 1px solid rgba(112, 0, 255, 0.4); border-bottom-left-radius: 2px; }
         
-        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); z-index: 2; position: relative; }
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); z-index: 2; position: relative; transition: opacity 0.5s ease; }
         #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
         #chat-input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.2), inset 0 0 10px rgba(0,198,255,0.1); }
         #chat-send { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
         #chat-send:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 0 25px rgba(0,198,255,0.6); }
 
         @keyframes chatTerminalOpen { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+        .chat-resolved-status { text-align: center; margin-top: auto; padding: 25px 20px; border: 1px solid var(--neon-green); border-radius: 15px; background: rgba(0, 255, 102, 0.05); box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.1), 0 0 20px rgba(0, 255, 102, 0.1); animation: msgFade 0.6s ease-out forwards; }
+        .chat-resolved-icon { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(0,255,102,0.5)); }
+        .chat-resolved-title { color: var(--neon-green); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
         /* ИНТЕРФЕЙСНЫЕ МЕХАНИКИ (МЕНЮ) */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
@@ -315,11 +319,11 @@
         </div>
         <div id="chat-messages">
             <div class="chat-system-ban" id="chatBanNotice"><i class="fa-solid fa-circle-exclamation"></i> ДОСТУП ОГРАНИЧЕН</div>
-            <div class="chat-system-msg" id="chatGreeting">Чат тех. поддержки. Задайте ваш вопрос.</div>
+            <div class="chat-system-msg" id="chatGreeting">Подключение...</div>
         </div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Опишите проблему...">
-            <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+        <div class="chat-input-area" id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Опишите проблему..." disabled>
+            <button id="chat-send" style="background: #333;" disabled><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -524,10 +528,21 @@
         const closeBtn = document.getElementById('closeBtn');
         const modal = document.getElementById('videoModal');
 
+        function resetChatUI() {
+            const inputArea = document.getElementById('chat-input-area');
+            if (inputArea) {
+                inputArea.style.opacity = "1";
+                inputArea.style.display = "flex";
+            }
+            const resolvedBlocks = chatMessages.querySelectorAll('.chat-resolved-status');
+            resolvedBlocks.forEach(block => block.remove());
+        }
+
         sidebarSupportBtn.onclick = (e) => {
             e.preventDefault();
             toggleMenu();
             setTimeout(() => {
+                resetChatUI();
                 chatWindow.style.display = 'flex';
                 if(window.innerWidth > 600) {
                     chatWindow.style.left = 'auto';
@@ -573,58 +588,52 @@
         });
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        // === АНТИ-БАН СИСТЕМА И СОКЕТЫ ===
-        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
-        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
-
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                let date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-        }
-        function getCookie(name) {
-            let nameEQ = name + "=";
-            let ca = document.cookie.split(';');
-            for(let i=0;i < ca.length;i++) {
-                let c = ca[i].trim();
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
-            }
-            return null;
-        }
-
-        // Новая логика цифрового ID
-        let lsId = localStorage.getItem('dxtrNumericId');
-        let cookieId = getCookie('dxtrNumericId');
-        let clientId = lsId || cookieId || null;
-        
-        if (clientId) {
-            localStorage.setItem('dxtrNumericId', clientId);
-            setCookie('dxtrNumericId', clientId, 365);
-        }
-        
+        // === АВТОРИЗАЦИЯ И СОКЕТЫ ===
+        const token = localStorage.getItem('dxtr_token');
         const socket = io("https://dxtrslizze.onrender.com/");
+        const chatGreeting = document.getElementById('chatGreeting');
+        
+        let isAuthUser = !!token;
 
-        socket.on('connect', () => {
-            fpPromise
-                .then(fp => fp.get())
-                .then(result => {
-                    socket.emit('register_client', { clientId: clientId, fpHash: result.visitorId });
-                })
-                .catch(error => {
-                    socket.emit('register_client', { clientId: clientId, fpHash: 'blocked' });
-                });
+        function lockChatForGuests() {
+            if(chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо войти в аккаунт на странице <a href='https://dxtrslizze.xyz/profile' style='color:var(--neon-pink);'>Профиля</a>.</b>";
+            if(chatInput) {
+                chatInput.disabled = true;
+                chatInput.placeholder = "Необходима авторизация";
+                chatInput.style.borderColor = "rgba(255,255,255,0.1)";
+            }
+            if(chatSendBtn) {
+                chatSendBtn.disabled = true;
+                chatSendBtn.style.background = '#333';
+                chatSendBtn.style.color = '#555';
+            }
+        }
+
+        window.addEventListener('load', async () => {
+            if (token) {
+                try {
+                    const res = await fetch("https://dxtrslizze.onrender.com/api/auth/me", { headers: { 'Authorization': `Bearer ${token}` } });
+                    const data = await res.json();
+                    if (data.success) {
+                        isAuthUser = true;
+                        const avatarImg = document.getElementById('userAvatar');
+                        if (avatarImg && data.user.avatarUrl && data.user.avatarUrl !== 'dslogo.png') {
+                            avatarImg.src = data.user.avatarUrl;
+                        }
+                    } else {
+                        isAuthUser = false;
+                        localStorage.removeItem('dxtr_token');
+                        lockChatForGuests();
+                    }
+                } catch(e) { console.error(e); }
+            } else {
+                lockChatForGuests();
+            }
         });
 
-        // Слушаем присвоение нового ID
-        socket.on('assign_id', (data) => {
-            if (data && data.newId) {
-                clientId = data.newId;
-                localStorage.setItem('dxtrNumericId', clientId);
-                setCookie('dxtrNumericId', clientId, 365);
+        socket.on('connect', () => {
+            if (token) {
+                socket.emit('register_client', { token: token }); 
             }
         });
 
@@ -633,20 +642,19 @@
         
         const menuBanLock = document.getElementById('menuBanLock');
         const chatBanNotice = document.getElementById('chatBanNotice');
-        const chatGreeting = document.getElementById('chatGreeting');
 
         socket.on('user_data', d => {
             if (d.nickname) {
                 window.userNickname = d.nickname;
-                localStorage.setItem('dxtrUserNickname', d.nickname);
                 if(chatGreeting) chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${d.nickname}</b>!`;
-                document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => {
-                    if(el.textContent === 'Вы') el.textContent = d.nickname;
-                });
+                chatInput.disabled = false;
+                chatInput.placeholder = "Опишите проблему...";
+                chatSendBtn.disabled = false;
+                chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))';
             }
             if (d.avatarUrl) {
                 const avatarImg = document.getElementById('userAvatar');
-                if (avatarImg) avatarImg.src = d.avatarUrl;
+                if (avatarImg && d.avatarUrl !== 'dslogo.png') avatarImg.src = d.avatarUrl;
             }
         });
         
@@ -668,13 +676,13 @@
             } else {
                 if(menuBanLock) menuBanLock.style.display = 'none';
                 if(chatBanNotice) chatBanNotice.style.display = 'none';
-                if(chatGreeting) chatGreeting.style.display = 'block';
-                if(chatInput) {
+                if(chatGreeting && isAuthUser) chatGreeting.style.display = 'block';
+                if(chatInput && isAuthUser) {
                     chatInput.disabled = false;
                     chatInput.placeholder = "Опишите проблему...";
                     chatInput.style.borderColor = "rgba(255,255,255,0.1)";
                 }
-                if(chatSendBtn) {
+                if(chatSendBtn && isAuthUser) {
                     chatSendBtn.disabled = false;
                     chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))';
                     chatSendBtn.style.color = '#fff';
@@ -683,17 +691,23 @@
         });
         
         socket.on('receive_message', d => {
-            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex';
+            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                resetChatUI();
+                chatWindow.style.display = 'flex';
+            }
             addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess);
         });
+
+        socket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
+        socket.on('chat_closed_reset', () => { showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double"); });
 
         if(chatSendBtn) chatSendBtn.onclick = sendMessageToBot;
         if(chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
         
         function sendMessageToBot() {
             const t = chatInput.value.trim();
-            if (!t || chatInput.disabled) return;
-            socket.emit('send_message', { text: t, clientId: clientId });
+            if (!t || chatInput.disabled || !isAuthUser) return;
+            socket.emit('send_message', { text: t, token: token });
             addChatMessage('Вы', t, 'flex-end', true, false, false);
             chatInput.value = '';
         }
@@ -733,6 +747,24 @@
                 if (h.length > 50) h.shift();
                 localStorage.setItem('dxtrChatHistory', JSON.stringify(h));
             }
+        }
+
+        function showChatClosedAnimation(titleHtml, iconClass) {
+            const inputArea = document.getElementById('chat-input-area');
+            if (inputArea) inputArea.style.opacity = "0";
+            
+            setTimeout(() => {
+                if (inputArea) inputArea.style.display = "none";
+                
+                const statusBlock = document.createElement('div');
+                statusBlock.className = 'chat-resolved-status';
+                statusBlock.innerHTML = `
+                    <i class="fa-solid ${iconClass} chat-resolved-icon"></i>
+                    <div class="chat-resolved-title">${titleHtml}</div>
+                `;
+                chatMessages.appendChild(statusBlock);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 500); 
         }
         
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
