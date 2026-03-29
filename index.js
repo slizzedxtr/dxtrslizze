@@ -21,7 +21,7 @@ const token = process.env.BOT_TOKEN;
 const adminId = process.env.ADMIN_CHAT_ID;
 const mongoURI = process.env.MONGODB_URI;
 const ADMIN_PASS = process.env.ADMIN_PASS || 'DXTR-promo777!'; 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key'; // Твой секрет для токенов
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 const bot = new TelegramBot(token, { polling: true });
 
 // --- ИНИЦИАЛИЗАЦИЯ SUPABASE ---
@@ -45,11 +45,10 @@ const CounterSchema = new mongoose.Schema({
 });
 const Counter = mongoose.model('Counter', CounterSchema);
 
-// ОБНОВЛЕННАЯ СХЕМА ПОЛЬЗОВАТЕЛЯ
 const UserSchema = new mongoose.Schema({
     username: { type: String, unique: true, required: true, lowercase: true },
     password: { type: String, required: true },
-    clientId: { type: String, unique: true }, // Числовой ID для совместимости с ботом
+    clientId: { type: String, unique: true },
     nickname: String,
     avatarUrl: { type: String, default: 'dslogo.png' },
     dscoin_balance: { type: Number, default: 100 },
@@ -126,14 +125,14 @@ async function uploadToSupabase(file, folderName) {
     return publicUrlData.publicUrl;
 }
 
-// ================= API АВТОРИЗАЦИИ (НОВОЕ) =================
+// ================= API АВТОРИЗАЦИИ =================
 
 app.post('/api/auth/register', async (req, res) => {
     try {
         const { username, password } = req.body;
         if (!username || !password) return res.status(400).json({ error: 'Заполните все поля' });
 
-        const lowerUser = username.toLowerCase();
+        const lowerUser = String(username).toLowerCase();
         const existing = await User.findOne({ username: lowerUser });
         if (existing) return res.status(400).json({ error: 'Этот никнейм уже занят' });
 
@@ -164,7 +163,7 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        const lowerUser = username.toLowerCase();
+        const lowerUser = String(username).toLowerCase();
         
         const user = await User.findOne({ username: lowerUser });
         if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
@@ -180,7 +179,6 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Проверка токена
 app.get('/api/auth/me', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Нет токена' });
@@ -196,7 +194,6 @@ app.get('/api/auth/me', async (req, res) => {
     }
 });
 
-// 1. ОБНОВЛЕНИЕ ПРОФИЛЯ (Ник, Аватар, Пароль)
 app.put('/api/auth/update', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Нет токена' });
@@ -209,9 +206,8 @@ app.put('/api/auth/update', async (req, res) => {
         const { newNickname, newAvatar, oldPassword, newPassword } = req.body;
 
         if (newNickname) user.nickname = newNickname;
-        if (newAvatar) user.avatarUrl = newAvatar; // Сюда юзер вставит ссылку на картинку
+        if (newAvatar) user.avatarUrl = newAvatar;
 
-        // Если юзер хочет сменить пароль
         if (oldPassword && newPassword) {
             const isMatch = await bcrypt.compare(oldPassword, user.password);
             if (!isMatch) return res.status(400).json({ error: 'Неверный старый пароль' });
@@ -220,26 +216,34 @@ app.put('/api/auth/update', async (req, res) => {
 
         await user.save();
         res.json({ success: true, message: 'Профиль обновлен', user: { nickname: user.nickname, avatarUrl: user.avatarUrl } });
-    } catch (err) { res.status(500).json({ error: 'Ошибка сервера' }); }
+    } catch (err) { 
+        console.error("Ошибка при обновлении профиля:", err);
+        res.status(500).json({ error: 'Ошибка сервера' }); 
+    }
 });
 
-// 2. ВОССТАНОВЛЕНИЕ ПАРОЛЯ (Отправка запроса админу в ТГ)
 app.post('/api/auth/recover', async (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ error: 'Укажите никнейм' });
+    try {
+        const { username } = req.body;
+        if (!username) return res.status(400).json({ error: 'Укажите никнейм' });
 
-    const user = await User.findOne({ username: username.toLowerCase() });
-    if (!user) return res.status(404).json({ error: 'Аккаунт не найден' });
+        const safeUsername = String(username).toLowerCase();
+        const user = await User.findOne({ username: safeUsername });
+        
+        if (!user) return res.status(404).json({ error: 'Аккаунт не найден' });
 
-    // Отправляем алерт админу в Телеграм
-    bot.sendMessage(adminId, `🚨 <b>ЗАПРОС ВОССТАНОВЛЕНИЯ ПАРОЛЯ</b>\n\n👤 Аккаунт: <b>${user.nickname}</b>\n🔑 ID: <code>${user.clientId}</code>\n\nПользователь забыл пароль. Вы можете связаться с ним или сбросить пароль через базу данных.`, { parse_mode: 'HTML' });
+        bot.sendMessage(adminId, `🚨 <b>ЗАПРОС ВОССТАНОВЛЕНИЯ ПАРОЛЯ</b>\n\n👤 Аккаунт: <b>${user.nickname || user.username}</b>\n🔑 ID: <code>${user.clientId}</code>\n\nПользователь забыл пароль. Вы можете связаться с ним или сбросить пароль через базу данных.`, { parse_mode: 'HTML' })
+           .catch(err => console.error("Ошибка отправки в ТГ:", err.message));
 
-    res.json({ success: true, message: 'Запрос отправлен администрации!' });
+        res.json({ success: true, message: 'Запрос отправлен администрации!' });
+    } catch (err) {
+        console.error("Ошибка при восстановлении пароля:", err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
 });
 
 // ================= ОРИГИНАЛЬНЫЙ API (МУЗЫКА, АДМИНКА, ПРОМО) =================
 
-// ЗАГРУЗКА МУЗЫКИ В КАТАЛОГ (SUPABASE)
 app.post('/api/music', upload.fields([
     { name: 'cover', maxCount: 1 }, 
     { name: 'mp3', maxCount: 1 }, 
@@ -247,7 +251,6 @@ app.post('/api/music', upload.fields([
 ]), async (req, res) => {
     try {
         const { password, title, yt_link, is_18, is_main, platforms } = req.body;
-        
         if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
 
         const coverFile = req.files['cover'] ? req.files['cover'][0] : null;
@@ -488,7 +491,7 @@ app.get('/api/media/:id', async (req, res) => {
 });
 
 
-// ================= SOCKETS (ОБНОВЛЕННАЯ АВТОРИЗАЦИЯ) =================
+// ================= SOCKETS =================
 io.on('connection', (socket) => {
     io.emit('online_update', io.engine.clientsCount);
     socket.on('disconnect', () => { io.emit('online_update', io.engine.clientsCount); });
