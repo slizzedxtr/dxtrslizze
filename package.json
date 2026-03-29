@@ -11,6 +11,6 @@
     "cors": "^2.8.5",
     "socket.io": "^4.7.2",
     "mongodb": "^6.3.0",
-    "@supabase/supabase-client": "^2.39.3"
+    "@supabase/supabase-js": "^2.39.3"
   }
 }
