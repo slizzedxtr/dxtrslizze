@@ -196,6 +196,46 @@ app.get('/api/auth/me', async (req, res) => {
     }
 });
 
+// 1. ОБНОВЛЕНИЕ ПРОФИЛЯ (Ник, Аватар, Пароль)
+app.put('/api/auth/update', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Нет токена' });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await User.findOne({ clientId: decoded.clientId });
+        if (!user) return res.status(404).json({ error: 'Юзер не найден' });
+
+        const { newNickname, newAvatar, oldPassword, newPassword } = req.body;
+
+        if (newNickname) user.nickname = newNickname;
+        if (newAvatar) user.avatarUrl = newAvatar; // Сюда юзер вставит ссылку на картинку
+
+        // Если юзер хочет сменить пароль
+        if (oldPassword && newPassword) {
+            const isMatch = await bcrypt.compare(oldPassword, user.password);
+            if (!isMatch) return res.status(400).json({ error: 'Неверный старый пароль' });
+            user.password = await bcrypt.hash(newPassword, 10);
+        }
+
+        await user.save();
+        res.json({ success: true, message: 'Профиль обновлен', user: { nickname: user.nickname, avatarUrl: user.avatarUrl } });
+    } catch (err) { res.status(500).json({ error: 'Ошибка сервера' }); }
+});
+
+// 2. ВОССТАНОВЛЕНИЕ ПАРОЛЯ (Отправка запроса админу в ТГ)
+app.post('/api/auth/recover', async (req, res) => {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ error: 'Укажите никнейм' });
+
+    const user = await User.findOne({ username: username.toLowerCase() });
+    if (!user) return res.status(404).json({ error: 'Аккаунт не найден' });
+
+    // Отправляем алерт админу в Телеграм
+    bot.sendMessage(adminId, `🚨 <b>ЗАПРОС ВОССТАНОВЛЕНИЯ ПАРОЛЯ</b>\n\n👤 Аккаунт: <b>${user.nickname}</b>\n🔑 ID: <code>${user.clientId}</code>\n\nПользователь забыл пароль. Вы можете связаться с ним или сбросить пароль через базу данных.`, { parse_mode: 'HTML' });
+
+    res.json({ success: true, message: 'Запрос отправлен администрации!' });
+});
 
 // ================= ОРИГИНАЛЬНЫЙ API (МУЗЫКА, АДМИНКА, ПРОМО) =================
 
