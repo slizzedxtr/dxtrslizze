@@ -33,7 +33,6 @@
         .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--theme-color); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-dark); transition: 0.3s; box-shadow: 0 0 10px var(--theme-glow); text-decoration: none; cursor: pointer; }
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
         .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--theme-color); border-color: #fff; }
-        /* Серый вид кнопки профиля когда не авторизован */
         .profile-btn.locked { opacity: 0.4; cursor: not-allowed; border-color: var(--text-muted); box-shadow: none; }
         .profile-btn.locked:hover { transform: none; box-shadow: none; border-color: var(--text-muted); }
 
@@ -53,7 +52,6 @@
 
         main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 40px; z-index: 10; display: flex; flex-direction: column; align-items: center; position: relative; }
 
-        /* СКРЫТИЕ/ОТОБРАЖЕНИЕ БЛОКОВ */
         .view-section { width: 100%; display: none; flex-direction: column; align-items: center; animation: fadeIn 0.4s ease forwards; }
         .view-section.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -78,14 +76,14 @@
         .ban-text { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase; transition: color 0.3s; }
         .ban-timer { font-size: 3rem; font-weight: 900; color: var(--error-red); margin-top: 10px; font-variant-numeric: tabular-nums; }
 
-        /* === ГЛАВНОЕ МЕНЮ (ВЫБОР ОТДЕЛА) === */
+        /* ГЛАВНОЕ МЕНЮ */
         .menu-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 500px; margin-top: 30px; }
         .menu-btn { background: var(--glass-bg); border: 1px solid var(--theme-glass-border); padding: 25px; border-radius: 20px; color: #fff; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
         .menu-btn i { font-size: 1.8rem; color: var(--theme-color); transition: 0.3s; }
         .menu-btn:hover { border-color: var(--theme-color); box-shadow: 0 0 25px var(--theme-glow); transform: translateY(-5px); background: rgba(0, 198, 255, 0.1); }
         .menu-btn:hover i { transform: scale(1.2); text-shadow: 0 0 15px var(--theme-color); }
 
-        /* ШАПКА РАЗДЕЛОВ (КНОПКА НАЗАД) */
+        /* ШАПКА РАЗДЕЛОВ */
         .section-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--theme-glass-border); }
         .back-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--text-muted); padding: 10px 20px; border-radius: 12px; color: var(--text-main); font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
         .back-btn:hover { background: var(--theme-color); color: #000; border-color: var(--theme-color); box-shadow: 0 0 15px var(--theme-glow); }
@@ -105,7 +103,7 @@
         .submit-btn:hover { box-shadow: 0 0 25px var(--theme-glow); transform: translateY(-2px); background: #fff; }
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: var(--theme-color); color: #000; }
 
-        /* СПИСКИ КАРТОЧЕК (МУЗЫКА И ПРОМО) */
+        /* КАРТОЧКИ */
         .data-list { width: 100%; display: flex; flex-direction: column; gap: 20px; max-width: 800px; }
         .data-card { background: linear-gradient(135deg, rgba(5,20,10,0.8), rgba(2,10,5,0.9)); border: 1px solid var(--theme-glass-border); border-radius: 20px; padding: 20px; display: flex; gap: 20px; align-items: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
         .card-cover { width: 100px; height: 100px; border-radius: 12px; object-fit: cover; flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
@@ -134,7 +132,6 @@
         .modal-box { background: rgba(20, 0, 0, 0.9); border: 2px solid var(--theme-color); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s; box-shadow: 0 0 50px var(--theme-glow); }
         .modal-overlay.active .modal-box { transform: scale(1); }
         .modal-box.danger { border-color: var(--error-red); box-shadow: 0 0 50px rgba(204,68,68,0.2); }
-        
         .modal-box h3 { color: var(--theme-color); font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; }
         .modal-box.danger h3 { color: var(--error-red); }
         .modal-btns { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
@@ -146,7 +143,7 @@
         .m-btn-danger { background: var(--error-red); color: white; box-shadow: 0 0 15px rgba(204,68,68,0.5); }
         .m-btn-danger:hover { background: #ff0000; box-shadow: 0 0 25px rgba(255,0,0,0.8); transform: scale(1.05); }
 
-        /* === ТЕХПОДДЕРЖКА (ЧАТ) === */
+        /* ЧАТ ТЕХПОДДЕРЖКИ */
         .support-btn { position: fixed; bottom: 25px; right: 25px; z-index: 9000; background: var(--glass-bg); border: 1px solid var(--theme-glass-border); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); transition: 0.3s; }
         .support-btn:hover { background: var(--theme-color); color: #000; transform: scale(1.1); box-shadow: 0 0 25px var(--theme-glow); }
         .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--error-red); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: bold; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--error-red); }
@@ -183,7 +180,6 @@
     <canvas id="matrixCanvas"></canvas>
 
     <div class="top-controls">
-        <!-- ИСПРАВЛЕН БАГ: кнопка профиля заблокирована до авторизации через класс locked -->
         <div class="profile-btn locked" id="profileBtn" title="Профиль Администратора" onclick="handleProfileClick()">
             <img src="../dslogo.png" alt="Profile" id="userAvatar">
         </div>
@@ -386,7 +382,6 @@
             <div class="data-list" id="promoList"></div>
         </div>
 
-        <!-- ИСПРАВЛЕН БАГ: кнопка "Назад" вызывает goBackFromProfile() вместо прямого openSection -->
         <div class="view-section" id="adminProfileSection">
             <div class="section-header">
                 <button class="back-btn" onclick="goBackFromProfile()"><i class="fa-solid fa-arrow-left"></i> Назад</button>
@@ -510,12 +505,14 @@
         const API_URL = "https://dxtrslizze.onrender.com/api";
 
         // ========== СОСТОЯНИЕ СЕССИИ ==========
-        // jwtToken — для аутентификации в сокетах (новая система)
-        // sessionPassword — для admin API-вызовов (music, profiles, promos)
+        // jwtToken — используется везде: сокеты + admin API (Authorization: Bearer)
         let jwtToken = localStorage.getItem('adminToken') || '';
-        let sessionPassword = localStorage.getItem('adminPass') || '';
-        // Флаг авторизации: управляет доступом к кнопке профиля и кнопке "Назад"
         let isAuthenticated = false;
+
+        // Хелпер: заголовок авторизации для fetch
+        function authHeaders(extra) {
+            return Object.assign({ 'Authorization': 'Bearer ' + jwtToken }, extra || {});
+        }
 
         // ========== НАВИГАЦИЯ ==========
         function openSection(sectionId) {
@@ -526,26 +523,16 @@
             if (sectionId === 'promoSection') loadPromosFromServer();
         }
 
-        // ИСПРАВЛЕН БАГ 1: кнопка профиля в шапке — работает только если авторизован
         function handleProfileClick() {
-            if (isAuthenticated) {
-                openSection('adminProfileSection');
-            }
-            // Если не авторизован — ничего не происходит (кнопка визуально locked)
+            if (isAuthenticated) openSection('adminProfileSection');
         }
 
-        // ИСПРАВЛЕН БАГ 2: кнопка "Назад" в секции профиля администратора
-        // ведёт на главное меню если авторизован, и на экран авторизации если нет
         function goBackFromProfile() {
-            if (isAuthenticated) {
-                openSection('mainMenuSection');
-            } else {
-                openSection('authSection');
-            }
+            if (isAuthenticated) openSection('mainMenuSection');
+            else openSection('authSection');
         }
 
         function logout() {
-            localStorage.removeItem('adminPass');
             localStorage.removeItem('adminToken');
             isAuthenticated = false;
             location.reload();
@@ -594,7 +581,6 @@
         function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
         function saveMessage(text, type) { chatHistory.push({ text, type }); if (chatHistory.length > 50) chatHistory.shift(); localStorage.setItem('chatHistory_dxtr', JSON.stringify(chatHistory)); }
         
-        // Отправка сообщения в чат — используем jwtToken согласно index.js
         chatSend.onclick = () => {
             if (isSupportBanned || !chatInput.value.trim()) return;
             const text = chatInput.value.trim();
@@ -607,7 +593,7 @@
         chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') chatSend.click(); });
 
         // ========== СИСТЕМА БАНОВ, ID И СОКЕТЫ ==========
-        function setCookie(name, value, days) { let expires = ""; if (days) { let date = new Date(); date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString(); } document.cookie = name + "=" + (value || "")  + expires + "; path=/"; }
+        function setCookie(name, value, days) { let expires = ""; if (days) { let date = new Date(); date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString(); } document.cookie = name + "=" + (value || "") + expires + "; path=/"; }
         function getCookie(name) { let nameEQ = name + "="; let ca = document.cookie.split(';'); for(let i=0;i < ca.length;i++) { let c = ca[i].trim(); if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length); } return null; }
 
         let lsId = localStorage.getItem('dxtrNumericId'); let cookieId = getCookie('dxtrNumericId'); let clientId = lsId || cookieId || null;
@@ -622,7 +608,6 @@
                 fpPromise.then(fp => fp.get()).then(r => {
                     fingerprintHash = r.visitorId;
                     socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    // Передаём JWT токен согласно новой системе index.js
                     socket.emit('register_client', { token: jwtToken, fpHash: fingerprintHash });
                 }).catch(() => {
                     fingerprintHash = 'blocked';
@@ -631,7 +616,6 @@
                 });
             });
 
-            // Старая система assign_id (оставлена для совместимости)
             socket.on('assign_id', (data) => { if (data && data.newId) { clientId = data.newId; localStorage.setItem('dxtrNumericId', clientId); setCookie('dxtrNumericId', clientId, 365); } });
 
             socket.on('user_data', d => {
@@ -664,7 +648,6 @@
                 else { chatInput.disabled = false; chatSend.disabled = false; chatInput.placeholder = "Введите сообщение..."; }
             });
 
-            // Обработка ответа сервера когда токен не передан / истёк
             socket.on('auth_required', () => {
                 if (!isAuthenticated) {
                     chatInput.disabled = true;
@@ -698,8 +681,7 @@
         }
 
         // ========== ВОССТАНОВЛЕНИЕ СЕССИИ ==========
-        // Если оба значения есть в localStorage — сессия считается активной
-        if (jwtToken && sessionPassword) {
+        if (jwtToken) {
             isAuthenticated = true;
             document.getElementById('profileBtn').classList.remove('locked');
             document.getElementById('authSection').classList.remove('active');
@@ -707,7 +689,7 @@
             openSection('mainMenuSection');
         }
 
-        // ========== СИСТЕМА АВТОРИЗАЦИИ (LOGIN / PASS) ==========
+        // ========== АВТОРИЗАЦИЯ ==========
         const authForm = document.getElementById('authForm'), loginInput = document.getElementById('adminLogin'), passInput = document.getElementById('adminPass'), loginWrapper = document.getElementById('loginWrapper'), passWrapper = document.getElementById('passWrapper'), sysMsg = document.getElementById('sysMsg');
         let isLoginVerified = false; let redThemeTimeout;
 
@@ -724,7 +706,6 @@
         authForm.onsubmit = async (e) => {
             e.preventDefault(); 
             if (!isLoginVerified) {
-                // Шаг 1: принять логин
                 if (loginInput.value.trim() !== '') {
                     isLoginVerified = true;
                     passWrapper.classList.add('show');
@@ -739,14 +720,12 @@
                     triggerError();
                 }
             } else {
-                // Шаг 2: авторизация через /api/auth/login (согласно index.js)
                 sysMsg.textContent = 'АВТОРИЗАЦИЯ...';
                 sysMsg.style.color = 'var(--theme-color)';
                 try {
                     const res = await fetch(`${API_URL}/auth/login`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        // Поля username и password — согласно схеме User в index.js
                         body: JSON.stringify({
                             username: loginInput.value.trim(),
                             password: passInput.value
@@ -755,47 +734,35 @@
 
                     if (res.ok) {
                         const userData = await res.json();
-                        // userData.user.username = nickname (возвращается как user.nickname в index.js)
-                        // userData.user.clientId = цифровой ID
                         const validIds = ['1', '777'];
                         const validNicks = ['DXTR', 'SlizZe'];
 
                         const receivedId = String(userData.user.clientId);
-                        const receivedNick = userData.user.username; // nickname возвращается под ключом username
+                        const receivedNick = userData.user.username;
 
                         if (validIds.includes(receivedId) && validNicks.includes(receivedNick)) {
-                            // Авторизация успешна
                             clearTimeout(redThemeTimeout);
                             document.body.className = 'theme-green';
                             failedAttempts = 0;
                             localStorage.removeItem('adminFailedAttempts');
 
-                            // Сохраняем JWT токен для сокетов
+                            // Сохраняем только JWT — больше ничего не нужно
                             jwtToken = userData.token;
                             localStorage.setItem('adminToken', jwtToken);
 
-                            // Сохраняем пароль для admin API-вызовов (music, profiles, promos)
-                            sessionPassword = passInput.value;
-                            localStorage.setItem('adminPass', sessionPassword);
-
-                            // Обновляем clientId из данных аккаунта
                             clientId = receivedId;
                             localStorage.setItem('dxtrNumericId', clientId);
                             setCookie('dxtrNumericId', clientId, 365);
 
                             isAuthenticated = true;
-
-                            // Разблокируем кнопку профиля
                             document.getElementById('profileBtn').classList.remove('locked');
-
-                            // Обновляем данные профиля на странице
                             document.getElementById('profNick').textContent = receivedNick;
+
                             if (userData.user.avatarUrl) {
                                 document.getElementById('adminProfileAvatar').src = userData.user.avatarUrl;
                                 document.getElementById('userAvatar').src = userData.user.avatarUrl;
                             }
 
-                            // Перерегистрируем сокет с JWT токеном
                             if (socket) {
                                 socket.emit('register_client', { token: jwtToken, fpHash: fingerprintHash });
                             }
@@ -803,13 +770,11 @@
                             document.getElementById('authSection').classList.remove('active');
                             openSection('mainMenuSection');
                         } else {
-                            // Аккаунт найден, но не имеет прав администратора
                             sysMsg.textContent = 'НЕДОСТАТОЧНО ПРАВ';
                             sysMsg.style.color = 'var(--error-red)';
                             setTimeout(triggerError, 1500);
                         }
                     } else {
-                        // Неверный логин или пароль
                         triggerError();
                     }
                 } catch (err) {
@@ -838,22 +803,13 @@
         mWavInput.onchange = () => document.getElementById('mWavText').textContent = mWavInput.files[0] ? mWavInput.files[0].name : 'Трек (WAV)';
 
         mMainCheckbox.addEventListener('change', (e) => {
-            if(e.target.checked) {
-                mHasPlatforms.checked = true;
-                mHasPlatforms.disabled = true; 
-                mHasPlatforms.dispatchEvent(new Event('change'));
-            } else { mHasPlatforms.disabled = false; }
+            if(e.target.checked) { mHasPlatforms.checked = true; mHasPlatforms.disabled = true; mHasPlatforms.dispatchEvent(new Event('change')); } 
+            else { mHasPlatforms.disabled = false; }
         });
 
         mHasPlatforms.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                platformsContainer.style.display = 'flex';
-                linkSpotify.required = true; linkVk.required = true; linkYandex.required = true;
-            } else {
-                platformsContainer.style.display = 'none';
-                linkSpotify.required = false; linkVk.required = false; linkYandex.required = false;
-                linkSpotify.value = ''; linkVk.value = ''; linkYandex.value = '';
-            }
+            if (e.target.checked) { platformsContainer.style.display = 'flex'; linkSpotify.required = true; linkVk.required = true; linkYandex.required = true; } 
+            else { platformsContainer.style.display = 'none'; linkSpotify.required = false; linkVk.required = false; linkYandex.required = false; linkSpotify.value = ''; linkVk.value = ''; linkYandex.value = ''; }
         });
 
         document.getElementById('musicAddForm').onsubmit = function(e) {
@@ -862,17 +818,24 @@
             if (mHasPlatforms.checked) { platformsJson = JSON.stringify({ spotify: linkSpotify.value, vk: linkVk.value, yandex: linkYandex.value }); }
             
             const formData = new FormData();
-            formData.append('password', sessionPassword); formData.append('title', document.getElementById('mTitle').value); formData.append('yt_link', document.getElementById('mYt').value);
-            formData.append('platforms', platformsJson); formData.append('is_18', document.getElementById('m18').checked); formData.append('is_main', mMainCheckbox.checked);
-            formData.append('cover', mCoverInput.files[0]); formData.append('mp3', mMp3Input.files[0]); formData.append('wav', mWavInput.files[0]);
+            formData.append('title', document.getElementById('mTitle').value);
+            formData.append('yt_link', document.getElementById('mYt').value);
+            formData.append('platforms', platformsJson);
+            formData.append('is_18', document.getElementById('m18').checked);
+            formData.append('is_main', mMainCheckbox.checked);
+            formData.append('cover', mCoverInput.files[0]);
+            formData.append('mp3', mMp3Input.files[0]);
+            formData.append('wav', mWavInput.files[0]);
 
             const xhr = new XMLHttpRequest();
-            document.getElementById('mSubmitBtn').disabled = true; document.getElementById('mProgressContainer').style.display = 'block';
+            document.getElementById('mSubmitBtn').disabled = true;
+            document.getElementById('mProgressContainer').style.display = 'block';
             
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
                     const pct = Math.round((e.loaded / e.total) * 100);
-                    document.getElementById('mProgressBar').style.width = pct + '%'; document.getElementById('mStatusText').innerText = `Загрузка: ${pct}%`;
+                    document.getElementById('mProgressBar').style.width = pct + '%';
+                    document.getElementById('mStatusText').innerText = `Загрузка: ${pct}%`;
                 }
             });
 
@@ -883,7 +846,10 @@
                 } else { document.getElementById('mStatusText').innerText = 'Ошибка загрузки'; }
                 document.getElementById('mSubmitBtn').disabled = false;
             });
-            xhr.open('POST', `${API_URL}/music`, true); xhr.send(formData);
+
+            xhr.open('POST', `${API_URL}/music`, true);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+            xhr.send(formData);
         };
 
         let loadedTracks = []; 
@@ -891,7 +857,10 @@
             const list = document.getElementById('musicList');
             list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
             try {
-                const res = await fetch(`${API_URL}/music-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
+                const res = await fetch(`${API_URL}/music-list`, {
+                    method: 'GET',
+                    headers: authHeaders()
+                });
                 if(res.ok) {
                     loadedTracks = await res.json();
                     if(loadedTracks.length === 0) { list.innerHTML = '<div class="empty-neon">Каталог пуст. Добавьте первый трек!</div>'; return; }
@@ -914,6 +883,8 @@
                             </div>
                         `;
                     });
+                } else {
+                    list.innerHTML = '<div class="empty-neon">Ошибка авторизации или сервера</div>';
                 }
             } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения с БД</div>'; }
         }
@@ -923,16 +894,13 @@
             const track = loadedTracks.find(t => String(t.id) === String(id));
             if(!track) return;
             currentEditMusicId = id;
-            
             document.getElementById('editMTitle').value = track.title;
             document.getElementById('editMYt').value = track.yt_link || '';
             document.getElementById('editM18').checked = track.is_18;
             document.getElementById('editMMain').checked = track.is_main;
-            
             const hasPlat = track.platforms && Object.keys(track.platforms).length > 0;
             document.getElementById('editMHasPlatforms').checked = hasPlat;
             document.getElementById('editPlatformsContainer').style.display = hasPlat ? 'flex' : 'none';
-            
             if (hasPlat) {
                 document.getElementById('editLinkSpotify').value = track.platforms.spotify || '';
                 document.getElementById('editLinkVk').value = track.platforms.vk || '';
@@ -942,10 +910,8 @@
                 document.getElementById('editLinkVk').value = '';
                 document.getElementById('editLinkYandex').value = '';
             }
-
             document.getElementById('editMCover').value = ''; document.getElementById('editMMp3').value = ''; document.getElementById('editMWav').value = '';
             document.getElementById('editMCoverText').textContent = 'Новая обложка'; document.getElementById('editMMp3Text').textContent = 'Новый MP3'; document.getElementById('editMWavText').textContent = 'Новый WAV';
-
             document.getElementById('editMusicModal').classList.add('active');
         }
 
@@ -956,11 +922,8 @@
         document.getElementById('editMWav').onchange = (e) => document.getElementById('editMWavText').textContent = e.target.files[0] ? 'Выбрано' : 'Новый WAV';
 
         document.getElementById('editMMain').addEventListener('change', (e) => {
-            if(e.target.checked) {
-                document.getElementById('editMHasPlatforms').checked = true;
-                document.getElementById('editMHasPlatforms').disabled = true;
-                document.getElementById('editPlatformsContainer').style.display = 'flex';
-            } else { document.getElementById('editMHasPlatforms').disabled = false; }
+            if(e.target.checked) { document.getElementById('editMHasPlatforms').checked = true; document.getElementById('editMHasPlatforms').disabled = true; document.getElementById('editPlatformsContainer').style.display = 'flex'; } 
+            else { document.getElementById('editMHasPlatforms').disabled = false; }
         });
         document.getElementById('editMHasPlatforms').addEventListener('change', (e) => {
             document.getElementById('editPlatformsContainer').style.display = e.target.checked ? 'flex' : 'none';
@@ -968,7 +931,6 @@
 
         document.getElementById('confirmEditMusicBtn').onclick = function() {
             const formData = new FormData();
-            formData.append('password', sessionPassword);
             formData.append('title', document.getElementById('editMTitle').value);
             formData.append('yt_link', document.getElementById('editMYt').value);
             formData.append('is_18', document.getElementById('editM18').checked);
@@ -983,7 +945,6 @@
             const coverFile = document.getElementById('editMCover').files[0];
             const mp3File = document.getElementById('editMMp3').files[0];
             const wavFile = document.getElementById('editMWav').files[0];
-
             if (coverFile) formData.append('cover', coverFile);
             if (mp3File) formData.append('mp3', mp3File);
             if (wavFile) formData.append('wav', wavFile);
@@ -993,10 +954,7 @@
             document.getElementById('editMProgressContainer').style.display = 'block';
             
             xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) {
-                    const pct = Math.round((e.loaded / e.total) * 100);
-                    document.getElementById('editMProgressBar').style.width = pct + '%';
-                }
+                if (e.lengthComputable) document.getElementById('editMProgressBar').style.width = Math.round((e.loaded / e.total) * 100) + '%';
             });
 
             xhr.addEventListener('load', () => {
@@ -1007,6 +965,7 @@
             });
 
             xhr.open('PUT', `${API_URL}/music/${currentEditMusicId}`, true);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
             xhr.send(formData);
         };
 
@@ -1015,7 +974,10 @@
             const list = document.getElementById('profilesList');
             list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
             try {
-                const res = await fetch(`${API_URL}/users-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
+                const res = await fetch(`${API_URL}/users-list`, {
+                    method: 'GET',
+                    headers: authHeaders()
+                });
                 if(res.ok) {
                     const users = await res.json();
                     if(users.length === 0) { list.innerHTML = '<div class="empty-neon">Нет пользователей</div>'; return; }
@@ -1024,7 +986,6 @@
                         const avatarHtml = u.avatarUrl 
                             ? `<img src="${u.avatarUrl}" class="profile-avatar">` 
                             : `<div class="profile-avatar-placeholder"><i class="fa-solid fa-user"></i></div>`;
-                            
                         list.innerHTML += `
                             <div class="profile-card">
                                 <div style="display: flex; gap: 15px; align-items: center;">
@@ -1032,25 +993,25 @@
                                     <div class="prof-info">
                                         <h4>${u.nickname || 'Без ника'}</h4>
                                         <p>ID: ${u.clientId}</p>
-                                        <div style="font-size:0.85rem; color: #fff; margin-top: 5px;">Баланс: <span style="color: var(--theme-color); font-weight: bold;">${u.balance || 0}</span></div>
+                                        <div style="font-size:0.85rem; color: #fff; margin-top: 5px;">Баланс: <span style="color: var(--theme-color); font-weight: bold;">${u.dscoin_balance || 0}</span></div>
                                         <span style="font-size:0.8rem; color:${u.isBanned ? 'var(--error-red)' : 'var(--theme-color)'};">Статус: ${u.isBanned ? 'Бан' : 'Активен'}</span>
                                     </div>
                                 </div>
                                 <div class="card-actions">
-                                    <button class="action-icon" title="Редактировать" onclick="openEditProfile('${u._id}', '${u.clientId}', '${u.nickname || ''}', '${u.avatarUrl || ''}', '${u.balance || 0}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="action-icon" title="Редактировать" onclick="openEditProfile('${u._id}', '${u.clientId}', '${u.nickname || ''}', '${u.avatarUrl || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button>
                                     <button class="action-icon delete" title="Удалить" onclick="confirmDelete('profile', '${u._id}', '${u.clientId}')"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
                         `;
                     });
-                } else { list.innerHTML = '<div class="empty-neon">Маршрут /users-list недоступен</div>'; }
+                } else { list.innerHTML = '<div class="empty-neon">Ошибка авторизации или сервера</div>'; }
             } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения</div>'; }
         }
 
         let editProfDbId = '';
-        function openEditProfile(dbId, clientId, nick, avatar, balance) { 
+        function openEditProfile(dbId, cId, nick, avatar, balance) { 
             editProfDbId = dbId; 
-            document.getElementById('editProfIdInput').value = clientId; 
+            document.getElementById('editProfIdInput').value = cId; 
             document.getElementById('editProfNickInput').value = nick; 
             document.getElementById('editProfAvatarInput').value = avatar; 
             document.getElementById('editProfBalanceInput').value = balance; 
@@ -1069,23 +1030,17 @@
             
             if(!newId) return alert('ID не может быть пустым');
             
-            const payload = {
-                password: sessionPassword, 
-                newClientId: newId, 
-                newNickname: newNick,
-                newAvatarUrl: newAvatar,
-                newBalance: newBalance
-            };
+            const payload = { newClientId: newId, newNickname: newNick, newAvatarUrl: newAvatar, newBalance: newBalance };
             if (newPass) payload.newPassword = newPass;
 
             try {
                 const res = await fetch(`${API_URL}/user/${editProfDbId}`, { 
                     method: 'PUT', 
-                    headers: {'Content-Type':'application/json'}, 
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
                     body: JSON.stringify(payload) 
                 });
                 if(res.ok) { closeEditProfileModal(); loadProfilesFromServer(); } 
-                else { alert('Сбой редактирования (Возможно маршрут еще не создан/обновлен на сервере)'); }
+                else { const err = await res.json(); alert(err.error || 'Ошибка редактирования'); }
             } catch(e) { alert('Ошибка сети'); }
         };
 
@@ -1094,19 +1049,31 @@
         function confirmDelete(type, id, name) {
             deleteType = type; deleteId = id; document.getElementById('modalCodeName').textContent = name;
             let text = 'Удалить этот элемент?';
-            if(type === 'music') text = 'Удалить трек из Supabase? Файлы будут стерты.'; if(type === 'profile') text = 'Удалить пользователя навсегда?'; if(type === 'promo') text = 'Удалить промокод навсегда?';
-            document.getElementById('deleteModalText').innerText = text; document.getElementById('deleteModal').classList.add('active');
+            if(type === 'music') text = 'Удалить трек из Supabase? Файлы будут стерты.';
+            if(type === 'profile') text = 'Удалить пользователя навсегда?';
+            if(type === 'promo') text = 'Удалить промокод навсегда?';
+            document.getElementById('deleteModalText').innerText = text;
+            document.getElementById('deleteModal').classList.add('active');
         }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
         
         document.getElementById('confirmDeleteBtn').onclick = async () => {
             const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '...';
             let url = '';
-            if(deleteType === 'music') url = `${API_URL}/music/${deleteId}`; if(deleteType === 'profile') url = `${API_URL}/user/${deleteId}`; if(deleteType === 'promo') url = `${API_URL}/promo/${deleteId}`;
+            if(deleteType === 'music') url = `${API_URL}/music/${deleteId}`;
+            if(deleteType === 'profile') url = `${API_URL}/user/${deleteId}`;
+            if(deleteType === 'promo') url = `${API_URL}/promo/${deleteId}`;
             try {
-                const res = await fetch(url, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
-                if(res.ok) { closeDeleteModal(); if(deleteType === 'music') loadMusicFromServer(); if(deleteType === 'profile') loadProfilesFromServer(); if(deleteType === 'promo') loadPromosFromServer(); } 
-                else { alert('Ошибка'); }
+                const res = await fetch(url, { 
+                    method: 'DELETE', 
+                    headers: authHeaders({ 'Content-Type': 'application/json' })
+                });
+                if(res.ok) {
+                    closeDeleteModal();
+                    if(deleteType === 'music') loadMusicFromServer();
+                    if(deleteType === 'profile') loadProfilesFromServer();
+                    if(deleteType === 'promo') loadPromosFromServer();
+                } else { alert('Ошибка удаления'); }
             } catch(e) {}
             btn.innerHTML = 'Удалить';
         };
@@ -1115,23 +1082,42 @@
         document.getElementById('promoAddForm').onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData();
-            formData.append('password', sessionPassword); formData.append('promo', document.getElementById('newCode').value); formData.append('title', document.getElementById('newTitle').value); formData.append('cover', document.getElementById('newCover').files[0]); formData.append('track', document.getElementById('newTrack').files[0]);
+            formData.append('promo', document.getElementById('newCode').value);
+            formData.append('title', document.getElementById('newTitle').value);
+            formData.append('cover', document.getElementById('newCover').files[0]);
+            formData.append('track', document.getElementById('newTrack').files[0]);
             const btn = document.getElementById('submitBtn'); btn.disabled = true;
-            try { const res = await fetch(`${API_URL}/promo`, { method: 'POST', body: formData }); if (res.ok) { document.getElementById('promoAddForm').reset(); loadPromosFromServer(); } else alert('Ошибка'); } catch(e){} btn.disabled = false;
+            try {
+                const res = await fetch(`${API_URL}/promo`, {
+                    method: 'POST',
+                    headers: authHeaders(),  // только Authorization, без Content-Type (FormData сам ставит)
+                    body: formData
+                });
+                if (res.ok) { document.getElementById('promoAddForm').reset(); loadPromosFromServer(); }
+                else { const err = await res.json(); alert(err.error || 'Ошибка'); }
+            } catch(e){}
+            btn.disabled = false;
         };
 
         async function loadPromosFromServer() {
             const list = document.getElementById('promoList');
+            list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
             try {
-                const res = await fetch(`${API_URL}/promos-list`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({password: sessionPassword})});
+                const res = await fetch(`${API_URL}/promos-list`, {
+                    method: 'GET',
+                    headers: authHeaders()
+                });
                 if(res.ok) {
-                    const promos = await res.json(); list.innerHTML = '';
+                    const promos = await res.json();
+                    list.innerHTML = '';
+                    if(promos.length === 0) { list.innerHTML = '<div class="empty-neon">Промокодов нет</div>'; return; }
                     promos.forEach(p => {
                         list.innerHTML += `
                             <div class="data-card">
                                 <img src="${API_URL}/media/${p.coverId}" class="card-cover">
                                 <div class="card-info">
-                                    <div class="card-code">#${p.code}</div><div class="card-title">${p.title}</div>
+                                    <div class="card-badge">#${p.code}</div>
+                                    <div class="card-title">${p.title}</div>
                                     <div class="card-actions">
                                         <button class="action-icon delete" title="Удалить" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button>
                                     </div>
@@ -1139,8 +1125,8 @@
                             </div>
                         `;
                     });
-                }
-            } catch(e) {}
+                } else { list.innerHTML = '<div class="empty-neon">Ошибка авторизации</div>'; }
+            } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения</div>'; }
         }
     </script>
 </body>
