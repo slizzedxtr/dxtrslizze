@@ -42,7 +42,7 @@
         .fade-in { animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* БОКОВОЕ МЕНЮ И ЧАТ (Скопировано с главной) */
+        /* БОКОВОЕ МЕНЮ */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan); }
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.9); backdrop-filter: blur(25px); border-right: 1px solid rgba(0, 198, 255, 0.2); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
@@ -74,11 +74,17 @@
         .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; box-shadow: 0 5px 20px rgba(0,0,0,0.4); }
         .msg-user { align-items: flex-end; } .msg-user .chat-msg-name { color: var(--neon-cyan); } .msg-user .chat-msg-bubble { background: rgba(0, 198, 255, 0.08); border: 1px solid rgba(0, 198, 255, 0.4); border-bottom-right-radius: 2px; }
         .msg-bot { align-items: flex-start; } .msg-bot .chat-msg-name { color: var(--neon-purple); } .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.08); border: 1px solid rgba(112, 0, 255, 0.4); border-bottom-left-radius: 2px; }
-        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); }
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); transition: opacity 0.5s ease; }
         #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; transition: 0.3s;}
         #chat-input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.2); }
         #chat-send { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
         #chat-send:hover { transform: translateY(-2px) scale(1.05); }
+        
+        /* Стили для статуса решения в чате */
+        .chat-resolved-status { text-align: center; margin-top: auto; padding: 25px 20px; border: 1px solid var(--neon-green); border-radius: 15px; background: rgba(0, 255, 102, 0.05); box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.1), 0 0 20px rgba(0, 255, 102, 0.1); animation: msgFade 0.6s ease-out forwards; }
+        .chat-resolved-icon { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(0,255,102,0.5)); }
+        .chat-resolved-title { color: var(--neon-green); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+        .chat-resolved-subtitle { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; margin-top: 5px; }
 
         /* ================= ДИЗАЙН ПРОФИЛЯ ================= */
         .auth-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; z-index: 10; position: relative; }
@@ -93,7 +99,9 @@
         
         .auth-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; }
         .auth-btn:hover { box-shadow: 0 0 25px rgba(0, 198, 255, 0.6); transform: translateY(-2px); }
-        
+        .auth-btn-secondary { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); margin-top: 10px; font-size: 0.95rem; }
+        .auth-btn-secondary:hover { background: rgba(0,198,255,0.1); border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.3); }
+
         .toggle-text { margin-top: 20px; color: var(--text-muted); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .toggle-text:hover { color: var(--neon-pink); }
         .forgot-pass { color: var(--neon-cyan); font-size: 0.85rem; font-weight: 700; text-decoration: none; cursor: pointer; display: block; margin-top: 15px; transition: 0.3s;}
@@ -156,10 +164,10 @@
             <i class="fa-solid fa-xmark" id="chat-close"></i>
         </div>
         <div id="chat-messages">
-            <div class="chat-system-msg" id="chatGreeting">Войдите в аккаунт, чтобы написать нам.</div>
+            <div class="chat-system-msg" id="chatGreeting">Подключение...</div>
         </div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Авторизуйтесь..." disabled>
+        <div class="chat-input-area" id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Напишите сообщение..." disabled>
             <button id="chat-send" style="background: #333;" disabled><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
@@ -168,13 +176,14 @@
         <div class="modal-inner">
             <div class="close-modal-btn" onclick="closeModals()">×</div>
             <div class="modal-title">Сброс пароля</div>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Введите свой никнейм. Мы отправим запрос администратору, и он свяжется с вами.</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Введите никнейм. Можно отправить автоматический запрос или написать в техподдержку.</p>
             <div id="recError" class="error-msg"></div>
             <div id="recSuccess" class="success-msg"></div>
             <div class="input-group">
                 <input type="text" id="recUsername" placeholder="Ваш никнейм">
             </div>
-            <button class="auth-btn" id="recBtn" onclick="sendRecover()">Отправить запрос</button>
+            <button class="auth-btn" id="recBtn" onclick="sendRecover()">Отправить авто-запрос</button>
+            <button class="auth-btn auth-btn-secondary" onclick="openSupportChatForRecover()">Написать в поддержку (Чат)</button>
         </div>
     </div>
 
@@ -232,11 +241,25 @@
         const API_URL = "https://dxtrslizze.onrender.com/api/auth";
         let isLoginMode = true;
         let currentUserData = null;
+        let socket;
+        let isAuthUser = false;
+        
+        // Генерация или получение ID для анонимного чата
+        let anonId = localStorage.getItem('dxtr_anon_id');
+        if (!anonId) {
+            anonId = 'anon_' + Math.random().toString(36).substring(2, 10);
+            localStorage.setItem('dxtr_anon_id', anonId);
+        }
 
         // ПРОВЕРКА ПРИ ЗАГРУЗКЕ
         window.onload = async () => {
             const token = localStorage.getItem('dxtr_token');
-            if (token) { await fetchProfile(token); initChatSocket(token); }
+            if (token) { 
+                await fetchProfile(token); 
+                isAuthUser = true;
+            }
+            // Инициализируем сокеты в любом случае (для авториз. или анонимов)
+            initGlobalSocket(token);
         };
 
         // --- UI АВТОРИЗАЦИИ ---
@@ -251,7 +274,7 @@
 
         function showError(msg, elId = 'errorMsg', isSuccess = false) {
             const err = document.getElementById(elId);
-            err.innerText = msg; err.style.display = 'block';
+            err.innerHTML = msg; err.style.display = 'block';
             err.style.color = isSuccess ? 'var(--neon-green)' : 'var(--neon-red)';
         }
         function hideError() { document.querySelectorAll('.error-msg, .success-msg').forEach(el => el.style.display = 'none'); }
@@ -303,7 +326,7 @@
 
         function logout() { localStorage.removeItem('dxtr_token'); location.reload(); }
 
-        // --- МОДАЛЬНЫЕ ОКНА (НАСТРОЙКИ И ВОССТАНОВЛЕНИЕ) ---
+        // --- МОДАЛЬНЫЕ ОКНА ---
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); hideError(); }
         window.onclick = (e) => { if(e.target.classList.contains('modal')) closeModals(); }
 
@@ -324,7 +347,24 @@
                 if(data.success) { showError(data.message, 'recSuccess', true); } 
                 else { showError(data.error, 'recError'); }
             } catch(e) { showError("Ошибка сети", 'recError'); }
-            finally { btn.innerText = "Отправить запрос"; btn.disabled = false; }
+            finally { btn.innerText = "Отправить авто-запрос"; btn.disabled = false; }
+        }
+
+        // --- ЛОГИКА АНОНИМНОГО ЧАТА ДЛЯ ВОССТАНОВЛЕНИЯ ---
+        function openSupportChatForRecover() {
+            const u = document.getElementById('recUsername').value.trim();
+            if(!u) return showError("Сначала укажите свой никнейм в поле выше", 'recError');
+            
+            window.targetRecoverUser = u; // Сохраняем для передачи в сокет
+            closeModals();
+            
+            document.getElementById('chat-window').style.display = 'flex';
+            document.getElementById('chatGreeting').innerHTML = `Связь с поддержкой.<br>Указан аккаунт: <b>${u}</b>`;
+            
+            // Если юзер уже что-то писал, мы можем добавить автосообщение для ясности
+            const chatInput = document.getElementById('chat-input');
+            chatInput.value = `Здравствуйте, я забыл пароль от аккаунта ${u}.`;
+            setTimeout(() => { document.getElementById('chat-send').click(); }, 300);
         }
 
         function openSettingsModal() { 
@@ -377,7 +417,11 @@
 
         function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
         burgerBtn.onclick = toggleMenu; document.getElementById('closeSidebar').onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
-        document.getElementById('sidebarSupportBtn').onclick = (e) => { e.preventDefault(); toggleMenu(); setTimeout(() => { chatWindow.style.display = 'flex'; }, 300); };
+        
+        document.getElementById('sidebarSupportBtn').onclick = (e) => { 
+            e.preventDefault(); toggleMenu(); 
+            setTimeout(() => { chatWindow.style.display = 'flex'; }, 300); 
+        };
         document.getElementById('chat-close').onclick = () => chatWindow.style.display = 'none';
 
         let isDraggingChat = false, chatOffsetX, chatOffsetY;
@@ -397,24 +441,43 @@
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
         // --- ЛОГИКА СОКЕТОВ ЧАТА ---
-        let socket;
-        function initChatSocket(token) {
-            socket = io("https://dxtr-games-api.onrender.com/");
+        function initGlobalSocket(token) {
+            socket = io("https://dxtrslizze.onrender.com/");
             const chatInput = document.getElementById('chat-input');
             const chatSendBtn = document.getElementById('chat-send');
             const chatGreeting = document.getElementById('chatGreeting');
             const chatMessages = document.getElementById('chat-messages');
 
-            socket.on('connect', () => { socket.emit('register_client', { token: token }); });
+            socket.on('connect', () => { 
+                if (isAuthUser && token) {
+                    socket.emit('register_client', { token: token }); 
+                } else {
+                    socket.emit('anon_register_client', { anonId: anonId });
+                    chatGreeting.innerHTML = "Чат поддержки. Вы пишете анонимно.";
+                    chatInput.disabled = false;
+                    chatSendBtn.disabled = false; chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))';
+                }
+            });
+
             socket.on('user_data', (d) => {
                 window.userNickname = d.nickname;
                 chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${d.nickname}</b>!`;
                 chatInput.disabled = false; chatInput.placeholder = "Опишите проблему...";
                 chatSendBtn.disabled = false; chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))';
             });
+
             socket.on('receive_message', (d) => {
                 if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex';
                 addChatMessage('Support', d.text, 'flex-start');
+            });
+
+            // ОБРАБОТЧИКИ ЗАКРЫТИЯ И СБРОСА ПАРОЛЯ
+            socket.on('chat_closed_solved', () => {
+                showChatClosedAnimation("Проблема решена", "fa-circle-check");
+            });
+
+            socket.on('chat_closed_reset', () => {
+                showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double");
             });
 
             chatSendBtn.onclick = sendMessage;
@@ -423,7 +486,17 @@
             function sendMessage() {
                 const text = chatInput.value.trim();
                 if (!text || chatInput.disabled) return;
-                socket.emit('send_message', { text: text, token: token });
+
+                if (isAuthUser) {
+                    socket.emit('send_message', { text: text, token: token });
+                } else {
+                    socket.emit('send_anon_message', { 
+                        anonId: anonId, 
+                        text: text,
+                        targetUsername: window.targetRecoverUser || null
+                    });
+                }
+                
                 addChatMessage(window.userNickname || 'Вы', text, 'flex-end');
                 chatInput.value = '';
             }
@@ -434,6 +507,27 @@
                 wrapper.innerHTML = `<span class="chat-msg-name">${sender}</span><div class="chat-msg-bubble">${text}</div>`;
                 chatMessages.appendChild(wrapper);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            function showChatClosedAnimation(titleHtml, iconClass) {
+                const inputArea = document.getElementById('chat-input-area');
+                
+                // Плавное скрытие поля ввода
+                inputArea.style.opacity = "0";
+                
+                setTimeout(() => {
+                    inputArea.style.display = "none";
+                    
+                    // Добавление красивого финального блока в чат
+                    const statusBlock = document.createElement('div');
+                    statusBlock.className = 'chat-resolved-status';
+                    statusBlock.innerHTML = `
+                        <i class="fa-solid ${iconClass} chat-resolved-icon"></i>
+                        <div class="chat-resolved-title">${titleHtml}</div>
+                    `;
+                    chatMessages.appendChild(statusBlock);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 500); // Ждем пока исчезнет инпут
             }
         }
     </script>
