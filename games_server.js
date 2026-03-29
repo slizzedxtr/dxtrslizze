@@ -3,7 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
-const { createClient } = require('@supabase/supabase-client');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.use(cors());
