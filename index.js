@@ -61,7 +61,6 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
-// ДОБАВЛЕНО: linkedUser для отслеживания анонимных запросов на восстановление пароля
 const MessageMapSchema = new mongoose.Schema({
     tgMsgId: Number,
     clientId: String,
@@ -196,7 +195,8 @@ app.get('/api/auth/me', async (req, res) => {
     }
 });
 
-app.put('/api/auth/update', async (req, res) => {
+// ДОБАВЛЕНО: upload.single('avatar') для приема файла
+app.put('/api/auth/update', upload.single('avatar'), async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Нет токена' });
 
@@ -205,10 +205,9 @@ app.put('/api/auth/update', async (req, res) => {
         const user = await User.findOne({ clientId: decoded.clientId });
         if (!user) return res.status(404).json({ error: 'Юзер не найден' });
 
-        const { newNickname, newAvatar, oldPassword, newPassword } = req.body;
+        const { newNickname, oldPassword, newPassword } = req.body;
 
         if (newNickname) user.nickname = newNickname;
-        if (newAvatar) user.avatarUrl = newAvatar;
 
         if (oldPassword && newPassword) {
             const isMatch = await bcrypt.compare(oldPassword, user.password);
@@ -216,7 +215,41 @@ app.put('/api/auth/update', async (req, res) => {
             user.password = await bcrypt.hash(newPassword, 10);
         }
 
+        let avatarChanged = false;
+
+        // Обработка файла аватара
+        if (req.file) {
+            if (req.file.size > 2 * 1024 * 1024) {
+                return res.status(400).json({ error: 'Файл слишком большой (макс. 2МБ)' });
+            }
+
+            // Удаляем старый аватар из Supabase (если это не дефолтный)
+            if (user.avatarUrl && user.avatarUrl.includes('/music-content/')) {
+                const oldPath = user.avatarUrl.split('/music-content/')[1];
+                if (oldPath) await supabase.storage.from('music-content').remove([oldPath]);
+            }
+
+            const newAvatarUrl = await uploadToSupabase(req.file, 'avatars');
+            user.avatarUrl = newAvatarUrl;
+            avatarChanged = true;
+        }
+
         await user.save();
+
+        // Уведомление в Телеграм об изменении аватара
+        if (avatarChanged) {
+            const tgText = `🖼 <b>Пользователь обновил аватар!</b>\n\n👤 Ник: <b>${user.nickname || user.username}</b>\n🔑 ID: <code>${user.clientId}</code>\n🔗 <a href="${user.avatarUrl}">Посмотреть загруженное фото</a>`;
+            
+            bot.sendMessage(adminId, tgText, {
+                parse_mode: 'HTML',
+                reply_markup: {
+                    inline_keyboard: [
+                        [ { text: "🗑 Удалить аватар", callback_data: `delavatar_${user.clientId}` } ]
+                    ]
+                }
+            }).catch(e => console.error("Ошибка отправки ТГ-уведомления об аватаре:", e.message));
+        }
+
         res.json({ success: true, message: 'Профиль обновлен', user: { nickname: user.nickname, avatarUrl: user.avatarUrl } });
     } catch (err) { 
         console.error("Ошибка при обновлении профиля:", err);
@@ -498,14 +531,12 @@ io.on('connection', (socket) => {
     io.emit('online_update', io.engine.clientsCount);
     socket.on('disconnect', () => { io.emit('online_update', io.engine.clientsCount); });
 
-    // ДОБАВЛЕНО: Регистрация анонимного юзера (человека без аккаунта)
     socket.on('anon_register_client', (data) => {
         if (data.anonId) {
             socket.join(data.anonId);
         }
     });
 
-    // ДОБАВЛЕНО: Отправка сообщения от анонимного юзера
     socket.on('send_anon_message', async (data) => {
         if (!data.anonId || !data.text) return;
         
@@ -647,7 +678,7 @@ io.on('connection', (socket) => {
                 parse_mode: 'HTML',
                 reply_markup: { 
                     inline_keyboard: [
-                        [ { text: "✅ Закрыть чат", callback_data: `closechat_${user.clientId}` } ], // Кнопка закрытия чата для обычных юзеров тоже
+                        [ { text: "✅ Закрыть чат", callback_data: `closechat_${user.clientId}` } ], 
                         [ { text: "Ban 1h ⏳", callback_data: `ban1h_${user.clientId}` }, { text: "Ban Perm 🚫", callback_data: `banperm_${user.clientId}` } ],
                         [ { text: "Spam ⚠️", callback_data: `spam_${user.clientId}` } ]
                     ] 
@@ -664,16 +695,42 @@ io.on('connection', (socket) => {
 // ================= TELEGRAM БОТ =================
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
+
+    // ДОБАВЛЕНО: Удаление аватара
+    if (query.data.startsWith('delavatar_')) {
+        const clientId = query.data.replace('delavatar_', '');
+        const user = await User.findOne({ clientId });
+        
+        if (!user) {
+            return bot.answerCallbackQuery(query.id, { text: "Юзер не найден" });
+        }
+
+        if (user.avatarUrl && user.avatarUrl.includes('/music-content/')) {
+            const oldPath = user.avatarUrl.split('/music-content/')[1];
+            if (oldPath) await supabase.storage.from('music-content').remove([oldPath]);
+        }
+
+        user.avatarUrl = 'dslogo.png';
+        await user.save();
+
+        const warningMsg = `Ваш аватар был удалён. Аватар не должен содержать:\nКровь\nСцены насилия\n18+ контент\n\nВ случае если ваш аватар не попадает ни под одно из указанных нарушений, но всё равно был удалён вы можете обратиться к администрации через Тех. Поддержку.\n\nАдминистрация оставляет за собой право удалить ваш аватар без объяснения причины.`;
+        
+        await sendToUser(clientId, warningMsg, 'warning', query.message.message_id, "Удаление аватара");
+
+        io.to(clientId).emit('user_data', { nickname: user.nickname, avatarUrl: user.avatarUrl, isBanned: user.isBanned });
+        
+        bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
+        bot.sendMessage(adminId, "✅ <b>Аватар пользователя успешно удален и отправлено предупреждение.</b>", { parse_mode: 'HTML', reply_to_message_id: query.message.message_id });
+        bot.answerCallbackQuery(query.id, { text: "Аватар удален!" });
+    }
     
-    // ДОБАВЛЕНО: Закрыть чат
     if (query.data.startsWith('closechat_')) {
         const clientId = query.data.replace('closechat_', '');
-        io.to(clientId).emit('chat_closed_solved'); // Отправляем сигнал на сайт для анимации
+        io.to(clientId).emit('chat_closed_solved'); 
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
         bot.answerCallbackQuery(query.id, { text: "Чат закрыт, юзер уведомлен." });
     }
 
-    // ДОБАВЛЕНО: Сообщение о сбросе
     if (query.data.startsWith('resetinfo_')) {
         const clientId = query.data.replace('resetinfo_', '');
         const msgText = "Сбросить пароль можно двумя способами:\n1. Администрация устанавливает вам новый пароль который вы укажете в этом чате.\n2. Администрация сбросит ваш пароль полностью. Вам автоматически установится временный пароль который будет необходимо сменить вручную в профиле. Временным паролем является \"admin-reset\"";
@@ -681,7 +738,6 @@ bot.on('callback_query', async (query) => {
         bot.answerCallbackQuery(query.id, { text: "Инструкция отправлена юзеру" });
     }
 
-    // ДОБАВЛЕНО: Сбросить пароль (устанавливает admin-reset)
     if (query.data.startsWith('resetpass_')) {
         const clientId = query.data.replace('resetpass_', '');
         const mapped = await MessageMap.findOne({ tgMsgId: query.message.message_id });
@@ -698,7 +754,7 @@ bot.on('callback_query', async (query) => {
         user.password = await bcrypt.hash("admin-reset", 10);
         await user.save();
 
-        io.to(clientId).emit('chat_closed_reset'); // Отправляем сигнал об успешном сбросе
+        io.to(clientId).emit('chat_closed_reset'); 
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
         bot.sendMessage(adminId, `✅ Пароль для <b>${user.nickname}</b> сброшен на <code>admin-reset</code>`, { parse_mode: 'HTML', reply_to_message_id: query.message.message_id });
         bot.answerCallbackQuery(query.id, { text: "Пароль успешно сброшен!" });
@@ -836,16 +892,13 @@ bot.on('message', async (msg) => {
 
         const clientId = mapped.clientId;
 
-        // ДОБАВЛЕНО: Команда /cp "пароль" для ручной смены пароля
         if (text.startsWith('/cp ')) {
             let newPass = text.replace('/cp ', '').trim();
-            // Убираем кавычки, если ты написал /cp "значение"
             if (newPass.startsWith('"') && newPass.endsWith('"')) {
                 newPass = newPass.slice(1, -1);
             }
 
             let targetUserStr = mapped.linkedUser;
-            // Если это не анонимный чат, а юзер из профиля, то ищем его по clientId
             if (!targetUserStr) {
                 const u = await User.findOne({ clientId: mapped.clientId });
                 if (u) targetUserStr = u.username;
@@ -864,7 +917,6 @@ bot.on('message', async (msg) => {
             await userToUpdate.save();
 
             bot.sendMessage(adminId, `✅ Пароль для <b>${userToUpdate.nickname}</b> изменен на <code>${newPass}</code>`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
-            // Сообщаем юзеру в чат (анонимный или обычный)
             io.to(mapped.clientId).emit('receive_message', { text: `Ваш пароль был успешно изменен администратором. Вы можете войти в аккаунт.`, isSuccess: true, isWarning: false });
             return;
         }
