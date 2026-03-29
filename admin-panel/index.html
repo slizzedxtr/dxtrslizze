@@ -33,6 +33,9 @@
         .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--theme-color); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-dark); transition: 0.3s; box-shadow: 0 0 10px var(--theme-glow); text-decoration: none; cursor: pointer; }
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
         .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--theme-color); border-color: #fff; }
+        /* Серый вид кнопки профиля когда не авторизован */
+        .profile-btn.locked { opacity: 0.4; cursor: not-allowed; border-color: var(--text-muted); box-shadow: none; }
+        .profile-btn.locked:hover { transform: none; box-shadow: none; border-color: var(--text-muted); }
 
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-color); border-color: var(--theme-color); }
@@ -180,7 +183,8 @@
     <canvas id="matrixCanvas"></canvas>
 
     <div class="top-controls">
-        <div class="profile-btn" title="Профиль Администратора" onclick="openSection('adminProfileSection')">
+        <!-- ИСПРАВЛЕН БАГ: кнопка профиля заблокирована до авторизации через класс locked -->
+        <div class="profile-btn locked" id="profileBtn" title="Профиль Администратора" onclick="handleProfileClick()">
             <img src="../dslogo.png" alt="Profile" id="userAvatar">
         </div>
     </div>
@@ -382,9 +386,10 @@
             <div class="data-list" id="promoList"></div>
         </div>
 
+        <!-- ИСПРАВЛЕН БАГ: кнопка "Назад" вызывает goBackFromProfile() вместо прямого openSection -->
         <div class="view-section" id="adminProfileSection">
             <div class="section-header">
-                <button class="back-btn" onclick="openSection('mainMenuSection')"><i class="fa-solid fa-arrow-left"></i> Назад</button>
+                <button class="back-btn" onclick="goBackFromProfile()"><i class="fa-solid fa-arrow-left"></i> Назад</button>
                 <div class="section-title">АДМИНИСТРАТОР</div>
             </div>
             <div class="create-form" style="align-items: center; text-align: center;">
@@ -503,17 +508,48 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         const API_URL = "https://dxtrslizze.onrender.com/api";
-        let sessionPassword = localStorage.getItem('adminPass') || ""; 
+
+        // ========== СОСТОЯНИЕ СЕССИИ ==========
+        // jwtToken — для аутентификации в сокетах (новая система)
+        // sessionPassword — для admin API-вызовов (music, profiles, promos)
+        let jwtToken = localStorage.getItem('adminToken') || '';
+        let sessionPassword = localStorage.getItem('adminPass') || '';
+        // Флаг авторизации: управляет доступом к кнопке профиля и кнопке "Назад"
+        let isAuthenticated = false;
 
         // ========== НАВИГАЦИЯ ==========
         function openSection(sectionId) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
-            if(sectionId === 'musicSection') loadMusicFromServer();
-            if(sectionId === 'profileSection') loadProfilesFromServer();
-            if(sectionId === 'promoSection') loadPromosFromServer();
+            if (sectionId === 'musicSection') loadMusicFromServer();
+            if (sectionId === 'profileSection') loadProfilesFromServer();
+            if (sectionId === 'promoSection') loadPromosFromServer();
         }
-        function logout() { localStorage.removeItem('adminPass'); location.reload(); }
+
+        // ИСПРАВЛЕН БАГ 1: кнопка профиля в шапке — работает только если авторизован
+        function handleProfileClick() {
+            if (isAuthenticated) {
+                openSection('adminProfileSection');
+            }
+            // Если не авторизован — ничего не происходит (кнопка визуально locked)
+        }
+
+        // ИСПРАВЛЕН БАГ 2: кнопка "Назад" в секции профиля администратора
+        // ведёт на главное меню если авторизован, и на экран авторизации если нет
+        function goBackFromProfile() {
+            if (isAuthenticated) {
+                openSection('mainMenuSection');
+            } else {
+                openSection('authSection');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('adminPass');
+            localStorage.removeItem('adminToken');
+            isAuthenticated = false;
+            location.reload();
+        }
 
         // ========== МАТРИЦА И МЕНЮ ==========
         const canvas = document.getElementById('matrixCanvas'); const ctx = canvas.getContext('2d');
@@ -558,11 +594,14 @@
         function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
         function saveMessage(text, type) { chatHistory.push({ text, type }); if (chatHistory.length > 50) chatHistory.shift(); localStorage.setItem('chatHistory_dxtr', JSON.stringify(chatHistory)); }
         
+        // Отправка сообщения в чат — используем jwtToken согласно index.js
         chatSend.onclick = () => {
             if (isSupportBanned || !chatInput.value.trim()) return;
             const text = chatInput.value.trim();
             addMessageToUI(text, 'user'); saveMessage(text, 'user');
-            if (typeof socket !== 'undefined' && socket) socket.emit('send_message', { clientId, text });
+            if (typeof socket !== 'undefined' && socket) {
+                socket.emit('send_message', { token: jwtToken, text });
+            }
             chatInput.value = '';
         };
         chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') chatSend.click(); });
@@ -583,16 +622,25 @@
                 fpPromise.then(fp => fp.get()).then(r => {
                     fingerprintHash = r.visitorId;
                     socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
+                    // Передаём JWT токен согласно новой системе index.js
+                    socket.emit('register_client', { token: jwtToken, fpHash: fingerprintHash });
                 }).catch(() => {
                     fingerprintHash = 'blocked';
                     socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    socket.emit('register_client', { clientId, fpHash: fingerprintHash });
+                    socket.emit('register_client', { token: jwtToken, fpHash: fingerprintHash });
                 });
             });
+
+            // Старая система assign_id (оставлена для совместимости)
             socket.on('assign_id', (data) => { if (data && data.newId) { clientId = data.newId; localStorage.setItem('dxtrNumericId', clientId); setCookie('dxtrNumericId', clientId, 365); } });
-            socket.on('user_data', d => { if (d.nickname) { window.userNickname = d.nickname; localStorage.setItem('dxtrUserNickname', d.nickname); } if (d.avatarUrl) { const avatarImg = document.getElementById('userAvatar'); if (avatarImg) avatarImg.src = d.avatarUrl; } });
+
+            socket.on('user_data', d => {
+                if (d.nickname) { window.userNickname = d.nickname; localStorage.setItem('dxtrUserNickname', d.nickname); }
+                if (d.avatarUrl) { const avatarImg = document.getElementById('userAvatar'); if (avatarImg) avatarImg.src = d.avatarUrl; }
+            });
+
             socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
+
             socket.on('admin_unbanned', () => {
                 localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; clearInterval(banTimerInterval);
                 document.body.className = 'theme-green';
@@ -603,16 +651,28 @@
                 descEl.innerHTML = 'Доступ открыт преждевременно.<br><br>Инициализация...'; descEl.style.color = '#fff';
                 setTimeout(() => { location.reload(); }, 3000);
             });
+
             socket.on('receive_message', (data) => {
                 const type = data.isWarning ? 'warning' : (data.isSuccess ? 'success' : 'admin');
                 addMessageToUI(data.text, type); saveMessage(data.text, type);
                 if (chatWindow.style.display !== 'flex') unreadBadge.style.display = 'flex';
             });
+
             socket.on('ban_status', (data) => {
                 isSupportBanned = data.isBanned;
                 if (isSupportBanned) { chatInput.disabled = true; chatSend.disabled = true; chatInput.placeholder = "Доступ ограничен"; }
                 else { chatInput.disabled = false; chatSend.disabled = false; chatInput.placeholder = "Введите сообщение..."; }
             });
+
+            // Обработка ответа сервера когда токен не передан / истёк
+            socket.on('auth_required', () => {
+                if (!isAuthenticated) {
+                    chatInput.disabled = true;
+                    chatSend.disabled = true;
+                    chatInput.placeholder = "Войдите для доступа к чату";
+                }
+            });
+
         } catch(e) {}
 
         let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
@@ -637,7 +697,17 @@
             activateBanUI(banTime);
         }
 
-        // ========== НОВАЯ СИСТЕМА АВТОРИЗАЦИИ (LOGIN/PASS) ==========
+        // ========== ВОССТАНОВЛЕНИЕ СЕССИИ ==========
+        // Если оба значения есть в localStorage — сессия считается активной
+        if (jwtToken && sessionPassword) {
+            isAuthenticated = true;
+            document.getElementById('profileBtn').classList.remove('locked');
+            document.getElementById('authSection').classList.remove('active');
+            document.body.className = 'theme-green';
+            openSection('mainMenuSection');
+        }
+
+        // ========== СИСТЕМА АВТОРИЗАЦИИ (LOGIN / PASS) ==========
         const authForm = document.getElementById('authForm'), loginInput = document.getElementById('adminLogin'), passInput = document.getElementById('adminPass'), loginWrapper = document.getElementById('loginWrapper'), passWrapper = document.getElementById('passWrapper'), sysMsg = document.getElementById('sysMsg');
         let isLoginVerified = false; let redThemeTimeout;
 
@@ -651,44 +721,101 @@
             passInput.value = '';
         }
 
-        if(sessionPassword) { document.getElementById('authSection').classList.remove('active'); document.body.className = 'theme-green'; openSection('mainMenuSection'); }
-
         authForm.onsubmit = async (e) => {
             e.preventDefault(); 
             if (!isLoginVerified) {
+                // Шаг 1: принять логин
                 if (loginInput.value.trim() !== '') {
-                    isLoginVerified = true; passWrapper.classList.add('show'); passInput.setAttribute('required', 'true'); sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.'; loginInput.disabled = true; loginWrapper.querySelector('.auth-submit-btn').style.display = 'none'; loginInput.style.borderRight = '2px solid var(--theme-color)'; loginInput.style.borderRadius = '20px'; passInput.focus();
-                } else { triggerError(); }
+                    isLoginVerified = true;
+                    passWrapper.classList.add('show');
+                    passInput.setAttribute('required', 'true');
+                    sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.';
+                    loginInput.disabled = true;
+                    loginWrapper.querySelector('.auth-submit-btn').style.display = 'none';
+                    loginInput.style.borderRight = '2px solid var(--theme-color)';
+                    loginInput.style.borderRadius = '20px';
+                    passInput.focus();
+                } else {
+                    triggerError();
+                }
             } else {
+                // Шаг 2: авторизация через /api/auth/login (согласно index.js)
                 sysMsg.textContent = 'АВТОРИЗАЦИЯ...';
+                sysMsg.style.color = 'var(--theme-color)';
                 try {
-                    // Используем API авторизации
-                    const res = await fetch(`${API_URL}/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login: loginInput.value.trim(), password: passInput.value }) });
+                    const res = await fetch(`${API_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        // Поля username и password — согласно схеме User в index.js
+                        body: JSON.stringify({
+                            username: loginInput.value.trim(),
+                            password: passInput.value
+                        })
+                    });
+
                     if (res.ok) {
                         const userData = await res.json();
-                        
-                        // Проверка требований админа: ID(1 или 777) И Nick(SlizZe или DXTR)
+                        // userData.user.username = nickname (возвращается как user.nickname в index.js)
+                        // userData.user.clientId = цифровой ID
                         const validIds = ['1', '777'];
-                        const validNicks = ['SlizZe', 'DXTR'];
-                        
-                        if (validIds.includes(String(userData.clientId)) && validNicks.includes(userData.nickname)) {
-                            clearTimeout(redThemeTimeout); document.body.className = 'theme-green'; failedAttempts = 0; localStorage.removeItem('adminFailedAttempts');
-                            sessionPassword = passInput.value; localStorage.setItem('adminPass', sessionPassword);
-                            
-                            document.getElementById('profNick').textContent = userData.nickname;
-                            if(userData.avatarUrl) {
-                                document.getElementById('adminProfileAvatar').src = userData.avatarUrl;
-                                document.getElementById('userAvatar').src = userData.avatarUrl;
+                        const validNicks = ['DXTR', 'SlizZe'];
+
+                        const receivedId = String(userData.user.clientId);
+                        const receivedNick = userData.user.username; // nickname возвращается под ключом username
+
+                        if (validIds.includes(receivedId) && validNicks.includes(receivedNick)) {
+                            // Авторизация успешна
+                            clearTimeout(redThemeTimeout);
+                            document.body.className = 'theme-green';
+                            failedAttempts = 0;
+                            localStorage.removeItem('adminFailedAttempts');
+
+                            // Сохраняем JWT токен для сокетов
+                            jwtToken = userData.token;
+                            localStorage.setItem('adminToken', jwtToken);
+
+                            // Сохраняем пароль для admin API-вызовов (music, profiles, promos)
+                            sessionPassword = passInput.value;
+                            localStorage.setItem('adminPass', sessionPassword);
+
+                            // Обновляем clientId из данных аккаунта
+                            clientId = receivedId;
+                            localStorage.setItem('dxtrNumericId', clientId);
+                            setCookie('dxtrNumericId', clientId, 365);
+
+                            isAuthenticated = true;
+
+                            // Разблокируем кнопку профиля
+                            document.getElementById('profileBtn').classList.remove('locked');
+
+                            // Обновляем данные профиля на странице
+                            document.getElementById('profNick').textContent = receivedNick;
+                            if (userData.user.avatarUrl) {
+                                document.getElementById('adminProfileAvatar').src = userData.user.avatarUrl;
+                                document.getElementById('userAvatar').src = userData.user.avatarUrl;
                             }
-                            
-                            document.getElementById('authSection').classList.remove('active'); openSection('mainMenuSection');
+
+                            // Перерегистрируем сокет с JWT токеном
+                            if (socket) {
+                                socket.emit('register_client', { token: jwtToken, fpHash: fingerprintHash });
+                            }
+
+                            document.getElementById('authSection').classList.remove('active');
+                            openSection('mainMenuSection');
                         } else {
+                            // Аккаунт найден, но не имеет прав администратора
                             sysMsg.textContent = 'НЕДОСТАТОЧНО ПРАВ';
                             sysMsg.style.color = 'var(--error-red)';
                             setTimeout(triggerError, 1500);
                         }
-                    } else { triggerError(); }
-                } catch (err) { sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ'; sysMsg.style.color = 'var(--error-red)'; }
+                    } else {
+                        // Неверный логин или пароль
+                        triggerError();
+                    }
+                } catch (err) {
+                    sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ';
+                    sysMsg.style.color = 'var(--error-red)';
+                }
             }
         };
 
@@ -883,7 +1010,7 @@
             xhr.send(formData);
         };
 
-        // ========== 2. ОБНОВЛЕННЫЕ ПРОФИЛИ ==========
+        // ========== 2. ПРОФИЛИ ==========
         async function loadProfilesFromServer() {
             const list = document.getElementById('profilesList');
             list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
@@ -927,7 +1054,7 @@
             document.getElementById('editProfNickInput').value = nick; 
             document.getElementById('editProfAvatarInput').value = avatar; 
             document.getElementById('editProfBalanceInput').value = balance; 
-            document.getElementById('editProfPassInput').value = ''; // Сброс поля пароля
+            document.getElementById('editProfPassInput').value = '';
             document.getElementById('editProfileModal').classList.add('active'); 
         }
         
