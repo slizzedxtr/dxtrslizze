@@ -23,18 +23,23 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
 
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
         body {
             background-color: var(--bg-dark); color: var(--text-main);
-            display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden;
+            display: flex; flex-direction: column; min-height: 100vh;
         }
 
         /* АНИМИРОВАННЫЙ ФОН */
-        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: #050507; }
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -2; overflow: hidden; background: #050507; }
         .blob { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5; animation: float 20s infinite alternate ease-in-out; }
         .blob-1 { width: 500px; height: 500px; background: var(--neon-purple); top: -10%; left: -10%; }
         .blob-2 { width: 600px; height: 600px; background: var(--neon-pink); bottom: -20%; right: -10%; animation-delay: -5s; }
         body::before {
-            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; pointer-events: none;
             background: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
             background-size: 40px 40px; mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
         }
@@ -50,7 +55,7 @@
         .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .sidebar-link i.icon-main { color: var(--neon-cyan); font-size: 1.4rem; transition: 0.3s; }
         .sidebar-link:hover { color: var(--neon-cyan); padding-left: 10px; border-bottom-color: rgba(0,198,255,0.3); }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
 
         /* ОКНО ЧАТА */
@@ -84,7 +89,6 @@
         .chat-resolved-status { text-align: center; margin-top: auto; padding: 25px 20px; border: 1px solid var(--neon-green); border-radius: 15px; background: rgba(0, 255, 102, 0.05); box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.1), 0 0 20px rgba(0, 255, 102, 0.1); animation: msgFade 0.6s ease-out forwards; }
         .chat-resolved-icon { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(0,255,102,0.5)); }
         .chat-resolved-title { color: var(--neon-green); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
-        .chat-resolved-subtitle { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; margin-top: 5px; }
 
         /* ================= ДИЗАЙН ПРОФИЛЯ ================= */
         .auth-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; z-index: 10; position: relative; }
@@ -95,6 +99,7 @@
         
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group input { width: 100%; padding: 16px 20px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none; transition: 0.3s; }
+        .input-group input[type="file"] { padding: 12px 20px; cursor: pointer; }
         .input-group input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.2); }
         
         .auth-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; }
@@ -138,7 +143,7 @@
             .auth-container { padding: 30px 20px; border-radius: 20px; border-width: 1px;}
             .auth-title { font-size: 1.8rem; }
             .burger-btn { width: 40px; height: 40px; }
-            #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; border-radius: 24px 24px 0 0 !important; }
+            #chat-window { width: 100% !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; border-radius: 24px 24px 0 0 !important; }
         }
     </style>
 </head>
@@ -176,14 +181,12 @@
         <div class="modal-inner">
             <div class="close-modal-btn" onclick="closeModals()">×</div>
             <div class="modal-title">Сброс пароля</div>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Введите никнейм. Можно отправить автоматический запрос или написать в техподдержку.</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Введите никнейм и обратитесь в техподдержку для восстановления доступа.</p>
             <div id="recError" class="error-msg"></div>
-            <div id="recSuccess" class="success-msg"></div>
             <div class="input-group">
                 <input type="text" id="recUsername" placeholder="Ваш никнейм">
             </div>
-            <button class="auth-btn" id="recBtn" onclick="sendRecover()">Отправить авто-запрос</button>
-            <button class="auth-btn auth-btn-secondary" onclick="openSupportChatForRecover()">Написать в поддержку (Чат)</button>
+            <button class="auth-btn" onclick="openSupportChatForRecover()">Написать в поддержку</button>
         </div>
     </div>
 
@@ -196,8 +199,11 @@
             <div class="section-label">Никнейм</div>
             <div class="input-group"><input type="text" id="setNick" placeholder="Новый никнейм"></div>
             
-            <div class="section-label">Аватар (Прямая ссылка)</div>
-            <div class="input-group"><input type="text" id="setAvatar" placeholder="https://.../image.png"></div>
+            <div class="section-label">Аватар (Файл до 2 МБ)</div>
+            <div class="input-group">
+                <input type="file" id="setAvatar" accept="image/*" onchange="checkFileSize(this)">
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: -15px; margin-bottom: 20px; text-align: left;">Только изображения. Макс. размер 2MB.</p>
 
             <div class="section-label">Смена пароля</div>
             <div class="input-group"><input type="password" id="setOldPass" placeholder="Старый пароль"></div>
@@ -244,25 +250,21 @@
         let socket;
         let isAuthUser = false;
         
-        // Генерация или получение ID для анонимного чата
         let anonId = localStorage.getItem('dxtr_anon_id');
         if (!anonId) {
             anonId = 'anon_' + Math.random().toString(36).substring(2, 10);
             localStorage.setItem('dxtr_anon_id', anonId);
         }
 
-        // ПРОВЕРКА ПРИ ЗАГРУЗКЕ
         window.onload = async () => {
             const token = localStorage.getItem('dxtr_token');
             if (token) { 
                 await fetchProfile(token); 
                 isAuthUser = true;
             }
-            // Инициализируем сокеты в любом случае (для авториз. или анонимов)
             initGlobalSocket(token);
         };
 
-        // --- UI АВТОРИЗАЦИИ ---
         function toggleMode() {
             isLoginMode = !isLoginMode;
             document.getElementById('authTitle').innerText = isLoginMode ? "Авторизация" : "Регистрация";
@@ -326,42 +328,23 @@
 
         function logout() { localStorage.removeItem('dxtr_token'); location.reload(); }
 
-        // --- МОДАЛЬНЫЕ ОКНА ---
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); hideError(); }
         window.onclick = (e) => { if(e.target.classList.contains('modal')) closeModals(); }
 
         function openRecoverModal() { document.getElementById('recoverModal').style.display = 'flex'; }
         
-        async function sendRecover() {
-            hideError();
-            const u = document.getElementById('recUsername').value.trim();
-            if(!u) return showError("Введите никнейм", 'recError');
-            
-            const btn = document.getElementById('recBtn');
-            btn.innerText = "Отправка..."; btn.disabled = true;
-            try {
-                const res = await fetch(`${API_URL}/recover`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u })
-                });
-                const data = await res.json();
-                if(data.success) { showError(data.message, 'recSuccess', true); } 
-                else { showError(data.error, 'recError'); }
-            } catch(e) { showError("Ошибка сети", 'recError'); }
-            finally { btn.innerText = "Отправить авто-запрос"; btn.disabled = false; }
-        }
-
-        // --- ЛОГИКА АНОНИМНОГО ЧАТА ДЛЯ ВОССТАНОВЛЕНИЯ ---
+        // --- АНОНИМНЫЙ ЧАТ (ВОССТАНОВЛЕНИЕ) ---
         function openSupportChatForRecover() {
             const u = document.getElementById('recUsername').value.trim();
-            if(!u) return showError("Сначала укажите свой никнейм в поле выше", 'recError');
+            if(!u) return showError("Укажите свой никнейм", 'recError');
             
-            window.targetRecoverUser = u; // Сохраняем для передачи в сокет
+            window.targetRecoverUser = u; 
             closeModals();
+            resetChatUI(); // Сбрасываем чат перед открытием
             
             document.getElementById('chat-window').style.display = 'flex';
             document.getElementById('chatGreeting').innerHTML = `Связь с поддержкой.<br>Указан аккаунт: <b>${u}</b>`;
             
-            // Если юзер уже что-то писал, мы можем добавить автосообщение для ясности
             const chatInput = document.getElementById('chat-input');
             chatInput.value = `Здравствуйте, я забыл пароль от аккаунта ${u}.`;
             setTimeout(() => { document.getElementById('chat-send').click(); }, 300);
@@ -370,36 +353,62 @@
         function openSettingsModal() { 
             if(currentUserData) {
                 document.getElementById('setNick').value = currentUserData.username;
-                document.getElementById('setAvatar').value = currentUserData.avatarUrl !== 'dslogo.png' ? currentUserData.avatarUrl : '';
+                document.getElementById('setAvatar').value = ""; // Очищаем инпут файла
             }
             document.getElementById('settingsModal').style.display = 'flex'; 
+        }
+
+        // ПРОВЕРКА РАЗМЕРА ФАЙЛА АВАТАРА
+        function checkFileSize(input) {
+            if (input.files && input.files[0]) {
+                if (input.files[0].size > 2 * 1024 * 1024) {
+                    showError("Файл слишком большой! Максимальный размер: 2 МБ.", 'setMsg');
+                    input.value = ""; // Сбрасываем выбранный файл
+                } else {
+                    hideError();
+                }
+            }
         }
 
         async function saveSettings() {
             hideError();
             const newNick = document.getElementById('setNick').value.trim();
-            const newAva = document.getElementById('setAvatar').value.trim();
+            const avatarFile = document.getElementById('setAvatar').files[0];
             const oldP = document.getElementById('setOldPass').value.trim();
             const newP = document.getElementById('setNewPass').value.trim();
 
-            const bodyData = {};
-            if(newNick && newNick !== currentUserData.username) bodyData.newNickname = newNick;
-            if(newAva !== currentUserData.avatarUrl) bodyData.newAvatar = newAva || 'dslogo.png';
-            if(oldP || newP) {
-                if(!oldP || !newP) return showError("Заполните оба поля пароля", 'setMsg');
-                bodyData.oldPassword = oldP; bodyData.newPassword = newP;
+            const formData = new FormData();
+            let hasChanges = false;
+
+            if(newNick && newNick !== currentUserData.username) {
+                formData.append('newNickname', newNick);
+                hasChanges = true;
+            }
+            
+            if(avatarFile) {
+                formData.append('avatar', avatarFile);
+                hasChanges = true;
             }
 
-            if(Object.keys(bodyData).length === 0) return showError("Нет изменений для сохранения", 'setMsg');
+            if(oldP || newP) {
+                if(!oldP || !newP) return showError("Заполните оба поля пароля", 'setMsg');
+                formData.append('oldPassword', oldP);
+                formData.append('newPassword', newP);
+                hasChanges = true;
+            }
+
+            if(!hasChanges) return showError("Нет изменений для сохранения", 'setMsg');
 
             const token = localStorage.getItem('dxtr_token');
             const btn = document.getElementById('saveSettingsBtn');
             btn.innerText = "Сохранение..."; btn.disabled = true;
 
             try {
+                // ВНИМАНИЕ: Для FormData не нужно указывать Content-Type, браузер сделает это сам (с boundary)
                 const res = await fetch(`${API_URL}/update`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify(bodyData)
+                    method: 'PUT', 
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
                 });
                 const data = await res.json();
                 if(data.success) { location.reload(); } 
@@ -418,9 +427,23 @@
         function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
         burgerBtn.onclick = toggleMenu; document.getElementById('closeSidebar').onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
         
+        // СБРОС ИНТЕРФЕЙСА ЧАТА ПРИ ОТКРЫТИИ ЧЕРЕЗ МЕНЮ
+        function resetChatUI() {
+            const inputArea = document.getElementById('chat-input-area');
+            inputArea.style.opacity = "1";
+            inputArea.style.display = "flex";
+            
+            const chatMessages = document.getElementById('chat-messages');
+            const resolvedBlocks = chatMessages.querySelectorAll('.chat-resolved-status');
+            resolvedBlocks.forEach(block => block.remove());
+        }
+
         document.getElementById('sidebarSupportBtn').onclick = (e) => { 
             e.preventDefault(); toggleMenu(); 
-            setTimeout(() => { chatWindow.style.display = 'flex'; }, 300); 
+            setTimeout(() => { 
+                resetChatUI(); // Сбрасываем чат перед открытием
+                chatWindow.style.display = 'flex'; 
+            }, 300); 
         };
         document.getElementById('chat-close').onclick = () => chatWindow.style.display = 'none';
 
@@ -467,18 +490,15 @@
             });
 
             socket.on('receive_message', (d) => {
-                if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex';
+                if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                    resetChatUI(); // При входящем тоже убеждаемся что интерфейс не заблочен
+                    chatWindow.style.display = 'flex';
+                }
                 addChatMessage('Support', d.text, 'flex-start');
             });
 
-            // ОБРАБОТЧИКИ ЗАКРЫТИЯ И СБРОСА ПАРОЛЯ
-            socket.on('chat_closed_solved', () => {
-                showChatClosedAnimation("Проблема решена", "fa-circle-check");
-            });
-
-            socket.on('chat_closed_reset', () => {
-                showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double");
-            });
+            socket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
+            socket.on('chat_closed_reset', () => { showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double"); });
 
             chatSendBtn.onclick = sendMessage;
             chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessage(); } });
@@ -511,14 +531,11 @@
 
             function showChatClosedAnimation(titleHtml, iconClass) {
                 const inputArea = document.getElementById('chat-input-area');
-                
-                // Плавное скрытие поля ввода
                 inputArea.style.opacity = "0";
                 
                 setTimeout(() => {
                     inputArea.style.display = "none";
                     
-                    // Добавление красивого финального блока в чат
                     const statusBlock = document.createElement('div');
                     statusBlock.className = 'chat-resolved-status';
                     statusBlock.innerHTML = `
@@ -527,7 +544,7 @@
                     `;
                     chatMessages.appendChild(statusBlock);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 500); // Ждем пока исчезнет инпут
+                }, 500); 
             }
         }
     </script>
