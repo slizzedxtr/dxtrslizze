@@ -61,9 +61,11 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
+// ДОБАВЛЕНО: linkedUser для отслеживания анонимных запросов на восстановление пароля
 const MessageMapSchema = new mongoose.Schema({
     tgMsgId: Number,
     clientId: String,
+    linkedUser: String, 
     text: String,
     createdAt: { type: Date, expires: '24h', default: Date.now }
 });
@@ -496,6 +498,39 @@ io.on('connection', (socket) => {
     io.emit('online_update', io.engine.clientsCount);
     socket.on('disconnect', () => { io.emit('online_update', io.engine.clientsCount); });
 
+    // ДОБАВЛЕНО: Регистрация анонимного юзера (человека без аккаунта)
+    socket.on('anon_register_client', (data) => {
+        if (data.anonId) {
+            socket.join(data.anonId);
+        }
+    });
+
+    // ДОБАВЛЕНО: Отправка сообщения от анонимного юзера
+    socket.on('send_anon_message', async (data) => {
+        if (!data.anonId || !data.text) return;
+        
+        const targetUser = data.targetUsername ? `\n👤 <b>Указанный аккаунт:</b> <code>${data.targetUsername}</code>` : '';
+        const tgText = `🌐 <b>Запрос без регистрации (Восстановление/Связь)!</b>\n\n💬 <i>«${data.text}»</i>${targetUser}\n🆔 Сессия: <code>${data.anonId}</code>\n➖➖➖➖➖➖➖➖➖\n💡 <i>Ответь реплаем (или используй /cp "пароль"), либо выбери действие:</i>`;
+
+        bot.sendMessage(adminId, tgText, {
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: [
+                    [ { text: "✅ Закрыть чат", callback_data: `closechat_${data.anonId}` } ],
+                    [ { text: "🔑 Сбросить пароль", callback_data: `resetpass_${data.anonId}` } ],
+                    [ { text: "ℹ️ Сообщение о сбросе", callback_data: `resetinfo_${data.anonId}` } ]
+                ]
+            }
+        }).then(async (msg) => {
+            await MessageMap.create({
+                tgMsgId: msg.message_id,
+                clientId: data.anonId,
+                linkedUser: data.targetUsername ? data.targetUsername.toLowerCase() : null,
+                text: data.text
+            });
+        });
+    });
+
     socket.on('check_admin_ban', async (data) => {
         if (!data.clientId) return;
         socket.join(`admin_${data.clientId}`); 
@@ -612,6 +647,7 @@ io.on('connection', (socket) => {
                 parse_mode: 'HTML',
                 reply_markup: { 
                     inline_keyboard: [
+                        [ { text: "✅ Закрыть чат", callback_data: `closechat_${user.clientId}` } ], // Кнопка закрытия чата для обычных юзеров тоже
                         [ { text: "Ban 1h ⏳", callback_data: `ban1h_${user.clientId}` }, { text: "Ban Perm 🚫", callback_data: `banperm_${user.clientId}` } ],
                         [ { text: "Spam ⚠️", callback_data: `spam_${user.clientId}` } ]
                     ] 
@@ -629,6 +665,45 @@ io.on('connection', (socket) => {
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
     
+    // ДОБАВЛЕНО: Закрыть чат
+    if (query.data.startsWith('closechat_')) {
+        const clientId = query.data.replace('closechat_', '');
+        io.to(clientId).emit('chat_closed_solved'); // Отправляем сигнал на сайт для анимации
+        bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
+        bot.answerCallbackQuery(query.id, { text: "Чат закрыт, юзер уведомлен." });
+    }
+
+    // ДОБАВЛЕНО: Сообщение о сбросе
+    if (query.data.startsWith('resetinfo_')) {
+        const clientId = query.data.replace('resetinfo_', '');
+        const msgText = "Сбросить пароль можно двумя способами:\n1. Администрация устанавливает вам новый пароль который вы укажете в этом чате.\n2. Администрация сбросит ваш пароль полностью. Вам автоматически установится временный пароль который будет необходимо сменить вручную в профиле. Временным паролем является \"admin-reset\"";
+        io.to(clientId).emit('receive_message', { text: msgText, isWarning: false, isSuccess: false });
+        bot.answerCallbackQuery(query.id, { text: "Инструкция отправлена юзеру" });
+    }
+
+    // ДОБАВЛЕНО: Сбросить пароль (устанавливает admin-reset)
+    if (query.data.startsWith('resetpass_')) {
+        const clientId = query.data.replace('resetpass_', '');
+        const mapped = await MessageMap.findOne({ tgMsgId: query.message.message_id });
+        
+        if (!mapped || !mapped.linkedUser) {
+            return bot.answerCallbackQuery(query.id, { text: "Ошибка: не указан никнейм юзера для сброса", show_alert: true });
+        }
+
+        const user = await User.findOne({ username: mapped.linkedUser });
+        if (!user) {
+            return bot.answerCallbackQuery(query.id, { text: "Этот аккаунт не найден в базе данных!", show_alert: true });
+        }
+
+        user.password = await bcrypt.hash("admin-reset", 10);
+        await user.save();
+
+        io.to(clientId).emit('chat_closed_reset'); // Отправляем сигнал об успешном сбросе
+        bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
+        bot.sendMessage(adminId, `✅ Пароль для <b>${user.nickname}</b> сброшен на <code>admin-reset</code>`, { parse_mode: 'HTML', reply_to_message_id: query.message.message_id });
+        bot.answerCallbackQuery(query.id, { text: "Пароль успешно сброшен!" });
+    }
+
     if (query.data.startsWith('spam_')) {
         const cId = query.data.replace('spam_', '');
         await sendToUser(cId, "Пожалуйста, не присылайте сообщения которые не имеют смысл или не связаны с темой сайта.", 'warning', query.message.message_id, "Spam-фильтр");
@@ -760,6 +835,39 @@ bot.on('message', async (msg) => {
         if (!mapped) return;
 
         const clientId = mapped.clientId;
+
+        // ДОБАВЛЕНО: Команда /cp "пароль" для ручной смены пароля
+        if (text.startsWith('/cp ')) {
+            let newPass = text.replace('/cp ', '').trim();
+            // Убираем кавычки, если ты написал /cp "значение"
+            if (newPass.startsWith('"') && newPass.endsWith('"')) {
+                newPass = newPass.slice(1, -1);
+            }
+
+            let targetUserStr = mapped.linkedUser;
+            // Если это не анонимный чат, а юзер из профиля, то ищем его по clientId
+            if (!targetUserStr) {
+                const u = await User.findOne({ clientId: mapped.clientId });
+                if (u) targetUserStr = u.username;
+            }
+
+            if (!targetUserStr) {
+                return bot.sendMessage(adminId, "❌ Не удалось определить аккаунт для сброса.", { reply_to_message_id: msg.message_id });
+            }
+
+            const userToUpdate = await User.findOne({ username: targetUserStr });
+            if (!userToUpdate) {
+                 return bot.sendMessage(adminId, "❌ Аккаунт не найден в БД.", { reply_to_message_id: msg.message_id });
+            }
+
+            userToUpdate.password = await bcrypt.hash(newPass, 10);
+            await userToUpdate.save();
+
+            bot.sendMessage(adminId, `✅ Пароль для <b>${userToUpdate.nickname}</b> изменен на <code>${newPass}</code>`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
+            // Сообщаем юзеру в чат (анонимный или обычный)
+            io.to(mapped.clientId).emit('receive_message', { text: `Ваш пароль был успешно изменен администратором. Вы можете войти в аккаунт.`, isSuccess: true, isWarning: false });
+            return;
+        }
 
         if (text.startsWith('/nick ')) {
             const nick = text.replace('/nick ', '').trim();
