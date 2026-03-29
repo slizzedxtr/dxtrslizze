@@ -34,20 +34,32 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
 
+        /* УБИРАЕМ СКАЧКИ И СКРОЛЛБАР */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none;  /* IE и Edge */
+        }
+        
+        html::-webkit-scrollbar, body::-webkit-scrollbar {
+            display: none; /* Chrome, Safari и Opera */
+        }
+
         body {
             background-color: var(--bg-dark); color: var(--text-main);
-            display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative;
+            display: flex; flex-direction: column; min-height: 100vh; position: relative;
         }
 
         /* АНИМИРОВАННЫЙ ФОН + ХАЙТЕК СЕТКА */
-        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: #050507; }
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -2; overflow: hidden; background: #050507; }
         .blob { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5; animation: float 20s infinite alternate ease-in-out; }
         .blob-1 { width: 500px; height: 500px; background: var(--neon-purple); top: -10%; left: -10%; }
         .blob-2 { width: 600px; height: 600px; background: var(--neon-pink); bottom: -20%; right: -10%; animation-delay: -5s; }
         .blob-3 { width: 400px; height: 400px; background: var(--neon-cyan); top: 30%; left: 40%; opacity: 0.3; animation-delay: -10s; }
 
         body::before {
-            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; pointer-events: none;
             background: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
             background-size: 40px 40px;
             mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
@@ -59,7 +71,7 @@
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
         /* ВЕРХНЯЯ НАВИГАЦИЯ */
-        .top-nav { display: flex; justify-content: center; gap: 40px; padding: 25px 20px 0; position: relative; z-index: 20; }
+        .top-nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; padding: 25px 20px 0; position: relative; z-index: 20; max-width: 1000px; margin: 0 auto;}
         .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 5px; border-bottom: 2px solid transparent; transition: 0.3s; }
         .nav-link:hover, .nav-link.active { color: #fff; border-bottom: 2px solid var(--neon-cyan); text-shadow: 0 0 15px rgba(0, 198, 255, 0.6); }
 
@@ -227,14 +239,14 @@
         /* ЧАТ ПОДДЕРЖКИ И МЕНЮ... */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan); }
-        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.9); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid rgba(0, 198, 255, 0.2); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.9); backdrop-filter: blur(25px); border-right: 1px solid rgba(0, 198, 255, 0.2); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
         .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; }
         .sidebar-link i.icon-main { color: var(--neon-cyan); font-size: 1.4rem; transition: 0.3s; }
         .sidebar-link:hover, .sidebar-link.active { color: var(--neon-cyan); padding-left: 10px; border-bottom-color: rgba(0,198,255,0.3); }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
-        #menuBanLock { color: var(--neon-red); font-size: 1rem; text-shadow: 0 0 10px rgba(255,0,51,0.8); margin-left: auto; display: none; animation: pulseRed 2s infinite; }
+        
         .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 15px; }
         .online-counter { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; }
         .pulse-dot { width: 10px; height: 10px; background-color: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: pulseGreen 2s infinite; }
@@ -282,11 +294,15 @@
         .msg-bot .chat-msg-name { color: var(--neon-purple); text-shadow: 0 0 5px rgba(112,0,255,0.5); }
         .msg-bot .chat-msg-bubble { background: rgba(112, 0, 255, 0.08); border: 1px solid rgba(112, 0, 255, 0.4); border-bottom-left-radius: 2px; }
         
-        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); z-index: 2; position: relative; }
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid rgba(0,198,255,0.2); background: rgba(5,5,8,0.9); z-index: 2; position: relative; transition: opacity 0.5s ease; }
         #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
         #chat-input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.2), inset 0 0 10px rgba(0,198,255,0.1); }
         #chat-send { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
         #chat-send:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 0 25px rgba(0,198,255,0.6); }
+
+        .chat-resolved-status { text-align: center; margin-top: auto; padding: 25px 20px; border: 1px solid var(--neon-green); border-radius: 15px; background: rgba(0, 255, 102, 0.05); box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.1), 0 0 20px rgba(0, 255, 102, 0.1); animation: msgFade 0.6s ease-out forwards; }
+        .chat-resolved-icon { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(0,255,102,0.5)); }
+        .chat-resolved-title { color: var(--neon-green); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
         @media (max-width: 900px) {
             .hero-release, .promo-banner { flex-direction: column; text-align: center; padding: 30px 20px; }
@@ -318,7 +334,7 @@
             .profile-btn { width: 40px; height: 40px; }
             .footer-buttons { flex-direction: column; }
             #chat-window { 
-                width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
+                width: 100% !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
                 border-radius: 24px 24px 0 0 !important; border-bottom: none;
                 animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
             }
@@ -382,7 +398,9 @@
         </div>
         <a href="https://dxtrslizze.xyz/" class="sidebar-link active"><i class="fa-solid fa-home icon-main"></i> Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music icon-main"></i> Муз. каталог</a>
+        <a href="https://dxtrslizze.xyz/games" class="sidebar-link"><i class="fa-solid fa-gamepad icon-main"></i> Игры</a>
         <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info icon-main"></i> О нас</a>
+        <a href="https://dxtrslizze.xyz/shop" class="sidebar-link"><i class="fa-solid fa-store icon-main"></i> Магазин</a>
         <a href="#" class="sidebar-link" id="sidebarSupportBtn">
             <i class="fa-solid fa-headset icon-main"></i> Тех. поддержка
             <i class="fa-solid fa-lock" id="menuBanLock"></i>
@@ -402,7 +420,9 @@
     <nav class="top-nav fade-in">
         <a href="https://dxtrslizze.xyz/" class="nav-link active">Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="nav-link">Муз. каталог</a>
+        <a href="https://dxtrslizze.xyz/games" class="nav-link">Игры</a>
         <a href="https://dxtrslizze.xyz/about" class="nav-link">О нас</a>
+        <a href="https://dxtrslizze.xyz/shop" class="nav-link">Магазин</a>
     </nav>
 
     <div class="close-btn" id="closeBtn" style="display: none; position: fixed;">×</div>
@@ -425,11 +445,11 @@
         </div>
         <div id="chat-messages">
             <div class="chat-system-ban" id="chatBanNotice"><i class="fa-solid fa-circle-exclamation"></i> ДОСТУП ОГРАНИЧЕН</div>
-            <div class="chat-system-msg" id="chatGreeting">Чат тех. поддержки. Задайте ваш вопрос.</div>
+            <div class="chat-system-msg" id="chatGreeting">Подключение...</div>
         </div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Опишите проблему...">
-            <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+        <div class="chat-input-area" id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Опишите проблему..." disabled>
+            <button id="chat-send" style="background: #333;" disabled><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -512,7 +532,7 @@
                 <i class="fa-brands fa-tiktok"></i> TikTok
             </a>
         </div>
-        <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; margin-top: 30px;">© 2026 DXTR | SlizZe</p>
+        <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; margin-margin-top: 30px;">© 2026 DXTR | SlizZe</p>
     </footer>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -559,7 +579,6 @@
                 if (res.ok) {
                     allTracks = await res.json();
                     
-                    // Ищем главный релиз. Если не назначен, берем просто самый свежий (нулевой)
                     mainTrack = allTracks.find(t => t.is_main === true) || allTracks[0];
                     
                     if (mainTrack) renderMainRelease(mainTrack);
@@ -584,7 +603,6 @@
             document.getElementById('heroTitle').innerText = track.title;
             document.getElementById('localAudio').src = track.mp3_url;
             
-            // Бейджики (Главный релиз + 18+ если есть)
             const badgeContainer = document.getElementById('heroBadgeContainer');
             let badgesHTML = `<div class="hero-badge">Главный релиз</div>`;
             if (track.is_18) {
@@ -592,21 +610,18 @@
             }
             badgeContainer.innerHTML = badgesHTML;
 
-            // YouTube клип
             const ytId = extractYtId(track.yt_link);
             document.getElementById('heroCoverWrap').onclick = () => openVideo(ytId);
             
             const ytHeroLink = document.getElementById('ytHeroLink');
-            // Подставляем реальную ссылку, чтобы браузер показывал ее при наведении
             ytHeroLink.href = track.yt_link ? track.yt_link : "javascript:void(0)";
             ytHeroLink.onclick = (e) => {
                 if (ytId) {
-                    e.preventDefault(); // Блокируем стандартный переход по ссылке
-                    openVideo(ytId);    // Открываем модальное окно вместо перехода
+                    e.preventDefault(); 
+                    openVideo(ytId);    
                 }
             };
 
-            // Кнопки площадок
             const yam = document.getElementById('heroYam');
             const spo = document.getElementById('heroSpo');
             const vk = document.getElementById('heroVk');
@@ -621,7 +636,6 @@
                 vk.classList.add('disabled-link'); vk.removeAttribute('target'); vk.href = "javascript:void(0)"; vk.title = "Временно недоступно";
             }
 
-            // Кнопка скачивания
             const dlBtn = document.getElementById('heroDlBtn');
             dlBtn.onclick = (e) => {
                 e.preventDefault();
@@ -633,7 +647,6 @@
             const grid = document.getElementById('randomTracksGrid');
             grid.innerHTML = '';
             
-            // Перемешиваем массив, чтобы клипы были рандомными
             let shuffled = [...tracksArray];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -658,7 +671,6 @@
             });
         }
 
-        // Запуск запроса к БД
         fetchHomeData();
 
         // === PWA: ДОБАВИТЬ НА РАБОЧИЙ СТОЛ ===
@@ -673,13 +685,11 @@
         if (!localStorage.getItem('dxtr_visited_v2')) {
             setTimeout(() => {
                 installModal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
             }, 2500); 
         }
 
         function closeInstallModal() {
             installModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
             localStorage.setItem('dxtr_visited_v2', 'true');
         }
 
@@ -710,20 +720,18 @@
             fallbackLink.href = `https://www.youtube.com/watch?v=${videoId}`;
             modal.style.display = 'flex';
             closeBtn.style.display = 'block';
-            document.body.style.overflow = 'hidden'; 
         }
 
         function closeModal() {
             modal.style.display = 'none';
             closeBtn.style.display = 'none';
             player.src = ''; 
-            document.body.style.overflow = 'auto'; 
         }
 
         closeBtn.onclick = closeModal;
         modal.onclick = function(e) { if (e.target === modal) { closeModal(); } }
 
-        // === МОДАЛКА СКАЧИВАНИЯ (С FORCED DOWNLOAD СУПАБЕЙСА) ===
+        // === МОДАЛКА СКАЧИВАНИЯ ===
         const dM = document.getElementById('downloadModal');
         
         function openDownloadModal(t, mp3, wav) { 
@@ -746,18 +754,10 @@
             linkWav.onclick = () => closeDlModal();
 
             dM.style.display = 'flex'; 
-            document.body.style.overflow = 'hidden'; 
         }
 
-        function closeDlModal() {
-            dM.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        window.addEventListener('click', (e) => {
-            if(e.target === dM) closeDlModal();
-        });
-
+        function closeDlModal() { dM.style.display = 'none'; }
+        window.addEventListener('click', (e) => { if(e.target === dM) closeDlModal(); });
 
         // === ЛОГИКА ВСТРОЕННОГО АУДИОПЛЕЕРА ===
         const progressBar = document.getElementById('progressBar');
@@ -848,10 +848,20 @@
         const chatSendBtn = document.getElementById('chat-send');
         const chatHeader = document.getElementById('chat-header');
 
+        function resetChatUI() {
+            const inputArea = document.getElementById('chat-input-area');
+            inputArea.style.opacity = "1";
+            inputArea.style.display = "flex";
+            
+            const resolvedBlocks = chatMessages.querySelectorAll('.chat-resolved-status');
+            resolvedBlocks.forEach(block => block.remove());
+        }
+
         sidebarSupportBtn.onclick = (e) => {
             e.preventDefault();
             toggleMenu();
             setTimeout(() => {
+                resetChatUI();
                 chatWindow.style.display = 'flex';
                 if(window.innerWidth > 600) {
                     chatWindow.style.left = 'auto';
@@ -892,56 +902,43 @@
         });
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        // === АНТИ-БАН СИСТЕМА, ID И СОКЕТЫ ===
-        const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
-        window.userNickname = localStorage.getItem('dxtrUserNickname') || null; 
-
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                let date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-        }
-        function getCookie(name) {
-            let nameEQ = name + "=";
-            let ca = document.cookie.split(';');
-            for(let i=0;i < ca.length;i++) {
-                let c = ca[i].trim();
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
-            }
-            return null;
-        }
-
-        let lsId = localStorage.getItem('dxtrNumericId');
-        let cookieId = getCookie('dxtrNumericId');
-        let clientId = lsId || cookieId || null; 
-        
-        if (clientId) {
-            localStorage.setItem('dxtrNumericId', clientId);
-            setCookie('dxtrNumericId', clientId, 365);
-        }
-        
+        // === АВТОРИЗАЦИЯ И СОКЕТЫ ===
+        const token = localStorage.getItem('dxtr_token');
         const socket = io("https://dxtrslizze.onrender.com/");
+        const chatGreeting = document.getElementById('chatGreeting');
+        let isAuthUser = false;
+
+        // При загрузке проверяем токен и запрашиваем профиль
+        window.onload = async () => {
+            if (token) {
+                try {
+                    const res = await fetch("https://dxtrslizze.onrender.com/api/auth/me", { headers: { 'Authorization': `Bearer ${token}` } });
+                    const data = await res.json();
+                    if (data.success) {
+                        isAuthUser = true;
+                        // Ставим аватарку в шапку
+                        const avatarImg = document.getElementById('userAvatar');
+                        if (avatarImg && data.user.avatarUrl && data.user.avatarUrl !== 'dslogo.png') {
+                            avatarImg.src = data.user.avatarUrl;
+                        }
+                    } else {
+                        localStorage.removeItem('dxtr_token');
+                    }
+                } catch(e) { console.error(e); }
+            }
+            
+            // Если НЕ авторизован
+            if (!isAuthUser) {
+                chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо войти в аккаунт на странице <a href='/profile' style='color:var(--neon-pink);'>Профиля</a>.</b>";
+                chatInput.disabled = true;
+                chatInput.placeholder = "Необходима авторизация";
+                chatSendBtn.disabled = true;
+            }
+        };
 
         socket.on('connect', () => { 
-            fpPromise
-                .then(fp => fp.get())
-                .then(result => {
-                    socket.emit('register_client', { clientId: clientId, fpHash: result.visitorId });
-                })
-                .catch(error => {
-                    socket.emit('register_client', { clientId: clientId, fpHash: 'blocked' });
-                });
-        }); 
-
-        socket.on('assign_id', (data) => {
-            if (data && data.newId) {
-                clientId = data.newId;
-                localStorage.setItem('dxtrNumericId', clientId);
-                setCookie('dxtrNumericId', clientId, 365);
+            if (token && isAuthUser) {
+                socket.emit('register_client', { token: token }); 
             }
         });
 
@@ -950,20 +947,19 @@
         
         const menuBanLock = document.getElementById('menuBanLock');
         const chatBanNotice = document.getElementById('chatBanNotice');
-        const chatGreeting = document.getElementById('chatGreeting');
 
         socket.on('user_data', d => { 
             if (d.nickname) { 
                 window.userNickname = d.nickname; 
-                localStorage.setItem('dxtrUserNickname', d.nickname); 
-                if(chatGreeting) chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${d.nickname}</b>!`; 
-                document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => {
-                    if(el.textContent === 'Вы') el.textContent = d.nickname;
-                });
+                chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${d.nickname}</b>!`; 
+                chatInput.disabled = false;
+                chatInput.placeholder = "Опишите проблему...";
+                chatSendBtn.disabled = false;
+                chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))';
             } 
             if (d.avatarUrl) {
                 const avatarImg = document.getElementById('userAvatar');
-                if (avatarImg) avatarImg.src = d.avatarUrl;
+                if (avatarImg && d.avatarUrl !== 'dslogo.png') avatarImg.src = d.avatarUrl;
             }
         });
         
@@ -985,13 +981,13 @@
             } else { 
                 if(menuBanLock) menuBanLock.style.display = 'none'; 
                 if(chatBanNotice) chatBanNotice.style.display = 'none'; 
-                if(chatGreeting) chatGreeting.style.display = 'block'; 
-                if(chatInput) {
+                if(chatGreeting && isAuthUser) chatGreeting.style.display = 'block'; 
+                if(chatInput && isAuthUser) {
                     chatInput.disabled = false; 
                     chatInput.placeholder = "Опишите проблему..."; 
                     chatInput.style.borderColor = "rgba(255,255,255,0.1)"; 
                 }
-                if(chatSendBtn) {
+                if(chatSendBtn && isAuthUser) {
                     chatSendBtn.disabled = false; 
                     chatSendBtn.style.background = 'linear-gradient(135deg, var(--neon-purple), var(--neon-cyan))'; 
                     chatSendBtn.style.color = '#fff'; 
@@ -1000,17 +996,23 @@
         });
         
         socket.on('receive_message', d => { 
-            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex'; 
+            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                resetChatUI();
+                chatWindow.style.display = 'flex'; 
+            }
             addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); 
         });
+
+        socket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
+        socket.on('chat_closed_reset', () => { showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double"); });
 
         if(chatSendBtn) chatSendBtn.onclick = sendMessageToBot; 
         if(chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
         
         function sendMessageToBot() { 
             const t = chatInput.value.trim(); 
-            if (!t || chatInput.disabled) return; 
-            socket.emit('send_message', { text: t, clientId: clientId }); 
+            if (!t || chatInput.disabled || !isAuthUser) return; 
+            socket.emit('send_message', { text: t, token: token }); 
             addChatMessage('Вы', t, 'flex-end', true, false, false); 
             chatInput.value = ''; 
         }
@@ -1052,6 +1054,24 @@
             } 
         }
         
+        function showChatClosedAnimation(titleHtml, iconClass) {
+            const inputArea = document.getElementById('chat-input-area');
+            inputArea.style.opacity = "0";
+            
+            setTimeout(() => {
+                inputArea.style.display = "none";
+                
+                const statusBlock = document.createElement('div');
+                statusBlock.className = 'chat-resolved-status';
+                statusBlock.innerHTML = `
+                    <i class="fa-solid ${iconClass} chat-resolved-icon"></i>
+                    <div class="chat-resolved-title">${titleHtml}</div>
+                `;
+                chatMessages.appendChild(statusBlock);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 500); 
+        }
+
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
 
         // === СЕКРЕТНЫЙ РАЗЛОМ (ГОРИЗОНТАЛЬНЫЙ) ===
