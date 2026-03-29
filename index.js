@@ -8,6 +8,8 @@ const multer = require('multer');
 const { GridFSBucket, ObjectId } = require('mongodb');
 const { Readable } = require('stream');
 const { createClient } = require('@supabase/supabase-js');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(cors());
@@ -19,6 +21,7 @@ const token = process.env.BOT_TOKEN;
 const adminId = process.env.ADMIN_CHAT_ID;
 const mongoURI = process.env.MONGODB_URI;
 const ADMIN_PASS = process.env.ADMIN_PASS || 'DXTR-promo777!'; 
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key'; // Твой секрет для токенов
 const bot = new TelegramBot(token, { polling: true });
 
 // --- ИНИЦИАЛИЗАЦИЯ SUPABASE ---
@@ -42,14 +45,20 @@ const CounterSchema = new mongoose.Schema({
 });
 const Counter = mongoose.model('Counter', CounterSchema);
 
+// ОБНОВЛЕННАЯ СХЕМА ПОЛЬЗОВАТЕЛЯ
 const UserSchema = new mongoose.Schema({
-    clientId: { type: String, unique: true },
-    fpHash: String,
+    username: { type: String, unique: true, required: true, lowercase: true },
+    password: { type: String, required: true },
+    clientId: { type: String, unique: true }, // Числовой ID для совместимости с ботом
     nickname: String,
+    avatarUrl: { type: String, default: 'dslogo.png' },
+    dscoin_balance: { type: Number, default: 100 },
+    fpHash: String,
     isBanned: { type: Boolean, default: false },
     banExpireAt: { type: Number, default: 0 },
     banReason: String,
-    banDurationText: String
+    banDurationText: String,
+    regDate: { type: Date, default: Date.now }
 });
 const User = mongoose.model('User', UserSchema);
 
@@ -103,29 +112,92 @@ function uploadToGridFS(file) {
     });
 }
 
-// Вспомогательная функция для загрузки файлов в Supabase
 async function uploadToSupabase(file, folderName) {
     if (!file) return null;
-    
-    // Создаем уникальное имя файла (чтобы не было конфликтов)
     const ext = file.originalname.split('.').pop();
     const fileName = `${folderName}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
     
     const { data, error } = await supabase.storage
         .from('music-content')
-        .upload(fileName, file.buffer, {
-            contentType: file.mimetype,
-            upsert: false
-        });
+        .upload(fileName, file.buffer, { contentType: file.mimetype, upsert: false });
 
     if (error) throw error;
-
-    // Получаем публичную прямую ссылку на файл
     const { data: publicUrlData } = supabase.storage.from('music-content').getPublicUrl(fileName);
     return publicUrlData.publicUrl;
 }
 
-// ================= API =================
+// ================= API АВТОРИЗАЦИИ (НОВОЕ) =================
+
+app.post('/api/auth/register', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({ error: 'Заполните все поля' });
+
+        const lowerUser = username.toLowerCase();
+        const existing = await User.findOne({ username: lowerUser });
+        if (existing) return res.status(400).json({ error: 'Этот никнейм уже занят' });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const counter = await Counter.findByIdAndUpdate(
+            { _id: 'userId' },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true }
+        );
+        const clientId = counter.seq.toString();
+
+        const newUser = await User.create({
+            username: lowerUser,
+            password: hashedPassword,
+            clientId: clientId,
+            nickname: username
+        });
+
+        const token = jwt.sign({ clientId: newUser.clientId, username: newUser.username }, JWT_SECRET, { expiresIn: '30d' });
+        res.json({ success: true, token, user: { username: newUser.nickname, clientId: newUser.clientId, avatarUrl: newUser.avatarUrl } });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера при регистрации' });
+    }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const lowerUser = username.toLowerCase();
+        
+        const user = await User.findOne({ username: lowerUser });
+        if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ error: 'Неверный пароль' });
+
+        const token = jwt.sign({ clientId: user.clientId, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
+        res.json({ success: true, token, user: { username: user.nickname, clientId: user.clientId, avatarUrl: user.avatarUrl } });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера при входе' });
+    }
+});
+
+// Проверка токена
+app.get('/api/auth/me', async (req, res) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ error: 'Нет токена' });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await User.findOne({ clientId: decoded.clientId });
+        if (!user) return res.status(404).json({ error: 'Юзер не найден' });
+
+        res.json({ success: true, user: { username: user.nickname, clientId: user.clientId, avatarUrl: user.avatarUrl } });
+    } catch (err) {
+        res.status(401).json({ error: 'Неверный или просроченный токен' });
+    }
+});
+
+
+// ================= ОРИГИНАЛЬНЫЙ API (МУЗЫКА, АДМИНКА, ПРОМО) =================
 
 // ЗАГРУЗКА МУЗЫКИ В КАТАЛОГ (SUPABASE)
 app.post('/api/music', upload.fields([
@@ -146,57 +218,42 @@ app.post('/api/music', upload.fields([
             return res.status(400).json({ error: 'Обложка, MP3 и WAV файлы обязательны для загрузки.' });
         }
 
-        // 1. Загружаем файлы в Supabase Storage
         const cover_url = await uploadToSupabase(coverFile, 'covers');
         const mp3_url = await uploadToSupabase(mp3File, 'tracks');
         const wav_url = await uploadToSupabase(wavFile, 'tracks');
 
-        // 2. Логика "Главного релиза" (снимаем галочку со старых)
         const isMainRelease = is_main === 'true' || is_main === true;
         if (isMainRelease) {
             await supabase.from('music').update({ is_main: false }).eq('is_main', true);
         }
 
-        // 3. Парсим площадки (JSON)
         let platformsData = {};
         try { if (platforms) platformsData = JSON.parse(platforms); } catch(e){}
 
-        // 4. Сохраняем информацию о треке в таблицу music
         const { data, error } = await supabase
             .from('music')
             .insert([{
-                title,
-                cover_url,
-                mp3_url,
-                wav_url,
-                yt_link,
+                title, cover_url, mp3_url, wav_url, yt_link,
                 is_18: is_18 === 'true' || is_18 === true,
-                is_main: isMainRelease,
-                platforms: platformsData
+                is_main: isMainRelease, platforms: platformsData
             }]);
 
         if (error) throw error;
-
         res.json({ success: true, message: 'Трек успешно добавлен в каталог!' });
-
     } catch (err) {
         console.error('Ошибка загрузки музыки:', err);
         res.status(500).json({ error: 'Ошибка сервера при добавлении трека' });
     }
 });
 
-// ПОЛУЧЕНИЕ ВСЕХ ТРЕКОВ (ДЛЯ АДМИНКИ)
 app.post('/api/music-list', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
-    
     const { data, error } = await supabase.from('music').select('*').order('id', { ascending: false });
     if (error) return res.status(500).json({ error: 'Ошибка при получении списка' });
-    
     res.json(data);
 });
 
-// НОВЫЙ МАРШРУТ: РЕДАКТИРОВАНИЕ МУЗЫКИ В SUPABASE
 app.put('/api/music/:id', upload.fields([
     { name: 'cover', maxCount: 1 }, 
     { name: 'mp3', maxCount: 1 }, 
@@ -207,31 +264,22 @@ app.put('/api/music/:id', upload.fields([
         if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
 
         const trackId = req.params.id;
-
-        // 1. Получаем текущие данные трека, чтобы знать старые ссылки
-        const { data: existingTrack, error: fetchError } = await supabase
-            .from('music')
-            .select('*')
-            .eq('id', trackId)
-            .single();
+        const { data: existingTrack, error: fetchError } = await supabase.from('music').select('*').eq('id', trackId).single();
 
         if (fetchError || !existingTrack) return res.status(404).json({ error: 'Трек не найден' });
 
-        // 2. Обрабатываем логику "Главного релиза"
         const isMainRelease = is_main === 'true' || is_main === true;
         if (isMainRelease) {
             await supabase.from('music').update({ is_main: false }).eq('is_main', true);
         }
 
-        // 3. Парсим площадки
         let platformsData = {};
         try { if (platforms) platformsData = JSON.parse(platforms); } catch(e){}
 
-        // 4. Обрабатываем новые файлы (если они загружены)
         let cover_url = existingTrack.cover_url;
         let mp3_url = existingTrack.mp3_url;
         let wav_url = existingTrack.wav_url;
-        const filesToRemove = []; // Сюда соберем старые файлы для удаления
+        const filesToRemove = [];
 
         if (req.files['cover']) {
             if (existingTrack.cover_url) filesToRemove.push(existingTrack.cover_url.split('/music-content/')[1]);
@@ -246,132 +294,88 @@ app.put('/api/music/:id', upload.fields([
             wav_url = await uploadToSupabase(req.files['wav'][0], 'tracks');
         }
 
-        // 5. Удаляем старые замененные файлы из хранилища Storage
         if (filesToRemove.length > 0) {
             await supabase.storage.from('music-content').remove(filesToRemove);
         }
 
-        // 6. Обновляем строку в базе данных
-        const { error: updateError } = await supabase
-            .from('music')
-            .update({
-                title,
-                cover_url,
-                mp3_url,
-                wav_url,
-                yt_link,
-                is_18: is_18 === 'true' || is_18 === true,
-                is_main: isMainRelease,
-                platforms: platformsData
-            })
-            .eq('id', trackId);
+        const { error: updateError } = await supabase.from('music').update({
+            title, cover_url, mp3_url, wav_url, yt_link,
+            is_18: is_18 === 'true' || is_18 === true,
+            is_main: isMainRelease, platforms: platformsData
+        }).eq('id', trackId);
 
         if (updateError) throw updateError;
-
         res.json({ success: true, message: 'Трек успешно обновлен' });
-
     } catch (err) {
         console.error('Ошибка редактирования музыки:', err);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-
-// УДАЛЕНИЕ МУЗЫКИ ИЗ SUPABASE (БД + STORAGE)
 app.delete('/api/music/:id', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
 
     try {
-        // 1. Получаем инфу о треке, чтобы узнать пути к файлам
         const { data: track } = await supabase.from('music').select('*').eq('id', req.params.id).single();
-        
-        // 2. Удаляем файлы из хранилища Storage, чтобы не забивать место
         if (track) {
             const filesToRemove = [];
             if (track.cover_url) filesToRemove.push(track.cover_url.split('/music-content/')[1]);
             if (track.mp3_url) filesToRemove.push(track.mp3_url.split('/music-content/')[1]);
             if (track.wav_url) filesToRemove.push(track.wav_url.split('/music-content/')[1]);
-            
-            if (filesToRemove.length > 0) {
-                await supabase.storage.from('music-content').remove(filesToRemove);
-            }
+            if (filesToRemove.length > 0) await supabase.storage.from('music-content').remove(filesToRemove);
         }
 
-        // 3. Удаляем строку из базы данных
         const { error } = await supabase.from('music').delete().eq('id', req.params.id);
         if (error) throw error;
-
         res.json({ success: true, message: 'Удалено' });
     } catch (err) {
-        console.error('Ошибка при удалении трека:', err);
         res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
-// ================= ПРОФИЛИ =================
-
+// ПРОФИЛИ АДМИНКА
 app.post('/api/users-list', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
-    
     try {
         const users = await User.find().sort({ _id: -1 });
         res.json(users);
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Ошибка сервера' }); }
 });
 
 app.delete('/api/user/:id', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
-
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) return res.status(404).json({ error: 'Не найдено' });
-        
-        // Опционально: Очищаем его историю сообщений, чтобы не засорять БД
         await PendingMsg.deleteMany({ clientId: user.clientId });
-        
         res.json({ success: true, message: 'Удалено' });
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Ошибка сервера' }); }
 });
 
 app.put('/api/user/:id', async (req, res) => {
     const { password, newClientId, newNickname } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
-
     try {
         const user = await User.findById(req.params.id);
-        if (!user) return res.status(404).json({ error: 'Код не найден' });
-
-        // Проверяем, не занят ли новый ID кем-то другим
+        if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
         if (newClientId && newClientId !== user.clientId) {
             const existing = await User.findOne({ clientId: newClientId });
             if (existing) return res.status(400).json({ error: 'Этот ID уже занят' });
-            
-            // Если ID изменился, меняем его и в истории сообщений (чтобы не потерять связь)
             await PendingMsg.updateMany({ clientId: user.clientId }, { clientId: newClientId });
             await MessageMap.updateMany({ clientId: user.clientId }, { clientId: newClientId });
             await AdminBan.updateMany({ clientId: user.clientId }, { clientId: newClientId });
         }
-
         user.clientId = newClientId || user.clientId;
-        // Если прислали пустую строку в ник, ставим null (удаляем ник)
         user.nickname = newNickname.trim() === '' ? null : newNickname;
-        
         await user.save();
         res.json({ success: true, message: 'Изменено' });
-    } catch (err) {
-        res.status(500).json({ error: 'Ошибка сервера при редактировании' });
-    }
+    } catch (err) { res.status(500).json({ error: 'Ошибка сервера при редактировании' }); }
 });
 
-// ================= ПРОМОКОДЫ =================
-
+// ПРОМОКОДЫ
 app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'track', maxCount: 1 }]), async (req, res) => {
     try {
         const { password, promo, title } = req.body;
@@ -382,13 +386,11 @@ app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 't
 
         const coverFile = req.files['cover'][0];
         const trackFile = req.files['track'][0];
-
         const coverId = await uploadToGridFS(coverFile);
         const trackId = await uploadToGridFS(trackFile);
 
         const newPromo = new Promo({ code: promo, title, coverId, trackId });
         await newPromo.save();
-
         res.json({ success: true, message: 'Промокод успешно создан' });
     } catch (err) { res.status(500).json({ error: 'Ошибка сервера при создании' }); }
 });
@@ -403,13 +405,10 @@ app.post('/api/promos-list', async (req, res) => {
 app.delete('/api/promo/:code', async (req, res) => {
     const { password } = req.body;
     if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
-
     const promo = await Promo.findOne({ code: req.params.code });
     if (!promo) return res.status(404).json({ error: 'Не найдено' });
-
     try { await gfsBucket.delete(new ObjectId(promo.coverId)); } catch(e){}
     try { await gfsBucket.delete(new ObjectId(promo.trackId)); } catch(e){}
-    
     await Promo.deleteOne({ _id: promo._id });
     res.json({ success: true, message: 'Удалено' });
 });
@@ -418,19 +417,15 @@ app.put('/api/promo/:code', async (req, res) => {
     try {
         const { password, newCode, newTitle } = req.body;
         if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
-
         const promo = await Promo.findOne({ code: req.params.code });
         if (!promo) return res.status(404).json({ error: 'Код не найден' });
-
         if (newCode !== promo.code) {
             const existing = await Promo.findOne({ code: newCode });
             if (existing) return res.status(400).json({ error: 'Такой код уже занят' });
         }
-
         promo.code = newCode || promo.code;
         promo.title = newTitle || promo.title;
         await promo.save();
-
         res.json({ success: true, message: 'Изменено' });
     } catch (err) { res.status(500).json({ error: 'Ошибка сервера при редактировании' }); }
 });
@@ -438,12 +433,7 @@ app.put('/api/promo/:code', async (req, res) => {
 app.get('/api/check/:code', async (req, res) => {
     const promo = await Promo.findOne({ code: req.params.code });
     if (!promo) return res.status(404).json({ error: 'Неверный код' });
-    
-    res.json({
-        title: promo.title,
-        coverUrl: `/api/media/${promo.coverId}`,
-        trackUrl: `/api/media/${promo.trackId}`
-    });
+    res.json({ title: promo.title, coverUrl: `/api/media/${promo.coverId}`, trackUrl: `/api/media/${promo.trackId}` });
 });
 
 app.get('/api/media/:id', async (req, res) => {
@@ -451,14 +441,14 @@ app.get('/api/media/:id', async (req, res) => {
         const fileId = new ObjectId(req.params.id);
         const files = await gfsBucket.find({ _id: fileId }).toArray();
         if (!files || files.length === 0) return res.status(404).send('Файл не найден');
-        
         res.set('Content-Type', files[0].contentType);
         const downloadStream = gfsBucket.openDownloadStream(fileId);
         downloadStream.pipe(res);
     } catch (err) { res.status(404).send('Некорректный ID файла'); }
 });
 
-// ================= SOCKETS (БЕЗ ИЗМЕНЕНИЙ) =================
+
+// ================= SOCKETS (ОБНОВЛЕННАЯ АВТОРИЗАЦИЯ) =================
 io.on('connection', (socket) => {
     io.emit('online_update', io.engine.clientsCount);
     socket.on('disconnect', () => { io.emit('online_update', io.engine.clientsCount); });
@@ -485,7 +475,6 @@ io.on('connection', (socket) => {
         socket.join(`admin_${data.clientId}`);
         
         const fpToSave = (data.fpHash && data.fpHash !== 'blocked') ? data.fpHash : null;
-
         const ban = await AdminBan.findOneAndUpdate(
             { clientId: data.clientId },
             { expiresAt, fpHash: fpToSave },
@@ -499,154 +488,101 @@ io.on('connection', (socket) => {
         const m = Math.floor(data.duration / 60);
         const s = data.duration % 60;
 
-        const tgText = `
-🚨 <b>АВТОБАН: ПОПЫТКА ВЗЛОМА АДМИНКИ!</b>
-
-👤 <b>${nickStr}</b> (<code>${displayId}</code>)
-💬 <b>Причина:</b> <i>Многократные попытки подбора пароля</i>
-⏳ <b>Авторазбан через:</b> ${m} мин ${s} сек
-
-💡 <i>Ответь реплаем на это сообщение, чтобы отправить юзеру сообщение в чат тех.поддержки, или используй /nick для смены имени.</i>`;
+        const tgText = `🚨 <b>АВТОБАН: ПОПЫТКА ВЗЛОМА АДМИНКИ!</b>\n👤 <b>${nickStr}</b> (<code>${displayId}</code>)\n💬 <b>Причина:</b> <i>Многократные попытки подбора пароля</i>\n⏳ <b>Авторазбан через:</b> ${m} мин ${s} сек`;
 
         bot.sendMessage(adminId, tgText, {
             parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [
-                    [{text: "🔓 Разблокировать доступ", callback_data: `alert_apunban_${ban._id}`}]
-                ]
-            }
+            reply_markup: { inline_keyboard: [ [{text: "🔓 Разблокировать доступ", callback_data: `alert_apunban_${ban._id}`}] ] }
         }).then(async (msg) => {
             await MessageMap.create({ tgMsgId: msg.message_id, clientId: displayId, text: "Автобан в админке" });
         });
     });
 
     socket.on('register_client', async (data) => {
-        const rawClientId = typeof data === 'string' ? data : data.clientId;
-        const fpHash = typeof data === 'object' ? data.fpHash : null;
+        const token = typeof data === 'object' ? data.token : null;
 
-        let user = null;
-        let clientId = null;
-
-        const isNumeric = /^\d+$/.test(rawClientId);
-
-        if (isNumeric) {
-            user = await User.findOne({ clientId: rawClientId });
+        if (!token) {
+            socket.emit('auth_required', { message: 'Войдите в аккаунт для использования чата' });
+            return;
         }
 
-        if (!user) {
-            if (fpHash && fpHash !== 'blocked') {
-                user = await User.findOne({ fpHash });
-            }
-            
-            if (user && !/^\d+$/.test(user.clientId)) {
-                const counter = await Counter.findByIdAndUpdate(
-                    { _id: 'userId' },
-                    { $inc: { seq: 1 } },
-                    { new: true, upsert: true }
-                );
-                clientId = counter.seq.toString();
-                
-                await PendingMsg.updateMany({ clientId: user.clientId }, { clientId: clientId });
-                await AdminBan.updateMany({ clientId: user.clientId }, { clientId: clientId });
-                
-                user.clientId = clientId;
-                await user.save();
-                socket.emit('assign_id', { newId: clientId });
-            } else if (!user) {
-                const counter = await Counter.findByIdAndUpdate(
-                    { _id: 'userId' },
-                    { $inc: { seq: 1 } },
-                    { new: true, upsert: true }
-                );
-                clientId = counter.seq.toString();
-                user = await User.create({ clientId, fpHash: (fpHash !== 'blocked' ? fpHash : null) });
-                socket.emit('assign_id', { newId: clientId });
-            } else {
-                clientId = user.clientId;
-                socket.emit('assign_id', { newId: clientId });
-            }
-        } else {
-            clientId = user.clientId;
-            if (fpHash && fpHash !== 'blocked' && user.fpHash !== fpHash) {
-                user.fpHash = fpHash;
-                await user.save();
-            }
-        }
+        try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            const user = await User.findOne({ clientId: decoded.clientId });
 
-        socket.join(clientId);
-        
-        if (!user.isBanned && fpHash && fpHash !== 'blocked') {
-            const bannedTwin = await User.findOne({ fpHash, isBanned: true, clientId: { $ne: clientId } });
-            if (bannedTwin) {
-                if (bannedTwin.banExpireAt !== 0 && bannedTwin.banExpireAt < Date.now()) {
-                    bannedTwin.isBanned = false;
-                    await bannedTwin.save();
-                } else {
-                    user.isBanned = true;
-                    user.banExpireAt = bannedTwin.banExpireAt;
-                    user.banReason = bannedTwin.banReason;
-                    user.banDurationText = bannedTwin.banDurationText;
+            if (!user) return socket.emit('auth_required', { message: 'Аккаунт не найден' });
+
+            socket.join(user.clientId);
+
+            if (user.isBanned) {
+                if (user.banExpireAt !== 0 && user.banExpireAt < Date.now()) {
+                    user.isBanned = false;
                     await user.save();
-                    bot.sendMessage(adminId, `🛡 <b>Anti-Spam System:</b>\nПользователь пытался обойти блокировку чата сбросом кэша. Бан восстановлен по отпечатку железа (<code>${fpHash}</code>). ID нарушителя: <code>${clientId}</code>`, { parse_mode: 'HTML' });
+                    socket.emit('ban_status', { isBanned: false });
+                    sendToUser(user.clientId, "Ограничение снято. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
+                } else {
+                    socket.emit('ban_status', { isBanned: true });
                 }
-            }
-        }
-
-        if (user.isBanned) {
-            if (user.banExpireAt !== 0 && user.banExpireAt < Date.now()) {
-                user.isBanned = false;
-                await user.save();
-                socket.emit('ban_status', { isBanned: false });
-                sendToUser(clientId, "Ограничение снято. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
             } else {
-                socket.emit('ban_status', { isBanned: true });
+                socket.emit('ban_status', { isBanned: false });
             }
-        }
 
-        socket.emit('user_data', { nickname: user.nickname || null, isBanned: user.isBanned });
+            socket.emit('user_data', { nickname: user.nickname, avatarUrl: user.avatarUrl, isBanned: user.isBanned });
 
-        const pending = await PendingMsg.find({ clientId });
-        if (pending.length > 0) {
-            const now = Date.now();
-            let sentCount = 0;
-            for (const m of pending) {
-                if (now - m.timestamp < EXPIRATION_TIME) {
-                    socket.emit('receive_message', { text: m.text, isWarning: m.isWarning, isSuccess: m.isSuccess });
-                    sentCount++;
+            const pending = await PendingMsg.find({ clientId: user.clientId });
+            if (pending.length > 0) {
+                const now = Date.now();
+                let sentCount = 0;
+                for (const m of pending) {
+                    if (now - m.timestamp < EXPIRATION_TIME) {
+                        socket.emit('receive_message', { text: m.text, isWarning: m.isWarning, isSuccess: m.isSuccess });
+                        sentCount++;
+                    }
+                }
+                await PendingMsg.deleteMany({ clientId: user.clientId });
+                if (sentCount > 0) {
+                    bot.sendMessage(adminId, `🔔 <b>Юзер вернулся!</b>\nПользователь <code>${user.clientId}</code> зашёл на сайт и получил ${sentCount} отложенных сообщений.`, { parse_mode: 'HTML' });
                 }
             }
-            await PendingMsg.deleteMany({ clientId });
-            if (sentCount > 0) {
-                bot.sendMessage(adminId, `🔔 <b>Юзер вернулся!</b>\nПользователь <code>${clientId}</code> зашёл на сайт и получил ${sentCount} отложенных сообщений.`, { parse_mode: 'HTML' });
-            }
+        } catch (err) {
+            socket.emit('auth_required', { message: 'Сессия истекла. Войдите заново.' });
         }
     });
 
     socket.on('send_message', async (data) => {
-        const user = await User.findOne({ clientId: data.clientId });
-        if (user && user.isBanned) {
-            if (user.banExpireAt === 0 || user.banExpireAt > Date.now()) return;
-            else { user.isBanned = false; await user.save(); }
-        }
+        if (!data.token || !data.text) return;
 
-        const nickStr = (user && user.nickname) ? ` (<b>${user.nickname}</b>)` : '';
-        const tgText = `🌐 <b>Новый запрос с сайта!</b>\n\n💬 <i>«${data.text}»</i>\n\n👤 ID: <code>${data.clientId}</code>${nickStr}\n➖➖➖➖➖➖➖➖➖\n💡 <i>Ответь реплаем (или используй /nick для имени), либо выбери действие:</i>`;
+        try {
+            const decoded = jwt.verify(data.token, JWT_SECRET);
+            const user = await User.findOne({ clientId: decoded.clientId });
+            if (!user) return;
 
-        bot.sendMessage(adminId, tgText, {
-            parse_mode: 'HTML',
-            reply_markup: { 
-                inline_keyboard: [
-                    [ { text: "Ban 1h ⏳", callback_data: `ban1h_${data.clientId}` }, { text: "Ban Perm 🚫", callback_data: `banperm_${data.clientId}` } ],
-                    [ { text: "Spam ⚠️", callback_data: `spam_${data.clientId}` } ]
-                ] 
+            if (user.isBanned) {
+                if (user.banExpireAt === 0 || user.banExpireAt > Date.now()) return;
+                else { user.isBanned = false; await user.save(); }
             }
-        }).then(async (msg) => {
-            await MessageMap.create({ tgMsgId: msg.message_id, clientId: data.clientId, text: data.text });
-        });
+
+            const nickStr = user.nickname ? ` (<b>${user.nickname}</b>)` : '';
+            const tgText = `🌐 <b>Новый запрос с сайта!</b>\n\n💬 <i>«${data.text}»</i>\n\n👤 ID: <code>${user.clientId}</code>${nickStr}\n➖➖➖➖➖➖➖➖➖\n💡 <i>Ответь реплаем (или используй /nick для имени), либо выбери действие:</i>`;
+
+            bot.sendMessage(adminId, tgText, {
+                parse_mode: 'HTML',
+                reply_markup: { 
+                    inline_keyboard: [
+                        [ { text: "Ban 1h ⏳", callback_data: `ban1h_${user.clientId}` }, { text: "Ban Perm 🚫", callback_data: `banperm_${user.clientId}` } ],
+                        [ { text: "Spam ⚠️", callback_data: `spam_${user.clientId}` } ]
+                    ] 
+                }
+            }).then(async (msg) => {
+                await MessageMap.create({ tgMsgId: msg.message_id, clientId: user.clientId, text: data.text });
+            });
+        } catch (err) {
+            console.error("Ошибка чата:", err.message);
+        }
     });
 });
 
-// ================= TELEGRAM (БЕЗ ИЗМЕНЕНИЙ) =================
+// ================= TELEGRAM БОТ =================
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
     
@@ -666,17 +602,10 @@ bot.on('callback_query', async (query) => {
         const mapped = await MessageMap.findOne({ tgMsgId: query.message.message_id });
         const reason = mapped ? mapped.text : "Нарушение правил";
 
-        const bannedUser = await User.findOneAndUpdate({ clientId }, { 
+        await User.findOneAndUpdate({ clientId }, { 
             isBanned: true, banExpireAt: expireAt, banReason: reason, banDurationText: isPerm ? "Навсегда" : "1 час" 
         }, { new: true, upsert: true });
         
-        if (bannedUser && bannedUser.fpHash) {
-            await User.updateMany(
-                { fpHash: bannedUser.fpHash }, 
-                { isBanned: true, banExpireAt: expireAt, banReason: reason, banDurationText: isPerm ? "Навсегда" : "1 час" }
-            );
-        }
-
         io.to(clientId).emit('ban_status', { isBanned: true });
         await sendToUser(clientId, banMsg, 'warning', query.message.message_id, "Блокировка чата");
         
@@ -708,11 +637,7 @@ bot.on('callback_query', async (query) => {
 
     if (query.data.startsWith('unban_')) {
         const clientId = query.data.replace('unban_', '');
-        const unbannedUser = await User.findOneAndUpdate({ clientId }, { isBanned: false }, { new: true });
-        
-        if (unbannedUser && unbannedUser.fpHash) {
-            await User.updateMany({ fpHash: unbannedUser.fpHash }, { isBanned: false });
-        }
+        await User.findOneAndUpdate({ clientId }, { isBanned: false }, { new: true });
         
         io.to(clientId).emit('ban_status', { isBanned: false });
         await sendToUser(clientId, "Ограничение снято. Администратор досрочно снял блокировку с вас. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
@@ -740,7 +665,7 @@ bot.on('callback_query', async (query) => {
         const m = Math.floor(timeLeft / 60);
         const s = timeLeft % 60;
         
-        const text = `🔐 <b>${nick}</b> (<code>${displayId}</code>)\n\n💬 <b>Причина:</b> <i>Многократные попытки входа в админ-панель (попытка подбора пароля)</i>\n⏳ <b>Осталось до разбана:</b> ${m} мин ${s} сек`;
+        const text = `🔐 <b>${nick}</b> (<code>${displayId}</code>)\n\n💬 <b>Причина:</b> <i>Многократные попытки входа в админ-панель</i>\n⏳ <b>Осталось до разбана:</b> ${m} мин ${s} сек`;
         
         const opts = {
             parse_mode: 'HTML',
@@ -806,17 +731,10 @@ bot.on('message', async (msg) => {
             const expireAt = isPerm ? 0 : Date.now() + 3600000;
             const banMsg = isPerm ? "Вам НАВСЕГДА был перекрыт доступ к связи с тех. поддержкой." : "Вам был перекрыт доступ к связи с тех. поддержкой сроком на 1 час.";
             
-            const bannedUser = await User.findOneAndUpdate({ clientId }, { 
+            await User.findOneAndUpdate({ clientId }, { 
                 isBanned: true, banExpireAt: expireAt, banReason: mapped.text, banDurationText: isPerm ? "Навсегда" : "1 час" 
             }, { new: true, upsert: true });
 
-            if (bannedUser && bannedUser.fpHash) {
-                await User.updateMany(
-                    { fpHash: bannedUser.fpHash }, 
-                    { isBanned: true, banExpireAt: expireAt, banReason: mapped.text, banDurationText: isPerm ? "Навсегда" : "1 час" }
-                );
-            }
-            
             io.to(clientId).emit('ban_status', { isBanned: true });
             await sendToUser(clientId, banMsg, 'warning', msg.message_id, "Блокировка чата");
             return;
@@ -904,5 +822,5 @@ async function sendApBannedMenu(chatId, messageId = null) {
 }
 
 server.listen(process.env.PORT || 3000, () => {
-    console.log("DXTR | SlizZe Server is ONLINE! MongoDB & Supabase Active!");
+    console.log("DXTR | SlizZe Server is ONLINE! JWT Auth & Admin Panel Active!");
 });
