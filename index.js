@@ -20,7 +20,6 @@ const io = new Server(server, { cors: { origin: "*" } });
 const token = process.env.BOT_TOKEN;
 const adminId = process.env.ADMIN_CHAT_ID;
 const mongoURI = process.env.MONGODB_URI;
-const ADMIN_PASS = process.env.ADMIN_PASS || 'DXTR-promo777!'; 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 const bot = new TelegramBot(token, { polling: true });
 
@@ -98,6 +97,26 @@ const AdminBanSchema = new mongoose.Schema({
 const AdminBan = mongoose.model('AdminBan', AdminBanSchema);
 
 const upload = multer({ storage: multer.memoryStorage() });
+
+// ================= MIDDLEWARE АДМИНИСТРАТОРА =================
+// Проверяет JWT и разрешает доступ только clientId '1' или '777'
+async function requireAdmin(req, res, next) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.status(401).json({ error: 'Нет токена авторизации' });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (!['1', '777'].includes(String(decoded.clientId))) {
+            return res.status(403).json({ error: 'Нет прав администратора' });
+        }
+        req.adminClientId = decoded.clientId;
+        next();
+    } catch (err) {
+        return res.status(401).json({ error: 'Неверный или просроченный токен' });
+    }
+}
 
 function uploadToGridFS(file) {
     return new Promise((resolve, reject) => {
@@ -195,7 +214,6 @@ app.get('/api/auth/me', async (req, res) => {
     }
 });
 
-// ДОБАВЛЕНО: upload.single('avatar') для приема файла
 app.put('/api/auth/update', upload.single('avatar'), async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ error: 'Нет токена' });
@@ -217,13 +235,11 @@ app.put('/api/auth/update', upload.single('avatar'), async (req, res) => {
 
         let avatarChanged = false;
 
-        // Обработка файла аватара
         if (req.file) {
             if (req.file.size > 2 * 1024 * 1024) {
                 return res.status(400).json({ error: 'Файл слишком большой (макс. 2МБ)' });
             }
 
-            // Удаляем старый аватар из Supabase (если это не дефолтный)
             if (user.avatarUrl && user.avatarUrl.includes('/music-content/')) {
                 const oldPath = user.avatarUrl.split('/music-content/')[1];
                 if (oldPath) await supabase.storage.from('music-content').remove([oldPath]);
@@ -236,7 +252,6 @@ app.put('/api/auth/update', upload.single('avatar'), async (req, res) => {
 
         await user.save();
 
-        // Уведомление в Телеграм об изменении аватара
         if (avatarChanged) {
             const tgText = `🖼 <b>Пользователь обновил аватар!</b>\n\n👤 Ник: <b>${user.nickname || user.username}</b>\n🔑 ID: <code>${user.clientId}</code>\n🔗 <a href="${user.avatarUrl}">Посмотреть загруженное фото</a>`;
             
@@ -277,16 +292,15 @@ app.post('/api/auth/recover', async (req, res) => {
     }
 });
 
-// ================= ОРИГИНАЛЬНЫЙ API (МУЗЫКА, АДМИНКА, ПРОМО) =================
+// ================= МУЗЫКАЛЬНЫЙ КАТАЛОГ (защищён requireAdmin) =================
 
-app.post('/api/music', upload.fields([
+app.post('/api/music', requireAdmin, upload.fields([
     { name: 'cover', maxCount: 1 }, 
     { name: 'mp3', maxCount: 1 }, 
     { name: 'wav', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { password, title, yt_link, is_18, is_main, platforms } = req.body;
-        if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+        const { title, yt_link, is_18, is_main, platforms } = req.body;
 
         const coverFile = req.files['cover'] ? req.files['cover'][0] : null;
         const mp3File = req.files['mp3'] ? req.files['mp3'][0] : null;
@@ -324,22 +338,19 @@ app.post('/api/music', upload.fields([
     }
 });
 
-app.post('/api/music-list', async (req, res) => {
-    const { password } = req.body;
-    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+app.get('/api/music-list', requireAdmin, async (req, res) => {
     const { data, error } = await supabase.from('music').select('*').order('id', { ascending: false });
     if (error) return res.status(500).json({ error: 'Ошибка при получении списка' });
     res.json(data);
 });
 
-app.put('/api/music/:id', upload.fields([
+app.put('/api/music/:id', requireAdmin, upload.fields([
     { name: 'cover', maxCount: 1 }, 
     { name: 'mp3', maxCount: 1 }, 
     { name: 'wav', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { password, title, yt_link, is_18, is_main, platforms } = req.body;
-        if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+        const { title, yt_link, is_18, is_main, platforms } = req.body;
 
         const trackId = req.params.id;
         const { data: existingTrack, error: fetchError } = await supabase.from('music').select('*').eq('id', trackId).single();
@@ -390,10 +401,7 @@ app.put('/api/music/:id', upload.fields([
     }
 });
 
-app.delete('/api/music/:id', async (req, res) => {
-    const { password } = req.body;
-    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
-
+app.delete('/api/music/:id', requireAdmin, async (req, res) => {
     try {
         const { data: track } = await supabase.from('music').select('*').eq('id', req.params.id).single();
         if (track) {
@@ -412,19 +420,16 @@ app.delete('/api/music/:id', async (req, res) => {
     }
 });
 
-// ПРОФИЛИ АДМИНКА
-app.post('/api/users-list', async (req, res) => {
-    const { password } = req.body;
-    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+// ================= ПРОФИЛИ АДМИНКА (защищён requireAdmin) =================
+
+app.get('/api/users-list', requireAdmin, async (req, res) => {
     try {
         const users = await User.find().sort({ _id: -1 });
         res.json(users);
     } catch (err) { res.status(500).json({ error: 'Ошибка сервера' }); }
 });
 
-app.delete('/api/user/:id', async (req, res) => {
-    const { password } = req.body;
-    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+app.delete('/api/user/:id', requireAdmin, async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) return res.status(404).json({ error: 'Не найдено' });
@@ -433,9 +438,8 @@ app.delete('/api/user/:id', async (req, res) => {
     } catch (err) { res.status(500).json({ error: 'Ошибка сервера' }); }
 });
 
-app.put('/api/user/:id', async (req, res) => {
-    const { password, newClientId, newNickname } = req.body;
-    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+app.put('/api/user/:id', requireAdmin, async (req, res) => {
+    const { newClientId, newNickname, newAvatarUrl, newBalance, newPassword } = req.body;
     try {
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).json({ error: 'Пользователь не найден' });
@@ -447,17 +451,20 @@ app.put('/api/user/:id', async (req, res) => {
             await AdminBan.updateMany({ clientId: user.clientId }, { clientId: newClientId });
         }
         user.clientId = newClientId || user.clientId;
-        user.nickname = newNickname.trim() === '' ? null : newNickname;
+        user.nickname = (newNickname !== undefined && newNickname.trim() === '') ? null : (newNickname || user.nickname);
+        if (newAvatarUrl !== undefined && newAvatarUrl !== '') user.avatarUrl = newAvatarUrl;
+        if (newBalance !== undefined) user.dscoin_balance = Number(newBalance) || 0;
+        if (newPassword) user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
         res.json({ success: true, message: 'Изменено' });
     } catch (err) { res.status(500).json({ error: 'Ошибка сервера при редактировании' }); }
 });
 
-// ПРОМОКОДЫ
-app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'track', maxCount: 1 }]), async (req, res) => {
+// ================= ПРОМОКОДЫ (защищён requireAdmin) =================
+
+app.post('/api/promo', requireAdmin, upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'track', maxCount: 1 }]), async (req, res) => {
     try {
-        const { password, promo, title } = req.body;
-        if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+        const { promo, title } = req.body;
         
         const existing = await Promo.findOne({ code: promo });
         if (existing) return res.status(400).json({ error: 'Промокод уже существует' });
@@ -473,16 +480,12 @@ app.post('/api/promo', upload.fields([{ name: 'cover', maxCount: 1 }, { name: 't
     } catch (err) { res.status(500).json({ error: 'Ошибка сервера при создании' }); }
 });
 
-app.post('/api/promos-list', async (req, res) => {
-    const { password } = req.body;
-    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+app.get('/api/promos-list', requireAdmin, async (req, res) => {
     const promos = await Promo.find().sort({ createdAt: -1 });
     res.json(promos);
 });
 
-app.delete('/api/promo/:code', async (req, res) => {
-    const { password } = req.body;
-    if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+app.delete('/api/promo/:code', requireAdmin, async (req, res) => {
     const promo = await Promo.findOne({ code: req.params.code });
     if (!promo) return res.status(404).json({ error: 'Не найдено' });
     try { await gfsBucket.delete(new ObjectId(promo.coverId)); } catch(e){}
@@ -491,10 +494,9 @@ app.delete('/api/promo/:code', async (req, res) => {
     res.json({ success: true, message: 'Удалено' });
 });
 
-app.put('/api/promo/:code', async (req, res) => {
+app.put('/api/promo/:code', requireAdmin, async (req, res) => {
     try {
-        const { password, newCode, newTitle } = req.body;
-        if (password !== ADMIN_PASS) return res.status(403).json({ error: 'Неверный пароль' });
+        const { newCode, newTitle } = req.body;
         const promo = await Promo.findOne({ code: req.params.code });
         if (!promo) return res.status(404).json({ error: 'Код не найден' });
         if (newCode !== promo.code) {
@@ -507,6 +509,8 @@ app.put('/api/promo/:code', async (req, res) => {
         res.json({ success: true, message: 'Изменено' });
     } catch (err) { res.status(500).json({ error: 'Ошибка сервера при редактировании' }); }
 });
+
+// ================= ПУБЛИЧНЫЕ ПРОМО-МАРШРУТЫ =================
 
 app.get('/api/check/:code', async (req, res) => {
     const promo = await Promo.findOne({ code: req.params.code });
@@ -696,7 +700,6 @@ io.on('connection', (socket) => {
 bot.on('callback_query', async (query) => {
     if (query.from.id.toString() !== adminId.toString()) return;
 
-    // ДОБАВЛЕНО: Удаление аватара
     if (query.data.startsWith('delavatar_')) {
         const clientId = query.data.replace('delavatar_', '');
         const user = await User.findOne({ clientId });
