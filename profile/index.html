@@ -23,14 +23,16 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
 
-        html, body {
+       html {
+            overflow-y: scroll; /* Резервируем место под скроллбар навсегда, чтобы не было скачков */
             overflow-x: hidden;
-            width: 100%;
         }
 
         body {
             background-color: var(--bg-dark); color: var(--text-main);
             display: flex; flex-direction: column; min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
         }
 
         /* АНИМИРОВАННЫЙ ФОН */
