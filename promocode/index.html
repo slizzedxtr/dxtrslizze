@@ -49,7 +49,6 @@
         }
         #horror-overlay.active { opacity: 1; }
 
-        /* Кровавый туман по краям */
         #horror-fog {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, transparent 20%, rgba(140, 0, 0, 0.22) 65%, rgba(80, 0, 0, 0.6) 100%);
@@ -57,7 +56,6 @@
         }
         #horror-overlay.active #horror-fog { opacity: 1; }
 
-        /* ========== ГЛИТЧ ЗАГОЛОВКА ========== */
         @keyframes glitch-shift-1 {
             0%   { clip-path: inset(8% 0 82% 0);  transform: translate(-5px, 0); }
             15%  { clip-path: inset(55% 0 15% 0); transform: translate(5px, 0); }
@@ -206,6 +204,7 @@
         #chat-messages::-webkit-scrollbar { width: 4px; }
         #chat-messages::-webkit-scrollbar-thumb { background: var(--neon-green); border-radius: 10px; }
         .chat-system-msg { color: var(--neon-green); text-align: center; font-size: 0.8rem; font-weight: 600; padding: 8px; border: 1px dashed var(--glass-border); border-radius: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .chat-system-ban { color: var(--error-red); text-align: center; font-size: 0.8rem; font-weight: 800; padding: 10px; border: 1px solid var(--error-red); border-radius: 8px; background: rgba(204,68,68,0.1); box-shadow: 0 0 15px rgba(204,68,68,0.2); display: none; }
         .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; }
         @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
@@ -216,7 +215,7 @@
         .msg-bot { align-items: flex-start; }
         .msg-bot .chat-msg-name { color: var(--neon-green); }
         .msg-bot .chat-msg-bubble { background: rgba(0,255,102,0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
-        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid var(--glass-border); background: rgba(2,6,2,0.9); }
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid var(--glass-border); background: rgba(2,6,2,0.9); transition: opacity 0.5s ease; }
         #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; }
         #chat-input:focus { border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green-glow); }
         #chat-send { background: linear-gradient(135deg, #0a290a, #004d1f); border: 2px solid var(--glass-border); color: var(--neon-green); width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
@@ -260,7 +259,10 @@
         <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home"></i> Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
         <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info"></i> О нас</a>
-        <a href="#" class="sidebar-link" id="sidebarSupportBtn"><i class="fa-solid fa-headset"></i> Тех. поддержка</a>
+        <a href="#" class="sidebar-link" id="sidebarSupportBtn">
+            <i class="fa-solid fa-headset"></i> Тех. поддержка
+            <i class="fa-solid fa-lock" id="menuBanLock" style="display:none; margin-left: auto; color: var(--error-red);"></i>
+        </a>
     </div>
 
     <div class="top-controls">
@@ -317,11 +319,12 @@
             <i class="fa-solid fa-xmark" id="chat-close"></i>
         </div>
         <div id="chat-messages">
-            <div class="chat-system-msg">Система тех. поддержки активна. Задайте ваш вопрос.</div>
+            <div class="chat-system-ban" id="chatBanNotice"><i class="fa-solid fa-circle-exclamation"></i> ДОСТУП ОГРАНИЧЕН</div>
+            <div class="chat-system-msg" id="chatGreeting">Подключение...</div>
         </div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Ввод команды/проблемы...">
-            <button id="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+        <div class="chat-input-area" id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Опишите проблему..." disabled>
+            <button id="chat-send" style="background: #333; color: #555;" disabled><i class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
@@ -433,133 +436,230 @@
         closeSidebar.onclick = toggleMenu;
         sidebarOverlay.onclick = toggleMenu;
 
-        // ========== ЧАТ И СИСТЕМА ID ==========
+        // ========== ЧАТ + АВТОРИЗАЦИЯ (ЛОГИКА ИЗ ГЛАВНОЙ СТРАНИЦЫ) ==========
         const chatWindow = document.getElementById('chat-window');
         const chatClose = document.getElementById('chat-close');
         const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const chatSendBtn = document.getElementById('chat-send');
         const chatHeader = document.getElementById('chat-header');
+        const chatGreeting = document.getElementById('chatGreeting');
+        const chatBanNotice = document.getElementById('chatBanNotice');
+        const menuBanLock = document.getElementById('menuBanLock');
 
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                let date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
+        const token = localStorage.getItem('dxtr_token');
+        let isAuthUser = !!token;
+
+        // Блокировка чата для гостей
+        function lockChatForGuests() {
+            if (chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо войти в аккаунт на странице <a href='https://dxtrslizze.xyz/profile' style='color:#00ff66;'>Профиля</a>.</b>";
+            if (chatInput) {
+                chatInput.disabled = true;
+                chatInput.placeholder = "Необходима авторизация";
+                chatInput.style.borderColor = "rgba(255,255,255,0.1)";
             }
-            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-        }
-        function getCookie(name) {
-            let nameEQ = name + "=";
-            let ca = document.cookie.split(';');
-            for(let i=0;i < ca.length;i++) {
-                let c = ca[i].trim();
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
+            if (chatSendBtn) {
+                chatSendBtn.disabled = true;
+                chatSendBtn.style.background = '#333';
+                chatSendBtn.style.color = '#555';
             }
-            return null;
         }
 
-        let lsId = localStorage.getItem('dxtrNumericId');
-        let cookieId = getCookie('dxtrNumericId');
-        let clientId = lsId || cookieId || null;
-        
-        if (clientId) {
-            localStorage.setItem('dxtrNumericId', clientId);
-            setCookie('dxtrNumericId', clientId, 365);
-        }
-
-        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
-
-        let socket;
-        try {
-            socket = io("https://dxtrslizze.onrender.com/");
-            socket.on('connect', () => {
-                import('https://openfpcdn.io/fingerprintjs/v4')
-                    .then(FP => FP.load())
-                    .then(fp => fp.get())
-                    .then(r => socket.emit('register_client', { clientId, fpHash: r.visitorId }))
-                    .catch(() => socket.emit('register_client', { clientId, fpHash: 'blocked' }));
-            });
-            
-            socket.on('assign_id', (data) => {
-                if (data && data.newId) {
-                    clientId = data.newId;
-                    localStorage.setItem('dxtrNumericId', clientId);
-                    setCookie('dxtrNumericId', clientId, 365);
-                }
-            });
-
-            socket.on('user_data', d => {
-                if (d.nickname) {
-                    window.userNickname = d.nickname;
-                    localStorage.setItem('dxtrUserNickname', d.nickname);
-                    document.querySelectorAll('.msg-user .chat-msg-name').forEach(el => {
-                        if(el.textContent === 'Вы') el.textContent = d.nickname;
+        // Проверка токена и загрузка аватара (как на главной)
+        window.onload = async () => {
+            if (token) {
+                try {
+                    const res = await fetch("https://dxtrslizze.onrender.com/api/auth/me", {
+                        headers: { 'Authorization': `Bearer ${token}` }
                     });
+                    const data = await res.json();
+                    if (data.success) {
+                        isAuthUser = true;
+                        const avatarImg = document.getElementById('userAvatar');
+                        if (avatarImg && data.user.avatarUrl && data.user.avatarUrl !== 'dslogo.png') {
+                            avatarImg.src = data.user.avatarUrl;
+                        }
+                    } else {
+                        isAuthUser = false;
+                        localStorage.removeItem('dxtr_token');
+                        lockChatForGuests();
+                    }
+                } catch(e) {
+                    console.error(e);
                 }
-                if (d.avatarUrl) {
-                    const avatarImg = document.getElementById('userAvatar');
-                    if (avatarImg) avatarImg.src = d.avatarUrl;
+            } else {
+                lockChatForGuests();
+            }
+        };
+
+        // Socket.io — подключение с токеном (как на главной)
+        const socket = io("https://dxtrslizze.onrender.com/");
+
+        socket.on('connect', () => {
+            if (token) {
+                socket.emit('register_client', { token: token });
+            }
+        });
+
+        socket.on('user_data', d => {
+            if (d.nickname) {
+                window.userNickname = d.nickname;
+                chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${d.nickname}</b>!`;
+                chatInput.disabled = false;
+                chatInput.placeholder = "Опишите проблему...";
+                chatSendBtn.disabled = false;
+                chatSendBtn.style.background = 'linear-gradient(135deg, #0a290a, #004d1f)';
+                chatSendBtn.style.color = 'var(--neon-green)';
+            }
+            if (d.avatarUrl) {
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg && d.avatarUrl !== 'dslogo.png') avatarImg.src = d.avatarUrl;
+            }
+        });
+
+        socket.on('ban_status', d => {
+            if (d.isBanned) {
+                if (menuBanLock) menuBanLock.style.display = 'inline-block';
+                if (chatBanNotice) chatBanNotice.style.display = 'block';
+                if (chatGreeting) chatGreeting.style.display = 'none';
+                if (chatInput) {
+                    chatInput.disabled = true;
+                    chatInput.placeholder = "Доступ ограничен.";
+                    chatInput.style.borderColor = "var(--error-red)";
                 }
-            });
+                if (chatSendBtn) {
+                    chatSendBtn.disabled = true;
+                    chatSendBtn.style.background = '#333';
+                    chatSendBtn.style.color = '#555';
+                }
+            } else {
+                if (menuBanLock) menuBanLock.style.display = 'none';
+                if (chatBanNotice) chatBanNotice.style.display = 'none';
+                if (chatGreeting && isAuthUser) chatGreeting.style.display = 'block';
+                if (chatInput && isAuthUser) {
+                    chatInput.disabled = false;
+                    chatInput.placeholder = "Опишите проблему...";
+                    chatInput.style.borderColor = "rgba(255,255,255,0.1)";
+                }
+                if (chatSendBtn && isAuthUser) {
+                    chatSendBtn.disabled = false;
+                    chatSendBtn.style.background = 'linear-gradient(135deg, #0a290a, #004d1f)';
+                    chatSendBtn.style.color = 'var(--neon-green)';
+                }
+            }
+        });
 
-            socket.on('receive_message', d => {
-                if (chatWindow.style.display === 'none') chatWindow.style.display = 'flex';
-                addChatMessage('Support', d.text, 'flex-start', true);
-            });
-        } catch(e) {}
+        socket.on('receive_message', d => {
+            if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                chatWindow.style.display = 'flex';
+            }
+            addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess);
+        });
 
+        socket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
+        socket.on('chat_closed_reset', () => { showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double"); });
+
+        // Открытие чата из сайдбара
         sidebarSupportBtn.onclick = (e) => {
-            e.preventDefault(); toggleMenu();
+            e.preventDefault();
+            toggleMenu();
             setTimeout(() => {
                 chatWindow.style.display = 'flex';
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-                if(window.innerWidth > 600) { chatWindow.style.right = '30px'; chatWindow.style.bottom = '30px'; }
+                if (window.innerWidth > 600) {
+                    chatWindow.style.right = '30px';
+                    chatWindow.style.bottom = '30px';
+                }
             }, 300);
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
+        // Drag and drop для чата
         let isDraggingChat = false, chatOffX, chatOffY;
         chatHeader.addEventListener('mousedown', e => {
             if (window.innerWidth <= 600 || e.target.id === 'chat-close') return;
             isDraggingChat = true;
+            chatWindow.style.animation = 'none';
             const r = chatWindow.getBoundingClientRect();
-            chatOffX = e.clientX - r.left; chatOffY = e.clientY - r.top;
-            chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto';
-            chatWindow.style.left = r.left + 'px'; chatWindow.style.top = r.top + 'px';
+            chatOffX = e.clientX - r.left;
+            chatOffY = e.clientY - r.top;
+            chatWindow.style.right = 'auto';
+            chatWindow.style.bottom = 'auto';
+            chatWindow.style.left = r.left + 'px';
+            chatWindow.style.top = r.top + 'px';
         });
         document.addEventListener('mousemove', e => {
             if (!isDraggingChat) return;
+            e.preventDefault();
             chatWindow.style.left = Math.max(0, Math.min(e.clientX - chatOffX, window.innerWidth - chatWindow.offsetWidth)) + 'px';
             chatWindow.style.top = Math.max(0, Math.min(e.clientY - chatOffY, window.innerHeight - chatWindow.offsetHeight)) + 'px';
         });
         document.addEventListener('mouseup', () => isDraggingChat = false);
 
-        chatSendBtn.onclick = sendMessage;
-        chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+        // Отправка сообщений
+        if (chatSendBtn) chatSendBtn.onclick = sendMessage;
+        if (chatInput) chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
 
         function sendMessage() {
-            const t = chatInput.value.trim(); if (!t) return;
-            if (socket) socket.emit('send_message', { text: t, clientId });
-            addChatMessage(window.userNickname || 'Вы', t, 'flex-end');
+            const t = chatInput.value.trim();
+            if (!t || chatInput.disabled || !isAuthUser) return;
+            socket.emit('send_message', { text: t, token: token });
+            addChatMessage('Вы', t, 'flex-end', true, false, false);
             chatInput.value = '';
         }
 
-        function addChatMessage(sender, text, align, save = true) {
-            const w = document.createElement('div');
-            w.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
-            const n = document.createElement('span'); n.className = 'chat-msg-name'; n.textContent = sender;
-            const b = document.createElement('div'); b.className = 'chat-msg-bubble'; b.textContent = text;
-            w.appendChild(n); w.appendChild(b);
-            chatMessages.appendChild(w); chatMessages.scrollTop = chatMessages.scrollHeight;
+        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
+
+            const nameLab = document.createElement('span');
+            nameLab.className = 'chat-msg-name';
+            nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-msg-bubble';
+            bubble.textContent = text;
+
+            if (isWarn) {
+                nameLab.style.color = 'var(--error-red)';
+                bubble.style.background = 'rgba(204,68,68,0.1)';
+                bubble.style.border = '1px solid var(--error-red)';
+            } else if (isSucc) {
+                nameLab.style.color = 'var(--neon-green)';
+                bubble.style.background = 'rgba(0,255,102,0.1)';
+                bubble.style.border = '1px solid var(--neon-green)';
+            }
+
+            wrapper.appendChild(nameLab);
+            wrapper.appendChild(bubble);
+            if (chatMessages) {
+                chatMessages.appendChild(wrapper);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
             if (save) {
-                const h = JSON.parse(localStorage.getItem('dxtrChatHistory') || '[]');
-                h.push({ sender, text, align }); if (h.length > 50) h.shift();
+                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
+                h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc });
+                if (h.length > 50) h.shift();
                 localStorage.setItem('dxtrChatHistory', JSON.stringify(h));
             }
         }
-        (JSON.parse(localStorage.getItem('dxtrChatHistory') || '[]')).forEach(m => addChatMessage(m.sender, m.text, m.align, false));
+
+        function showChatClosedAnimation(titleHtml, iconClass) {
+            const inputArea = document.getElementById('chat-input-area');
+            inputArea.style.opacity = "0";
+            setTimeout(() => {
+                inputArea.style.display = "none";
+                const statusBlock = document.createElement('div');
+                statusBlock.style.cssText = 'text-align:center;margin-top:auto;padding:25px 20px;border:1px solid var(--neon-green);border-radius:15px;background:rgba(0,255,102,0.05);';
+                statusBlock.innerHTML = `<i class="fa-solid ${iconClass}" style="font-size:2.5rem;color:var(--neon-green);margin-bottom:10px;filter:drop-shadow(0 0 10px rgba(0,255,102,0.5));display:block;"></i><div style="color:var(--neon-green);font-size:1.2rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;">${titleHtml}</div>`;
+                chatMessages.appendChild(statusBlock);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 500);
+        }
+
+        // Восстановление истории чата
+        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
 
         // ========== ПРОМОКОД (СВЯЗЬ С СЕРВЕРОМ) ==========
         const promoInput = document.getElementById('promoInput');
@@ -572,48 +672,41 @@
         const lockBadge = document.getElementById('lockBadge');
         const trackTitle = document.getElementById('trackTitle');
 
-        let currentAudioBlobUrl = null; // Для хранения трека в памяти
+        let currentAudioBlobUrl = null;
 
         async function checkPromo() {
             const val = promoInput.value.trim();
             if (!val) return;
 
-            // Анимация загрузки
             promoSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             promoError.classList.remove('visible');
 
             try {
-                // Делаем запрос на сервер Render
                 const res = await fetch(`${API_URL}/check/${encodeURIComponent(val)}`);
                 
                 if (res.ok) {
                     const data = await res.json();
                     const BASE_URL = "https://dxtrslizze.onrender.com";
                     
-                    // ФИКС ПЕРЕМОТКИ: Загружаем трек целиком как локальный Blob
-                    // Это позволяет браузеру знать точную длину и свободно перематывать
                     try {
                         const audioRes = await fetch(BASE_URL + data.trackUrl);
                         const audioBlob = await audioRes.blob();
                         
-                        if (currentAudioBlobUrl) URL.revokeObjectURL(currentAudioBlobUrl); // Очищаем старый трек
+                        if (currentAudioBlobUrl) URL.revokeObjectURL(currentAudioBlobUrl);
                         currentAudioBlobUrl = URL.createObjectURL(audioBlob);
                         
                         const audioObj = document.getElementById('snippetAudio');
                         audioObj.src = currentAudioBlobUrl;
                         audioObj.load();
                     } catch(e) {
-                        // Резервный вариант, если Blob не загрузился
                         document.getElementById('snippetAudio').src = BASE_URL + data.trackUrl;
                     }
 
-                    // Обновляем данные на странице перед открытием
                     document.getElementById('trackTitle').textContent = data.title;
                     document.getElementById('realCover').src = BASE_URL + data.coverUrl;
                     
                     promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
                     
-                    // Запускаем анимацию открытия
                     promoBox.classList.add('collapsing');
                     setTimeout(() => {
                         promoBox.style.opacity = '0';
@@ -627,13 +720,11 @@
                         }, 200);
                     }, 600);
                 } else {
-                    // Код не найден
                     promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
                     promoError.textContent = "Данный промокод не существует";
                     triggerErrorAnim();
                 }
             } catch (err) {
-                // Ошибка интернета/сервера
                 promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
                 promoError.textContent = "Ошибка соединения с сервером";
                 triggerErrorAnim();
@@ -740,7 +831,6 @@
             const pct = Math.max(0, Math.min((x - r.left) / r.width, 1));
             progressBar.style.width = (pct * 100) + '%';
             
-            // Защита от NaN при перемотке
             if (snippetAudio.duration && isFinite(snippetAudio.duration)) {
                 snippetAudio.currentTime = pct * snippetAudio.duration;
                 timeDisplay.textContent = `${fmt(snippetAudio.currentTime)} / ${fmt(snippetAudio.duration)}`;
@@ -751,7 +841,6 @@
         window.addEventListener('mousemove', e => { if (isDragging) { e.preventDefault(); updateProg(e.clientX); } });
         window.addEventListener('mouseup', () => isDragging = false);
         
-        // Мобильные касания
         progressContainer.addEventListener('touchstart', e => { isDragging = true; updateProg(e.touches[0].clientX); }, { passive: false });
         progressContainer.addEventListener('touchmove', e => { if (isDragging) { e.preventDefault(); updateProg(e.touches[0].clientX); } }, { passive: false });
         progressContainer.addEventListener('touchend', () => isDragging = false);
