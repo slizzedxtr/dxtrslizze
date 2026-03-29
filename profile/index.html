@@ -23,16 +23,15 @@
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
 
-        /* УБИРАЕМ СКАЧКИ И СКРОЛЛБАР */
         html, body {
             overflow-x: hidden;
             width: 100%;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none;  /* IE и Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         
         html::-webkit-scrollbar, body::-webkit-scrollbar {
-            display: none; /* Chrome, Safari и Opera */
+            display: none;
         }
 
         body {
@@ -40,7 +39,6 @@
             display: flex; flex-direction: column; min-height: 100vh;
         }
 
-        /* АНИМИРОВАННЫЙ ФОН */
         .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -2; overflow: hidden; background: #050507; }
         .blob { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.5; animation: float 20s infinite alternate ease-in-out; }
         .blob-1 { width: 500px; height: 500px; background: var(--neon-purple); top: -10%; left: -10%; }
@@ -54,7 +52,6 @@
         .fade-in { animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* БОКОВОЕ МЕНЮ */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 15px var(--neon-cyan); border-color: var(--neon-cyan); }
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(5, 5, 10, 0.9); backdrop-filter: blur(25px); border-right: 1px solid rgba(0, 198, 255, 0.2); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
@@ -65,7 +62,6 @@
         .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
 
-        /* ОКНО ЧАТА */
         #chat-window {
             display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden;
             background: rgba(8, 8, 12, 0.85); border: 1px solid rgba(0, 198, 255, 0.4); border-radius: 20px;
@@ -92,21 +88,19 @@
         #chat-send { background: linear-gradient(135deg, var(--neon-purple), var(--neon-cyan)); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px rgba(112,0,255,0.4); display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
         #chat-send:hover { transform: translateY(-2px) scale(1.05); }
         
-        /* Стили для статуса решения в чате */
         .chat-resolved-status { text-align: center; margin-top: auto; padding: 25px 20px; border: 1px solid var(--neon-green); border-radius: 15px; background: rgba(0, 255, 102, 0.05); box-shadow: inset 0 0 20px rgba(0, 255, 102, 0.1), 0 0 20px rgba(0, 255, 102, 0.1); animation: msgFade 0.6s ease-out forwards; }
         .chat-resolved-icon { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(0,255,102,0.5)); }
         .chat-resolved-title { color: var(--neon-green); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* ================= ДИЗАЙН ПРОФИЛЯ ================= */
         .auth-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; z-index: 10; position: relative; width: 100%; }
         .auth-container { background: linear-gradient(135deg, rgba(20,20,35,0.8) 0%, rgba(5,5,15,0.9) 100%); backdrop-filter: blur(25px); border: 2px solid var(--neon-cyan); border-radius: 30px; padding: 40px; width: 100%; max-width: 450px; box-shadow: 0 0 40px rgba(0, 198, 255, 0.2), inset 0 0 20px rgba(0, 198, 255, 0.1); text-align: center; position: relative; overflow: hidden; }
         .auth-container::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(0,198,255,0.1) 0%, transparent 60%); animation: rotate 15s linear infinite; pointer-events: none; z-index: 0; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
         .auth-content { position: relative; z-index: 1; }
         .auth-title { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; background: linear-gradient(90deg, #fff, var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 30px; filter: drop-shadow(0 0 15px rgba(0, 198, 255, 0.3)); }
         
         .input-group { margin-bottom: 20px; text-align: left; }
         .input-group input { width: 100%; padding: 16px 20px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 1rem; outline: none; transition: 0.3s; }
-        .input-group input[type="file"] { padding: 12px 20px; cursor: pointer; }
         .input-group input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.2); }
         
         .auth-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple)); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; }
@@ -122,7 +116,6 @@
         .error-msg { color: var(--neon-red); font-size: 0.9rem; font-weight: 700; margin-bottom: 15px; display: none; }
         .success-msg { color: var(--neon-green); font-size: 0.9rem; font-weight: 700; margin-bottom: 15px; display: none; }
 
-        /* Внешний вид залогиненного профиля */
         .profile-avatar { width: 130px; height: 130px; border-radius: 50%; border: 3px solid var(--neon-cyan); box-shadow: 0 0 20px rgba(0,198,255,0.5); margin: 0 auto 20px; object-fit: cover; }
         .profile-name { font-size: 2rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; word-break: break-all;}
         .profile-id { color: var(--text-muted); font-size: 0.9rem; font-weight: 700; margin-bottom: 25px; }
@@ -136,13 +129,197 @@
         .back-to-main { display: inline-flex; align-items: center; gap: 10px; margin-top: 30px; padding: 12px 25px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 50px; color: var(--text-muted); text-decoration: none; font-weight: 700; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; font-size: 0.9rem; }
         .back-to-main:hover { color: #fff; border-color: var(--neon-cyan); background: rgba(0,198,255,0.1); box-shadow: 0 0 15px rgba(0,198,255,0.3); transform: translateY(-3px); }
 
-        /* МОДАЛКИ (Настройки и Восстановление) */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 9999; justify-content: center; align-items: center; }
         .modal-inner { background: var(--bg-dark); border: 2px solid var(--neon-purple); border-radius: 25px; padding: 40px; text-align: center; max-width: 400px; width: 90%; position: relative; box-shadow: inset 0 0 30px rgba(112,0,255,0.2), 0 20px 50px rgba(0,0,0,0.8); }
         .close-modal-btn { position: absolute; top: 15px; right: 25px; color: var(--text-muted); font-size: 2rem; cursor: pointer; transition: 0.3s; line-height: 1; }
         .close-modal-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
         .modal-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 25px; text-transform: uppercase; color: #fff; }
         .section-label { text-align: left; color: var(--neon-cyan); font-size: 0.8rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px;}
+
+        /* =============================================
+           НОВЫЙ СТИЛЬ КНОПКИ ЗАГРУЗКИ АВАТАРА
+        ============================================= */
+        .avatar-upload-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        /* Скрываем нативный input */
+        .avatar-upload-group input[type="file"] {
+            display: none;
+        }
+
+        /* Зона загрузки — кликабельная */
+        .avatar-drop-zone {
+            position: relative;
+            width: 100%;
+            height: 110px;
+            border-radius: 16px;
+            border: 2px dashed rgba(0, 198, 255, 0.35);
+            background: rgba(0, 198, 255, 0.03);
+            cursor: pointer;
+            transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-drop-zone:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 198, 255, 0.07);
+            box-shadow: 0 0 20px rgba(0, 198, 255, 0.12), inset 0 0 20px rgba(0, 198, 255, 0.05);
+        }
+
+        .avatar-drop-zone.has-file {
+            border-style: solid;
+            border-color: var(--neon-cyan);
+            background: rgba(0, 198, 255, 0.06);
+            box-shadow: 0 0 25px rgba(0, 198, 255, 0.2), inset 0 0 15px rgba(0, 198, 255, 0.08);
+        }
+
+        /* Сканирующая линия при наведении */
+        .avatar-drop-zone::after {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .avatar-drop-zone:hover::after {
+            opacity: 1;
+            animation: scanLine 1.5s linear infinite;
+        }
+        @keyframes scanLine {
+            0% { top: -5%; }
+            100% { top: 110%; }
+        }
+
+        /* Состояние по умолчанию (без файла) */
+        .avatar-drop-default {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .avatar-drop-zone.has-file .avatar-drop-default {
+            display: none;
+        }
+        .avatar-drop-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 198, 255, 0.3);
+            background: rgba(0, 198, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: rgba(0, 198, 255, 0.7);
+            transition: 0.3s;
+        }
+        .avatar-drop-zone:hover .avatar-drop-icon {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 198, 255, 0.12);
+            color: var(--neon-cyan);
+            box-shadow: 0 0 12px rgba(0, 198, 255, 0.3);
+        }
+        .avatar-drop-text {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .avatar-drop-hint {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: rgba(161, 161, 170, 0.45);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Состояние с выбранным файлом */
+        .avatar-drop-preview {
+            display: none;
+            align-items: center;
+            gap: 14px;
+            padding: 0 20px;
+            width: 100%;
+            pointer-events: none;
+        }
+        .avatar-drop-zone.has-file .avatar-drop-preview {
+            display: flex;
+        }
+        .avatar-preview-img {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 198, 255, 0.4);
+            flex-shrink: 0;
+        }
+        .avatar-preview-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .avatar-preview-name {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+        .avatar-preview-size {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .avatar-preview-clear {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 0, 51, 0.1);
+            border: 1px solid rgba(255, 0, 51, 0.3);
+            color: var(--neon-red);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            pointer-events: all;
+            flex-shrink: 0;
+        }
+        .avatar-preview-clear:hover {
+            background: var(--neon-red);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(255, 0, 51, 0.5);
+        }
+
+        /* Подпись под зоной */
+        .avatar-upload-caption {
+            margin-top: 8px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: rgba(161, 161, 170, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+        /* ============================================= */
 
         .hidden { display: none !important; }
 
@@ -206,11 +383,38 @@
             <div class="section-label">Никнейм</div>
             <div class="input-group"><input type="text" id="setNick" placeholder="Новый никнейм"></div>
             
-            <div class="section-label">Аватар (Файл до 2 МБ)</div>
-            <div class="input-group">
-                <input type="file" id="setAvatar" accept="image/*" onchange="checkFileSize(this)">
+            <div class="section-label">Аватар</div>
+
+            <!-- НОВЫЙ БЛОК ЗАГРУЗКИ АВАТАРА -->
+            <div class="avatar-upload-group">
+                <input type="file" id="setAvatar" accept="image/*">
+
+                <div class="avatar-drop-zone" id="avatarDropZone" onclick="document.getElementById('setAvatar').click()">
+                    <!-- По умолчанию -->
+                    <div class="avatar-drop-default">
+                        <div class="avatar-drop-icon">
+                            <i class="fa-solid fa-camera"></i>
+                        </div>
+                        <span class="avatar-drop-text">Выбрать фото</span>
+                        <span class="avatar-drop-hint">JPG, PNG, GIF · до 2 МБ</span>
+                    </div>
+
+                    <!-- После выбора файла -->
+                    <div class="avatar-drop-preview" id="avatarPreview">
+                        <img src="" alt="" class="avatar-preview-img" id="avatarPreviewImg">
+                        <div class="avatar-preview-info">
+                            <div class="avatar-preview-name" id="avatarPreviewName"></div>
+                            <div class="avatar-preview-size" id="avatarPreviewSize"></div>
+                        </div>
+                        <div class="avatar-preview-clear" id="avatarClearBtn" title="Удалить">
+                            <i class="fa-solid fa-xmark"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="avatar-upload-caption">Только изображения · макс. 2 МБ</div>
             </div>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: -15px; margin-bottom: 20px; text-align: left;">Только изображения. Макс. размер 2MB.</p>
+            <!-- КОНЕЦ НОВОГО БЛОКА -->
 
             <div class="section-label">Смена пароля</div>
             <div class="input-group"><input type="password" id="setOldPass" placeholder="Старый пароль"></div>
@@ -271,6 +475,52 @@
             }
             initGlobalSocket(token);
         };
+
+        // ==========================================
+        // ЛОГИКА НОВОГО АВАТАР-ЗАГРУЗЧИКА
+        // ==========================================
+        const setAvatarInput = document.getElementById('setAvatar');
+        const avatarDropZone = document.getElementById('avatarDropZone');
+        const avatarPreviewImg = document.getElementById('avatarPreviewImg');
+        const avatarPreviewName = document.getElementById('avatarPreviewName');
+        const avatarPreviewSize = document.getElementById('avatarPreviewSize');
+        const avatarClearBtn = document.getElementById('avatarClearBtn');
+
+        function formatBytes(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        setAvatarInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showError("Файл слишком большой! Максимальный размер: 2 МБ.", 'setMsg');
+                this.value = '';
+                return;
+            }
+            hideError();
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                avatarPreviewImg.src = e.target.result;
+                avatarPreviewName.textContent = file.name;
+                avatarPreviewSize.textContent = formatBytes(file.size);
+                avatarDropZone.classList.add('has-file');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        avatarClearBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setAvatarInput.value = '';
+            avatarPreviewImg.src = '';
+            avatarDropZone.classList.remove('has-file');
+            hideError();
+        });
+        // ==========================================
 
         function toggleMode() {
             isLoginMode = !isLoginMode;
@@ -340,14 +590,13 @@
 
         function openRecoverModal() { document.getElementById('recoverModal').style.display = 'flex'; }
         
-        // --- АНОНИМНЫЙ ЧАТ (ВОССТАНОВЛЕНИЕ) ---
         function openSupportChatForRecover() {
             const u = document.getElementById('recUsername').value.trim();
             if(!u) return showError("Укажите свой никнейм", 'recError');
             
             window.targetRecoverUser = u; 
             closeModals();
-            resetChatUI(); // Сбрасываем чат перед открытием
+            resetChatUI();
             
             document.getElementById('chat-window').style.display = 'flex';
             document.getElementById('chatGreeting').innerHTML = `Связь с поддержкой.<br>Указан аккаунт: <b>${u}</b>`;
@@ -360,27 +609,18 @@
         function openSettingsModal() { 
             if(currentUserData) {
                 document.getElementById('setNick').value = currentUserData.username;
-                document.getElementById('setAvatar').value = ""; // Очищаем инпут файла
+                // Сбрасываем зону загрузки
+                setAvatarInput.value = '';
+                avatarDropZone.classList.remove('has-file');
+                avatarPreviewImg.src = '';
             }
             document.getElementById('settingsModal').style.display = 'flex'; 
-        }
-
-        // ПРОВЕРКА РАЗМЕРА ФАЙЛА АВАТАРА
-        function checkFileSize(input) {
-            if (input.files && input.files[0]) {
-                if (input.files[0].size > 2 * 1024 * 1024) {
-                    showError("Файл слишком большой! Максимальный размер: 2 МБ.", 'setMsg');
-                    input.value = ""; // Сбрасываем выбранный файл
-                } else {
-                    hideError();
-                }
-            }
         }
 
         async function saveSettings() {
             hideError();
             const newNick = document.getElementById('setNick').value.trim();
-            const avatarFile = document.getElementById('setAvatar').files[0];
+            const avatarFile = setAvatarInput.files[0];
             const oldP = document.getElementById('setOldPass').value.trim();
             const newP = document.getElementById('setNewPass').value.trim();
 
@@ -411,7 +651,6 @@
             btn.innerText = "Сохранение..."; btn.disabled = true;
 
             try {
-                // ВНИМАНИЕ: Для FormData не нужно указывать Content-Type, браузер сделает это сам (с boundary)
                 const res = await fetch(`${API_URL}/update`, {
                     method: 'PUT', 
                     headers: { 'Authorization': `Bearer ${token}` },
@@ -424,7 +663,6 @@
             finally { btn.innerText = "Сохранить изменения"; btn.disabled = false; }
         }
 
-        // --- МЕНЮ И ЧАТ (Drag & Drop) ---
         const burgerBtn = document.getElementById('burgerBtn');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -434,7 +672,6 @@
         function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
         burgerBtn.onclick = toggleMenu; document.getElementById('closeSidebar').onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
         
-        // СБРОС ИНТЕРФЕЙСА ЧАТА ПРИ ОТКРЫТИИ ЧЕРЕЗ МЕНЮ
         function resetChatUI() {
             const inputArea = document.getElementById('chat-input-area');
             inputArea.style.opacity = "1";
@@ -448,7 +685,7 @@
         document.getElementById('sidebarSupportBtn').onclick = (e) => { 
             e.preventDefault(); toggleMenu(); 
             setTimeout(() => { 
-                resetChatUI(); // Сбрасываем чат перед открытием
+                resetChatUI();
                 chatWindow.style.display = 'flex'; 
             }, 300); 
         };
@@ -470,7 +707,6 @@
         });
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        // --- ЛОГИКА СОКЕТОВ ЧАТА ---
         function initGlobalSocket(token) {
             socket = io("https://dxtrslizze.onrender.com/");
             const chatInput = document.getElementById('chat-input');
@@ -498,7 +734,7 @@
 
             socket.on('receive_message', (d) => {
                 if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
-                    resetChatUI(); // При входящем тоже убеждаемся что интерфейс не заблочен
+                    resetChatUI();
                     chatWindow.style.display = 'flex';
                 }
                 addChatMessage('Support', d.text, 'flex-start');
