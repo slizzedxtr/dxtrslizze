@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-// Секретный ключ (ДОЛЖЕН СОВПАДАТЬ С ТЕМ, ЧТО В auth.js)
-const JWT_SECRET = process.env.JWT_SECRET || 'ТВОЙ_СЕКРЕТНЫЙ_КЛЮЧ';
+// Секретный ключ (ДОЛЖЕН СОВПАДАТЬ С ТЕМ, ЧТО В auth.js/index.js)
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 
 module.exports = function(app, User, supabase) {
 
@@ -19,19 +19,17 @@ module.exports = function(app, User, supabase) {
             const token = authHeader.split(' ')[1];
             const decoded = jwt.verify(token, JWT_SECRET);
             
-            // ДЕБАГ: Если снова пишет "Пользователь не найден", посмотри в консоль сервера
-            // console.log("Расшифрованный токен:", decoded);
-
-            // Ищем ID в разных возможных полях токена
-            const userId = decoded.id || decoded.userId || decoded._id || (decoded.user && decoded.user._id);
+            // Берем ИМЕННО clientId, так как он зашивается в index.js
+            const clientId = decoded.clientId;
             
-            if (!userId) {
-                console.error("В токене нет ID! Проверь auth.js, что ты передаешь при jwt.sign()");
+            if (!clientId) {
+                console.error("В токене нет clientId! Расшифрованный токен:", decoded);
                 res.status(401).json({ error: 'Неверный формат токена' });
                 return null;
             }
 
-            const user = await User.findById(userId);
+            // Ищем юзера по clientId, а не через findById!
+            const user = await User.findOne({ clientId: clientId });
             if (!user) {
                 res.status(401).json({ error: 'Пользователь не найден в базе' });
                 return null;
