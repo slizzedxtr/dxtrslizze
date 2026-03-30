@@ -96,7 +96,7 @@ module.exports = function(app, User, supabase) {
     // 2. МИНИ-ИГРЫ (АЗАРТ)
     // ==========================================
 
-    // NEON SLOTS (Логика с обложками из Supabase)
+    // NEON SLOTS (Ровно 15% шанс на выигрыш)
     app.post('/api/games/slots', async (req, res) => {
         try {
             const { bet } = req.body;
@@ -116,7 +116,6 @@ module.exports = function(app, User, supabase) {
                 return res.status(500).json({ error: 'Каталог пуст или недоступен' });
             }
 
-            // Формируем пул: последние 10 треков + все главные релизы
             let slotPool = allTracks.slice(0, 10);
             allTracks.forEach(track => {
                 if (track.is_main && !slotPool.some(t => t.cover_url === track.cover_url)) {
@@ -124,21 +123,36 @@ module.exports = function(app, User, supabase) {
                 }
             });
 
-            // Весовой рандом: Главные (вес 5) выпадают в 2 раза реже Обычных (вес 10)
-            let weightedPool = [];
-            slotPool.forEach((track, index) => {
-                const weight = track.is_main ? 10 : 20;
-                for (let i = 0; i < weight; i++) weightedPool.push(index);
-            });
+            // --- НОВАЯ ЛОГИКА ШАНСОВ (РОВНО 15%) ---
+            const WIN_CHANCE = 0.15; 
+            const isWin = Math.random() < WIN_CHANCE; // Кидаем кубик на победу
 
-            const spin = () => weightedPool[Math.floor(Math.random() * weightedPool.length)];
-            const resultIndices = [spin(), spin(), spin()];
-            const resultTracks = resultIndices.map(idx => slotPool[idx]);
+            let resultTracks = [];
+            
+            if (isWin) {
+                // Если выпала победа - берем 1 случайный трек и ставим его на все 3 слота
+                // Даем обычным трекам больше шансов выпасть в победе, чем главным релизам (чтобы джекпоты не летели часто)
+                let weightedPool = [];
+                slotPool.forEach(track => {
+                    const weight = track.is_main ? 1 : 4; // Обычные падают в 4 раза чаще главных
+                    for(let i=0; i<weight; i++) weightedPool.push(track);
+                });
+                const winTrack = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+                resultTracks = [winTrack, winTrack, winTrack];
+            } else {
+                // Если проигрыш - генерируем случайные слоты так, чтобы они ТОЧНО не совпали все 3
+                while (true) {
+                    const getRandomTrack = () => slotPool[Math.floor(Math.random() * slotPool.length)];
+                    resultTracks = [getRandomTrack(), getRandomTrack(), getRandomTrack()];
+                    
+                    // Проверяем, не выпало ли случайно 3 одинаковых при лузе. Если нет - выходим из цикла
+                    if (!(resultTracks[0].cover_url === resultTracks[1].cover_url && resultTracks[1].cover_url === resultTracks[2].cover_url)) {
+                        break; 
+                    }
+                }
+            }
 
             let winTotal = 0;
-            const isWin = (resultTracks[0].cover_url === resultTracks[1].cover_url) && 
-                          (resultTracks[1].cover_url === resultTracks[2].cover_url);
-
             if (isWin) {
                 winTotal = betAmount * (resultTracks[0].is_main ? 10 : 5);
             }
@@ -162,7 +176,7 @@ module.exports = function(app, User, supabase) {
     // CYBER DICE (Больше/Меньше 50)
     app.post('/api/games/dice', async (req, res) => {
         try {
-            const { bet, guess } = req.body; // 'over' или 'under'
+            const { bet, guess } = req.body; 
             const betAmount = parseInt(bet);
             const user = await authenticate(req, res);
             if (!user) return;
@@ -190,7 +204,7 @@ module.exports = function(app, User, supabase) {
     // COIN FLIP (Орёл / Решка)
     app.post('/api/games/flip', async (req, res) => {
         try {
-            const { bet, guess } = req.body; // 'heads' или 'tails'
+            const { bet, guess } = req.body; 
             const betAmount = parseInt(bet);
             const user = await authenticate(req, res);
             if (!user) return;
@@ -216,7 +230,7 @@ module.exports = function(app, User, supabase) {
     app.post('/api/games/hack', async (req, res) => {
         try {
             const cost = 5;
-            const { guessCode } = req.body; // 4-значный код
+            const { guessCode } = req.body; 
             const user = await authenticate(req, res);
             if (!user) return;
 
@@ -260,7 +274,6 @@ module.exports = function(app, User, supabase) {
             if (!item) return res.status(404).json({ error: 'Товар не найден' });
             if (user.dscoin_balance < item.price) return res.status(400).json({ error: 'Недостаточно коинов' });
 
-            // Защита инициализации инвентаря
             if (!user.inventory) {
                 user.inventory = { frames: [], titles: [], snippets: [] };
             }
@@ -276,11 +289,9 @@ module.exports = function(app, User, supabase) {
             user.dscoin_balance -= item.price;
             user.inventory[category].push(itemId);
             
-            // Авто-экипировка
             if (item.type === 'frame') user.activeFrame = itemId;
             if (item.type === 'title') user.activeTitle = item.name;
 
-            // Mongoose требует этого, чтобы увидеть изменения во вложенных объектах/массивах
             user.markModified('inventory');
             await user.save();
 
@@ -305,7 +316,6 @@ module.exports = function(app, User, supabase) {
             user.dscoin_balance -= burnAmount;
             await user.save();
 
-            // Если в таблице music в Supabase нет колонки boosts, этот кусок не крашнет сервер благодаря try-catch
             const { data: track, error } = await supabase.from('music').select('boosts').eq('id', trackId).single();
             if (!error && track) {
                 await supabase.from('music').update({ boosts: (track.boosts || 0) + burnAmount }).eq('id', trackId);
