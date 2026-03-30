@@ -127,7 +127,7 @@ module.exports = function(app, User, supabase) {
             // Весовой рандом: Главные (вес 5) выпадают в 2 раза реже Обычных (вес 10)
             let weightedPool = [];
             slotPool.forEach((track, index) => {
-                const weight = track.is_main ? 5 : 10;
+                const weight = track.is_main ? 10 : 20;
                 for (let i = 0; i < weight; i++) weightedPool.push(index);
             });
 
