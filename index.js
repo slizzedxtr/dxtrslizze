@@ -57,6 +57,16 @@ const UserSchema = new mongoose.Schema({
     banReason: String,
     banDurationText: String,
     regDate: { type: Date, default: Date.now }
+    // === НОВЫЕ ПОЛЯ ДЛЯ GAMES.JS ===
+    lastDaily: { type: Number, default: 0 },
+    lastFarm: { type: Number, default: 0 },
+    inventory: {
+        frames: [String],
+        titles: [String],
+        snippets: [String]
+    },
+    activeFrame: { type: String, default: '' },
+    activeTitle: { type: String, default: '' }
 });
 const User = mongoose.model('User', UserSchema);
 
