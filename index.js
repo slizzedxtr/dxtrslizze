@@ -1027,6 +1027,8 @@ async function sendApBannedMenu(chatId, messageId = null) {
     else bot.sendMessage(chatId, title, opts);
 }
 
+require('./games')(app, User, supabase);
+
 server.listen(process.env.PORT || 3000, () => {
     console.log("DXTR | SlizZe Server is ONLINE! JWT Auth & Admin Panel Active!");
 });
