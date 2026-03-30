@@ -500,11 +500,10 @@
         const token = localStorage.getItem('dxtr_token');
         let userBalance = 0;
         let isAuth = false;
-        let slotCovers = ['dslogo.png']; // Дефолт, заменится API
+        let slotCovers = ['dslogo.png']; 
 
         // --- ИНИЦИАЛИЗАЦИЯ ---
         window.onload = async () => {
-            // Музыка на первый клик
             document.body.addEventListener('click', () => {
                 const bgm = document.getElementById('bgMusic');
                 if(bgm.paused) { bgm.volume = 0.15; bgm.play().catch(e=>{}); }
@@ -525,13 +524,17 @@
                         }
                         
                         updateBalance(data.user.dscoin_balance || 0);
+
+                        // Синхронизация уровня майнера
+                        if(data.user.minerLevel) {
+                            mPower = data.user.minerLevel;
+                            document.getElementById('mPower').innerText = mPower;
+                        }
                         
-                        // Разблокировка чата
                         document.getElementById('chat-input').disabled = false;
                         document.getElementById('chat-send').disabled = false;
                         document.getElementById('chatGreeting').innerText = `Чат поддержки. Привет, ${window.userNickname}!`;
                         
-                        // Загрузка данных
                         fetchLeaderboard();
                         fetchSlotCovers();
                     } else { lockUI(); }
@@ -574,7 +577,7 @@
             event.currentTarget.classList.add('active');
         }
 
-        // --- DASHBOARD (API) ---
+        // --- DASHBOARD ---
         async function claimDaily() {
             const btn = document.getElementById('btnDaily'); btn.disabled = true;
             try {
@@ -634,11 +637,10 @@
             const btn = document.getElementById('btnSlots'); btn.disabled = true;
             printMsg('slots', 'КРУТИМ...', 'err');
             
-            // Визуальный старт (до ответа сервера)
             [1,2,3].forEach((id, i) => {
                 const strip = document.getElementById('reel'+id);
                 strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.1, 0.7, 0.1, 1)`;
-                strip.style.transform = `translateY(-${(15+i*2)*130}px)`; // Крутим вниз
+                strip.style.transform = `translateY(-${(15+i*2)*130}px)`; 
             });
 
             try {
@@ -647,13 +649,11 @@
                 
                 setTimeout(() => {
                     if(res.ok) {
-                        // Подменяем последнюю картинку на результат сервера
                         [1,2,3].forEach((id, i) => {
                             const strip = document.getElementById('reel'+id);
-                            strip.innerHTML += `<img src="${data.items[i]}">`; // Добавляем в конец
-                            strip.style.transition = 'none'; // Мгновенно переключаем на нее
+                            strip.innerHTML += `<img src="${data.items[i]}">`;
+                            strip.style.transition = 'none';
                             strip.style.transform = `translateY(-${(strip.children.length-1)*130}px)`;
-                            // Динамическая обводка (упрощенно: если вин - зеленая, луз - красная)
                             strip.lastChild.style.filter = data.win > 0 ? 'drop-shadow(0 0 20px var(--neon-green))' : 'drop-shadow(0 0 10px var(--neon-red))';
                         });
 
@@ -662,8 +662,8 @@
                         else printMsg('slots', 'ПРОИГРЫШ', 'lose');
                     } else { printMsg('slots', data.error, 'err'); }
                     btn.disabled = false;
-                    setTimeout(initReels, 3000); // Сброс барабанов
-                }, 3000); // Ждем конца анимации CSS
+                    setTimeout(initReels, 3000);
+                }, 3000);
             } catch(e) { btn.disabled = false; printMsg('slots', 'Сбой', 'err'); initReels(); }
         }
 
@@ -723,25 +723,22 @@
                 if(!res.ok) { printMsg('crash', data.error, 'err'); btn.disabled = false; return; }
 
                 printMsg('crash', 'ГЕНЕРАЦИЯ...', 'err');
-                updateBalance(userBalance - bet); // Визуально списываем
+                updateBalance(userBalance - bet); 
                 
                 let cur = 1.00;
-                // Анимация
                 crashInterval = setInterval(() => {
                     cur += 0.02;
                     disp.innerText = cur.toFixed(2) + 'x';
                     line.style.transform = `scaleY(${cur})`;
 
-                    // Если крашнуло раньше таргета
                     if(cur >= data.crashPoint && data.win === 0) {
                         clearInterval(crashInterval);
                         disp.innerText = data.crashPoint.toFixed(2) + 'x';
                         disp.style.color = 'var(--neon-red)'; disp.style.textShadow = '0 0 20px var(--neon-red)';
                         printMsg('crash', 'СИСТЕМА ОБРУШЕНА', 'lose');
-                        updateBalance(data.newBalance); // Возвращаем реальный баланс
+                        updateBalance(data.newBalance); 
                         btn.disabled = false;
                     } 
-                    // Если дошли до таргета
                     else if (cur >= data.target && data.win > 0) {
                         clearInterval(crashInterval);
                         disp.innerText = data.target.toFixed(2) + 'x';
@@ -755,7 +752,7 @@
             } catch(e) { btn.disabled = false; printMsg('crash', 'Сбой сети', 'err'); }
         }
 
-        // --- ROULETTE ---
+        // --- ROULETTE (Реальный API) ---
         let currentR = null;
         function selectRoulette(color) {
             currentR = color;
@@ -783,29 +780,42 @@
 
             const btn = document.getElementById('btnRoulette'); btn.disabled = true;
             printMsg('roulette', 'ВРАЩЕНИЕ...', 'err');
-            updateBalance(userBalance - bet); // Мок списание
+            updateBalance(userBalance - bet); 
 
-            // Крутим UI
             const strip = document.getElementById('rStrip');
             strip.style.transition = `transform 4s cubic-bezier(0.15, 0.85, 0.15, 1)`;
             strip.style.transform = `translateX(-${20*80}px)`;
 
-            // Мок серверной логики (потом заменишь на fetch к API)
-            setTimeout(() => {
-                const isWin = Math.random() < 0.3; // 30% шанс выиграть цвет
-                if(isWin) {
-                    const mult = currentR === 'gold' ? 14 : 2;
-                    updateBalance(userBalance + bet*mult);
-                    printMsg('roulette', `ПОБЕДА! +${bet*mult} NC`, 'win');
-                } else {
-                    printMsg('roulette', 'ПРОИГРЫШ', 'lose');
-                }
-                btn.disabled = false;
-                setTimeout(() => { strip.style.transition='none'; strip.style.transform='translateX(0)'; initRoulette(); }, 3000);
-            }, 4000);
+            try {
+                const res = await fetch(`${API_URL}/games/roulette`, { 
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json', 'Authorization':`Bearer ${token}`}, 
+                    body: JSON.stringify({bet, color: currentR})
+                });
+                const data = await res.json();
+                
+                setTimeout(() => {
+                    if(res.ok) {
+                        updateBalance(data.newBalance);
+                        if(data.isWin) printMsg('roulette', `ПОБЕДА! +${data.win} NC`, 'win');
+                        else printMsg('roulette', 'ПРОИГРЫШ', 'lose');
+                    } else {
+                        printMsg('roulette', data.error, 'err');
+                    }
+                    btn.disabled = false;
+                    strip.style.transition='none'; 
+                    strip.style.transform='translateX(0)'; 
+                    initRoulette();
+                }, 4000);
+            } catch(e) { 
+                btn.disabled = false; 
+                printMsg('roulette', 'Сбой сети', 'err'); 
+                strip.style.transition='none'; 
+                strip.style.transform='translateX(0)'; 
+            }
         }
 
-        // --- MINER ---
+        // --- MINER (Реальный API) ---
         let mClicks = 0;
         let mPower = 1;
         function mineClick() {
@@ -817,18 +827,34 @@
                 mClicks = 0;
                 document.getElementById('mClicks').innerText = 0;
                 document.getElementById('mFill').style.width = '0%';
-                // Вызов API
+                
                 fetch(`${API_URL}/games/mine`, { method:'POST', headers:{'Authorization':`Bearer ${token}`} })
                     .then(res => res.json())
-                    .then(data => { if(data.success) { updateBalance(data.newBalance); printMsg('miner', '+1 NC ДОБЫТО', 'win'); }});
+                    .then(data => { if(data.success) { updateBalance(data.newBalance); printMsg('miner', `+${data.earned} NC ДОБЫТО`, 'win'); }});
             }
         }
-        function upgradeMiner() {
+        
+        async function upgradeMiner() {
             if(userBalance < 50) return printMsg('miner', 'НЕДОСТАТОЧНО КРЕДИТОВ (50 NC)', 'err');
-            updateBalance(userBalance - 50); // Мок покупка (надо API сделать)
-            mPower++;
-            document.getElementById('mPower').innerText = mPower;
-            printMsg('miner', 'ЯДРО УЛУЧШЕНО', 'win');
+            
+            try {
+                const res = await fetch(`${API_URL}/games/miner/upgrade`, { 
+                    method:'POST', 
+                    headers:{'Authorization':`Bearer ${token}`} 
+                });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    updateBalance(data.newBalance);
+                    mPower = data.newLevel;
+                    document.getElementById('mPower').innerText = mPower;
+                    printMsg('miner', 'ЯДРО УЛУЧШЕНО', 'win');
+                } else {
+                    printMsg('miner', data.error, 'err');
+                }
+            } catch(e) {
+                printMsg('miner', 'Ошибка сети', 'err');
+            }
         }
 
         // --- ЧАТ ---
