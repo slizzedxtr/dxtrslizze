@@ -56,7 +56,7 @@ const UserSchema = new mongoose.Schema({
     banExpireAt: { type: Number, default: 0 },
     banReason: String,
     banDurationText: String,
-    regDate: { type: Date, default: Date.now }
+    regDate: { type: Date, default: Date.now }, // <--- ИСПРАВЛЕНИЕ 1: ДОБАВЛЕНА ЗАПЯТАЯ
     // === НОВЫЕ ПОЛЯ ДЛЯ GAMES.JS ===
     lastDaily: { type: Number, default: 0 },
     lastFarm: { type: Number, default: 0 },
@@ -183,7 +183,9 @@ app.post('/api/auth/register', async (req, res) => {
         });
 
         const token = jwt.sign({ clientId: newUser.clientId, username: newUser.username }, JWT_SECRET, { expiresIn: '30d' });
-        res.json({ success: true, token, user: { username: newUser.nickname, clientId: newUser.clientId, avatarUrl: newUser.avatarUrl } });
+        
+        // ИСПРАВЛЕНИЕ 2: Добавлен dscoin_balance в ответ
+        res.json({ success: true, token, user: { username: newUser.nickname, clientId: newUser.clientId, avatarUrl: newUser.avatarUrl, dscoin_balance: newUser.dscoin_balance } });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Ошибка сервера при регистрации' });
@@ -202,7 +204,9 @@ app.post('/api/auth/login', async (req, res) => {
         if (!isMatch) return res.status(400).json({ error: 'Неверный пароль' });
 
         const token = jwt.sign({ clientId: user.clientId, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
-        res.json({ success: true, token, user: { username: user.nickname, clientId: user.clientId, avatarUrl: user.avatarUrl } });
+        
+        // ИСПРАВЛЕНИЕ 2: Добавлен dscoin_balance в ответ
+        res.json({ success: true, token, user: { username: user.nickname, clientId: user.clientId, avatarUrl: user.avatarUrl, dscoin_balance: user.dscoin_balance } });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Ошибка сервера при входе' });
@@ -218,7 +222,8 @@ app.get('/api/auth/me', async (req, res) => {
         const user = await User.findOne({ clientId: decoded.clientId });
         if (!user) return res.status(404).json({ error: 'Юзер не найден' });
 
-        res.json({ success: true, user: { username: user.nickname, clientId: user.clientId, avatarUrl: user.avatarUrl } });
+        // ИСПРАВЛЕНИЕ 2: Добавлен dscoin_balance в ответ
+        res.json({ success: true, user: { username: user.nickname, clientId: user.clientId, avatarUrl: user.avatarUrl, dscoin_balance: user.dscoin_balance } });
     } catch (err) {
         res.status(401).json({ error: 'Неверный или просроченный токен' });
     }
@@ -538,7 +543,6 @@ app.get('/api/media/:id', async (req, res) => {
         downloadStream.pipe(res);
     } catch (err) { res.status(404).send('Некорректный ID файла'); }
 });
-
 
 // ================= SOCKETS =================
 io.on('connection', (socket) => {
