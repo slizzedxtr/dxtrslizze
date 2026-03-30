@@ -1,20 +1,36 @@
+const bcrypt = require('bcryptjs');
+
 module.exports = function(app, User, supabase) {
 
     // ==========================================
     // ВНУТРЕННИЙ ПОМОЩНИК: АВТОРИЗАЦИЯ
     // ==========================================
-    // Проверяет юзера строго по никнейму и паролю для каждого игрового запроса
+    // Теперь он правильно расшифровывает пароли через bcrypt и ищет по username
     const authenticate = async (req, res) => {
-        const { nickname, password } = req.body;
-        if (!nickname || !password) {
-            res.status(400).json({ error: 'Требуется авторизация' });
+        // Поддержка полей username, nickname или login с фронтенда
+        const loginStr = req.body.username || req.body.nickname || req.body.login;
+        const { password } = req.body;
+
+        if (!loginStr || !password) {
+            res.status(400).json({ error: 'Требуется логин и пароль' });
             return null;
         }
-        const user = await User.findOne({ nickname, password });
+
+        const lowerUser = String(loginStr).toLowerCase();
+        const user = await User.findOne({ username: lowerUser });
+        
         if (!user) {
-            res.status(401).json({ error: 'Доступ запрещен' });
+            res.status(401).json({ error: 'Пользователь не найден' });
             return null;
         }
+
+        // Проверяем хэш пароля (как в твоем основном index.js)
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            res.status(401).json({ error: 'Неверный пароль' });
+            return null;
+        }
+
         return user;
     };
 
@@ -22,7 +38,7 @@ module.exports = function(app, User, supabase) {
     // 1. ПАССИВНЫЙ ФАРМ И ДЕЙЛИКИ
     // ==========================================
 
-    // Daily Loot (+10 NC раз в 24 часа)
+    // Daily Loot (+10 DS Coins раз в 24 часа)
     app.post('/api/games/daily', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
@@ -31,20 +47,19 @@ module.exports = function(app, User, supabase) {
         const lastDaily = user.lastDaily || 0;
         const timeDiff = now - lastDaily;
 
-        // 24 часа = 86400000 мс
         if (timeDiff < 86400000) {
             const hoursLeft = Math.ceil((86400000 - timeDiff) / (1000 * 60 * 60));
             return res.status(400).json({ error: `Следующий лут через ${hoursLeft} ч.` });
         }
 
-        user.balance = (user.balance || 0) + 10;
+        user.dscoin_balance = (user.dscoin_balance || 0) + 10;
         user.lastDaily = now;
         await user.save();
 
-        res.json({ success: true, reward: 10, newBalance: user.balance, message: 'Свежий кэш загружен' });
+        res.json({ success: true, reward: 10, newBalance: user.dscoin_balance, message: 'Свежий кэш загружен' });
     });
 
-    // Пассивный фарм за прослушивание (+1 NC раз в минуту)
+    // Пассивный фарм за прослушивание (+1 DS Coin раз в минуту)
     app.post('/api/games/farm', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
@@ -52,16 +67,15 @@ module.exports = function(app, User, supabase) {
         const now = Date.now();
         const lastFarm = user.lastFarm || 0;
 
-        // Защита от накрутки: запрос можно делать не чаще, чем раз в 55 секунд
         if (now - lastFarm < 55000) {
-            return res.status(429).json({ error: 'Слишком частые запросы синхронизации' });
+            return res.status(429).json({ error: 'Слишком частые запросы' });
         }
 
-        user.balance = (user.balance || 0) + 1;
+        user.dscoin_balance = (user.dscoin_balance || 0) + 1;
         user.lastFarm = now;
         await user.save();
 
-        res.json({ success: true, newBalance: user.balance });
+        res.json({ success: true, newBalance: user.dscoin_balance });
     });
 
 
@@ -69,7 +83,7 @@ module.exports = function(app, User, supabase) {
     // 2. МИНИ-ИГРЫ (АЗАРТ)
     // ==========================================
 
-    // NEON SLOTS (Логика с обложками из Supabase: Топ 10 + Главные)
+    // NEON SLOTS (Логика с обложками из Supabase)
     app.post('/api/games/slots', async (req, res) => {
         const { bet } = req.body;
         const betAmount = parseInt(bet);
@@ -77,14 +91,14 @@ module.exports = function(app, User, supabase) {
         if (!user) return;
 
         if (!betAmount || betAmount <= 0) return res.status(400).json({ error: 'Некорректная ставка' });
-        if (user.balance < betAmount) return res.status(400).json({ error: 'Недостаточно NC' });
+        if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'Недостаточно DS Coins' });
 
         const { data: allTracks, error } = await supabase
             .from('music')
             .select('cover_url, is_main, title')
             .order('created_at', { ascending: false });
 
-        if (error || !allTracks.length) return res.status(500).json({ error: 'Сбой подключения к каталогу' });
+        if (error || !allTracks.length) return res.status(500).json({ error: 'Каталог пуст' });
 
         // Формируем пул: последние 10 треков + все главные релизы
         let slotPool = allTracks.slice(0, 10);
@@ -113,97 +127,93 @@ module.exports = function(app, User, supabase) {
             winTotal = betAmount * (resultTracks[0].is_main ? 10 : 5);
         }
 
-        user.balance = user.balance - betAmount + winTotal;
+        user.dscoin_balance = user.dscoin_balance - betAmount + winTotal;
         await user.save();
 
         res.json({
             success: true,
             items: resultTracks.map(t => t.cover_url),
             win: winTotal,
-            newBalance: user.balance,
+            newBalance: user.dscoin_balance,
             isJackpot: isWin && resultTracks[0].is_main
         });
     });
 
     // CYBER DICE (Больше/Меньше 50)
     app.post('/api/games/dice', async (req, res) => {
-        const { bet, guess } = req.body; // guess: 'over' или 'under'
+        const { bet, guess } = req.body; // 'over' или 'under'
         const betAmount = parseInt(bet);
         const user = await authenticate(req, res);
         if (!user) return;
 
-        if (!['over', 'under'].includes(guess)) return res.status(400).json({ error: 'Ошибка терминала. Выберите over/under' });
-        if (isNaN(betAmount) || betAmount <= 0 || user.balance < betAmount) return res.status(400).json({ error: 'Ошибка ставки' });
+        if (!['over', 'under'].includes(guess)) return res.status(400).json({ error: 'Выберите over/under' });
+        if (isNaN(betAmount) || betAmount <= 0 || user.dscoin_balance < betAmount) return res.status(400).json({ error: 'Ошибка ставки' });
 
-        const roll = Math.floor(Math.random() * 100) + 1; // 1-100
+        const roll = Math.floor(Math.random() * 100) + 1;
         let isWin = false;
 
         if (guess === 'over' && roll > 50) isWin = true;
         if (guess === 'under' && roll <= 50) isWin = true;
 
         const winTotal = isWin ? betAmount * 2 : 0;
-        user.balance = user.balance - betAmount + winTotal;
+        user.dscoin_balance = user.dscoin_balance - betAmount + winTotal;
         await user.save();
 
-        res.json({ success: true, roll, win: winTotal, newBalance: user.balance });
+        res.json({ success: true, roll, win: winTotal, newBalance: user.dscoin_balance });
     });
 
     // COIN FLIP (Орёл / Решка)
     app.post('/api/games/flip', async (req, res) => {
-        const { bet, guess } = req.body; // guess: 'heads' или 'tails'
+        const { bet, guess } = req.body; // 'heads' или 'tails'
         const betAmount = parseInt(bet);
         const user = await authenticate(req, res);
         if (!user) return;
 
-        if (!['heads', 'tails'].includes(guess)) return res.status(400).json({ error: 'Выберите сторону монеты' });
-        if (isNaN(betAmount) || betAmount <= 0 || user.balance < betAmount) return res.status(400).json({ error: 'Ошибка ставки' });
+        if (!['heads', 'tails'].includes(guess)) return res.status(400).json({ error: 'Выберите сторону' });
+        if (isNaN(betAmount) || betAmount <= 0 || user.dscoin_balance < betAmount) return res.status(400).json({ error: 'Ошибка ставки' });
 
         const result = Math.random() < 0.5 ? 'heads' : 'tails';
         const isWin = result === guess;
         const winTotal = isWin ? betAmount * 2 : 0;
 
-        user.balance = user.balance - betAmount + winTotal;
+        user.dscoin_balance = user.dscoin_balance - betAmount + winTotal;
         await user.save();
 
-        res.json({ success: true, result, win: winTotal, newBalance: user.balance });
+        res.json({ success: true, result, win: winTotal, newBalance: user.dscoin_balance });
     });
 
-    // TERMINAL HACK (Взлом за 5 NC)
+    // TERMINAL HACK (Взлом за 5 DS Coins)
     app.post('/api/games/hack', async (req, res) => {
         const cost = 5;
-        const { guessCode } = req.body; // Юзер присылает 4-значный код (строка)
+        const { guessCode } = req.body; // 4-значный код
         const user = await authenticate(req, res);
         if (!user) return;
 
         if (!guessCode || guessCode.length !== 4) return res.status(400).json({ error: 'Введите 4-значный код' });
-        if (user.balance < cost) return res.status(400).json({ error: 'Недостаточно NC для запуска дешифратора' });
+        if (user.dscoin_balance < cost) return res.status(400).json({ error: 'Недостаточно DS Coins' });
 
-        // Сервер генерирует случайный код сессии взлома
         const serverCode = Math.floor(1000 + Math.random() * 9000).toString();
         const isWin = guessCode === serverCode;
         
-        // Джекпот: фиксированные 500 NC
-        const winTotal = isWin ? 500 : 0;
-        user.balance = user.balance - cost + winTotal;
+        const winTotal = isWin ? 500 : 0; // Джекпот
+        user.dscoin_balance = user.dscoin_balance - cost + winTotal;
         await user.save();
 
-        res.json({ success: true, serverCode, win: winTotal, newBalance: user.balance });
+        res.json({ success: true, serverCode, win: winTotal, newBalance: user.dscoin_balance });
     });
 
-
     // ==========================================
-    // 3. МАГАЗИН (ТРАТЫ БАЛАНСА)
+    // 3. МАГАЗИН И КАСТОМИЗАЦИЯ
     // ==========================================
     
-    // Покупка товаров (Сниппеты, Аватарки, Титулы)
+    // Покупка товаров
     app.post('/api/shop/buy', async (req, res) => {
         const { itemType, itemId } = req.body; 
         const user = await authenticate(req, res);
         if (!user) return;
 
-        // Конфиг товаров в магазине
         const SHOP_ITEMS = {
-            snippet_nightcity: { price: 500, type: 'snippet' },
+            snippet_nightcity: { price: 500, type: 'snippet', name: 'Night City Lights' },
             frame_neon_green: { price: 300, type: 'frame', name: 'Toxic Glow' },
             frame_cyber_pulse: { price: 600, type: 'frame', name: 'Cyber Pulse (Anim)' },
             title_netrunner: { price: 1000, type: 'title', name: 'Netrunner' },
@@ -211,57 +221,46 @@ module.exports = function(app, User, supabase) {
         };
 
         const item = SHOP_ITEMS[itemId];
-        if (!item) return res.status(404).json({ error: 'Товар не найден в базе' });
-        if (user.balance < item.price) return res.status(400).json({ error: 'Недостаточно кредитов' });
+        if (!item) return res.status(404).json({ error: 'Товар не найден' });
+        if (user.dscoin_balance < item.price) return res.status(400).json({ error: 'Недостаточно коинов' });
 
-        // Убедимся, что у юзера есть массивы для инвентаря (если нет - создаем)
         if (!user.inventory) user.inventory = { frames: [], titles: [], snippets: [] };
 
-        // Проверка, куплен ли уже товар
-        const inventoryCategory = user.inventory[item.type + 's'];
-        if (inventoryCategory && inventoryCategory.includes(itemId)) {
-            return res.status(400).json({ error: 'Этот апгрейд уже установлен' });
+        const inventoryCategory = user.inventory[item.type + 's'] || [];
+        if (inventoryCategory.includes(itemId)) {
+            return res.status(400).json({ error: 'Уже куплено' });
         }
 
-        // Списываем баланс и добавляем в инвентарь
-        user.balance -= item.price;
-        if (!user.inventory[item.type + 's']) user.inventory[item.type + 's'] = [];
+        user.dscoin_balance -= item.price;
         user.inventory[item.type + 's'].push(itemId);
         
-        // Автоматически применяем экипировку
+        // Авто-экипировка
         if (item.type === 'frame') user.activeFrame = itemId;
         if (item.type === 'title') user.activeTitle = item.name;
 
         await user.save();
 
-        res.json({ 
-            success: true, 
-            newBalance: user.balance, 
-            message: `Транзакция успешна. ${item.name || 'Сниппет'} активирован.` 
-        });
+        res.json({ success: true, newBalance: user.dscoin_balance, message: `Куплено: ${item.name}` });
     });
 
-    // Буст трека (Голосование балансом)
+    // Буст трека
     app.post('/api/shop/boost', async (req, res) => {
-        const { trackId, amount } = req.body; // Сколько NC юзер хочет "сжечь"
+        const { trackId, amount } = req.body; 
         const burnAmount = parseInt(amount);
         const user = await authenticate(req, res);
         if (!user) return;
 
         if (isNaN(burnAmount) || burnAmount <= 0) return res.status(400).json({ error: 'Укажите сумму буста' });
-        if (user.balance < burnAmount) return res.status(400).json({ error: 'Недостаточно NC' });
+        if (user.dscoin_balance < burnAmount) return res.status(400).json({ error: 'Недостаточно средств' });
 
-        // Списываем баланс
-        user.balance -= burnAmount;
+        user.dscoin_balance -= burnAmount;
         await user.save();
 
-        // Добавляем буст-поинты треку в Supabase
         const { data: track, error } = await supabase.from('music').select('boosts').eq('id', trackId).single();
         if (!error && track) {
             await supabase.from('music').update({ boosts: (track.boosts || 0) + burnAmount }).eq('id', trackId);
         }
 
-        res.json({ success: true, newBalance: user.balance, message: `Трек усилен на ${burnAmount} NC` });
+        res.json({ success: true, newBalance: user.dscoin_balance, message: `Трек забущен на ${burnAmount}!` });
     });
-
 };
