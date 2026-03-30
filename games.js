@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-// Секретный ключ должен совпадать с тем, что генерирует токен при логине (auth.js)
+// Секретный ключ (ДОЛЖЕН СОВПАДАТЬ С ТЕМ, ЧТО В auth.js)
 const JWT_SECRET = process.env.JWT_SECRET || 'ТВОЙ_СЕКРЕТНЫЙ_КЛЮЧ';
 
 module.exports = function(app, User, supabase) {
@@ -19,12 +19,21 @@ module.exports = function(app, User, supabase) {
             const token = authHeader.split(' ')[1];
             const decoded = jwt.verify(token, JWT_SECRET);
             
-            // Универсальный поиск: сработает, как бы ты ни назвал ID в пейлоаде при логине
-            const userId = decoded.id || decoded.userId || decoded._id;
-            const user = await User.findById(userId);
+            // ДЕБАГ: Если снова пишет "Пользователь не найден", посмотри в консоль сервера
+            // console.log("Расшифрованный токен:", decoded);
+
+            // Ищем ID в разных возможных полях токена
+            const userId = decoded.id || decoded.userId || decoded._id || (decoded.user && decoded.user._id);
             
+            if (!userId) {
+                console.error("В токене нет ID! Проверь auth.js, что ты передаешь при jwt.sign()");
+                res.status(401).json({ error: 'Неверный формат токена' });
+                return null;
+            }
+
+            const user = await User.findById(userId);
             if (!user) {
-                res.status(401).json({ error: 'Пользователь не найден' });
+                res.status(401).json({ error: 'Пользователь не найден в базе' });
                 return null;
             }
 
@@ -43,7 +52,8 @@ module.exports = function(app, User, supabase) {
     // Лидерборд: Топ-5 богатых пользователей
     app.get('/api/games/leaderboard', async (req, res) => {
         try {
-            const leaders = await User.find({}, 'username dscoin_balance avatarUrl')
+            // Запрашиваем и username, и nickname, чтобы на фронте выводить точный ник
+            const leaders = await User.find({}, 'username nickname dscoin_balance avatarUrl')
                 .sort({ dscoin_balance: -1 })
                 .limit(5);
             res.json({ success: true, leaders });
@@ -68,7 +78,6 @@ module.exports = function(app, User, supabase) {
         }
     });
 
-
     // ==========================================
     // 1. БАЗА (ФАРМ И ДЕЙЛИКИ)
     // ==========================================
@@ -92,20 +101,20 @@ module.exports = function(app, User, supabase) {
             user.lastDaily = now;
             await user.save();
 
-            res.json({ success: true, reward: 100, newBalance: user.dscoin_balance, message: 'Поставка получена' });
+            res.json({ success: true, reward: 100, newBalance: user.dscoin_balance, message: 'ПОСТАВКА ПОЛУЧЕНА' });
         } catch (err) {
             console.error("Ошибка в Daily Loot:", err);
             res.status(500).json({ error: 'Ошибка сервера' });
         }
     });
 
-    // Майнер (Вызывает фронтенд после заполнения шкалы)
+    // Майнер (Вызывает фронтенд после заполнения шкалы - каждые 20 кликов)
     app.post('/api/games/mine', async (req, res) => {
         try {
             const user = await authenticate(req, res);
             if (!user) return;
 
-            // Если поле minerLevel не создано, считаем что сила = 1
+            // Уровень майнера = количество добываемых монет за 1 заполнение шкалы
             const power = user.minerLevel || 1; 
             
             user.dscoin_balance = (user.dscoin_balance || 0) + power;
@@ -124,22 +133,30 @@ module.exports = function(app, User, supabase) {
             const user = await authenticate(req, res);
             if (!user) return;
 
-            const cost = 50; // Цена за 1 уровень
+            const currentLevel = user.minerLevel || 1;
+            const MAX_LEVEL = 10;
+
+            if (currentLevel >= MAX_LEVEL) {
+                return res.status(400).json({ error: 'ДОСТИГНУТ МАКСИМАЛЬНЫЙ УРОВЕНЬ ЯДРА' });
+            }
+
+            // Математика цены: 50 * (1.75 ^ (level - 1))
+            const cost = Math.floor(50 * Math.pow(1.75, currentLevel - 1));
+
             if (user.dscoin_balance < cost) {
-                return res.status(400).json({ error: 'Недостаточно NC (нужно 50)' });
+                return res.status(400).json({ error: `НЕДОСТАТОЧНО NC (${cost})` });
             }
 
             user.dscoin_balance -= cost;
-            user.minerLevel = (user.minerLevel || 1) + 1;
+            user.minerLevel = currentLevel + 1;
             await user.save();
 
-            res.json({ success: true, newBalance: user.dscoin_balance, newLevel: user.minerLevel, message: 'Ядро улучшено' });
+            res.json({ success: true, newBalance: user.dscoin_balance, newLevel: user.minerLevel });
         } catch (err) {
             console.error("Ошибка в Miner Upgrade:", err);
             res.status(500).json({ error: 'Ошибка сервера' });
         }
     });
-
 
     // ==========================================
     // 2. МИНИ-ИГРЫ (АЗАРТ)
@@ -148,12 +165,12 @@ module.exports = function(app, User, supabase) {
     // NEON SLOTS (Ровно 15% шанс на выигрыш)
     app.post('/api/games/slots', async (req, res) => {
         try {
-            const betAmount = parseInt(req.body.bet);
+            const betAmount = parseFloat(req.body.bet);
             const user = await authenticate(req, res);
             if (!user) return;
 
-            if (isNaN(betAmount) || betAmount <= 0) return res.status(400).json({ error: 'Некорректная ставка' });
-            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'Недостаточно Кредитов' });
+            if (isNaN(betAmount) || betAmount <= 0 || !Number.isInteger(betAmount)) return res.status(400).json({ error: 'НЕКОРРЕКТНАЯ СТАВКА' });
+            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
             const { data: allTracks, error } = await supabase
                 .from('music')
@@ -212,20 +229,21 @@ module.exports = function(app, User, supabase) {
             });
         } catch (err) {
             console.error("Ошибка в Slots:", err);
-            res.status(500).json({ error: 'Системная ошибка слотов' });
+            res.status(500).json({ error: 'Сбой системы слотов' });
         }
     });
 
     // CYBER DICE
     app.post('/api/games/dice', async (req, res) => {
         try {
-            const betAmount = parseInt(req.body.bet);
+            const betAmount = parseFloat(req.body.bet);
             const choice = parseInt(req.body.guess);
             const user = await authenticate(req, res);
             if (!user) return;
 
-            if (![1, 2, 3, 4].includes(choice)) return res.status(400).json({ error: 'Неверный диапазон' });
-            if (isNaN(betAmount) || betAmount <= 0 || user.dscoin_balance < betAmount) return res.status(400).json({ error: 'Ошибка ставки' });
+            if (![1, 2, 3, 4].includes(choice)) return res.status(400).json({ error: 'НЕВЕРНЫЙ СЕКТОР' });
+            if (isNaN(betAmount) || betAmount <= 0 || !Number.isInteger(betAmount)) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
             const roll = Math.floor(Math.random() * 100) + 1;
             let isWin = false;
@@ -250,13 +268,14 @@ module.exports = function(app, User, supabase) {
     // CRASH (Автовывод)
     app.post('/api/games/crash', async (req, res) => {
         try {
-            const betAmount = parseInt(req.body.bet);
+            const betAmount = parseFloat(req.body.bet);
             const target = parseFloat(req.body.targetMultiplier);
             const user = await authenticate(req, res);
             if (!user) return;
 
-            if (isNaN(target) || target < 1.01) return res.status(400).json({ error: 'Укажите множитель для автовывода (минимум 1.01)' });
-            if (isNaN(betAmount) || betAmount <= 0 || user.dscoin_balance < betAmount) return res.status(400).json({ error: 'Ошибка ставки' });
+            if (isNaN(target) || target < 1.1) return res.status(400).json({ error: 'МИНИМУМ 1.1x' });
+            if (isNaN(betAmount) || betAmount <= 0 || !Number.isInteger(betAmount)) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
             const e = 2 ** 32;
             const h = Math.floor(Math.random() * e);
@@ -281,13 +300,14 @@ module.exports = function(app, User, supabase) {
     // NEON ROULETTE
     app.post('/api/games/roulette', async (req, res) => {
         try {
-            const betAmount = parseInt(req.body.bet);
-            const color = req.body.color; // ожидает 'purple', 'cyan' или 'gold'
+            const betAmount = parseFloat(req.body.bet);
+            const color = req.body.color; 
             const user = await authenticate(req, res);
             if (!user) return;
 
-            if (!['purple', 'cyan', 'gold'].includes(color)) return res.status(400).json({ error: 'Выберите правильный цвет' });
-            if (isNaN(betAmount) || betAmount <= 0 || user.dscoin_balance < betAmount) return res.status(400).json({ error: 'Ошибка ставки' });
+            if (!['purple', 'cyan', 'gold'].includes(color)) return res.status(400).json({ error: 'ВЫБЕРИТЕ ЦВЕТ' });
+            if (isNaN(betAmount) || betAmount <= 0 || !Number.isInteger(betAmount)) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
             const roll = Math.random() * 100;
             let resultColor = '';
