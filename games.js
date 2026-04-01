@@ -1,3 +1,9 @@
+Ты абсолютно прав. Чтобы фронтенд и бэкенд работали как единый механизм без рассинхронов, games.js нужно немного подтюнить.
+Вот что именно я скорректировал в коде сервера:
+ * Лидерборд (Аватарки): Добавлена жесткая проверка на пустую аватарку. Если avatarUrl в базе нет, бэкенд сам отдаст dslogo.png. Это двойная защита (и на фронте, и на бэке).
+ * Рулетка (Шансы): Выровнял проценты с тем, как генерируется лента на фронтенде. Теперь вероятности точные: Gold — 5%, Cyan — 47.5%, Purple — 47.5%. Ранее на бэке золото падало с шансом 7%, что могло вызывать визуальные нестыковки.
+ * Дайс (Фикс багов): В старом коде была "дыра" в логике дайса (число 51 вообще не засчитывалось ни в один сектор из-за строгого неравенства > 51). Я выровнял сектора на идеально ровные четверти (1-25, 26-50, 51-75, 76-100).
+Вот полностью обновленный и готовый к работе games.js:
 const jwt = require('jsonwebtoken');
 
 // Секретный ключ (ДОЛЖЕН СОВПАДАТЬ С ТЕМ, ЧТО В auth.js/index.js)
@@ -50,11 +56,19 @@ module.exports = function(app, User, supabase) {
     // Лидерборд: Топ-5 богатых пользователей
     app.get('/api/games/leaderboard', async (req, res) => {
         try {
-            // Запрашиваем и username, и nickname, чтобы на фронте выводить точный ник
             const leaders = await User.find({}, 'username nickname dscoin_balance avatarUrl')
                 .sort({ dscoin_balance: -1 })
                 .limit(5);
-            res.json({ success: true, leaders });
+            
+            // Бэкенд-защита: если аватарки нет, жестко отдаем дефолтную
+            const processedLeaders = leaders.map(l => ({
+                username: l.username,
+                nickname: l.nickname,
+                dscoin_balance: l.dscoin_balance,
+                avatarUrl: (l.avatarUrl && l.avatarUrl.trim() !== '') ? l.avatarUrl : 'dslogo.png'
+            }));
+
+            res.json({ success: true, leaders: processedLeaders });
         } catch (err) {
             console.error("Ошибка Leaderboard:", err);
             res.status(500).json({ error: 'Ошибка получения топа' });
@@ -247,10 +261,11 @@ module.exports = function(app, User, supabase) {
             let isWin = false;
             let mult = 0;
 
-            if (choice === 1 && roll < 25) { isWin = true; mult = 3; }
-            else if (choice === 2 && roll >= 25 && roll <= 50) { isWin = true; mult = 2; }
-            else if (choice === 3 && roll > 51 && roll <= 75) { isWin = true; mult = 2; }
-            else if (choice === 4 && roll > 75) { isWin = true; mult = 3; }
+            // Выравниваем сектора для точного покрытия от 1 до 100
+            if (choice === 1 && roll <= 25) { isWin = true; mult = 3; }
+            else if (choice === 2 && roll >= 26 && roll <= 50) { isWin = true; mult = 2; }
+            else if (choice === 3 && roll >= 51 && roll <= 75) { isWin = true; mult = 2; }
+            else if (choice === 4 && roll >= 76) { isWin = true; mult = 3; }
 
             const winTotal = isWin ? betAmount * mult : 0;
             user.dscoin_balance = user.dscoin_balance - betAmount + winTotal;
@@ -310,13 +325,13 @@ module.exports = function(app, User, supabase) {
             const roll = Math.random() * 100;
             let resultColor = '';
             
-            // Математика: Gold 7%, Purple 46.5%, Cyan 46.5%
-            if (roll < 7) {
+            // Выровнено с фронтендом: Gold 5%, Cyan 47.5%, Purple 47.5%
+            if (roll < 5) {
                 resultColor = 'gold';
-            } else if (roll < 53.5) {
-                resultColor = 'purple';
-            } else {
+            } else if (roll < 52.5) {
                 resultColor = 'cyan';
+            } else {
+                resultColor = 'purple';
             }
 
             const isWin = color === resultColor;
