@@ -282,7 +282,7 @@
                 <div class="pulse-dot"></div>
                 <span class="online-num" id="onlineCount">1 ОНЛАЙН</span>
             </div>
-            <a href="/profile" class="profile-btn" title="Профиль"><img src="dslogo.png" alt="Profile" id="userAvatar" onerror="this.src='dslogo.png'"></a>
+            <a href="/profile" class="profile-btn" title="Профиль"><img src="dslogo.png" alt="Profile" id="userAvatar"></a>
         </div>
         <div class="global-balance" id="globalBalanceWrap">
             <span class="val" id="uiBalance">0</span><span class="cur">NC</span>
@@ -488,6 +488,7 @@
             <button class="np-btn np-confirm" onclick="closeNumpad()">ПРИМЕНИТЬ</button>
         </div>
     </div>
+
     <script>
         // --- ИНИЦИАЛИЗАЦИЯ ---
         const API_URL = "https://dxtrslizze.onrender.com/api";
@@ -507,7 +508,7 @@
         musicBtn.onclick = toggleMusic;
         document.body.addEventListener('click', () => { if(!isMusicPlaying) toggleMusic(); }, { once: true });
 
-        // === ТВОЯ ОРИГИНАЛЬНАЯ АВТОРИЗАЦИЯ 1 В 1 ===
+        // === ОРИГИНАЛЬНАЯ АВТОРИЗАЦИЯ ===
         window.onload = async () => {
             if (token) {
                 try {
@@ -618,6 +619,8 @@
             npModal.classList.remove('active');
             activeInputId = null;
         }
+
+        // === ИДЕАЛЬНЫЙ ВВОД В NUMPAD ===
         function npPress(val) {
             if(!activeInputId) return;
             const disp = document.getElementById(activeInputId + '_disp');
@@ -625,16 +628,22 @@
 
             if(val === 'DEL') {
                 current = current.slice(0, -1);
-                if(current === '' || current === '0') current = isDecimalAllowed ? '1.1' : '1';
+                if(current === '') current = '0'; // Сбрасываем в 0 при полном удалении
             } else if (val === '.') {
                 if(isDecimalAllowed && !current.includes('.')) current += '.';
             } else {
-                if(current === '0' && val !== '0') current = val;
-                else if (current.length < 6) current += val; 
+                // Если сейчас стоит голый 0, то мы его заменяем на любую цифру (например, 2)
+                if(current === '0' && val !== '0') {
+                    current = val;
+                } else if (current === '0' && val === '0') {
+                    // Запрещаем вводить кучу нулей "0000"
+                } else if (current.length < 8) { // Даем вводить до 8 символов
+                    current += val; 
+                }
             }
-            if(activeInputId === 'targetCrash' && parseFloat(current) < 1.1 && current.length >= 3) current = '1.1';
             disp.innerText = current;
         }
+
         function getBetValue(id, isFloat = false) {
             const val = document.getElementById(id + '_disp').innerText;
             return isFloat ? parseFloat(val) : parseInt(val);
