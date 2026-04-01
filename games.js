@@ -57,7 +57,7 @@ module.exports = function(app, User, supabase) {
 
             // БЭКЕНД-ЗАЩИТА: Проверяем аватарки перед отправкой на фронт
             const processedLeaders = leaders.map(l => {
-                let finalAvatar = 'dslogo.png'; // Дефолтная аватарка
+                let finalAvatar = '../dslogo.png'; // Дефолтная аватарка
                 
                 // Если ссылка есть и она не состоит из одних пробелов — берем её
                 if (l.avatarUrl && typeof l.avatarUrl === 'string' && l.avatarUrl.trim() !== '') {
