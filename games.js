@@ -48,39 +48,34 @@ module.exports = function(app, User, supabase) {
     // ==========================================
 
     // Лидерборд: Топ-5 богатых пользователей
+        // Лидерборд: Топ-5 богатых пользователей
     app.get('/api/games/leaderboard', async (req, res) => {
         try {
             const leaders = await User.find({}, 'username nickname dscoin_balance avatarUrl')
                 .sort({ dscoin_balance: -1 })
                 .limit(5);
-            
-            // Бэкенд-защита: если аватарки нет, жестко отдаем дефолтную
-            const processedLeaders = leaders.map(l => ({
-                username: l.username,
-                nickname: l.nickname,
-                dscoin_balance: l.dscoin_balance,
-                avatarUrl: (l.avatarUrl && l.avatarUrl.trim() !== '') ? l.avatarUrl : 'dslogo.png'
-            }));
+
+            // БЭКЕНД-ЗАЩИТА: Проверяем аватарки перед отправкой на фронт
+            const processedLeaders = leaders.map(l => {
+                let finalAvatar = 'dslogo.png'; // Дефолтная аватарка
+                
+                // Если ссылка есть и она не состоит из одних пробелов — берем её
+                if (l.avatarUrl && typeof l.avatarUrl === 'string' && l.avatarUrl.trim() !== '') {
+                    finalAvatar = l.avatarUrl;
+                }
+                
+                return {
+                    username: l.username,
+                    nickname: l.nickname,
+                    dscoin_balance: l.dscoin_balance,
+                    avatarUrl: finalAvatar
+                };
+            });
 
             res.json({ success: true, leaders: processedLeaders });
         } catch (err) {
             console.error("Ошибка Leaderboard:", err);
             res.status(500).json({ error: 'Ошибка получения топа' });
-        }
-    });
-
-    // Получить пул обложек для анимации слотов
-    app.get('/api/games/slots/covers', async (req, res) => {
-        try {
-            const { data, error } = await supabase
-                .from('music')
-                .select('cover_url')
-                .limit(20);
-
-            if (error || !data) return res.status(500).json({ error: 'Ошибка загрузки обложек' });
-            res.json({ success: true, covers: data.map(t => t.cover_url) });
-        } catch (err) {
-            res.status(500).json({ error: 'Ошибка сервера' });
         }
     });
 
