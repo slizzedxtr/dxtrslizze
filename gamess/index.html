@@ -673,7 +673,7 @@
                         <div class="ld-item">
                             <div class="ld-user">
                                 <span style="font-weight:900; color:${c}; text-shadow:0 0 10px ${c}; width:20px;">#${i+1}</span>
-                                <img src="${u.avatarUrl || 'dslogo.png'}" class="ld-avatar">
+                                <img src="${u.avatarUrl || 'dslogo.png'}" class="ld-avatar" onerror="this.src='dslogo.png'">
                                 <span class="ld-name">${name}</span>
                             </div>
                             <span class="ld-score">${u.dscoin_balance} NC</span>
