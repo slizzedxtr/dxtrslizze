@@ -488,11 +488,9 @@
             <button class="np-btn np-confirm" onclick="closeNumpad()">ПРИМЕНИТЬ</button>
         </div>
     </div>
-
-            <script>
+    <script>
         // --- ИНИЦИАЛИЗАЦИЯ ---
         const API_URL = "https://dxtrslizze.onrender.com/api";
-        // Старый, рабочий способ получения токена:
         const token = localStorage.getItem('token') || localStorage.getItem('dxtr_token');
         let userBalance = 0;
         
@@ -509,6 +507,7 @@
         musicBtn.onclick = toggleMusic;
         document.body.addEventListener('click', () => { if(!isMusicPlaying) toggleMusic(); }, { once: true });
 
+        // === ТВОЯ ОРИГИНАЛЬНАЯ АВТОРИЗАЦИЯ 1 В 1 ===
         window.onload = async () => {
             if (token) {
                 try {
@@ -517,14 +516,9 @@
                     if (data.success) {
                         document.getElementById('authLock').style.display = 'none';
                         document.getElementById('globalBalanceWrap').classList.add('active');
-                        
-                        // Безопасная установка аватарки (фикс багов пустого поля)
-                        if(data.user.avatarUrl && typeof data.user.avatarUrl === 'string' && data.user.avatarUrl.trim() !== '') {
+                        if(data.user.avatarUrl && data.user.avatarUrl !== 'dslogo.png') {
                             document.getElementById('userAvatar').src = data.user.avatarUrl;
-                        } else {
-                            document.getElementById('userAvatar').src = 'dslogo.png';
                         }
-
                         updateBalance(data.user.dscoin_balance || 0);
                         
                         // Загружаем начальные данные
@@ -567,7 +561,7 @@
             document.getElementById('tab-' + id).classList.add('active');
             event.currentTarget.classList.add('active');
             
-            // Корректируем позицию рулетки при открытии вкладки (чтобы ширина контейнера обновилась)
+            // Корректируем позицию рулетки при открытии вкладки
             if(id === 'roulette') {
                 setTimeout(() => updateRoulettePosition(0), 10);
             }
@@ -593,11 +587,10 @@
             const rect = npModal.getBoundingClientRect();
             initialX = rect.left; initialY = rect.top;
             
-            // Отключаем центрирование и фиксируем абсолютную позицию
             npModal.style.transform = 'none';
             npModal.style.left = initialX + 'px';
             npModal.style.top = initialY + 'px';
-            npModal.style.animation = 'none'; // вырубаем анимацию чтобы не дергалось
+            npModal.style.animation = 'none'; 
         }
         function drag(e) {
             if (!isDragging) return;
@@ -616,7 +609,6 @@
         function openNumpad(targetId, allowDecimal = false) {
             activeInputId = targetId;
             isDecimalAllowed = allowDecimal;
-            // Центрируем при каждом новом открытии
             npModal.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
             npModal.style.left = '50%';
             npModal.style.top = '50%';
@@ -668,12 +660,11 @@
                     const html = data.leaders.map((u, i) => {
                         let c = i===0 ? '#ffea00' : (i===1 ? '#c0c0c0' : (i===2 ? '#cd7f32' : 'var(--text-muted)'));
                         let name = u.nickname || u.username; 
-                        let avatar = (u.avatarUrl && u.avatarUrl.trim() !== '') ? u.avatarUrl : 'dslogo.png';
                         return `
                         <div class="ld-item">
                             <div class="ld-user">
                                 <span style="font-weight:900; color:${c}; text-shadow:0 0 10px ${c}; width:20px;">#${i+1}</span>
-                                <img src="${avatar}" class="ld-avatar" onerror="this.src='dslogo.png'">
+                                <img src="${u.avatarUrl || 'dslogo.png'}" class="ld-avatar">
                                 <span class="ld-name">${name}</span>
                             </div>
                             <span class="ld-score">${u.dscoin_balance} NC</span>
@@ -705,7 +696,7 @@
             } catch(e) { img.style.boxShadow = `0 0 20px var(--neon-cyan)`; }
         }
 
-        // --- SLOTS (СИНХРОНИЗИРОВАНО) ---
+        // --- SLOTS ---
         let slotCovers = ['dslogo.png'];
         async function fetchSlotCovers() {
             try {
@@ -740,22 +731,18 @@
                 
                 if(!res.ok) { printMsg('slots', data.error, 'err'); btn.disabled = false; return; }
 
-                // СТРОИМ ЛЕНТУ С ВЫИГРЫШЕМ НА КОНЦЕ
                 [1,2,3].forEach((id, i) => {
                     const strip = document.getElementById('reel'+id);
                     let html = '';
-                    // Генерим 20 случайных элементов
                     for(let j=0; j<20; j++) html += `<img src="${slotCovers[Math.floor(Math.random()*slotCovers.length)]}" crossorigin="anonymous">`;
-                    // 21-й элемент = результат сервера
                     html += `<img src="${data.items[i]}" crossorigin="anonymous">`;
                     
                     strip.innerHTML = html;
                     strip.style.transition = 'none';
                     strip.style.transform = `translateY(0px)`;
                     
-                    void strip.offsetWidth; // Force Reflow
+                    void strip.offsetWidth; 
                     
-                    // Анимируем прямо на 21-й элемент
                     strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.15, 0.85, 0.15, 1)`;
                     strip.style.transform = `translateY(-${20*160}px)`; 
                 });
@@ -865,8 +852,8 @@
         // --- ROULETTE (НЕПРЕРЫВНАЯ ЛЕНТА) ---
         let currentR = null;
         let isRouletteSpinning = false;
-        let rCells = []; // Массив, отслеживающий цвета ячеек в ленте
-        let currentRIndex = 3; // Стартуем, фокусируясь на 3-й ячейке
+        let rCells = []; 
+        let currentRIndex = 3; 
 
         function selectRoulette(color) {
             if(isRouletteSpinning) return; 
@@ -881,7 +868,6 @@
             strip.innerHTML = '';
             rCells = [];
             
-            // Генерируем начальный кусок ленты (40 ячеек)
             for(let i=0; i<40; i++) {
                 let c = 'purple';
                 let rand = Math.random();
@@ -894,7 +880,6 @@
         }
         initRoulette();
 
-        // Подстройка позиции (нужна при ресайзе окна или смене вкладок)
         function updateRoulettePosition(transitionTime = 0) {
             const strip = document.getElementById('rStrip');
             const wheelWidth = document.querySelector('.roulette-wheel').offsetWidth || 700;
@@ -926,7 +911,6 @@
             printMsg('roulette', 'ОЖИДАНИЕ...', 'err');
 
             try {
-                // Сервер всё так же решает исход ставки
                 const res = await fetch(`${API_URL}/games/roulette`, { 
                     method:'POST', headers:{'Content-Type':'application/json', 'Authorization':`Bearer ${token}`}, body: JSON.stringify({bet, color: currentR})
                 });
@@ -934,18 +918,16 @@
                 
                 if(!res.ok) {
                     printMsg('roulette', data.error, 'err');
-                    updateBalance(userBalance + bet); // Возвращаем визуально при ошибке
+                    updateBalance(userBalance + bet); 
                     resetRouletteState(); 
                     return;
                 }
 
                 printMsg('roulette', 'ВРАЩЕНИЕ...', 'err');
 
-                // 1. Рассчитываем целевой индекс (текущий + 30-40 ячеек вперед)
                 const targetIndex = currentRIndex + 30 + Math.floor(Math.random() * 10);
-                
-                // 2. Достраиваем ленту вправо (на ходу), чтобы хватало места
                 const strip = document.getElementById('rStrip');
+                
                 while(rCells.length <= targetIndex + 20) {
                     let c = 'purple';
                     let rand = Math.random();
@@ -956,16 +938,12 @@
                     strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold' ? '14x' : '2x'}</div>`);
                 }
 
-                // 3. Подменяем будущую целевую ячейку на ту, что выдал сервер
                 rCells[targetIndex] = data.resultColor;
                 const targetEl = strip.children[targetIndex];
                 targetEl.className = `r-cell r-${data.resultColor}`;
                 targetEl.innerText = data.resultColor === 'gold' ? '14x' : '2x';
 
-                // 4. Плавно крутим до нужного индекса
                 currentRIndex = targetIndex;
-                
-                // Добавим микро-смещение, чтобы стрелка не останавливалась каждый раз в идеальном центре ячейки
                 const randomPixelOffset = Math.floor(Math.random() * 80) - 40; 
                 const wheelWidth = document.querySelector('.roulette-wheel').offsetWidth;
                 const offset = (currentRIndex * 100 + 50) - (wheelWidth / 2) + randomPixelOffset;
@@ -973,7 +951,6 @@
                 strip.style.transition = `transform 4s cubic-bezier(0.15, 0.85, 0.15, 1)`;
                 strip.style.transform = `translateX(-${offset}px)`;
 
-                // 5. Выдаем результат строго по завершении визуальной анимации
                 setTimeout(() => {
                     updateBalance(data.newBalance);
                     if(data.isWin) printMsg('roulette', `ПОБЕДА! +${data.win} NC`, 'win');
@@ -1001,7 +978,6 @@
         let maxLevel = 10;
         
         async function fetchMinerLevel() {
-            // Подгружаем левел майнера (вызывается на старте)
             try {
                 const res = await fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await res.json();
