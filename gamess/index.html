@@ -489,11 +489,9 @@
         </div>
     </div>
 
-    <script>
+        <script>
         // --- ИНИЦИАЛИЗАЦИЯ ---
         const API_URL = "https://dxtrslizze.onrender.com/api";
-        const token = localStorage.getItem('token') || localStorage.getItem('dxtr_token');
-        let userBalance = 0;
         
         // Аудио логика
         const bgm = document.getElementById('bgMusic');
@@ -508,22 +506,36 @@
         musicBtn.onclick = toggleMusic;
         document.body.addEventListener('click', () => { if(!isMusicPlaying) toggleMusic(); }, { once: true });
 
+        // Безопасное получение токена
+        function getValidToken() {
+            let t = localStorage.getItem('token');
+            if (!t || t === 'null' || t === 'undefined') t = localStorage.getItem('dxtr_token');
+            if (!t || t === 'null' || t === 'undefined') return null;
+            return t;
+        }
+
+        let userBalance = 0;
+        const token = getValidToken();
+
         window.onload = async () => {
             if (token) {
                 try {
-                    const res = await fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+                    const res = await fetch(`${API_URL}/auth/me`, { 
+                        headers: { 'Authorization': `Bearer ${token}` } 
+                    });
                     const data = await res.json();
-                    if (data.success) {
+                    
+                    // Проверяем статус ответа и наличие объекта user
+                    if ((data.success || res.ok) && data.user) {
                         document.getElementById('authLock').style.display = 'none';
                         document.getElementById('globalBalanceWrap').classList.add('active');
                         
-                        // Если аватарка есть и не пустая, то ставим, иначе резервная dslogo.png
-                        if(data.user.avatarUrl && data.user.avatarUrl.trim() !== '') {
-                            document.getElementById('userAvatar').src = data.user.avatarUrl;
-                        } else {
-                            document.getElementById('userAvatar').src = 'dslogo.png';
-                        }
-                        
+                        // Безопасная проверка аватарки (без крашей, если avatarUrl отсутствует)
+                        const avatar = (data.user.avatarUrl && typeof data.user.avatarUrl === 'string' && data.user.avatarUrl.trim() !== '') 
+                            ? data.user.avatarUrl 
+                            : 'dslogo.png';
+                            
+                        document.getElementById('userAvatar').src = avatar;
                         updateBalance(data.user.dscoin_balance || 0);
                         
                         // Загружаем начальные данные
@@ -531,9 +543,18 @@
                         fetchLeaderboard();
                         setInterval(fetchLeaderboard, 5000); // 24/7 LIVE ОБНОВЛЕНИЕ
                         fetchSlotCovers();
-                    } else { lockUI(); }
-                } catch(e) { lockUI(); }
-            } else { lockUI(); }
+                    } else { 
+                        console.error("Auth Failed. Server Response:", data);
+                        lockUI(); 
+                    }
+                } catch(e) { 
+                    console.error("Auth Catch Error:", e);
+                    lockUI(); 
+                }
+            } else { 
+                console.warn("No valid token found in localStorage.");
+                lockUI(); 
+            }
         };
 
         function lockUI() { document.getElementById('authLock').style.opacity = '1'; }
@@ -566,7 +587,7 @@
             document.getElementById('tab-' + id).classList.add('active');
             event.currentTarget.classList.add('active');
             
-            // Корректируем позицию рулетки при открытии вкладки (чтобы ширина контейнера обновилась)
+            // Корректируем позицию рулетки при открытии вкладки
             if(id === 'roulette') {
                 setTimeout(() => updateRoulettePosition(0), 10);
             }
@@ -591,12 +612,10 @@
             else { startX = e.clientX; startY = e.clientY; }
             const rect = npModal.getBoundingClientRect();
             initialX = rect.left; initialY = rect.top;
-            
-            // Отключаем центрирование и фиксируем абсолютную позицию
             npModal.style.transform = 'none';
             npModal.style.left = initialX + 'px';
             npModal.style.top = initialY + 'px';
-            npModal.style.animation = 'none'; // вырубаем анимацию чтобы не дергалось
+            npModal.style.animation = 'none';
         }
         function drag(e) {
             if (!isDragging) return;
@@ -615,7 +634,6 @@
         function openNumpad(targetId, allowDecimal = false) {
             activeInputId = targetId;
             isDecimalAllowed = allowDecimal;
-            // Центрируем при каждом новом открытии
             npModal.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
             npModal.style.left = '50%';
             npModal.style.top = '50%';
@@ -649,6 +667,7 @@
 
         // --- DASHBOARD ---
         async function claimDaily() {
+            if(!token) return;
             const btn = document.getElementById('btnDaily'); btn.disabled = true;
             try {
                 const res = await fetch(`${API_URL}/games/daily`, { method:'POST', headers:{'Authorization':`Bearer ${token}`}});
@@ -704,7 +723,7 @@
             } catch(e) { img.style.boxShadow = `0 0 20px var(--neon-cyan)`; }
         }
 
-        // --- SLOTS (СИНХРОНИЗИРОВАНО) ---
+        // --- SLOTS ---
         let slotCovers = ['dslogo.png'];
         async function fetchSlotCovers() {
             try {
@@ -727,6 +746,7 @@
         }
 
         async function playSlots() {
+            if(!token) return;
             const bet = getBetValue('betSlots');
             if (bet > userBalance || bet <= 0) return printMsg('slots', 'ОШИБКА СТАВКИ', 'err');
             
@@ -739,13 +759,10 @@
                 
                 if(!res.ok) { printMsg('slots', data.error, 'err'); btn.disabled = false; return; }
 
-                // СТРОИМ ЛЕНТУ С ВЫИГРЫШЕМ НА КОНЦЕ
                 [1,2,3].forEach((id, i) => {
                     const strip = document.getElementById('reel'+id);
                     let html = '';
-                    // Генерим 20 случайных элементов
                     for(let j=0; j<20; j++) html += `<img src="${slotCovers[Math.floor(Math.random()*slotCovers.length)]}" crossorigin="anonymous">`;
-                    // 21-й элемент = результат сервера
                     html += `<img src="${data.items[i]}" crossorigin="anonymous">`;
                     
                     strip.innerHTML = html;
@@ -754,7 +771,6 @@
                     
                     void strip.offsetWidth; // Force Reflow
                     
-                    // Анимируем прямо на 21-й элемент
                     strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.15, 0.85, 0.15, 1)`;
                     strip.style.transform = `translateY(-${20*160}px)`; 
                 });
@@ -787,6 +803,7 @@
         }
 
         async function playDice() {
+            if(!token) return;
             if(!currentDice) return printMsg('dice', 'ВЫБЕРИТЕ СЕКТОР', 'err');
             const bet = getBetValue('betDice');
             if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('dice', 'ОШИБКА СТАВКИ', 'err');
@@ -816,6 +833,7 @@
         // --- CRASH ---
         let crashInterval;
         async function playCrash() {
+            if(!token) return;
             const bet = getBetValue('betCrash');
             const target = getBetValue('targetCrash', true);
             if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('crash', 'ОШИБКА СТАВКИ', 'err');
@@ -861,11 +879,11 @@
             } catch(e) { btn.disabled = false; printMsg('crash', 'Сбой', 'err'); }
         }
 
-        // --- ROULETTE (НЕПРЕРЫВНАЯ ЛЕНТА) ---
+        // --- ROULETTE ---
         let currentR = null;
         let isRouletteSpinning = false;
-        let rCells = []; // Массив, отслеживающий цвета ячеек в ленте
-        let currentRIndex = 3; // Стартуем, фокусируясь на 3-й ячейке
+        let rCells = []; 
+        let currentRIndex = 3; 
 
         function selectRoulette(color) {
             if(isRouletteSpinning) return; 
@@ -879,26 +897,21 @@
             const strip = document.getElementById('rStrip');
             strip.innerHTML = '';
             rCells = [];
-            
-            // Генерируем начальный кусок ленты (40 ячеек)
             for(let i=0; i<40; i++) {
                 let c = 'purple';
                 let rand = Math.random();
                 if(rand < 0.05) c = 'gold';
                 else if(rand < 0.525) c = 'cyan';
-                
                 rCells.push(c);
                 strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold' ? '14x' : '2x'}</div>`);
             }
         }
         initRoulette();
 
-        // Подстройка позиции (нужна при ресайзе окна или смене вкладок)
         function updateRoulettePosition(transitionTime = 0) {
             const strip = document.getElementById('rStrip');
             const wheelWidth = document.querySelector('.roulette-wheel').offsetWidth || 700;
             const offset = (currentRIndex * 100 + 50) - (wheelWidth / 2);
-            
             strip.style.transition = transitionTime > 0 ? `transform ${transitionTime}s cubic-bezier(0.15, 0.85, 0.15, 1)` : 'none';
             strip.style.transform = `translateX(-${offset}px)`;
         }
@@ -910,6 +923,7 @@
         });
 
         async function playRoulette() {
+            if(!token) return;
             if(isRouletteSpinning) return;
             if(!currentR) return printMsg('roulette', 'СНАЧАЛА ВЫБЕРИТЕ ЦВЕТ', 'err');
             
@@ -925,7 +939,6 @@
             printMsg('roulette', 'ОЖИДАНИЕ...', 'err');
 
             try {
-                // Сервер всё так же решает исход ставки
                 const res = await fetch(`${API_URL}/games/roulette`, { 
                     method:'POST', headers:{'Content-Type':'application/json', 'Authorization':`Bearer ${token}`}, body: JSON.stringify({bet, color: currentR})
                 });
@@ -933,38 +946,30 @@
                 
                 if(!res.ok) {
                     printMsg('roulette', data.error, 'err');
-                    updateBalance(userBalance + bet); // Возвращаем визуально при ошибке
+                    updateBalance(userBalance + bet); 
                     resetRouletteState(); 
                     return;
                 }
 
                 printMsg('roulette', 'ВРАЩЕНИЕ...', 'err');
-
-                // 1. Рассчитываем целевой индекс (текущий + 30-40 ячеек вперед)
                 const targetIndex = currentRIndex + 30 + Math.floor(Math.random() * 10);
-                
-                // 2. Достраиваем ленту вправо (на ходу), чтобы хватало места
                 const strip = document.getElementById('rStrip');
+                
                 while(rCells.length <= targetIndex + 20) {
                     let c = 'purple';
                     let rand = Math.random();
                     if(rand < 0.05) c = 'gold';
                     else if(rand < 0.525) c = 'cyan';
-                    
                     rCells.push(c);
                     strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold' ? '14x' : '2x'}</div>`);
                 }
 
-                // 3. Подменяем будущую целевую ячейку на ту, что выдал сервер
                 rCells[targetIndex] = data.resultColor;
                 const targetEl = strip.children[targetIndex];
                 targetEl.className = `r-cell r-${data.resultColor}`;
                 targetEl.innerText = data.resultColor === 'gold' ? '14x' : '2x';
 
-                // 4. Плавно крутим до нужного индекса
                 currentRIndex = targetIndex;
-                
-                // Добавим микро-смещение, чтобы стрелка не останавливалась каждый раз в идеальном центре ячейки
                 const randomPixelOffset = Math.floor(Math.random() * 80) - 40; 
                 const wheelWidth = document.querySelector('.roulette-wheel').offsetWidth;
                 const offset = (currentRIndex * 100 + 50) - (wheelWidth / 2) + randomPixelOffset;
@@ -972,12 +977,10 @@
                 strip.style.transition = `transform 4s cubic-bezier(0.15, 0.85, 0.15, 1)`;
                 strip.style.transform = `translateX(-${offset}px)`;
 
-                // 5. Выдаем результат строго по завершении визуальной анимации
                 setTimeout(() => {
                     updateBalance(data.newBalance);
                     if(data.isWin) printMsg('roulette', `ПОБЕДА! +${data.win} NC`, 'win');
                     else printMsg('roulette', 'ПРОИГРЫШ', 'lose');
-                    
                     resetRouletteState();
                 }, 4000);
 
@@ -1000,6 +1003,7 @@
         let maxLevel = 10;
         
         async function fetchMinerLevel() {
+            if(!token) return;
             try {
                 const res = await fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                 const data = await res.json();
@@ -1027,6 +1031,7 @@
         }
 
         function mineClick() {
+            if(!token) return;
             mClicks++; 
             document.getElementById('mClicks').innerText = mClicks;
             document.getElementById('mFill').style.width = Math.min((mClicks / 20 * 100), 100) + '%';
@@ -1043,6 +1048,7 @@
         }
         
         async function upgradeMiner() {
+            if(!token) return;
             if(mLevel >= maxLevel) return;
             let currentPrice = Math.floor(50 * Math.pow(1.75, mLevel - 1));
             
@@ -1067,7 +1073,6 @@
                 printMsg('miner', 'Ошибка сети', 'err');
             }
         }
-
     </script>
 </body>
 </html>
