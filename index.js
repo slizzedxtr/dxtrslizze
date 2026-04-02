@@ -56,30 +56,14 @@ const UserSchema = new mongoose.Schema({
     banExpireAt: { type: Number, default: 0 },
     banReason: String,
     banDurationText: String,
-    regDate: { type: Date, default: Date.now }, // <--- ИСПРАВЛЕНИЕ 1: ДОБАВЛЕНА ЗАПЯТАЯ
-const UserSchema = new mongoose.Schema({
-    username: { type: String, unique: true, required: true, lowercase: true },
-    password: { type: String, required: true },
-    clientId: { type: String, unique: true },
-    nickname: String,
-    avatarUrl: { type: String, default: 'dslogo.png' },
-    dscoin_balance: { type: Number, default: 100 },
-    fpHash: String,
-    isBanned: { type: Boolean, default: false },
-    banExpireAt: { type: Number, default: 0 },
-    banReason: String,
-    banDurationText: String,
     regDate: { type: Date, default: Date.now },
     lastDaily: { type: Number, default: 0 },
-    
-    // === ТА САМАЯ ФЕРМА ===
     farm: { 
         active: { type: Boolean, default: false },
         timeLevel: { type: Number, default: 0 },
         incomeLevel: { type: Number, default: 0 },
         lastClaim: { type: Number, default: 0 }
     },
-    
     inventory: {
         frames: [String],
         titles: [String],
@@ -87,9 +71,7 @@ const UserSchema = new mongoose.Schema({
     },
     activeFrame: { type: String, default: '' },
     activeTitle: { type: String, default: '' }
-}); // <--- ВОТ ЭТИ СКОБКИ БЫЛИ ПОТЕРЯНЫ
-
-const User = mongoose.model('User', UserSchema);
+});
 const User = mongoose.model('User', UserSchema);
 
 const MessageMapSchema = new mongoose.Schema({
