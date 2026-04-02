@@ -59,7 +59,12 @@ const UserSchema = new mongoose.Schema({
     regDate: { type: Date, default: Date.now }, // <--- ИСПРАВЛЕНИЕ 1: ДОБАВЛЕНА ЗАПЯТАЯ
     // === НОВЫЕ ПОЛЯ ДЛЯ GAMES.JS ===
     lastDaily: { type: Number, default: 0 },
-    lastFarm: { type: Number, default: 0 },
+    farm: { 
+        active: { type: Boolean, default: false },
+        timeLevel: { type: Number, default: 0 },
+        incomeLevel: { type: Number, default: 0 },
+        lastClaim: { type: Number, default: 0 }
+    },
     inventory: {
         frames: [String],
         titles: [String],
@@ -67,7 +72,6 @@ const UserSchema = new mongoose.Schema({
     },
     activeFrame: { type: String, default: '' },
     activeTitle: { type: String, default: '' }
-});
 const User = mongoose.model('User', UserSchema);
 
 const MessageMapSchema = new mongoose.Schema({
