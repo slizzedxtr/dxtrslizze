@@ -3,6 +3,13 @@ const jwt = require('jsonwebtoken');
 // Секретный ключ (ДОЛЖЕН СОВПАДАТЬ С ТЕМ, ЧТО В auth.js/index.js)
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 
+// Константы для пассивного фарма (значения и цены)
+const FARM_TIME_MINUTES = [30, 25, 20, 15, 10, 5];
+const FARM_TIME_COSTS = [750, 1500, 3000, 5000, 10000];
+
+const FARM_INCOME_COINS = [2, 4, 6, 8, 10, 15, 20];
+const FARM_INCOME_COSTS = [750, 1500, 3000, 5000, 10000, 17500];
+
 module.exports = function(app, User, supabase) {
 
     // ==========================================
@@ -35,6 +42,31 @@ module.exports = function(app, User, supabase) {
                 return null;
             }
 
+            // --- ЛЕНИВОЕ НАЧИСЛЕНИЕ ПАССИВНОГО ДОХОДА (ОФФЛАЙН ФАРМ) ---
+            if (user.farm && user.farm.active) {
+                const now = Date.now();
+                const lastClaim = user.farm.lastClaim || now;
+                
+                const tLvl = user.farm.timeLevel || 0;
+                const iLvl = user.farm.incomeLevel || 0;
+                
+                const intervalMs = FARM_TIME_MINUTES[tLvl] * 60 * 1000;
+                const incomePerInterval = FARM_INCOME_COINS[iLvl];
+                
+                const timePassed = now - lastClaim;
+                
+                if (timePassed >= intervalMs) {
+                    const intervalsPassed = Math.floor(timePassed / intervalMs);
+                    const gainedCoins = intervalsPassed * incomePerInterval;
+                    
+                    user.dscoin_balance = (user.dscoin_balance || 0) + gainedCoins;
+                    user.farm.lastClaim = lastClaim + (intervalsPassed * intervalMs);
+                    user.markModified('farm');
+                    await user.save();
+                }
+            }
+            // ------------------------------------------------------------
+
             return user;
         } catch (err) {
             console.error("Ошибка авторизации в играх:", err.message);
@@ -48,7 +80,6 @@ module.exports = function(app, User, supabase) {
     // ==========================================
 
     // Лидерборд: Топ-5 богатых пользователей
-        // Лидерборд: Топ-5 богатых пользователей
     app.get('/api/games/leaderboard', async (req, res) => {
         try {
             const leaders = await User.find({}, 'username nickname dscoin_balance avatarUrl')
@@ -109,55 +140,86 @@ module.exports = function(app, User, supabase) {
         }
     });
 
-    // Майнер (Вызывает фронтенд после заполнения шкалы - каждые 20 кликов)
-    app.post('/api/games/mine', async (req, res) => {
+    // Активация пассивного фарма
+    app.post('/api/games/farm/activate', async (req, res) => {
         try {
             const user = await authenticate(req, res);
             if (!user) return;
 
-            // Уровень майнера = количество добываемых монет за 1 заполнение шкалы
-            const power = user.minerLevel || 1; 
-            
-            user.dscoin_balance = (user.dscoin_balance || 0) + power;
+            if (user.farm && user.farm.active) {
+                return res.status(400).json({ error: 'СИСТЕМА УЖЕ АКТИВИРОВАНА' });
+            }
+
+            if ((user.dscoin_balance || 0) < 1000) {
+                return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
+            }
+
+            user.dscoin_balance -= 1000;
+            user.farm = {
+                active: true,
+                timeLevel: 0,
+                incomeLevel: 0,
+                lastClaim: Date.now() // Старт таймера
+            };
+            user.markModified('farm');
             await user.save();
 
-            res.json({ success: true, newBalance: user.dscoin_balance, earned: power });
+            res.json({ success: true, newBalance: user.dscoin_balance, message: 'ФЕРМА АКТИВИРОВАНА' });
         } catch (err) {
-            console.error("Ошибка в Miner:", err);
+            console.error("Ошибка в Farm Activate:", err);
             res.status(500).json({ error: 'Ошибка сервера' });
         }
     });
 
-    // Прокачка Майнера
-    app.post('/api/games/miner/upgrade', async (req, res) => {
+    // Прокачка пассивного фарма
+    app.post('/api/games/farm/upgrade', async (req, res) => {
         try {
             const user = await authenticate(req, res);
             if (!user) return;
 
-            const currentLevel = user.minerLevel || 1;
-            const MAX_LEVEL = 10;
-
-            if (currentLevel >= MAX_LEVEL) {
-                return res.status(400).json({ error: 'ДОСТИГНУТ МАКСИМАЛЬНЫЙ УРОВЕНЬ ЯДРА' });
+            if (!user.farm || !user.farm.active) {
+                return res.status(400).json({ error: 'СНАЧАЛА АКТИВИРУЙТЕ СИСТЕМУ' });
             }
 
-            // Математика цены: 50 * (1.75 ^ (level - 1))
-            const cost = Math.floor(50 * Math.pow(1.75, currentLevel - 1));
+            const { type } = req.body;
+            let cost;
+
+            if (type === 'time') {
+                if (user.farm.timeLevel >= FARM_TIME_COSTS.length) {
+                    return res.status(400).json({ error: 'МАКСИМАЛЬНЫЙ УРОВЕНЬ ДОСТИГНУТ' });
+                }
+                cost = FARM_TIME_COSTS[user.farm.timeLevel];
+            } else if (type === 'income') {
+                if (user.farm.incomeLevel >= FARM_INCOME_COSTS.length) {
+                    return res.status(400).json({ error: 'МАКСИМАЛЬНЫЙ УРОВЕНЬ ДОСТИГНУТ' });
+                }
+                cost = FARM_INCOME_COSTS[user.farm.incomeLevel];
+            } else {
+                return res.status(400).json({ error: 'НЕВЕРНЫЙ ПАРАМЕТР УЛУЧШЕНИЯ' });
+            }
 
             if (user.dscoin_balance < cost) {
-                return res.status(400).json({ error: `НЕДОСТАТОЧНО NC (${cost})` });
+                return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
             }
 
             user.dscoin_balance -= cost;
-            user.minerLevel = currentLevel + 1;
+            
+            if (type === 'time') {
+                user.farm.timeLevel += 1;
+            } else {
+                user.farm.incomeLevel += 1;
+            }
+
+            user.markModified('farm');
             await user.save();
 
-            res.json({ success: true, newBalance: user.dscoin_balance, newLevel: user.minerLevel });
+            res.json({ success: true, newBalance: user.dscoin_balance });
         } catch (err) {
-            console.error("Ошибка в Miner Upgrade:", err);
+            console.error("Ошибка в Farm Upgrade:", err);
             res.status(500).json({ error: 'Ошибка сервера' });
         }
     });
+
 
     // ==========================================
     // 2. МИНИ-ИГРЫ (АЗАРТ)
