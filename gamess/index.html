@@ -90,7 +90,6 @@
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
         .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 30px var(--neon-cyan); border-color: #fff; }
 
-        /* Баланс с обрезкой текста для мобилок */
         .global-balance { background: rgba(0,255,136,0.15); border: 1px solid var(--neon-green); padding: 8px 15px; border-radius: 12px; backdrop-filter: blur(10px); box-shadow: inset 0 0 20px rgba(0,255,136,0.2), 0 5px 20px rgba(0,0,0,0.6); display: none; align-items: center; gap: 5px; animation: fadeIn 0.5s ease forwards; max-width: 100%; overflow: hidden; }
         .global-balance.active { display: flex; }
         .global-balance .val { color: #fff; font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 900; text-shadow: 0 0 15px var(--neon-green); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
@@ -182,7 +181,6 @@
 
         /* --- DASHBOARD (ХАБ) --- */
         .dash-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; }
-        /* Переработанный дроп */
         .daily-drop-card {
             background: linear-gradient(180deg, rgba(0,255,136,0.1) 0%, rgba(0,0,0,0.8) 100%);
             border: 2px solid var(--neon-green);
@@ -277,7 +275,7 @@
             .top-nav { flex-direction: row; gap: 10px; justify-content: space-around; padding-top: 20px;}
             .top-controls { top: auto; bottom: 20px; right: 20px; flex-direction: row-reverse; z-index: 99999; }
             .ctrl-row { flex-wrap: nowrap; }
-            .online-counter { display: none; } /* Прячем онлайн на мобилке для места */
+            .online-counter { display: none; }
             .dice-opts, .r-opts { grid-template-columns: 1fr; flex-direction: column; }
             .ld-user { width: 70%; }
             .ld-score { width: 30%; font-size: 0.9rem; }
@@ -581,14 +579,12 @@
         }
         
         function scheduleNextTrack() {
-            // Запускаем кроссфейд за 3 секунды до конца трека (если возможно узнать длительность, иначе по onended)
             activeAudio.onended = () => {
                 currentTrackIndex = (currentTrackIndex + 1) % ambientTracks.length;
                 inactiveAudio.src = ambientTracks[currentTrackIndex];
                 inactiveAudio.volume = 0.2;
                 inactiveAudio.play().catch(()=>{});
                 
-                // Swap
                 let temp = activeAudio;
                 activeAudio = inactiveAudio;
                 inactiveAudio = temp;
@@ -600,45 +596,68 @@
         musicBtnUI.onclick = toggleMusic;
         document.body.addEventListener('click', () => { if(!isMusicPlaying) toggleMusic(); }, { once: true });
 
-        // === АВТОРИЗАЦИЯ ===
+        // === ПУЛЕНЕПРОБИВАЕМАЯ АВТОРИЗАЦИЯ ===
         window.onload = async () => {
             if (token) {
                 try {
                     const res = await fetch(`${API_URL}/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
                     const data = await res.json();
+                    
                     if (data.success) {
-                        document.getElementById('authLock').style.display = 'none';
+                        // 100% СНИМАЕМ БЛОК АВТОРИЗАЦИИ
+                        const lockScreen = document.getElementById('authLock');
+                        if (lockScreen) lockScreen.style.display = 'none';
+                        
                         document.getElementById('globalBalanceWrap').classList.add('active');
-                        if(data.user.avatarUrl) {
-                            document.getElementById('userAvatar').src = data.user.avatarUrl;
+                        
+                        // ВЕРНУЛИ ВАШУ ОРИГИНАЛЬНУЮ ЛОГИКУ АВАТАРОК
+                        if(data.user.avatarUrl && data.user.avatarUrl !== 'dslogo.png') {
+                            const av = document.getElementById('userAvatar');
+                            if (av) av.src = data.user.avatarUrl;
                         }
+                        
                         updateBalance(data.user.dscoin_balance || 0);
                         
-                        // Инициализация
-                        initFarmMockState(data.user); // Подготавливаем ферму
-                        fetchLeaderboard();
-                        setInterval(fetchLeaderboard, 5000); // 24/7 LIVE ОБНОВЛЕНИЕ
-                        fetchSlotCovers();
-                    } else { lockUI(); }
-                } catch(e) { lockUI(); }
-            } else { lockUI(); }
+                        // Безопасный вызов инициализаций (если крашнется одно — остальное выживет)
+                        try { initFarmMockState(data.user); } catch(e) { console.error("FARM INIT ERROR:", e); }
+                        try { fetchLeaderboard(); } catch(e) { console.error("LEADERBOARD ERROR:", e); }
+                        setInterval(() => { try { fetchLeaderboard(); } catch(e){} }, 5000);
+                        try { fetchSlotCovers(); } catch(e) { console.error("SLOTS INIT ERROR:", e); }
+                        
+                    } else { 
+                        lockUI(); 
+                    }
+                } catch(e) { 
+                    console.error("CRITICAL AUTH/NETWORK ERROR:", e);
+                    lockUI(); 
+                }
+            } else { 
+                console.warn("ТОКЕН НЕ НАЙДЕН. ВОЗМОЖНО, ФАЙЛ ОТКРЫТ ЛОКАЛЬНО БЕЗ ДОМЕНА.");
+                lockUI(); 
+            }
         };
 
-        function lockUI() { document.getElementById('authLock').style.opacity = '1'; }
+        function lockUI() { 
+            const lock = document.getElementById('authLock');
+            if (lock) lock.style.opacity = '1'; 
+        }
 
         function updateBalance(val) {
             userBalance = val;
             const el = document.getElementById('uiBalance');
-            el.innerText = val;
-            el.style.textShadow = '0 0 30px #fff';
-            setTimeout(() => { el.style.textShadow = '0 0 15px var(--neon-green)'; }, 300);
+            if(el) {
+                el.innerText = val;
+                el.style.textShadow = '0 0 30px #fff';
+                setTimeout(() => { el.style.textShadow = '0 0 15px var(--neon-green)'; }, 300);
+            }
         }
 
         function printMsg(id, text, type) {
             const el = document.getElementById('msg-' + id);
-            el.className = 'sys-msg sys-' + type;
-            // Если в сообщении есть упоминание валюты, подменяем на картинку для красоты
-            el.innerHTML = text.replace(/NC/g, '<img src="valuta.png" class="valuta-icon">');
+            if(el) {
+                el.className = 'sys-msg sys-' + type;
+                el.innerHTML = text.replace(/NC/g, '<img src="valuta.png" class="valuta-icon">');
+            }
         }
 
         // МЕНЮ
@@ -647,13 +666,20 @@
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const closeSidebar = document.getElementById('closeSidebar');
         function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
-        burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
+        if(burgerBtn) burgerBtn.onclick = toggleMenu; 
+        if(closeSidebar) closeSidebar.onclick = toggleMenu; 
+        if(sidebarOverlay) sidebarOverlay.onclick = toggleMenu;
 
         function switchTab(id) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('tab-' + id).classList.add('active');
-            event.currentTarget.classList.add('active');
+            const targetTab = document.getElementById('tab-' + id);
+            if(targetTab) targetTab.classList.add('active');
+            
+            // Защита от ReferenceError для event
+            if (typeof event !== 'undefined' && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
             if(id === 'roulette') setTimeout(() => updateRoulettePosition(0), 10);
         }
 
@@ -663,12 +689,14 @@
         let isDragging = false;
         let startX, startY, initialX, initialY;
 
-        npHeader.addEventListener('mousedown', dragStart);
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', dragEnd);
-        npHeader.addEventListener('touchstart', dragStart, {passive: true});
-        document.addEventListener('touchmove', drag, {passive: false});
-        document.addEventListener('touchend', dragEnd);
+        if (npHeader) {
+            npHeader.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+            npHeader.addEventListener('touchstart', dragStart, {passive: true});
+            document.addEventListener('touchmove', drag, {passive: false});
+            document.addEventListener('touchend', dragEnd);
+        }
 
         function dragStart(e) {
             isDragging = true;
@@ -699,16 +727,22 @@
         function openNumpad(targetId, allowDecimal = false) {
             activeInputId = targetId;
             isDecimalAllowed = allowDecimal;
-            npModal.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
-            npModal.style.left = '50%';
-            npModal.style.top = '50%';
-            npModal.classList.add('active');
+            if (npModal) {
+                npModal.style.animation = 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards';
+                npModal.style.left = '50%';
+                npModal.style.top = '50%';
+                npModal.classList.add('active');
+            }
         }
-        function closeNumpad() { npModal.classList.remove('active'); activeInputId = null; }
+        function closeNumpad() { 
+            if (npModal) npModal.classList.remove('active'); 
+            activeInputId = null; 
+        }
 
         function npPress(val) {
             if(!activeInputId) return;
             const disp = document.getElementById(activeInputId + '_disp');
+            if(!disp) return;
             let current = disp.innerText;
 
             if(val === 'DEL') {
@@ -725,60 +759,59 @@
         }
 
         function getBetValue(id, isFloat = false) {
-            const val = document.getElementById(id + '_disp').innerText;
+            const el = document.getElementById(id + '_disp');
+            if(!el) return 0;
+            const val = el.innerText;
             return isFloat ? parseFloat(val) : parseInt(val);
         }
 
         // --- DASHBOARD ---
         async function claimDaily() {
-            const btn = document.getElementById('btnDaily'); btn.disabled = true;
+            const btn = document.getElementById('btnDaily'); 
+            if(btn) btn.disabled = true;
             try {
                 const res = await fetch(`${API_URL}/games/daily`, { method:'POST', headers:{'Authorization':`Bearer ${token}`}});
                 const data = await res.json();
                 if(res.ok) { updateBalance(data.newBalance); printMsg('dash', data.message, 'win'); }
                 else { printMsg('dash', data.error, 'err'); }
             } catch(e) { printMsg('dash', 'Ошибка связи', 'err'); }
-            setTimeout(()=> { btn.disabled = false; printMsg('dash','',''); }, 3000);
+            setTimeout(()=> { if(btn) btn.disabled = false; printMsg('dash','',''); }, 3000);
         }
 
         async function fetchLeaderboard() {
-            try {
-                const res = await fetch(`${API_URL}/games/leaderboard`);
-                const data = await res.json();
-                if(data.success && data.leaders.length > 0) {
-                    const html = data.leaders.slice(0,5).map((u, i) => {
-                        let rankClass = i < 3 ? `rank-${i+1}` : '';
-                        let c = i===0 ? '#ffea00' : (i===1 ? '#c0c0c0' : (i===2 ? '#cd7f32' : 'var(--text-muted)'));
-                        let name = u.nickname || u.username; 
-                        let avatar = u.avatarUrl || 'dslogo.png';
-                        return `
-                        <div class="ld-item ${rankClass}">
-                            <div class="ld-user">
-                                <div class="ld-rank" style="color:${c}; text-shadow:0 0 10px ${c};">#${i+1}</div>
-                                <img src="${avatar}" class="ld-avatar" onerror="this.src='dslogo.png'">
-                                <span class="ld-name">${name}</span>
-                            </div>
-                            <span class="ld-score">${u.dscoin_balance} <img src="valuta.png" class="valuta-icon"></span>
-                        </div>`;
-                    }).join('');
-                    document.getElementById('leaderboardData').innerHTML = html;
-                }
-            } catch(e) {}
+            const res = await fetch(`${API_URL}/games/leaderboard`);
+            const data = await res.json();
+            if(data.success && data.leaders.length > 0) {
+                const html = data.leaders.slice(0,5).map((u, i) => {
+                    let rankClass = i < 3 ? `rank-${i+1}` : '';
+                    let c = i===0 ? '#ffea00' : (i===1 ? '#c0c0c0' : (i===2 ? '#cd7f32' : 'var(--text-muted)'));
+                    let name = u.nickname || u.username; 
+                    let avatar = u.avatarUrl || 'dslogo.png';
+                    return `
+                    <div class="ld-item ${rankClass}">
+                        <div class="ld-user">
+                            <div class="ld-rank" style="color:${c}; text-shadow:0 0 10px ${c};">#${i+1}</div>
+                            <img src="${avatar}" class="ld-avatar" onerror="this.src='dslogo.png'">
+                            <span class="ld-name">${name}</span>
+                        </div>
+                        <span class="ld-score">${u.dscoin_balance} <img src="valuta.png" class="valuta-icon"></span>
+                    </div>`;
+                }).join('');
+                const lbData = document.getElementById('leaderboardData');
+                if(lbData) lbData.innerHTML = html;
+            }
         }
 
         // --- SLOTS FIXED ---
         let slotCovers = ['dslogo.png'];
         async function fetchSlotCovers() {
-            try {
-                const res = await fetch(`${API_URL}/games/slots/covers`);
-                const data = await res.json();
-                // Фильтруем пустые и битые урлы, если бэк отдает мусор
-                if(data.success && data.covers && data.covers.length > 0) { 
-                    slotCovers = data.covers.filter(c => c && c.length > 5); 
-                }
-                if(slotCovers.length === 0) slotCovers = ['dslogo.png'];
-                initReels();
-            } catch(e) { initReels(); }
+            const res = await fetch(`${API_URL}/games/slots/covers`);
+            const data = await res.json();
+            if(data.success && data.covers && data.covers.length > 0) { 
+                slotCovers = data.covers.filter(c => c && c.length > 5); 
+            }
+            if(slotCovers.length === 0) slotCovers = ['dslogo.png'];
+            initReels();
         }
 
         function initReels() {
@@ -786,8 +819,10 @@
                 let html = '';
                 for(let i=0; i<30; i++) html += `<img src="${slotCovers[Math.floor(Math.random()*slotCovers.length)]}" onerror="this.src='dslogo.png'">`;
                 const strip = document.getElementById('reel'+id);
-                strip.innerHTML = html;
-                strip.style.transform = `translateY(0px)`;
+                if(strip) {
+                    strip.innerHTML = html;
+                    strip.style.transform = `translateY(0px)`;
+                }
             });
         }
 
@@ -795,17 +830,19 @@
             const bet = getBetValue('betSlots');
             if (bet > userBalance || bet <= 0) return printMsg('slots', 'ОШИБКА СТАВКИ', 'err');
             
-            const btn = document.getElementById('btnSlots'); btn.disabled = true;
+            const btn = document.getElementById('btnSlots'); 
+            if(btn) btn.disabled = true;
             printMsg('slots', 'ВРАЩЕНИЕ...', 'err');
 
             try {
                 const res = await fetch(`${API_URL}/games/slots`, { method:'POST', headers:{'Content-Type':'application/json', 'Authorization':`Bearer ${token}`}, body: JSON.stringify({bet})});
                 const data = await res.json();
                 
-                if(!res.ok) { printMsg('slots', data.error, 'err'); btn.disabled = false; return; }
+                if(!res.ok) { printMsg('slots', data.error, 'err'); if(btn) btn.disabled = false; return; }
 
                 [1,2,3].forEach((id, i) => {
                     const strip = document.getElementById('reel'+id);
+                    if(!strip) return;
                     let html = '';
                     for(let j=0; j<20; j++) html += `<img src="${slotCovers[Math.floor(Math.random()*slotCovers.length)]}" onerror="this.src='dslogo.png'">`;
                     let resultImgSrc = (data.items && data.items[i]) ? data.items[i] : 'dslogo.png';
@@ -818,7 +855,6 @@
                     void strip.offsetWidth; 
                     
                     strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.15, 0.85, 0.15, 1)`;
-                    // Calculate height dynamically based on rendered size
                     const imgHeight = strip.children[0].offsetHeight || 160;
                     strip.style.transform = `translateY(-${20 * imgHeight}px)`; 
                 });
@@ -826,10 +862,12 @@
                 setTimeout(() => {
                     [1,2,3].forEach(id => {
                         const strip = document.getElementById('reel'+id);
-                        const resultImg = strip.lastChild;
-                        if(data.win > 0) {
-                            resultImg.style.filter = 'drop-shadow(0 0 30px var(--neon-green))';
-                            resultImg.style.border = '2px solid var(--neon-green)';
+                        if(strip) {
+                            const resultImg = strip.lastChild;
+                            if(data.win > 0 && resultImg) {
+                                resultImg.style.filter = 'drop-shadow(0 0 30px var(--neon-green))';
+                                resultImg.style.border = '2px solid var(--neon-green)';
+                            }
                         }
                     });
 
@@ -837,10 +875,10 @@
                     if(data.win > 0) printMsg('slots', `JACKPOT! +${data.win} NC`, 'win');
                     else printMsg('slots', 'ПРОИГРЫШ', 'lose');
                     
-                    btn.disabled = false;
+                    if(btn) btn.disabled = false;
                     setTimeout(initReels, 3500);
                 }, 3000);
-            } catch(e) { btn.disabled = false; printMsg('slots', 'Сбой сети', 'err'); initReels(); }
+            } catch(e) { if(btn) btn.disabled = false; printMsg('slots', 'Сбой сети', 'err'); initReels(); }
         }
 
         // --- DICE ---
@@ -848,7 +886,8 @@
         function selectDice(choice) {
             currentDice = choice;
             document.querySelectorAll('.d-opt').forEach(b => b.classList.remove('active'));
-            document.getElementById('d-opt-'+choice).classList.add('active');
+            const opt = document.getElementById('d-opt-'+choice);
+            if(opt) opt.classList.add('active');
             printMsg('dice', 'СЕКТОР ВЫБРАН', 'err');
         }
 
@@ -857,9 +896,11 @@
             const bet = getBetValue('betDice');
             if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('dice', 'ОШИБКА СТАВКИ', 'err');
 
-            const btn = document.getElementById('btnDice'); btn.disabled = true;
+            const btn = document.getElementById('btnDice'); 
+            if(btn) btn.disabled = true;
             const disp = document.getElementById('diceDisplay');
-            let spin = setInterval(() => { disp.innerText = Math.floor(Math.random()*100)+1; }, 50);
+            let spin;
+            if(disp) spin = setInterval(() => { disp.innerText = Math.floor(Math.random()*100)+1; }, 50);
 
             try {
                 const res = await fetch(`${API_URL}/games/dice`, { method:'POST', headers:{'Content-Type':'application/json', 'Authorization':`Bearer ${token}`}, body: JSON.stringify({bet, guess: currentDice})});
@@ -868,15 +909,15 @@
                 setTimeout(() => {
                     clearInterval(spin);
                     if(res.ok) {
-                        disp.innerText = data.roll;
+                        if(disp) disp.innerText = data.roll;
                         updateBalance(data.newBalance);
-                        if(data.win > 0) { printMsg('dice', `УСПЕХ! +${data.win} NC`, 'win'); disp.style.color = 'var(--neon-green)'; disp.style.textShadow = '0 0 50px var(--neon-green)';}
-                        else { printMsg('dice', 'ПРОВАЛ', 'lose'); disp.style.color = 'var(--neon-red)'; disp.style.textShadow = '0 0 50px var(--neon-red)';}
-                        setTimeout(() => { disp.style.color='#fff'; disp.style.textShadow='0 0 50px var(--neon-cyan)'; }, 2000);
-                    } else { disp.innerText = '0'; printMsg('dice', data.error, 'err'); }
-                    btn.disabled = false;
+                        if(data.win > 0) { printMsg('dice', `УСПЕХ! +${data.win} NC`, 'win'); if(disp){ disp.style.color = 'var(--neon-green)'; disp.style.textShadow = '0 0 50px var(--neon-green)';}}
+                        else { printMsg('dice', 'ПРОВАЛ', 'lose'); if(disp){ disp.style.color = 'var(--neon-red)'; disp.style.textShadow = '0 0 50px var(--neon-red)';}}
+                        setTimeout(() => { if(disp){ disp.style.color='#fff'; disp.style.textShadow='0 0 50px var(--neon-cyan)'; }}, 2000);
+                    } else { if(disp) disp.innerText = '0'; printMsg('dice', data.error, 'err'); }
+                    if(btn) btn.disabled = false;
                 }, 1000);
-            } catch(e) { clearInterval(spin); btn.disabled = false; }
+            } catch(e) { clearInterval(spin); if(btn) btn.disabled = false; }
         }
 
         // --- CRASH ---
@@ -887,15 +928,16 @@
             if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('crash', 'ОШИБКА СТАВКИ', 'err');
             if(isNaN(target) || target < 1.1) return printMsg('crash', 'МИН. ВЫВОД 1.1', 'err');
 
-            const btn = document.getElementById('btnCrash'); btn.disabled = true;
+            const btn = document.getElementById('btnCrash'); 
+            if(btn) btn.disabled = true;
             const disp = document.getElementById('crMult');
             const line = document.getElementById('crLine');
-            disp.style.color = '#fff'; disp.style.textShadow = '0 0 40px rgba(255,255,255,0.5)';
+            if(disp){ disp.style.color = '#fff'; disp.style.textShadow = '0 0 40px rgba(255,255,255,0.5)'; }
 
             try {
                 const res = await fetch(`${API_URL}/games/crash`, { method:'POST', headers:{'Content-Type':'application/json', 'Authorization':`Bearer ${token}`}, body: JSON.stringify({bet, targetMultiplier: target})});
                 const data = await res.json();
-                if(!res.ok) { printMsg('crash', data.error, 'err'); btn.disabled = false; return; }
+                if(!res.ok) { printMsg('crash', data.error, 'err'); if(btn) btn.disabled = false; return; }
 
                 printMsg('crash', 'ЗАПУСК СИСТЕМЫ...', 'err');
                 updateBalance(userBalance - bet); 
@@ -903,28 +945,26 @@
                 let cur = 1.00;
                 crashInterval = setInterval(() => {
                     cur += 0.02;
-                    disp.innerText = cur.toFixed(2) + 'x';
-                    line.style.transform = `scaleY(${cur})`;
+                    if(disp) disp.innerText = cur.toFixed(2) + 'x';
+                    if(line) line.style.transform = `scaleY(${cur})`;
 
                     if(cur >= data.crashPoint && data.win === 0) {
                         clearInterval(crashInterval);
-                        disp.innerText = data.crashPoint.toFixed(2) + 'x';
-                        disp.style.color = 'var(--neon-red)'; disp.style.textShadow = '0 0 50px var(--neon-red)';
+                        if(disp){ disp.innerText = data.crashPoint.toFixed(2) + 'x'; disp.style.color = 'var(--neon-red)'; disp.style.textShadow = '0 0 50px var(--neon-red)'; }
                         printMsg('crash', 'КРАШ!', 'lose');
                         updateBalance(data.newBalance); 
-                        btn.disabled = false;
+                        if(btn) btn.disabled = false;
                     } 
                     else if (cur >= data.target && data.win > 0) {
                         clearInterval(crashInterval);
-                        disp.innerText = data.target.toFixed(2) + 'x';
-                        disp.style.color = 'var(--neon-green)'; disp.style.textShadow = '0 0 50px var(--neon-green)';
+                        if(disp){ disp.innerText = data.target.toFixed(2) + 'x'; disp.style.color = 'var(--neon-green)'; disp.style.textShadow = '0 0 50px var(--neon-green)'; }
                         printMsg('crash', `ВЫВОД: +${data.win} NC`, 'win');
                         updateBalance(data.newBalance);
-                        btn.disabled = false;
+                        if(btn) btn.disabled = false;
                     }
                 }, 40);
 
-            } catch(e) { btn.disabled = false; printMsg('crash', 'Сбой', 'err'); }
+            } catch(e) { if(btn) btn.disabled = false; printMsg('crash', 'Сбой', 'err'); }
         }
 
         // --- ROULETTE ---
@@ -937,12 +977,14 @@
             if(isRouletteSpinning) return; 
             currentR = color;
             document.querySelectorAll('.r-opt').forEach(b => b.classList.remove('active'));
-            document.getElementById('r-opt-'+color).classList.add('active');
+            const opt = document.getElementById('r-opt-'+color);
+            if(opt) opt.classList.add('active');
             printMsg('roulette', 'ЦВЕТ УТВЕРЖДЕН', 'err');
         }
 
         function initRoulette() {
             const strip = document.getElementById('rStrip');
+            if(!strip) return;
             strip.innerHTML = '';
             rCells = [];
             
@@ -960,8 +1002,12 @@
 
         function updateRoulettePosition(transitionTime = 0) {
             const strip = document.getElementById('rStrip');
-            const wheelWidth = document.querySelector('.roulette-wheel').offsetWidth || 700;
-            const cellWidth = document.querySelector('.r-cell').offsetWidth || 100;
+            const wheel = document.querySelector('.roulette-wheel');
+            const cell = document.querySelector('.r-cell');
+            if(!strip || !wheel || !cell) return;
+
+            const wheelWidth = wheel.offsetWidth || 700;
+            const cellWidth = cell.offsetWidth || 100;
             const offset = (currentRIndex * cellWidth + (cellWidth/2)) - (wheelWidth / 2);
             
             strip.style.transition = transitionTime > 0 ? `transform ${transitionTime}s cubic-bezier(0.15, 0.85, 0.15, 1)` : 'none';
@@ -969,7 +1015,8 @@
         }
 
         window.addEventListener('resize', () => {
-            if(document.getElementById('tab-roulette').classList.contains('active') && !isRouletteSpinning) {
+            const tab = document.getElementById('tab-roulette');
+            if(tab && tab.classList.contains('active') && !isRouletteSpinning) {
                 updateRoulettePosition(0);
             }
         });
@@ -982,7 +1029,7 @@
             if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('roulette', 'ОШИБКА СТАВКИ', 'err');
 
             const btn = document.getElementById('btnRoulette'); 
-            btn.disabled = true;
+            if(btn) btn.disabled = true;
             isRouletteSpinning = true;
             
             document.querySelectorAll('.r-opt').forEach(b => b.disabled = true);
@@ -1014,22 +1061,24 @@
                     else if(rand < 0.525) c = 'cyan';
                     
                     rCells.push(c);
-                    strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold' ? '14x' : '2x'}</div>`);
+                    if(strip) strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold' ? '14x' : '2x'}</div>`);
                 }
 
                 rCells[targetIndex] = data.resultColor;
-                const targetEl = strip.children[targetIndex];
-                targetEl.className = `r-cell r-${data.resultColor}`;
-                targetEl.innerText = data.resultColor === 'gold' ? '14x' : '2x';
+                if(strip && strip.children[targetIndex]) {
+                    const targetEl = strip.children[targetIndex];
+                    targetEl.className = `r-cell r-${data.resultColor}`;
+                    targetEl.innerText = data.resultColor === 'gold' ? '14x' : '2x';
 
-                currentRIndex = targetIndex;
-                const randomPixelOffset = Math.floor(Math.random() * 60) - 30; 
-                const wheelWidth = document.querySelector('.roulette-wheel').offsetWidth;
-                const cellWidth = targetEl.offsetWidth;
-                const offset = (currentRIndex * cellWidth + (cellWidth/2)) - (wheelWidth / 2) + randomPixelOffset;
+                    currentRIndex = targetIndex;
+                    const randomPixelOffset = Math.floor(Math.random() * 60) - 30; 
+                    const wheelWidth = document.querySelector('.roulette-wheel').offsetWidth;
+                    const cellWidth = targetEl.offsetWidth;
+                    const offset = (currentRIndex * cellWidth + (cellWidth/2)) - (wheelWidth / 2) + randomPixelOffset;
 
-                strip.style.transition = `transform 4s cubic-bezier(0.15, 0.85, 0.15, 1)`;
-                strip.style.transform = `translateX(-${offset}px)`;
+                    strip.style.transition = `transform 4s cubic-bezier(0.15, 0.85, 0.15, 1)`;
+                    strip.style.transform = `translateX(-${offset}px)`;
+                }
 
                 setTimeout(() => {
                     updateBalance(data.newBalance);
@@ -1046,13 +1095,13 @@
         }
 
         function resetRouletteState() {
-            document.getElementById('btnRoulette').disabled = false;
+            const btn = document.getElementById('btnRoulette');
+            if(btn) btn.disabled = false;
             document.querySelectorAll('.r-opt').forEach(b => b.disabled = false);
             isRouletteSpinning = false;
         }
 
         // --- NEW PASSIVE FARM ---
-        // Жестко заданные уровни из ТЗ
         const timeUpgrades = [
             { val: 30, cost: 750 }, { val: 25, cost: 1500 }, { val: 20, cost: 3000 }, 
             { val: 15, cost: 5000 }, { val: 10, cost: 10000 }, { val: 5, cost: null }
@@ -1065,7 +1114,6 @@
         let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
 
         function initFarmMockState(user) {
-            // Если бэк отдает данные фермы, используем их, иначе дефолт
             if(user && user.farm) {
                 farmState.active = user.farm.active || false;
                 farmState.timeLevel = user.farm.timeLevel || 0;
@@ -1077,7 +1125,8 @@
         function renderFarmUI() {
             const lockedBlock = document.getElementById('farm-locked');
             const activeBlock = document.getElementById('farm-active');
-            
+            if(!lockedBlock || !activeBlock) return;
+
             if(!farmState.active) {
                 lockedBlock.style.display = 'block';
                 activeBlock.style.display = 'none';
@@ -1092,38 +1141,42 @@
                 document.getElementById('fIncVal').innerText = incData.val;
                 
                 const btnTime = document.getElementById('btnUpTime');
-                if(timeData.cost === null) {
-                    btnTime.disabled = true;
-                    btnTime.innerHTML = '<span>МАКС. УРОВЕНЬ</span>';
-                } else {
-                    btnTime.disabled = false;
-                    document.getElementById('fTimeCostDisplay').innerHTML = `${timeData.cost} <img src="valuta.png" class="valuta-icon">`;
+                if(btnTime) {
+                    if(timeData.cost === null) {
+                        btnTime.disabled = true;
+                        btnTime.innerHTML = '<span>МАКС. УРОВЕНЬ</span>';
+                    } else {
+                        btnTime.disabled = false;
+                        document.getElementById('fTimeCostDisplay').innerHTML = `${timeData.cost} <img src="valuta.png" class="valuta-icon">`;
+                    }
                 }
 
                 const btnInc = document.getElementById('btnUpInc');
-                if(incData.cost === null) {
-                    btnInc.disabled = true;
-                    btnInc.innerHTML = '<span>МАКС. УРОВЕНЬ</span>';
-                } else {
-                    btnInc.disabled = false;
-                    document.getElementById('fIncCostDisplay').innerHTML = `${incData.cost} <img src="valuta.png" class="valuta-icon">`;
+                if(btnInc) {
+                    if(incData.cost === null) {
+                        btnInc.disabled = true;
+                        btnInc.innerHTML = '<span>МАКС. УРОВЕНЬ</span>';
+                    } else {
+                        btnInc.disabled = false;
+                        document.getElementById('fIncCostDisplay').innerHTML = `${incData.cost} <img src="valuta.png" class="valuta-icon">`;
+                    }
                 }
             }
         }
 
         async function activateFarm() {
             if(userBalance < 1000) return printMsg('farm-activate', 'НЕДОСТАТОЧНО СРЕДСТВ', 'err');
-            const btn = document.getElementById('btnActivateFarm'); btn.disabled = true;
+            const btn = document.getElementById('btnActivateFarm'); 
+            if(btn) btn.disabled = true;
             try {
-                // Предполагаемый роут для твоего бэка
                 const res = await fetch(`${API_URL}/games/farm/activate`, { method: 'POST', headers: {'Authorization':`Bearer ${token}`} });
                 const data = await res.json();
                 if(res.ok) {
-                    updateBalance(userBalance - 1000); // Или брать newBalance из ответа
+                    updateBalance(userBalance - 1000);
                     farmState.active = true;
                     renderFarmUI();
-                } else { printMsg('farm-activate', data.error || 'Ошибка', 'err'); btn.disabled = false;}
-            } catch(e) { printMsg('farm-activate', 'Сбой сети', 'err'); btn.disabled = false;}
+                } else { printMsg('farm-activate', data.error || 'Ошибка', 'err'); if(btn) btn.disabled = false;}
+            } catch(e) { printMsg('farm-activate', 'Сбой сети', 'err'); if(btn) btn.disabled = false;}
         }
 
         async function upgradeFarm(type) {
@@ -1131,7 +1184,6 @@
             if(userBalance < cost) return printMsg('farm', 'НЕДОСТАТОЧНО СРЕДСТВ', 'err');
             
             try {
-                // Предполагаемый роут для бэка
                 const res = await fetch(`${API_URL}/games/farm/upgrade`, { 
                     method: 'POST', 
                     headers: {'Content-Type':'application/json', 'Authorization':`Bearer ${token}`},
