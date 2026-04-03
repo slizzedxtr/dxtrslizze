@@ -3095,7 +3095,7 @@
     function startPtb(){
         if(isMusicPlaying) toggleMusic();
         
-        const validAudioTracks = supabaseTracks.filter(t => t.audio_url && t.title);
+        const validAudioTracks = supabaseTracks.filter(t => t.mp3_url && t.title);
         if(validAudioTracks.length < 4) { 
             printMsg('ptb', 'МАЛО АУДИО ТРЕКОВ В БД', 'err'); 
             return; 
@@ -3120,7 +3120,7 @@
         }
         ptbAnswered = false;
         
-        const validAudioTracks = supabaseTracks.filter(t => t.audio_url && t.title);
+        const validAudioTracks = supabaseTracks.filter(t => t.mp3_url && t.title);
         const targetTrack = validAudioTracks[Math.floor(Math.random() * validAudioTracks.length)];
         currentPtbTrackTitle = targetTrack.title;
         
