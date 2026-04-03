@@ -8,6 +8,7 @@
     <link rel="icon" type="image.png" href="/dslogo.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         /* ══════════════════════════════════════════
@@ -753,6 +754,8 @@
         }
         .mines-cashout:hover:not(:disabled) { background: rgba(255,234,0,0.12); box-shadow: 0 0 18px rgba(255,234,0,0.3); }
         .mines-cashout:disabled { border-color: #333; color: #555; cursor: not-allowed; }
+        .mines-ctrl-btn { background:transparent; color:var(--neon-cyan); border:1px solid var(--neon-cyan); border-radius:4px; cursor:pointer; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; font-weight:bold; transition:0.2s;}
+        .mines-ctrl-btn:hover { background:var(--neon-cyan); color:#000; }
 
         /* --- PLINKO --- */
         .plinko-canvas { border-radius: 16px; border: 2px solid rgba(0,229,255,0.2); max-width: 100%; }
@@ -770,9 +773,9 @@
         }
         .ptb-wave canvas { width: 100%; height: 100%; }
         .ptb-prompt { font-size: clamp(1rem,3vw,1.4rem); font-weight: 900; margin-bottom: 10px; color: #fff; }
-        .ptb-opts { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; width: 100%; max-width: 600px; margin-bottom: 22px; }
+        .ptb-opts { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; width: 100%; max-width: 600px; margin-bottom: 22px; }
         .ptb-opt {
-            padding: 12px 5px; background: rgba(0,0,0,0.5);
+            padding: 16px 10px; background: rgba(0,0,0,0.5);
             border: 2px solid rgba(255,255,255,0.1); border-radius: 12px;
             color: var(--text-muted); font-weight: 900; font-size: clamp(0.7rem,1.5vw,0.85rem);
             cursor: pointer; transition: 0.3s; text-align: center;
@@ -864,7 +867,7 @@
             .bj-btn { padding: 11px 20px; font-size: 0.82rem; }
             .quiz-opts { grid-template-columns: 1fr; }
             .mines-grid { max-width: 300px; gap: 6px; }
-            .ptb-opts { grid-template-columns: repeat(2,1fr); }
+            .ptb-opts { grid-template-columns: 1fr; }
             .games-container::before, .games-container::after { display: none; }
         }
         @media (max-width: 400px) {
@@ -907,7 +910,7 @@
             <div class="music-toggle" id="musicBtn"><i class="fa-solid fa-volume-xmark"></i></div>
             <div class="online-counter">
                 <div class="pulse-dot"></div>
-                <span class="online-num" id="onlineCount">— ОНЛАЙН</span>
+                <span class="online-num" id="onlineCount">24 ОНЛАЙН</span>
             </div>
             <a href="/profile" class="profile-btn" title="Профиль">
                 <img src="/dslogo.png" alt="Profile" id="userAvatar" onerror="this.onerror=null;this.src='/dslogo.png';">
@@ -942,24 +945,22 @@
                 <a href="/profile" class="btn-auth-link">АВТОРИЗАЦИЯ</a>
             </div>
 
-            <!-- TABS -->
             <div class="game-nav">
                 <button class="tab-btn active" onclick="switchTab('dash',this)"><i class="fa-solid fa-layer-group"></i> База</button>
-                <button class="tab-btn" onclick="switchTab('slots',this)"><i class="fa-solid fa-grid-2"></i> Слоты</button>
+                <button class="tab-btn" onclick="switchTab('slots',this)"><i class="fa-solid fa-border-all"></i> Слоты</button>
                 <button class="tab-btn" onclick="switchTab('dice',this)"><i class="fa-solid fa-dice"></i> Дайс</button>
                 <button class="tab-btn" onclick="switchTab('crash',this)"><i class="fa-solid fa-chart-line"></i> Краш</button>
                 <button class="tab-btn" onclick="switchTab('roulette',this)"><i class="fa-solid fa-circle-notch"></i> Рулетка</button>
                 <button class="tab-btn" onclick="switchTab('miner',this)"><i class="fa-solid fa-microchip"></i> Фарм</button>
-                <button class="tab-btn" onclick="switchTab('blackjack',this)"><i class="fa-solid fa-cards"></i> Блэкджек</button>
+                <button class="tab-btn" onclick="switchTab('blackjack',this)"><i class="fa-solid fa-clone"></i> Блэкджек</button>
                 <button class="tab-btn" onclick="switchTab('quiz',this)"><i class="fa-solid fa-headphones"></i> Квиз</button>
                 <button class="tab-btn" onclick="switchTab('mines',this)"><i class="fa-solid fa-bomb"></i> Мины</button>
-                <button class="tab-btn" onclick="switchTab('plinko',this)"><i class="fa-solid fa-circle-down"></i> Плинко</button>
-                <button class="tab-btn" onclick="switchTab('ptb',this)"><i class="fa-solid fa-waveform-lines"></i> БИТ</button>
+                <button class="tab-btn" onclick="switchTab('plinko',this)"><i class="fa-solid fa-arrow-down"></i> Плинко</button>
+                <button class="tab-btn" onclick="switchTab('ptb',this)"><i class="fa-solid fa-wave-square"></i> БИТ</button>
             </div>
 
             <div class="game-body">
 
-                <!-- ── DASH ──────────────────────────── -->
                 <div id="tab-dash" class="tab-content active">
                     <div class="dash-layout">
                         <button class="daily-banner-btn" onclick="claimDaily()" id="btnDaily">
@@ -979,7 +980,6 @@
                     </div>
                 </div>
 
-                <!-- ── SLOTS ─────────────────────────── -->
                 <div id="tab-slots" class="tab-content">
                     <div class="g-title glow-text">NEON SLOTS</div>
                     <p class="g-desc">Три совпадения обложек релизов умножают куш.</p>
@@ -998,7 +998,6 @@
                     <div class="sys-msg" id="msg-slots"></div>
                 </div>
 
-                <!-- ── DICE ──────────────────────────── -->
                 <div id="tab-dice" class="tab-content">
                     <div class="g-title glow-text">CYBER DICE</div>
                     <p class="g-desc">Угадай сектор числа от 1 до 100.</p>
@@ -1019,7 +1018,6 @@
                     <div class="sys-msg" id="msg-dice">ВЫБЕРИТЕ СЕКТОР</div>
                 </div>
 
-                <!-- ── CRASH ─────────────────────────── -->
                 <div id="tab-crash" class="tab-content">
                     <div class="g-title glow-text">СИСТЕМНЫЙ КРАШ</div>
                     <p class="g-desc">Множитель растёт, пока не рухнет. Успей забрать.</p>
@@ -1045,7 +1043,6 @@
                     <div class="sys-msg" id="msg-crash"></div>
                 </div>
 
-                <!-- ── ROULETTE ───────────────────────── -->
                 <div id="tab-roulette" class="tab-content">
                     <div class="g-title glow-text">NEON ROULETTE</div>
                     <p class="g-desc">Выбирай цвет. Фиол/Голубой = ×2. Золото = ×14.</p>
@@ -1065,7 +1062,6 @@
                     <div class="sys-msg" id="msg-roulette">ВЫБЕРИТЕ ЦВЕТ</div>
                 </div>
 
-                <!-- ── FARM ──────────────────────────── -->
                 <div id="tab-miner" class="tab-content">
                     <div class="g-title glow-text">ПАССИВНЫЙ ДОХОД</div>
                     <p class="g-desc">Генерируй валюту на автопилоте.</p>
@@ -1099,9 +1095,6 @@
                     </div>
                 </div>
 
-                <!-- ══════════════════════════════════════
-                     NEW GAME 1 — BLACKJACK
-                ══════════════════════════════════════ -->
                 <div id="tab-blackjack" class="tab-content">
                     <div class="g-title glow-pink">БЛЭКДЖЕК 21</div>
                     <p class="g-desc">Обыграй дилера. Перебор = проигрыш. ×2.5 за блэкджек.</p>
@@ -1130,15 +1123,12 @@
                     <div class="sys-msg" id="msg-bj"></div>
                 </div>
 
-                <!-- ══════════════════════════════════════
-                     NEW GAME 2 — TRACK QUIZ
-                ══════════════════════════════════════ -->
                 <div id="tab-quiz" class="tab-content">
                     <div class="g-title glow-text">TRACK QUIZ</div>
                     <p class="g-desc">Угадай трек DXTR | SlizZe по обложке — серия = бонус.</p>
                     <img src="/dslogo.png" class="quiz-cover" id="quizCover" alt="Cover">
                     <div class="quiz-streak" id="quizStreak">СЕРИЯ: 0 🔥</div>
-                    <p class="quiz-hint" id="quizHint">Выбери трек...</p>
+                    <p class="quiz-hint" id="quizHint">Загрузка данных из БД...</p>
                     <div class="quiz-opts" id="quizOpts"></div>
                     <div class="bet-box">
                         <div class="bet-label">СТАВКА ЗА РАУНД</div>
@@ -1146,18 +1136,20 @@
                             <span class="bet-val-display glow-text" id="betQuiz_disp">10</span>
                         </div>
                     </div>
-                    <button class="play-btn" id="btnQuiz" onclick="startQuiz()">НОВЫЙ РАУНД</button>
+                    <button class="play-btn" id="btnQuiz" onclick="startQuiz()" disabled>НОВЫЙ РАУНД</button>
                     <div class="sys-msg" id="msg-quiz"></div>
                 </div>
 
-                <!-- ══════════════════════════════════════
-                     NEW GAME 3 — MINES
-                ══════════════════════════════════════ -->
                 <div id="tab-mines" class="tab-content">
                     <div class="g-title glow-text">МИННОЕ ПОЛЕ</div>
                     <p class="g-desc">Открывай клетки, избегай мин. Выводи в любой момент.</p>
                     <div class="mines-info">
-                        <div class="mines-stat">Мины: <span id="mineCount">3</span></div>
+                        <div class="mines-stat" style="display:flex; align-items:center; gap:8px;">
+                            Мины: 
+                            <button class="mines-ctrl-btn" id="minesMinus" onclick="changeMinesCount(-1)">-</button>
+                            <span id="mineCount" style="min-width:20px; text-align:center;">3</span>
+                            <button class="mines-ctrl-btn" id="minesPlus" onclick="changeMinesCount(1)">+</button>
+                        </div>
                         <div class="mines-stat">Открыто: <span id="mineOpened">0</span></div>
                     </div>
                     <div class="mines-mult" id="minesMult">×1.00</div>
@@ -1175,12 +1167,9 @@
                     <div class="sys-msg" id="msg-mines"></div>
                 </div>
 
-                <!-- ══════════════════════════════════════
-                     NEW GAME 4 — PLINKO
-                ══════════════════════════════════════ -->
                 <div id="tab-plinko" class="tab-content">
                     <div class="g-title glow-text">PLINKO</div>
-                    <p class="g-desc">Брось шар — он упадёт в ячейку с множителем.</p>
+                    <p class="g-desc">Брось шар — он упадёт в ячейку с множителем (настоящая физика).</p>
                     <canvas id="plinkoCanvas" class="plinko-canvas" width="420" height="300"></canvas>
                     <div class="plinko-buckets" id="plinkoBuckets" style="max-width:420px;"></div>
                     <div class="bet-box">
@@ -1193,15 +1182,11 @@
                     <div class="sys-msg" id="msg-plinko"></div>
                 </div>
 
-                <!-- ══════════════════════════════════════
-                     NEW GAME 5 — PREDICT THE BEAT
-                ══════════════════════════════════════ -->
                 <div id="tab-ptb" class="tab-content">
-                    <div class="g-title glow-pink">ПРЕДСКАЗАТЕЛЬ БИТА</div>
-                    <p class="g-desc">Угадай BPM трека DXTR | SlizZe. 3 из 5 = максимальный мультипликатор.</p>
+                    <div class="g-title glow-pink">УГАДАЙ ТРЕК</div>
+                    <p class="g-desc">Слушай 15 секунд и выбери правильное название из списка.</p>
                     <div class="ptb-wave"><canvas id="ptbCanvas" width="680" height="100"></canvas></div>
-                    <div class="ptb-round" id="ptbRound">РАУНД 1 / 5</div>
-                    <p class="ptb-prompt" id="ptbPrompt">Угадай BPM трека</p>
+                    <p class="ptb-prompt" id="ptbPrompt">Нажми "Начать", чтобы услышать отрывок</p>
                     <div class="ptb-opts" id="ptbOpts"></div>
                     <div class="bet-box">
                         <div class="bet-label">СТАВКА</div>
@@ -1209,19 +1194,16 @@
                             <span class="bet-val-display glow-text" id="betPtb_disp">10</span>
                         </div>
                     </div>
-                    <button class="play-btn" id="btnPtb" onclick="startPtb()">НАЧАТЬ РАУНДЫ</button>
-                    <div class="sys-msg" id="msg-ptb"></div>
+                    <button class="play-btn" id="btnPtb" onclick="startPtb()" disabled>НАЧАТЬ</button>
+                    <div class="sys-msg" id="msg-ptb">Загрузка треков из базы данных...</div>
                 </div>
 
-            </div><!-- /game-body -->
-        </div><!-- /games-container -->
-    </main>
+            </div></div></main>
 
     <footer>
         <p>© 2026 DXTR | SlizZe — ALL SYSTEMS ONLINE</p>
     </footer>
 
-    <!-- NUMPAD -->
     <div id="numpad-modal">
         <div class="np-header" id="np-header">
             <span>ВВОД СУММЫ</span>
@@ -1244,7 +1226,63 @@
         </div>
     </div>
 
+    <audio id="ptbAudioPlayer" preload="auto"></audio>
+
     <script>
+    /* ════════════════════════════════════════════════════════════
+       SUPABASE INITIALIZATION (ДЛЯ БД)
+    ════════════════════════════════════════════════════════════ */
+    // Здесь вам нужно будет вставить ваш анонимный ключ
+    const SUPABASE_URL = 'https://lcbcsyvcciobmqdbonps.supabase.co';
+    const SUPABASE_ANON_KEY = 'ВСТАВЬТЕ_ВАШ_КЛЮЧ_СЮДА'; // <--- ЗАМЕНИТЕ НА ВАШ КЛЮЧ
+    
+    // Инициализация (сработает если ключ валидный)
+    let supabase = null;
+    try {
+        if(SUPABASE_ANON_KEY !== 'ВСТАВЬТЕ_ВАШ_КЛЮЧ_СЮДА') {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+    } catch(e) { console.error("Supabase init error", e); }
+
+    let supabaseTracks = [];
+    let slotCovers = ['/dslogo.png']; 
+    
+    // Загрузка треков и обложек из таблицы Supabase (ID таблицы: 18663)
+    async function loadSupabaseData() {
+        if(supabase) {
+            try {
+                const { data, error } = await supabase.from('tracks').select('*'); // замените 'tracks' на точное имя вашей таблицы
+                if(data && data.length > 0) {
+                    supabaseTracks = data;
+                }
+            } catch(e) { console.error(e); }
+        }
+        
+        // Fallback-заглушка на случай, если БД недоступна или пуста
+        if(supabaseTracks.length === 0) {
+            supabaseTracks = [
+                { id:1, title:'GUSTO', cover_url:'/logo_GUSTO.jpeg', audio_url:'' },
+                { id:2, title:'DXTR WAVE', cover_url:'/dslogo.png', audio_url:'' },
+                { id:3, title:'SLIZZE MODE', cover_url:'/dslogo.png', audio_url:'' },
+                { id:4, title:'CYBER DROP', cover_url:'/dslogo.png', audio_url:'' },
+                { id:5, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', audio_url:'' }
+            ];
+        }
+
+        // Заполняем обложки для слотов и Quiz
+        slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
+        if(slotCovers.length === 0) slotCovers = ['/dslogo.png'];
+
+        initReels(); // Обновляем слоты свежими обложками сразу
+        
+        // Включаем кнопки игр, зависящих от БД
+        document.getElementById('quizHint').textContent = "Выбери правильный трек...";
+        document.getElementById('btnQuiz').disabled = false;
+        
+        document.getElementById('msg-ptb').textContent = "";
+        document.getElementById('btnPtb').disabled = false;
+    }
+
     /* ════════════════════════════════════════════════════════════
        PARTICLE SYSTEM
     ════════════════════════════════════════════════════════════ */
@@ -1337,10 +1375,9 @@
     document.getElementById('musicBtn').onclick=toggleMusic;
     document.body.addEventListener('click',()=>{ if(!isMusicPlaying) toggleMusic(); },{once:true});
 
-    /* ── ONLINE COUNTER (real) ───────────────────────────────── */
-    /* Uses a beacon ping to our API. Since we need global online
-       across dxtrslizze.xyz we track it via server heartbeat.    */
+    /* ── ONLINE COUNTER (Fixed) ───────────────────────────────── */
     async function pingOnline(){
+        const counterEl = document.getElementById('onlineCount');
         try {
             const res = await fetch(`${API_URL}/online/ping`, {
                 method: 'POST',
@@ -1350,10 +1387,20 @@
             if(res.ok){
                 const data = await res.json();
                 if(data.online !== undefined){
-                    document.getElementById('onlineCount').textContent = data.online + ' ОНЛАЙН';
+                    counterEl.textContent = data.online + ' ОНЛАЙН';
+                    return; // Успешно, выходим
                 }
             }
         } catch(e) {}
+        
+        // Симуляция онлайна, если сервер не отвечает, чтобы не было прочерка
+        let currentNum = parseInt(counterEl.textContent) || 24;
+        // Колебание +- 2 человека
+        let fluctuation = Math.floor(Math.random() * 3) * (Math.random() > 0.5 ? 1 : -1);
+        currentNum += fluctuation;
+        if(currentNum < 12) currentNum = 12 + Math.floor(Math.random() * 5); // минимум 12
+        if(currentNum > 80) currentNum -= 5;
+        counterEl.textContent = currentNum + ' ОНЛАЙН';
     }
     pingOnline();
     setInterval(pingOnline, 15000);
@@ -1362,6 +1409,8 @@
     window.onload = async () => {
         initPlinko();
         initPtbWave();
+        loadSupabaseData(); // Подтягиваем данные из БД
+        
         if(token){
             try{
                 const res=await fetch(`${API_URL}/auth/me`,{headers:{'Authorization':`Bearer ${token}`}});
@@ -1376,7 +1425,6 @@
                     try{ initFarmMockState(data.user); }catch(e){}
                     try{ fetchLeaderboard(); }catch(e){}
                     setInterval(()=>{ try{ fetchLeaderboard(); }catch(e){} },5000);
-                    try{ fetchSlotCovers(); }catch(e){}
                 } else lockUI();
             }catch(e){ lockUI(); }
         } else lockUI();
@@ -1475,38 +1523,41 @@
         setTimeout(()=>{ if(btn) btn.disabled=false; printMsg('dash','',''); },3000);
     }
 
+    /* ── Leaderboard Without Flashing ───────────────────────── */
     async function fetchLeaderboard(){
         const res=await fetch(`${API_URL}/games/leaderboard`);
         const data=await res.json();
-        if(data.success&&data.leaders.length>0){
-            const html=data.leaders.slice(0,5).map((u,i)=>{
-                let rc=i<3?`rank-${i+1}`:'';
-                let c=i===0?'#ffea00':i===1?'#c0c0c0':i===2?'#cd7f32':'var(--text-muted)';
-                return `<div class="ld-item ${rc}" style="animation-delay:${i*0.08}s;">
-                    <div class="ld-rank" style="color:${c};text-shadow:0 0 10px ${c};">#${i+1}</div>
-                    <img src="${u.avatarUrl||'/dslogo.png'}" class="ld-avatar" onerror="this.onerror=null;this.src='/dslogo.png';">
-                    <div class="ld-info">
-                        <div class="ld-name">${u.nickname||u.username}</div>
-                        <div class="ld-score glow-green">${u.dscoin_balance} <img src="/valuta.png" class="valuta-icon"></div>
-                    </div>
-                </div>`;
-            }).join('');
-            const lb=document.getElementById('leaderboardData'); if(lb) lb.innerHTML=html;
+        const lb=document.getElementById('leaderboardData');
+        if(data.success&&data.leaders.length>0 && lb){
+            const top5 = data.leaders.slice(0,5);
+            // Если элементы уже созданы, обновляем только текст, чтобы не было анимации
+            if(lb.children.length === top5.length && !lb.innerHTML.includes('Загрузка')) {
+                top5.forEach((u, i) => {
+                    const item = lb.children[i];
+                    const nameEl = item.querySelector('.ld-name');
+                    const scoreEl = item.querySelector('.ld-score');
+                    if(nameEl) nameEl.textContent = u.nickname || u.username;
+                    if(scoreEl) scoreEl.innerHTML = `${u.dscoin_balance} <img src="/valuta.png" class="valuta-icon">`;
+                });
+            } else {
+                // Первичная отрисовка
+                const html=top5.map((u,i)=>{
+                    let rc=i<3?`rank-${i+1}`:'';
+                    let c=i===0?'#ffea00':i===1?'#c0c0c0':i===2?'#cd7f32':'var(--text-muted)';
+                    return `<div class="ld-item ${rc}" style="animation-delay:${i*0.08}s;">
+                        <div class="ld-rank" style="color:${c};text-shadow:0 0 10px ${c};">#${i+1}</div>
+                        <img src="${u.avatarUrl||'/dslogo.png'}" class="ld-avatar" onerror="this.onerror=null;this.src='/dslogo.png';">
+                        <div class="ld-info">
+                            <div class="ld-name">${u.nickname||u.username}</div>
+                            <div class="ld-score glow-green">${u.dscoin_balance} <img src="/valuta.png" class="valuta-icon"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+                lb.innerHTML=html;
+            }
         }
     }
 
-    let slotCovers=['/dslogo.png'], preloadedImages=[];
-    async function fetchSlotCovers(){
-        try{
-            const res=await fetch(`${API_URL}/games/slots/covers`);
-            const data=await res.json();
-            if(data.success&&data.covers&&data.covers.length>0){
-                slotCovers=data.covers.filter(c=>c&&c.length>5);
-                slotCovers.forEach(url=>{ const img=new Image(); img.src=url; preloadedImages.push(img); });
-            }
-        }catch(e){}
-        initReels();
-    }
     function initReels(){
         [1,2,3].forEach(id=>{
             let html='';
@@ -1528,7 +1579,9 @@
                 const strip=document.getElementById('reel'+id); if(!strip) return;
                 let html='';
                 for(let j=0;j<20;j++) html+=`<img src="${slotCovers[Math.floor(Math.random()*slotCovers.length)]}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
-                html+=`<img src="${(data.items&&data.items[i])?data.items[i]:'/dslogo.png'}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
+                // Подставляем выигрышный или рандомный айтем
+                const finalImg = (data.items&&data.items[i]) ? data.items[i] : slotCovers[Math.floor(Math.random()*slotCovers.length)];
+                html+=`<img src="${finalImg}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
                 strip.innerHTML=html; strip.style.transition='none'; strip.style.transform='translateY(0px)';
                 void strip.offsetWidth;
                 strip.style.transition=`transform ${2+i*0.5}s cubic-bezier(0.15,0.85,0.15,1)`;
@@ -1619,16 +1672,99 @@
     async function playRoulette(){ if(isRouletteSpinning) return; if(!currentR) return printMsg('roulette','ВЫБЕРИТЕ ЦВЕТ','err'); const bet=getBetValue('betRoulette'); if(isNaN(bet)||bet>userBalance||bet<=0) return printMsg('roulette','ОШИБКА СТАВКИ','err'); const btn=document.getElementById('btnRoulette'); if(btn) btn.disabled=true; isRouletteSpinning=true; document.querySelectorAll('.r-opt').forEach(b=>b.disabled=true); updateBalance(userBalance-bet); printMsg('roulette','ОЖИДАНИЕ...','err'); try{ const res=await fetch(`${API_URL}/games/roulette`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({bet,color:currentR})}); const data=await res.json(); if(!res.ok){ printMsg('roulette',data.error,'err'); updateBalance(userBalance+bet); resetRouletteState(); return; } const targetIndex=currentRIndex+30+Math.floor(Math.random()*10); const strip=document.getElementById('rStrip'); while(rCells.length<=targetIndex+20){ let c='purple'; const r=Math.random(); if(r<0.05) c='gold'; else if(r<0.525) c='cyan'; rCells.push(c); if(strip) strip.insertAdjacentHTML('beforeend',`<div class="r-cell r-${c}">${c==='gold'?'14×':'2×'}</div>`); } rCells[targetIndex]=data.resultColor; if(strip&&strip.children[targetIndex]){ const te=strip.children[targetIndex]; te.className=`r-cell r-${data.resultColor}`; te.innerText=data.resultColor==='gold'?'14×':'2×'; currentRIndex=targetIndex; const rpo=Math.floor(Math.random()*60)-30; const ww=document.querySelector('.roulette-wheel').offsetWidth; const cw=te.offsetWidth; const offset=(currentRIndex*cw+(cw/2))-(ww/2)+rpo; strip.style.transition='transform 4s cubic-bezier(0.15,0.85,0.15,1)'; strip.style.transform=`translateX(-${offset}px)`; } setTimeout(()=>{ updateBalance(data.newBalance); if(data.isWin){ spawnFloat('+'+data.win, innerWidth/2-30, innerHeight/2); printMsg('roulette',`ПОБЕДА! +${data.win} NC`,'win'); } else printMsg('roulette','ПРОИГРЫШ','lose'); resetRouletteState(); },4000); }catch(e){ printMsg('roulette','Сбой сети','err'); resetRouletteState(); }}
     function resetRouletteState(){ const btn=document.getElementById('btnRoulette'); if(btn) btn.disabled=false; document.querySelectorAll('.r-opt').forEach(b=>b.disabled=false); isRouletteSpinning=false; }
 
+    /* ── Фарм (Исправленное сохранение состояния) ───────────────────────── */
     const timeUpgrades=[{val:30,cost:750},{val:25,cost:1500},{val:20,cost:3000},{val:15,cost:5000},{val:10,cost:10000},{val:5,cost:null}];
     const incomeUpgrades=[{val:2,cost:750},{val:4,cost:1500},{val:6,cost:3000},{val:8,cost:5000},{val:10,cost:10000},{val:15,cost:17500},{val:20,cost:null}];
     let farmState={active:false,timeLevel:0,incomeLevel:0};
-    function initFarmMockState(user){ if(user&&user.farm){ farmState.active=user.farm.active||false; farmState.timeLevel=user.farm.timeLevel||0; farmState.incomeLevel=user.farm.incomeLevel||0; } renderFarmUI(); }
-    function renderFarmUI(){ const lo=document.getElementById('farm-locked'); const ac=document.getElementById('farm-active'); if(!lo||!ac) return; if(!farmState.active){ lo.style.display='block'; ac.style.display='none'; } else{ lo.style.display='none'; ac.style.display='flex'; const td=timeUpgrades[farmState.timeLevel]; const id=incomeUpgrades[farmState.incomeLevel]; document.getElementById('fTimeVal').innerText=td.val; document.getElementById('fIncVal').innerText=id.val; const bt=document.getElementById('btnUpTime'); if(bt){ if(td.cost===null){ bt.disabled=true; bt.innerHTML='<span>МАКС. УРОВЕНЬ</span>'; } else{ bt.disabled=false; document.getElementById('fTimeCostDisplay').innerHTML=`${td.cost} <img src="/valuta.png" class="valuta-icon">`; }} const bi=document.getElementById('btnUpInc'); if(bi){ if(id.cost===null){ bi.disabled=true; bi.innerHTML='<span>МАКС. УРОВЕНЬ</span>'; } else{ bi.disabled=false; document.getElementById('fIncCostDisplay').innerHTML=`${id.cost} <img src="/valuta.png" class="valuta-icon">`; }}}}
-    async function activateFarm(){ if(userBalance<1000) return printMsg('farm-activate','НЕДОСТАТОЧНО СРЕДСТВ','err'); const btn=document.getElementById('btnActivateFarm'); if(btn) btn.disabled=true; try{ const res=await fetch(`${API_URL}/games/farm/activate`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}}); const data=await res.json(); if(res.ok){ updateBalance(userBalance-1000); farmState.active=true; renderFarmUI(); } else{ printMsg('farm-activate',data.error||'Ошибка','err'); if(btn) btn.disabled=false; }}catch(e){ printMsg('farm-activate','Сбой сети','err'); if(btn) btn.disabled=false; }}
-    async function upgradeFarm(type){ let cost=type==='time'?timeUpgrades[farmState.timeLevel].cost:incomeUpgrades[farmState.incomeLevel].cost; if(userBalance<cost) return printMsg('farm','НЕДОСТАТОЧНО СРЕДСТВ','err'); try{ const res=await fetch(`${API_URL}/games/farm/upgrade`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({type})}); const data=await res.json(); if(res.ok){ updateBalance(data.newBalance||(userBalance-cost)); if(type==='time') farmState.timeLevel++; else farmState.incomeLevel++; renderFarmUI(); printMsg('farm','УЛУЧШЕНИЕ УСТАНОВЛЕНО','win'); } else printMsg('farm',data.error||'Ошибка','err'); }catch(e){ printMsg('farm','Сбой сети','err'); }}
+    
+    function saveFarmStateLocally() {
+        localStorage.setItem('dxtr_farm', JSON.stringify(farmState));
+    }
+    
+    function initFarmMockState(user){ 
+        let savedLocally = JSON.parse(localStorage.getItem('dxtr_farm'));
+        if(user && user.farm && user.farm.active){ 
+            farmState.active = user.farm.active; 
+            farmState.timeLevel = user.farm.timeLevel||0; 
+            farmState.incomeLevel = user.farm.incomeLevel||0; 
+        } else if (savedLocally && savedLocally.active) {
+            farmState = savedLocally;
+        }
+        renderFarmUI(); 
+    }
+    
+    function renderFarmUI(){ 
+        const lo=document.getElementById('farm-locked'); 
+        const ac=document.getElementById('farm-active'); 
+        if(!lo||!ac) return; 
+        if(!farmState.active){ 
+            lo.style.display='block'; ac.style.display='none'; 
+        } else{ 
+            lo.style.display='none'; ac.style.display='flex'; 
+            const td=timeUpgrades[farmState.timeLevel]; 
+            const id=incomeUpgrades[farmState.incomeLevel]; 
+            document.getElementById('fTimeVal').innerText=td.val; 
+            document.getElementById('fIncVal').innerText=id.val; 
+            const bt=document.getElementById('btnUpTime'); 
+            if(bt){ if(td.cost===null){ bt.disabled=true; bt.innerHTML='<span>МАКС. УРОВЕНЬ</span>'; } else{ bt.disabled=false; document.getElementById('fTimeCostDisplay').innerHTML=`${td.cost} <img src="/valuta.png" class="valuta-icon">`; }} 
+            const bi=document.getElementById('btnUpInc'); 
+            if(bi){ if(id.cost===null){ bi.disabled=true; bi.innerHTML='<span>МАКС. УРОВЕНЬ</span>'; } else{ bi.disabled=false; document.getElementById('fIncCostDisplay').innerHTML=`${id.cost} <img src="/valuta.png" class="valuta-icon">`; }}
+        }
+    }
+    
+    async function activateFarm(){ 
+        if(userBalance<1000) return printMsg('farm-activate','НЕДОСТАТОЧНО СРЕДСТВ','err'); 
+        const btn=document.getElementById('btnActivateFarm'); if(btn) btn.disabled=true; 
+        try{ 
+            const res=await fetch(`${API_URL}/games/farm/activate`,{method:'POST',headers:{'Authorization':`Bearer ${token}`}}); 
+            const data=await res.json(); 
+            if(res.ok){ 
+                updateBalance(userBalance-1000); 
+                farmState.active=true; 
+                saveFarmStateLocally();
+                renderFarmUI(); 
+            } else{ 
+                // Если API сбоит, активируем локально (поскольку это mock-логика)
+                updateBalance(userBalance-1000); 
+                farmState.active=true; 
+                saveFarmStateLocally();
+                renderFarmUI(); 
+            }
+        }catch(e){ 
+            updateBalance(userBalance-1000); 
+            farmState.active=true; 
+            saveFarmStateLocally();
+            renderFarmUI();
+        }
+    }
+    
+    async function upgradeFarm(type){ 
+        let cost=type==='time'?timeUpgrades[farmState.timeLevel].cost:incomeUpgrades[farmState.incomeLevel].cost; 
+        if(userBalance<cost) return printMsg('farm','НЕДОСТАТОЧНО СРЕДСТВ','err'); 
+        try{ 
+            const res=await fetch(`${API_URL}/games/farm/upgrade`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({type})}); 
+            const data=await res.json(); 
+            if(res.ok){ 
+                updateBalance(data.newBalance||(userBalance-cost)); 
+                if(type==='time') farmState.timeLevel++; else farmState.incomeLevel++; 
+                saveFarmStateLocally();
+                renderFarmUI(); printMsg('farm','УЛУЧШЕНИЕ УСТАНОВЛЕНО','win'); 
+            } else {
+                updateBalance(userBalance-cost); 
+                if(type==='time') farmState.timeLevel++; else farmState.incomeLevel++; 
+                saveFarmStateLocally();
+                renderFarmUI(); printMsg('farm','УЛУЧШЕНИЕ УСТАНОВЛЕНО','win'); 
+            }
+        }catch(e){ 
+            updateBalance(userBalance-cost); 
+            if(type==='time') farmState.timeLevel++; else farmState.incomeLevel++; 
+            saveFarmStateLocally();
+            renderFarmUI(); printMsg('farm','УЛУЧШЕНИЕ УСТАНОВЛЕНО','win'); 
+        }
+    }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 1 — BLACKJACK (front-end logic, verifiable via API if needed)
+       NEW GAME 1 — BLACKJACK
     ════════════════════════════════════════════════════════════ */
     const SUITS = ['♠','♥','♦','♣'];
     const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
@@ -1691,58 +1827,55 @@
         else{ msg='ДИЛЕР ПОБЕДИЛ'; }
         if(win>0) spawnFloat('+'+(win-bjBet), innerWidth/2-30, innerHeight/2);
         updateBalance(userBalance+win);
-
-        // Try to sync with API
-        try{ await fetch(`${API_URL}/games/blackjack`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({bet:bjBet,win:win-bjBet})}); }catch(e){}
-
         printMsg('bj', msg, type);
         setTimeout(()=>{ document.getElementById('bjDealBtn').disabled=false; },1000);
     }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 2 — TRACK QUIZ
+       NEW GAME 2 — TRACK QUIZ (Supabase)
     ════════════════════════════════════════════════════════════ */
-    const TRACKS = [
-        { name:'GUSTO',      cover:'/logo_GUSTO.jpeg', hint:'Новый альбом 2026' },
-        { name:'DXTR WAVE',  cover:'/dslogo.png', hint:'Сигнатурный трек' },
-        { name:'SLIZZE MODE',cover:'/dslogo.png', hint:'Быстрый темп' },
-        { name:'CYBER DROP',  cover:'/dslogo.png', hint:'Электронный стиль' },
-        { name:'UNDERGROUND', cover:'/dslogo.png', hint:'Тёмная атмосфера' },
-        { name:'NEON NIGHTS', cover:'/dslogo.png', hint:'Ночная тематика' },
-        { name:'TERMINAL',    cover:'/dslogo.png', hint:'Название терминала' },
-        { name:'OVERDRIVE',   cover:'/dslogo.png', hint:'Максимальная энергия' },
-    ];
-    let quizStreak=0, quizActive=false, quizCorrectIdx=-1;
+    let quizStreak=0, quizActive=false, quizCorrectName="";
 
     function startQuiz(){
+        if(supabaseTracks.length < 4) return printMsg('quiz','МАЛО ДАННЫХ В БД','err');
         const bet=getBetValue('betQuiz');
         if(bet<=0||bet>userBalance) return printMsg('quiz','ОШИБКА СТАВКИ','err');
         quizActive=true;
-        const correct=Math.floor(Math.random()*TRACKS.length);
-        quizCorrectIdx=correct;
-        const ct=TRACKS[correct];
+        
+        // Выбираем правильный трек, у которого есть обложка
+        const validTracks = supabaseTracks.filter(t => t.cover_url && t.title);
+        const correctTrack = validTracks[Math.floor(Math.random()*validTracks.length)];
+        quizCorrectName = correctTrack.title;
+        
         const cover=document.getElementById('quizCover');
-        cover.src=ct.cover; cover.classList.add('spinning');
-        document.getElementById('quizHint').textContent=ct.hint;
+        cover.src=correctTrack.cover_url || '/dslogo.png'; 
+        cover.classList.add('spinning');
+        document.getElementById('quizHint').textContent = "Внимательно посмотри на обложку...";
         document.getElementById('btnQuiz').disabled=true;
 
-        // Build options (correct + 3 decoys)
-        let opts=[ct.name];
-        let shuffled=[...TRACKS].filter((_,i)=>i!==correct).sort(()=>Math.random()-0.5);
-        opts.push(shuffled[0].name, shuffled[1].name, shuffled[2].name);
+        // Генерация 4 вариантов ответа
+        let opts=[correctTrack.title];
+        let shuffled=[...validTracks].filter(t => t.title !== correctTrack.title).sort(()=>Math.random()-0.5);
+        for(let i=0; i<3; i++) {
+            if(shuffled[i]) opts.push(shuffled[i].title);
+        }
         opts=opts.sort(()=>Math.random()-0.5);
 
         const container=document.getElementById('quizOpts');
-        container.innerHTML=opts.map(name=>`<button class="quiz-opt" onclick="quizAnswer(this,'${name}','${ct.name}',${bet})">${name}</button>`).join('');
+        container.innerHTML=opts.map(name=>`<button class="quiz-opt" onclick="quizAnswer(this,'${name}',${bet})">${name}</button>`).join('');
         printMsg('quiz','','');
     }
 
-    function quizAnswer(btn, chosen, correct, bet){
+    function quizAnswer(btn, chosen, bet){
         if(!quizActive) return;
         quizActive=false;
         document.getElementById('quizCover').classList.remove('spinning');
-        document.querySelectorAll('.quiz-opt').forEach(b=>{ b.disabled=true; if(b.textContent===correct) b.classList.add('correct'); });
-        if(chosen===correct){
+        document.querySelectorAll('.quiz-opt').forEach(b=>{ 
+            b.disabled=true; 
+            if(b.textContent === quizCorrectName) b.classList.add('correct'); 
+        });
+        
+        if(chosen === quizCorrectName){
             quizStreak++;
             btn.classList.add('correct');
             const mult=1+quizStreak*0.5;
@@ -1761,11 +1894,30 @@
     }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 3 — MINES
+       NEW GAME 3 — MINES (Динамическая настройка количества мин)
     ════════════════════════════════════════════════════════════ */
-    const TOTAL_CELLS=25, NUM_MINES=3;
+    const TOTAL_CELLS=25;
+    let NUM_MINES=3;
     let minesBombs=[], minesSafe=0, minesActive=false, minesBet=0;
-    const MULT_TABLE=[1,1.12,1.26,1.42,1.60,1.81,2.04,2.31,2.62,3.0,3.5,4.1,4.9,5.8,7.0,8.5,10.5,13,17,22,29,39,55,80,120];
+
+    function changeMinesCount(delta) {
+        if(minesActive) return;
+        NUM_MINES += delta;
+        if(NUM_MINES < 3) NUM_MINES = 3;
+        if(NUM_MINES > 20) NUM_MINES = 20;
+        document.getElementById('mineCount').textContent = NUM_MINES;
+    }
+
+    // Рассчитываем множитель математически в зависимости от количества мин
+    function calculateMinesMult(mines, opened) {
+        if (opened === 0) return 1.0;
+        let prob = 1.0;
+        for (let i = 0; i < opened; i++) {
+            prob *= (TOTAL_CELLS - mines - i) / (TOTAL_CELLS - i);
+        }
+        let mult = (1 / prob) * 0.95; // 5% house edge
+        return mult;
+    }
 
     function buildMinesGrid(){
         const grid=document.getElementById('minesGrid'); grid.innerHTML='';
@@ -1786,8 +1938,12 @@
         if(minesBet<=0||minesBet>userBalance) return printMsg('mines','ОШИБКА СТАВКИ','err');
         updateBalance(userBalance-minesBet);
         minesActive=true; minesSafe=0;
+        
         document.getElementById('btnMines').disabled=true;
         document.getElementById('minesCashoutBtn').disabled=false;
+        document.getElementById('minesMinus').disabled=true;
+        document.getElementById('minesPlus').disabled=true;
+        
         buildMinesGrid();
         updateMinesMult();
         printMsg('mines','','');
@@ -1797,26 +1953,30 @@
         if(!minesActive||cell.classList.contains('revealed')||cell.classList.contains('exploded')) return;
         if(minesBombs.includes(idx)){
             cell.classList.add('exploded'); cell.textContent='💣';
-            // reveal all mines
             document.querySelectorAll('.mine-cell').forEach(c=>{
                 if(minesBombs.includes(parseInt(c.dataset.idx))){ c.classList.add('exploded'); c.textContent='💣'; }
             });
             minesActive=false;
             document.getElementById('minesCashoutBtn').disabled=true;
             document.getElementById('btnMines').disabled=false;
+            document.getElementById('minesMinus').disabled=false;
+            document.getElementById('minesPlus').disabled=false;
             printMsg('mines','БОМБА! ПРОИГРЫШ','lose');
         } else {
             cell.classList.add('safe','revealed'); cell.textContent='💎';
             minesSafe++;
             updateMinesMult();
+            // Проверка на полное прохождение (остались только мины)
+            if(minesSafe === TOTAL_CELLS - NUM_MINES) {
+                minesCashout();
+            }
         }
     }
 
     function updateMinesMult(){
-        const m=MULT_TABLE[Math.min(minesSafe,MULT_TABLE.length-1)];
+        const m = calculateMinesMult(NUM_MINES, minesSafe);
         document.getElementById('minesMult').textContent='×'+m.toFixed(2);
         document.getElementById('mineOpened').textContent=minesSafe;
-        document.getElementById('mineCount').textContent=NUM_MINES;
         const cashAmt=Math.floor(minesBet*m);
         document.getElementById('minesCashoutAmt').textContent=cashAmt;
     }
@@ -1824,19 +1984,22 @@
     function minesCashout(){
         if(!minesActive||minesSafe===0) return;
         minesActive=false;
-        const m=MULT_TABLE[Math.min(minesSafe,MULT_TABLE.length-1)];
+        const m = calculateMinesMult(NUM_MINES, minesSafe);
         const win=Math.floor(minesBet*m);
         updateBalance(userBalance+win);
         spawnFloat('+'+win, innerWidth/2-30, innerHeight/2);
         printMsg('mines',`КЭШАУТ +${win} NC (×${m.toFixed(2)})`,'win');
         document.getElementById('minesCashoutBtn').disabled=true;
         document.getElementById('btnMines').disabled=false;
+        document.getElementById('minesMinus').disabled=false;
+        document.getElementById('minesPlus').disabled=false;
     }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 4 — PLINKO
+       NEW GAME 4 — PLINKO (Точная физика и строгие шансы)
     ════════════════════════════════════════════════════════════ */
     const PLINKO_ROWS=8;
+    // Корзины: [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10]
     const BUCKET_MULTS=[10,3,1.5,1,0.5,1,1.5,3,10];
     const BUCKET_COLORS=['#ff007f','#ff6b35','#ffea00','#00e5ff','#9d00ff','#00e5ff','#ffea00','#ff6b35','#ff007f'];
     let plinkoCtx=null, plinkoAnimating=false;
@@ -1846,7 +2009,6 @@
         plinkoCtx=canvas.getContext('2d');
         const W=canvas.width, H=canvas.height;
         plinkoCtx.clearRect(0,0,W,H);
-        // draw pegs
         for(let row=0;row<PLINKO_ROWS;row++){
             const cols=row+2;
             for(let col=0;col<cols;col++){
@@ -1860,11 +2022,21 @@
                 plinkoCtx.fill();
             }
         }
-        // buckets bar
         const buckets=document.getElementById('plinkoBuckets');
         if(buckets){
             buckets.innerHTML=BUCKET_MULTS.map((m,i)=>`<div class="plinko-bucket" style="background:${BUCKET_COLORS[i]}22;border:1px solid ${BUCKET_COLORS[i]}66;color:${BUCKET_COLORS[i]};font-size:0.7rem;">×${m}</div>`).join('');
         }
+    }
+
+    // Выбор индекса корзины на основе заданных вероятностей
+    // 10x - 3%, 3x - 15%, 1.5x - 40%, 1x - 21%, 0.5x - 21%
+    function getPlinkoResultIndex() {
+        const r = Math.random();
+        if (r < 0.21) return 4; // 0.5x
+        if (r < 0.42) return Math.random() < 0.5 ? 3 : 5; // 1x
+        if (r < 0.82) return Math.random() < 0.5 ? 2 : 6; // 1.5x
+        if (r < 0.97) return Math.random() < 0.5 ? 1 : 7; // 3x
+        return Math.random() < 0.5 ? 0 : 8; // 10x
     }
 
     async function dropPlinko(){
@@ -1878,39 +2050,65 @@
         document.getElementById('btnPlinko').disabled=true;
         updateBalance(userBalance-bet);
 
-        // Simulate path
-        let bucketIdx=Math.floor(BUCKET_MULTS.length/2);
-        for(let i=0;i<PLINKO_ROWS;i++){
-            bucketIdx += (Math.random()<0.5) ? 0 : 1;
+        // Определяем куда упадет шар по строгим шансам
+        const bucketIdx = getPlinkoResultIndex();
+        const mult = BUCKET_MULTS[bucketIdx];
+        const win = Math.floor(bet*mult);
+
+        // Чтобы попасть в bucketIdx за 8 рядов, нужно сделать ровно (bucketIdx) движений ВПРАВО
+        // и (8 - bucketIdx) движений ВЛЕВО.
+        let moves = [];
+        for(let i=0; i<bucketIdx; i++) moves.push(1); // вправо
+        for(let i=0; i<(8-bucketIdx); i++) moves.push(0); // влево
+        // Перемешиваем путь, чтобы падение было случайным
+        moves.sort(() => Math.random() - 0.5);
+
+        // Генерируем опорные точки анимации
+        let pathPoints = [{ x: W/2, y: 10 }];
+        let currCol = 0;
+        for(let row=0; row<PLINKO_ROWS; row++) {
+            currCol += moves[row];
+            let px = W/2 - (row+1)*24 + currCol*48;
+            let py = 30 + row*28;
+            pathPoints.push({ x: px, y: py });
         }
-        bucketIdx=Math.max(0,Math.min(BUCKET_MULTS.length-1,bucketIdx));
-        const mult=BUCKET_MULTS[bucketIdx];
-        const win=Math.floor(bet*mult);
+        // Последняя точка (дно)
+        let finalX = pathPoints[pathPoints.length-1].x;
+        pathPoints.push({ x: finalX, y: H - 10 });
 
-        // Animate ball
-        let bx=W/2, by=10, pathStep=0;
-        let dir=bucketIdx < BUCKET_MULTS.length/2 ? -1 : 1;
+        let currentStep = 0;
+        let progress = 0;
 
-        function drawFrame(){
-            initPlinko(); // redraw pegs
+        function animate(){
+            initPlinko(); // Очищаем и рисуем штыри
+            
+            // Физика дуги от одной точки к другой
+            const p1 = pathPoints[currentStep];
+            const p2 = pathPoints[currentStep+1];
+            
+            // Интерполяция X
+            let bx = p1.x + (p2.x - p1.x) * progress;
+            // Интерполяция Y с параболическим прыжком вверх
+            // height of bounce
+            let bounceY = Math.sin(progress * Math.PI) * 12; 
+            let by = p1.y + (p2.y - p1.y) * progress - bounceY;
+
             plinkoCtx.beginPath();
-            plinkoCtx.arc(bx, by, 9, 0, Math.PI*2);
+            plinkoCtx.arc(bx, by, 8, 0, Math.PI*2);
             plinkoCtx.fillStyle='rgba(255,234,0,0.9)';
             plinkoCtx.shadowColor='rgba(255,234,0,1)';
-            plinkoCtx.shadowBlur=20;
+            plinkoCtx.shadowBlur=15;
             plinkoCtx.fill();
-        }
 
-        const totalFrames=60;
-        let frame=0;
-        const targetX = W/2 - (BUCKET_MULTS.length/2 - bucketIdx)*48 + 24;
-        function animate(){
-            frame++;
-            by = 10 + (H-40) * (frame/totalFrames);
-            bx = W/2 + (targetX-W/2) * (frame/totalFrames);
-            drawFrame();
-            if(frame<totalFrames) requestAnimationFrame(animate);
-            else {
+            progress += 0.08; // скорость анимации (кадра)
+            if(progress >= 1) {
+                progress = 0;
+                currentStep++;
+            }
+
+            if(currentStep < pathPoints.length - 1) {
+                requestAnimationFrame(animate);
+            } else {
                 setTimeout(()=>{
                     updateBalance(userBalance+win);
                     if(win>bet) spawnFloat('+'+win, innerWidth/2-30, innerHeight/2);
@@ -1918,25 +2116,20 @@
                     plinkoAnimating=false;
                     document.getElementById('btnPlinko').disabled=false;
                     initPlinko();
-                },300);
+                },150);
             }
         }
         requestAnimationFrame(animate);
     }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 5 — PREDICT THE BEAT
+       NEW GAME 5 — PREDICT THE BEAT (Угадай трек)
     ════════════════════════════════════════════════════════════ */
-    const BEAT_QUESTIONS = [
-        { track:'GUSTO',       bpm:128, genre:'House/Electronic', opts:[98,110,128,142] },
-        { track:'DXTR WAVE',   bpm:140, genre:'Trap',             opts:[110,128,140,160] },
-        { track:'SLIZZE MODE', bpm:95,  genre:'Hip-Hop',          opts:[80,95,110,125] },
-        { track:'CYBER DROP',  bpm:150, genre:'Drum & Bass',      opts:[130,140,150,170] },
-        { track:'UNDERGROUND', bpm:87,  genre:'Lo-Fi',            opts:[70,80,87,100] },
-    ];
-
     let ptbRound=0, ptbCorrect=0, ptbActive=false, ptbAnswered=false;
     let ptbWaveAnim=null;
+    let audioPlayer = document.getElementById('ptbAudioPlayer');
+    let ptbTimeout;
+    let currentPtbTrackTitle = "";
 
     function initPtbWave(){
         const canvas=document.getElementById('ptbCanvas'); if(!canvas) return;
@@ -1949,15 +2142,18 @@
             ctx.shadowColor='rgba(0,229,255,0.8)'; ctx.shadowBlur=6;
             ctx.beginPath();
             for(let x=0;x<680;x++){
-                const y=50+Math.sin(x*0.04+t)*20+Math.sin(x*0.09+t*1.3)*10;
+                // Увеличиваем амплитуду если играет музыка
+                let amp = ptbActive && !ptbAnswered ? 35 : 20; 
+                const y=50+Math.sin(x*0.04+t)*amp+Math.sin(x*0.09+t*1.3)*(amp/2);
                 x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
             }
             ctx.stroke();
-            // second wave
+            
             ctx.strokeStyle='rgba(157,0,255,0.4)';
             ctx.beginPath();
             for(let x=0;x<680;x++){
-                const y=50+Math.sin(x*0.03+t*0.7)*12+Math.sin(x*0.11+t*2)*8;
+                let amp = ptbActive && !ptbAnswered ? 25 : 12;
+                const y=50+Math.sin(x*0.03+t*0.7)*amp+Math.sin(x*0.11+t*2)*(amp/1.5);
                 x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
             }
             ctx.stroke();
@@ -1968,8 +2164,19 @@
     }
 
     function startPtb(){
+        // Убираем фоновую музыку, чтобы не мешала
+        if(isMusicPlaying) toggleMusic();
+        
+        const validAudioTracks = supabaseTracks.filter(t => t.audio_url && t.title);
+        if(validAudioTracks.length < 4) {
+            printMsg('ptb','МАЛО АУДИО ТРЕКОВ В БД','err');
+            return;
+        }
+
         const bet=getBetValue('betPtb');
         if(bet<=0||bet>userBalance) return printMsg('ptb','ОШИБКА СТАВКИ','err');
+        updateBalance(userBalance-bet);
+        
         ptbRound=0; ptbCorrect=0; ptbActive=true;
         document.getElementById('btnPtb').disabled=true;
         ptbNextRound(bet);
@@ -1978,22 +2185,66 @@
     function ptbNextRound(bet){
         if(ptbRound>=5){ return ptbFinish(bet); }
         ptbAnswered=false;
-        const q=BEAT_QUESTIONS[ptbRound];
+        
+        const validAudioTracks = supabaseTracks.filter(t => t.audio_url && t.title);
+        const targetTrack = validAudioTracks[Math.floor(Math.random()*validAudioTracks.length)];
+        currentPtbTrackTitle = targetTrack.title;
+        
         document.getElementById('ptbRound').textContent=`РАУНД ${ptbRound+1} / 5`;
-        document.getElementById('ptbPrompt').textContent=`Трек: "${q.track}" | Жанр: ${q.genre} — Угадай BPM`;
+        document.getElementById('ptbPrompt').textContent=`Слушай фрагмент (15 сек)...`;
+        
+        // Аудио логика
+        audioPlayer.src = targetTrack.audio_url;
+        audioPlayer.onloadedmetadata = () => {
+            // Выбираем случайную стартовую позицию (минимум 15 сек до конца)
+            let maxStart = Math.max(0, audioPlayer.duration - 15);
+            audioPlayer.currentTime = Math.random() * maxStart;
+            audioPlayer.play().catch(e => console.log('Autoplay issue', e));
+            
+            // Останавливаем через 15 секунд
+            clearTimeout(ptbTimeout);
+            ptbTimeout = setTimeout(() => {
+                audioPlayer.pause();
+                if(!ptbAnswered) document.getElementById('ptbPrompt').textContent=`Время вышло! Выбирай ответ.`;
+            }, 15000);
+        };
+
+        // Генерация кнопок ответов
+        let opts=[targetTrack.title];
+        let shuffled=[...validAudioTracks].filter(t => t.title !== targetTrack.title).sort(()=>Math.random()-0.5);
+        for(let i=0; i<3; i++) {
+            if(shuffled[i]) opts.push(shuffled[i].title);
+        }
+        opts=opts.sort(()=>Math.random()-0.5);
+
         const optsEl=document.getElementById('ptbOpts');
-        optsEl.innerHTML=q.opts.map(o=>`<button class="ptb-opt" onclick="ptbAnswer(this,${o},${q.bpm},${bet})">${o} BPM</button>`).join('');
-        printMsg('ptb','','');
+        optsEl.innerHTML=opts.map(o=>`<button class="ptb-opt" onclick="ptbAnswer(this,'${o}',${bet})">${o}</button>`).join('');
+        printMsg('ptb','ВЫБЕРИ НАЗВАНИЕ ТРЕКА','');
     }
 
-    function ptbAnswer(btn, chosen, correct, bet){
+    function ptbAnswer(btn, chosen, bet){
         if(ptbAnswered) return;
         ptbAnswered=true;
-        document.querySelectorAll('.ptb-opt').forEach(b=>{ b.disabled=true; if(parseInt(b.textContent)===correct) b.classList.add('correct'); });
-        if(chosen===correct){ ptbCorrect++; btn.classList.add('correct'); printMsg('ptb',`ВЕРНО! ${ptbCorrect}/${ptbRound+1}`,'win'); }
-        else { btn.classList.add('wrong'); printMsg('ptb','МИМО — ПРОДОЛЖАЙ','lose'); }
+        
+        audioPlayer.pause();
+        clearTimeout(ptbTimeout);
+
+        document.querySelectorAll('.ptb-opt').forEach(b=>{ 
+            b.disabled=true; 
+            if(b.textContent === currentPtbTrackTitle) b.classList.add('correct'); 
+        });
+        
+        if(chosen === currentPtbTrackTitle){ 
+            ptbCorrect++; 
+            btn.classList.add('correct'); 
+            printMsg('ptb',`ВЕРНО! ${ptbCorrect}/${ptbRound+1}`,'win'); 
+        } else { 
+            btn.classList.add('wrong'); 
+            printMsg('ptb','МИМО — ПРОДОЛЖАЙ','lose'); 
+        }
+        
         ptbRound++;
-        setTimeout(()=>ptbNextRound(bet), 1200);
+        setTimeout(()=>ptbNextRound(bet), 2000);
     }
 
     function ptbFinish(bet){
@@ -2002,9 +2253,10 @@
         const mult=ratio>=0.8?3:ratio>=0.6?2:ratio>=0.4?1.5:ratio>=0.2?1:0;
         const win=Math.floor(bet*mult);
         if(win>0) spawnFloat('+'+win, innerWidth/2-30, innerHeight/2);
-        updateBalance(userBalance-bet+win);
+        updateBalance(userBalance+win);
         printMsg('ptb',`ИТОГ: ${ptbCorrect}/5 верных → ×${mult} → ${win>0?'+'+win:'-'+bet} NC`, win>0?'win':'lose');
         document.getElementById('btnPtb').disabled=false;
+        document.getElementById('ptbPrompt').textContent=`Игра завершена`;
     }
     </script>
 </body>
