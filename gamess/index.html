@@ -1362,30 +1362,22 @@
     document.getElementById('musicBtn').onclick=toggleMusic;
     document.body.addEventListener('click',()=>{ if(!isMusicPlaying) toggleMusic(); },{once:true});
 
-    /* ── ONLINE COUNTER ───────────────────────────────── */
+    /* ── ONLINE COUNTER (РЕАЛЬНЫЙ) ───────────────────────────────── */
     async function pingOnline(){
         const counterEl = document.getElementById('onlineCount');
         try {
-            const res = await fetch(`${API_URL}/online/ping`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ page: location.pathname })
-            });
+            // Запрашиваем общий онлайн со всего бэкенда (без привязки к конкретной странице)
+            const res = await fetch(`${API_URL}/online`); 
             if(res.ok){
                 const data = await res.json();
-                if(data.online !== undefined){
-                    counterEl.textContent = data.online + ' ОНЛАЙН';
-                    return; 
-                }
+                // Показываем реальную цифру с бэка. Если сервер вернул 0 или пустоту, покажет 1 (ты).
+                const realOnline = data.online || data.total_online || data.count || 1;
+                counterEl.textContent = realOnline + ' ОНЛАЙН';
             }
-        } catch(e) {}
-        
-        let currentNum = parseInt(counterEl.textContent) || 24;
-        let fluctuation = Math.floor(Math.random() * 3) * (Math.random() > 0.5 ? 1 : -1);
-        currentNum += fluctuation;
-        if(currentNum < 12) currentNum = 12 + Math.floor(Math.random() * 5); 
-        if(currentNum > 80) currentNum -= 5;
-        counterEl.textContent = currentNum + ' ОНЛАЙН';
+        } catch(e) {
+            // Если бэкенд упал, никаких фейков — пишем как есть
+            counterEl.textContent = 'ОФФЛАЙН';
+        }
     }
     pingOnline();
     setInterval(pingOnline, 15000);
