@@ -1584,7 +1584,7 @@
     let supabaseTracks = [];
     let slotCovers = ['/dslogo.png']; 
     
-    // Получение токена (разные вариации)
+    // Получение токена
     function getToken() {
         return localStorage.getItem('token') || 
                localStorage.getItem('dxtr_token') || 
@@ -1596,6 +1596,34 @@
         return plinkoAnimating || isRouletteSpinning || ptbActive || minesActive || quizActive || bjGameActive || crashInterval;
     }
 
+    // ── СИНХРОНИЗАЦИЯ БАЛАНСА НА СЕРВЕР (ФИКС ПРОПАЖИ ДЕНЕГ) ──
+    async function syncBalanceToServer(bal) {
+        // Локальное кэширование на случай, если бэк упал
+        localStorage.setItem('cached_balance', bal);
+        try {
+            // Тебе нужно будет добавить этот роут на бэке (index.js)
+            await fetch(`${API_URL}/user/sync-balance`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({ dscoin_balance: bal })
+            });
+        } catch(e) {
+            console.log("Бэк не принял баланс, сохранен в кэш");
+        }
+    }
+
+    // Функция обновления баланса с принудительной синхронизацией
+    function updateBalance(val, forceSync = false){
+        userBalance = val;
+        const el = document.getElementById('uiBalance'); 
+        if(el) el.innerText = val;
+        
+        if(forceSync) syncBalanceToServer(val);
+    }
+
     // ── SOCKET.IO ONLINE COUNTER ── 
     const socket = io("https://dxtrslizze.onrender.com/");
     socket.on('online_update', c => {
@@ -1603,10 +1631,17 @@
         if(counterEl) counterEl.textContent = c + ' ОНЛАЙН';
     });
 
-    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) ── */
+    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) + ФОЛЛБЭК ДЛЯ СЛОТОВ И БИТ ── */
     async function loadTracksData() {
+        // Фоллбэк массив на случай если БД пустая или CORS блочит запрос
+        const fallbackData = [
+            { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', audio_url: ambientTracks[0] || 'ambient1.mp3' },
+            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', audio_url: ambientTracks[1] || 'ambient2.mp3' },
+            { id:3, title:'SLIZZE MODE', cover_url:'/dslogo.png', audio_url: ambientTracks[2] || 'ambient3.mp3' },
+            { id:4, title:'DXTR WAVE', cover_url:'/dslogo.png', audio_url: ambientTracks[3] || 'ambient4.mp3' }
+        ];
+
         try {
-            // Подгружаем прямо из базы Supabase, чтобы всё было актуально и не падало без админки
             const res = await fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=*&order=id.desc', {
                 headers: {
                     'apikey': 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h',
@@ -1615,21 +1650,20 @@
             });
             if(res.ok) {
                 const data = await res.json();
-                if(data && data.length > 0) supabaseTracks = data;
+                if(data && data.length >= 4) {
+                    supabaseTracks = data;
+                } else {
+                    // Если данных мало (меньше 4), объединяем с фоллбэком чтобы игры работали
+                    supabaseTracks = [...data, ...fallbackData];
+                }
+            } else {
+                supabaseTracks = fallbackData;
             }
         } catch(e) {
-            console.log("Supabase load error", e);
+            console.log("Supabase load error, using fallback data", e);
+            supabaseTracks = fallbackData;
         }
         
-        if(supabaseTracks.length === 0) {
-            supabaseTracks = [
-                { id:1, title:'GUSTO', cover_url:'/logo_GUSTO.jpeg', audio_url:'' },
-                { id:2, title:'DXTR WAVE', cover_url:'/dslogo.png', audio_url:'' },
-                { id:3, title:'SLIZZE MODE', cover_url:'/dslogo.png', audio_url:'' },
-                { id:4, title:'CYBER DROP', cover_url:'/dslogo.png', audio_url:'' }
-            ];
-        }
-
         slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
         if(slotCovers.length === 0) slotCovers = ['/dslogo.png'];
 
@@ -1780,8 +1814,19 @@
                             if(av) av.src = user.avatarUrl;
                         }
                         
-                        updateBalance(user.dscoin_balance || 0);
+                        // Если сервер не отдал баланс, но в локалСторэдж есть сохраненный после победы (чтобы не затирался)
+                        let cachedBal = localStorage.getItem('cached_balance');
+                        let actualBal = user.dscoin_balance || 0;
+                        if(cachedBal && parseInt(cachedBal) > actualBal) {
+                            actualBal = parseInt(cachedBal);
+                            syncBalanceToServer(actualBal); // пушим обратно на серв
+                        }
+                        
+                        updateBalance(actualBal);
+                        
+                        // Инициализируем фарм (расширенная проверка)
                         try{ initFarmMockState(user); }catch(e){}
+                        
                         fetchLeaderboard();
                     } else {
                         lockUI("ОШИБКА АВТОРИЗАЦИИ");
@@ -1796,12 +1841,10 @@
             lockUI("СИСТЕМА ЗАБЛОКИРОВАНА");
         }
 
+        // ЖЕСТКАЯ ОБНОВЛЕНИЕ ЛИДЕРБОРДА КАЖДЫЕ 5 СЕК
         setInterval(() => {
             fetchLeaderboard();
-            // Обращение к серверу за балансом отключено, чтобы не перезаписывать локальные выигрыши
-            // в играх, у которых бэкенд будет дописан позже (Mines, Plinko, Quiz и т.д.)
-            // Вся визуальная часть работает и не сбрасывается.
-        }, 3000); 
+        }, 5000); 
     };
 
     function lockUI(msg){ 
@@ -1811,12 +1854,6 @@
             l.style.display = 'flex'; 
             if(msg) l.querySelector('h2').innerText = msg; 
         }
-    }
-
-    function updateBalance(val){
-        userBalance = val;
-        const el = document.getElementById('uiBalance'); 
-        if(el) el.innerText = val;
     }
 
     function printMsg(id, text, type){
@@ -1978,39 +2015,31 @@
         }, 3000);
     }
 
+    // ── ЖЕСТКОЕ ПЕРЕРИСОВЫВАНИЕ ЛИДЕРБОРДА ──
     async function fetchLeaderboard(){
         try {
             const res = await fetch(`${API_URL}/games/leaderboard`);
             const data = await res.json();
             const lb = document.getElementById('leaderboardData');
             
-            if(data.success && data.leaders.length > 0 && lb){
+            if(data.success && data.leaders && lb){
                 const top5 = data.leaders.slice(0, 5);
                 
-                if(lb.children.length === top5.length && !lb.innerHTML.includes('Загрузка')) {
-                    top5.forEach((u, i) => {
-                        const item = lb.children[i];
-                        const nameEl = item.querySelector('.ld-name');
-                        const scoreEl = item.querySelector('.ld-score');
-                        if(nameEl) nameEl.textContent = u.nickname || u.username;
-                        if(scoreEl) scoreEl.innerHTML = `${u.dscoin_balance} <img src="/valuta.png" class="valuta-icon">`;
-                    });
-                } else {
-                    const html = top5.map((u, i) => {
-                        let rc = i < 3 ? `rank-${i+1}` : ''; 
-                        let c = i === 0 ? '#ffea00' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)';
-                        return `
-                        <div class="ld-item ${rc}" style="animation-delay:${i * 0.08}s;">
-                            <div class="ld-rank" style="color:${c};text-shadow:0 0 10px ${c};">#${i+1}</div>
-                            <img src="${u.avatarUrl || '/dslogo.png'}" class="ld-avatar" onerror="this.onerror=null;this.src='/dslogo.png';">
-                            <div class="ld-info">
-                                <div class="ld-name">${u.nickname || u.username}</div>
-                                <div class="ld-score glow-green">${u.dscoin_balance} <img src="/valuta.png" class="valuta-icon"></div>
-                            </div>
-                        </div>`;
-                    }).join('');
-                    lb.innerHTML = html;
-                }
+                // Перерисовываем полностью каждый раз, чтобы инфа обновлялась
+                const html = top5.map((u, i) => {
+                    let rc = i < 3 ? `rank-${i+1}` : ''; 
+                    let c = i === 0 ? '#ffea00' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)';
+                    return `
+                    <div class="ld-item ${rc}" style="animation-delay:${i * 0.08}s;">
+                        <div class="ld-rank" style="color:${c};text-shadow:0 0 10px ${c};">#${i+1}</div>
+                        <img src="${u.avatarUrl || '/dslogo.png'}" class="ld-avatar" onerror="this.onerror=null;this.src='/dslogo.png';">
+                        <div class="ld-info">
+                            <div class="ld-name">${u.nickname || u.username}</div>
+                            <div class="ld-score glow-green">${u.dscoin_balance} <img src="/valuta.png" class="valuta-icon"></div>
+                        </div>
+                    </div>`;
+                }).join('');
+                lb.innerHTML = html;
             }
         } catch(e) {}
     }
@@ -2382,7 +2411,7 @@
         isRouletteSpinning = false; 
     }
 
-    /* ФАРМ (ИНФА СТРОГО ИЗ БД) */
+    /* ── ФАРМ (ИНФА ИЗ БД - РАСШИРЕННАЯ ПРОВЕРКА) ── */
     const timeUpgrades = [
         {val:30, cost:750}, {val:25, cost:1500}, {val:20, cost:3000}, 
         {val:15, cost:5000}, {val:10, cost:10000}, {val:5, cost:null}
@@ -2394,10 +2423,15 @@
     let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
     
     function initFarmMockState(user){ 
-        if(user && user.farm){ 
-            farmState.active = user.farm.active === true || user.farm.active === 'true' || user.farm.is_active === true; 
-            farmState.timeLevel = user.farm.timeLevel || user.farm.time_level || 0; 
-            farmState.incomeLevel = user.farm.incomeLevel || user.farm.income_level || 0; 
+        if(user){ 
+            // Расширенный поиск флага активности фарма на случай разной структуры БД
+            farmState.active = user.farm?.active === true || 
+                               user.farm?.is_active === true || 
+                               user.farm_active === true || 
+                               user.is_farm_active === true;
+                               
+            farmState.timeLevel = user.farm?.timeLevel || user.farm?.time_level || user.farm_time_level || 0; 
+            farmState.incomeLevel = user.farm?.incomeLevel || user.farm?.income_level || user.farm_income_level || 0; 
         } else {
             farmState.active = false;
             farmState.timeLevel = 0;
@@ -2515,7 +2549,7 @@
         } 
     }
 
-    /* БЛЭКДЖЕК */
+    /* ── БЛЭКДЖЕК (ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ БАЛАНСА) ── */
     const SUITS = ['♠', '♥', '♦', '♣']; 
     const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']; 
     let bjDeck = [], bjPlayerHand = [], bjDealerHand = [], bjBet = 0, bjGameActive = false;
@@ -2563,7 +2597,7 @@
         bjBet = getBetValue('betBJ'); 
         if(bjBet <= 0 || bjBet > userBalance) return printMsg('bj', 'ОШИБКА СТАВКИ', 'err'); 
         
-        updateBalance(userBalance - bjBet); 
+        updateBalance(userBalance - bjBet, true); // true = sync to server
         bjCreateDeck(); 
         bjPlayerHand = [bjDraw(), bjDraw()]; 
         bjDealerHand = [bjDraw(), bjDraw()]; 
@@ -2631,7 +2665,7 @@
         
         if(win > 0) spawnFloat('+' + (win - bjBet), innerWidth/2 - 30, innerHeight/2); 
         
-        updateBalance(userBalance + win); 
+        updateBalance(userBalance + win, true); // true = sync to server
         printMsg('bj', msg, type); 
         
         setTimeout(() => { 
@@ -2639,7 +2673,7 @@
         }, 1000); 
     }
 
-    /* КВИЗ РЕВОРК (SUPABASE + БЛЮР) */
+    /* ── КВИЗ (ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ БАЛАНСА) ── */
     let quizStreak = 0, quizActive = false, quizCorrectName = "";
     
     function startQuiz(){
@@ -2657,7 +2691,6 @@
         const cover = document.getElementById('quizCover');
         cover.src = correctTrack.cover_url || '/dslogo.png'; 
         
-        // БЛЮР ПРИ СТАРТЕ РАУНДА
         cover.classList.add('blurred');
         
         document.getElementById('quizHint').textContent = "Нейросеть исказила обложку... Угадай трек по цветам.";
@@ -2679,7 +2712,6 @@
         if(!quizActive) return;
         quizActive = false;
         
-        // СНИМАЕМ БЛЮР
         document.getElementById('quizCover').classList.remove('blurred');
         
         document.querySelectorAll('.quiz-opt').forEach(b => { 
@@ -2692,13 +2724,13 @@
             btn.classList.add('correct');
             const mult = 1 + quizStreak * 0.5;
             const win = Math.floor(bet * mult);
-            updateBalance(userBalance + win); 
+            updateBalance(userBalance + win, true); // SYNC
             spawnFloat('+' + win, innerWidth/2 - 30, innerHeight/2);
             printMsg('quiz', `ВЕРНО! ×${mult.toFixed(1)} → +${win} NC`, 'win');
         } else {
             quizStreak = 0; 
             btn.classList.add('wrong');
-            updateBalance(userBalance - bet);
+            updateBalance(userBalance - bet, true); // SYNC
             printMsg('quiz', 'НЕВЕРНО — СЕРИЯ СБРОШЕНА', 'lose');
         }
         
@@ -2709,7 +2741,7 @@
         }, 1200);
     }
 
-    /* MINES */
+    /* ── MINES (ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ БАЛАНСА) ── */
     const TOTAL_CELLS = 25; 
     let NUM_MINES = 3; 
     let minesBombs = [], minesSafe = 0, minesActive = false, minesBet = 0;
@@ -2756,7 +2788,7 @@
         minesBet = getBetValue('betMines'); 
         if(minesBet <= 0 || minesBet > userBalance) return printMsg('mines', 'ОШИБКА СТАВКИ', 'err'); 
         
-        updateBalance(userBalance - minesBet); 
+        updateBalance(userBalance - minesBet, true); // SYNC 
         minesActive = true; 
         minesSafe = 0; 
         
@@ -2816,7 +2848,7 @@
         const m = calculateMinesMult(NUM_MINES, minesSafe); 
         const win = Math.floor(minesBet * m); 
         
-        updateBalance(userBalance + win); 
+        updateBalance(userBalance + win, true); // SYNC
         spawnFloat('+' + win, innerWidth/2 - 30, innerHeight/2); 
         printMsg('mines', `КЭШАУТ +${win} NC (×${m.toFixed(2)})`, 'win'); 
         
@@ -2826,7 +2858,7 @@
         document.getElementById('minesPlus').disabled = false; 
     }
 
-    /* PLINKO */
+    /* ── PLINKO (ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ БАЛАНСА) ── */
     const PLINKO_ROWS = 8;
     const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10];
     const BUCKET_COLORS = ['#ff007f', '#ff6b35', '#ffea00', '#00e5ff', '#9d00ff', '#00e5ff', '#ffea00', '#ff6b35', '#ff007f'];
@@ -2906,7 +2938,7 @@
                     if(b.finalServerBalance !== null && b.isLastBall) {
                         updateBalance(b.finalServerBalance); 
                     } else {
-                        updateBalance(userBalance + b.win); 
+                        updateBalance(userBalance + b.win, b.isLastBall); // SYNC ONLY ON LAST BALL
                     }
 
                     if(b.win > b.bet) spawnFloat('+' + b.win, innerWidth/2 - 30, innerHeight/2);
@@ -2943,6 +2975,7 @@
         let serverBalls = [];
         let finalServerBalance = null;
         
+        // Попытка стукнуться на бэк, если он есть
         try {
             const res = await fetch(`${API_URL}/games/plinko`, {
                 method: 'POST',
@@ -2956,7 +2989,7 @@
             }
         } catch(e) {}
         
-        updateBalance(userBalance - totalCost);
+        updateBalance(userBalance - totalCost, true); // SYNC DEDUCTION
         plinkoBallsArray = [];
 
         for(let i=0; i<count; i++) {
@@ -3001,7 +3034,7 @@
         }
     }
 
-    /* БИТ (PREDICT THE BEAT) */
+    /* ── БИТ (PREDICT THE BEAT - ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ) ── */
     let ptbRound = 0, ptbCorrect = 0, ptbActive = false, ptbAnswered = false;
     let ptbWaveAnim = null; 
     let audioPlayer = document.getElementById('ptbAudioPlayer'); 
@@ -3056,7 +3089,7 @@
         const bet = getBetValue('betPtb');
         if(bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
         
-        updateBalance(userBalance - bet);
+        updateBalance(userBalance - bet, true); // SYNC DEDUCTION
         
         ptbRound = 0; 
         ptbCorrect = 0; 
@@ -3142,7 +3175,7 @@
         
         if(win > 0) spawnFloat('+' + win, innerWidth/2 - 30, innerHeight/2);
         
-        updateBalance(userBalance + win);
+        updateBalance(userBalance + win, true); // SYNC WINNING
         printMsg('ptb', `ИТОГ: ${ptbCorrect}/5 верных → ×${mult} → ${win > 0 ? '+' + win : '-' + bet} NC`, win > 0 ? 'win' : 'lose');
         
         document.getElementById('btnPtb').disabled = false;
