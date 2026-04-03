@@ -10,7 +10,7 @@ const FARM_TIME_COSTS = [750, 1500, 3000, 5000, 10000];
 const FARM_INCOME_COINS = [2, 4, 6, 8, 10, 15, 20];
 const FARM_INCOME_COSTS = [750, 1500, 3000, 5000, 10000, 17500];
 
-// Кэш для каталога музыки (чтобы не дудосить Supabase при каждом спине)
+// Кэш для каталога музыки
 let musicCache = {
     data: [],
     lastFetch: 0
@@ -62,7 +62,8 @@ module.exports = function(app, User, supabase) {
                     const intervalsPassed = Math.floor(timePassed / intervalMs);
                     const gainedCoins = intervalsPassed * incomePerInterval;
                     
-                    user.dscoin_balance = (user.dscoin_balance || 0) + gainedCoins;
+                    // Жесткое приведение к числу для избежания багов с "визуальным" балансом
+                    user.dscoin_balance = Math.floor(Number(user.dscoin_balance || 0) + gainedCoins);
                     user.farm.lastClaim = lastClaim + (intervalsPassed * intervalMs);
                     user.markModified('farm');
                     await user.save();
@@ -83,17 +84,17 @@ module.exports = function(app, User, supabase) {
             return musicCache.data;
         }
 
-        // БЕРЕМ БОЛЬШЕ ДАННЫХ ИЗ SUPABASE: id, аудио, обложку, название
+        // ИСПРАВЛЕНИЕ: Используем mp3_url вместо audio_url, как прописано в index.js
         const { data, error } = await supabase
             .from('music')
-            .select('id, cover_url, audio_url, is_main, title') // Убедись, что 'audio_url' совпадает с названием колонки
+            .select('id, cover_url, mp3_url, is_main, title') 
             .order('created_at', { ascending: false });
 
         if (!error && data && data.length > 0) {
             musicCache = { data, lastFetch: now };
             return data;
         }
-        return musicCache.data; // Возвращаем старый кэш, если упала ошибка
+        return musicCache.data; 
     };
 
     // ==========================================
@@ -137,7 +138,7 @@ module.exports = function(app, User, supabase) {
                 return res.status(400).json({ error: `Следующая поставка через ${hoursLeft} ч.` });
             }
 
-            user.dscoin_balance = (user.dscoin_balance || 0) + 100;
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance || 0) + 100);
             user.lastDaily = now;
             await user.save();
 
@@ -153,9 +154,9 @@ module.exports = function(app, User, supabase) {
             if (!user) return;
 
             if (user.farm && user.farm.active) return res.status(400).json({ error: 'СИСТЕМА УЖЕ АКТИВИРОВАНА' });
-            if ((user.dscoin_balance || 0) < 1000) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
+            if (Number(user.dscoin_balance || 0) < 1000) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
-            user.dscoin_balance -= 1000;
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - 1000);
             user.farm = { active: true, timeLevel: 0, incomeLevel: 0, lastClaim: Date.now() };
             user.markModified('farm');
             await user.save();
@@ -186,9 +187,9 @@ module.exports = function(app, User, supabase) {
                 return res.status(400).json({ error: 'НЕВЕРНЫЙ ПАРАМЕТР УЛУЧШЕНИЯ' });
             }
 
-            if (user.dscoin_balance < cost) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
+            if (Number(user.dscoin_balance) < cost) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
-            user.dscoin_balance -= cost;
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - cost);
             
             if (type === 'time') user.farm.timeLevel += 1;
             else user.farm.incomeLevel += 1;
@@ -214,7 +215,7 @@ module.exports = function(app, User, supabase) {
             if (!user) return;
 
             if (isNaN(betAmount) || betAmount <= 0) return res.status(400).json({ error: 'НЕКОРРЕКТНАЯ СТАВКА' });
-            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
+            if (Number(user.dscoin_balance) < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
             const allTracks = await getMusicCatalog();
             if (!allTracks || allTracks.length === 0) {
@@ -255,16 +256,17 @@ module.exports = function(app, User, supabase) {
             let winTotal = 0;
             if (isWin) winTotal = betAmount * (resultTracks[0].is_main ? 10 : 5);
 
-            user.dscoin_balance = user.dscoin_balance - betAmount + winTotal;
+            // ИСПРАВЛЕНИЕ: Жесткая типизация для корректного сохранения баланса
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - betAmount + winTotal);
             await user.save();
 
             res.json({
                 success: true,
                 items: resultTracks.map(t => ({
                     id: t.id,
-                    title: t.title,
-                    cover_url: t.cover_url,
-                    audio_url: t.audio_url,
+                    title: t.title, // Передаем название (для игры "Бит")
+                    cover_url: t.cover_url, // Передаем обложку
+                    mp3_url: t.mp3_url, // ИСПРАВЛЕНИЕ: Передаем правильный линк на mp3
                     is_main: t.is_main
                 })),
                 win: winTotal,
@@ -285,7 +287,7 @@ module.exports = function(app, User, supabase) {
 
             if (![1, 2, 3, 4].includes(choice)) return res.status(400).json({ error: 'НЕВЕРНЫЙ СЕКТОР' });
             if (isNaN(betAmount) || betAmount <= 0) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
+            if (Number(user.dscoin_balance) < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
             const roll = Math.floor(Math.random() * 100) + 1;
             let isWin = false;
@@ -297,7 +299,7 @@ module.exports = function(app, User, supabase) {
             else if (choice === 4 && roll >= 76) { isWin = true; mult = 3; }
 
             const winTotal = isWin ? betAmount * mult : 0;
-            user.dscoin_balance = user.dscoin_balance - betAmount + winTotal;
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - betAmount + winTotal);
             await user.save();
 
             res.json({ success: true, roll, win: winTotal, newBalance: user.dscoin_balance });
@@ -315,7 +317,7 @@ module.exports = function(app, User, supabase) {
 
             if (isNaN(target) || target < 1.1) return res.status(400).json({ error: 'МИНИМУМ 1.1x' });
             if (isNaN(betAmount) || betAmount <= 0) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
+            if (Number(user.dscoin_balance) < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
             const e = 2 ** 32;
             const h = Math.floor(Math.random() * e);
@@ -327,7 +329,7 @@ module.exports = function(app, User, supabase) {
             const isWin = target <= crashPoint;
             const winTotal = isWin ? Math.floor(betAmount * target) : 0;
 
-            user.dscoin_balance = user.dscoin_balance - betAmount + winTotal;
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - betAmount + winTotal);
             await user.save();
 
             res.json({ success: true, crashPoint, target, win: winTotal, newBalance: user.dscoin_balance });
@@ -345,7 +347,7 @@ module.exports = function(app, User, supabase) {
 
             if (!['purple', 'cyan', 'gold'].includes(color)) return res.status(400).json({ error: 'ВЫБЕРИТЕ ЦВЕТ' });
             if (isNaN(betAmount) || betAmount <= 0) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-            if (user.dscoin_balance < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
+            if (Number(user.dscoin_balance) < betAmount) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
             const roll = Math.random() * 100;
             let resultColor = '';
@@ -358,7 +360,7 @@ module.exports = function(app, User, supabase) {
             const mult = resultColor === 'gold' ? 14 : 2;
             const winTotal = isWin ? betAmount * mult : 0;
 
-            user.dscoin_balance = user.dscoin_balance - betAmount + winTotal;
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - betAmount + winTotal);
             await user.save();
 
             res.json({ success: true, resultColor, isWin, win: winTotal, newBalance: user.dscoin_balance });
@@ -387,7 +389,7 @@ module.exports = function(app, User, supabase) {
 
             const item = SHOP_ITEMS[itemId];
             if (!item) return res.status(404).json({ error: 'Товар не найден' });
-            if (user.dscoin_balance < item.price) return res.status(400).json({ error: 'Недостаточно коинов' });
+            if (Number(user.dscoin_balance) < item.price) return res.status(400).json({ error: 'Недостаточно коинов' });
 
             if (!user.inventory) user.inventory = { frames: [], titles: [], snippets: [] };
             const category = item.type + 's';
@@ -397,7 +399,7 @@ module.exports = function(app, User, supabase) {
                 return res.status(400).json({ error: 'Уже куплено' });
             }
 
-            user.dscoin_balance -= item.price;
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - item.price);
             user.inventory[category].push(itemId);
             
             if (item.type === 'frame') user.activeFrame = itemId;
@@ -420,9 +422,9 @@ module.exports = function(app, User, supabase) {
             if (!user) return;
 
             if (isNaN(burnAmount) || burnAmount <= 0) return res.status(400).json({ error: 'Укажите сумму буста' });
-            if (user.dscoin_balance < burnAmount) return res.status(400).json({ error: 'Недостаточно средств' });
+            if (Number(user.dscoin_balance) < burnAmount) return res.status(400).json({ error: 'Недостаточно средств' });
 
-            user.dscoin_balance -= burnAmount;
+            user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - burnAmount);
             await user.save();
 
             const { data: track, error } = await supabase.from('music').select('boosts').eq('id', trackId).single();
