@@ -208,6 +208,23 @@ module.exports = function(app, User, supabase) {
     // 2. МИНИ-ИГРЫ (АЗАРТ)
     // ==========================================
 
+    // СИНХРОНИЗАЦИЯ БАЛАНСА ИЗ ЛОКАЛЬНЫХ ИГР
+    app.post('/api/user/sync-balance', async (req, res) => {
+        try {
+            const user = await authenticate(req, res);
+            if (!user) return;
+
+            const newBalance = Math.floor(Number(req.body.dscoin_balance));
+            if (isNaN(newBalance)) return res.status(400).json({ error: 'Invalid balance' });
+
+            // Жестко перезаписываем баланс в MongoDB
+            await User.updateOne({ clientId: user.clientId }, { $set: { dscoin_balance: newBalance } });
+            res.json({ success: true, newBalance });
+        } catch (err) {
+            res.status(500).json({ error: 'Ошибка синхронизации' });
+        }
+    });
+    
     app.post('/api/games/slots', async (req, res) => {
         try {
             const betAmount = parseInt(req.body.bet, 10);
