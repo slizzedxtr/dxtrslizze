@@ -239,7 +239,7 @@ module.exports = function(app, User, supabase) {
                 return res.status(500).json({ error: 'Система слотов временно недоступна (каталог пуст)' });
             }
 
-            let slotPool = allTracks.slice(0, 10);
+            let slotPool = allTracks.slice(0, 15);
             allTracks.forEach(track => {
                 if (track.is_main && !slotPool.some(t => t.cover_url === track.cover_url)) {
                     slotPool.push(track);
