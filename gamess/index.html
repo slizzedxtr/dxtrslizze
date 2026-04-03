@@ -1089,6 +1089,10 @@
             pointer-events: none;
             transform: scale(1.05);
         }
+        
+        .quiz-cover.no-transition {
+    transition: none !important;
+}
 
         .quiz-hint { font-size: clamp(0.8rem,2vw,1rem); color: var(--text-muted); margin-bottom: 18px; font-style: italic; }
         .quiz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; width: 100%; max-width: 560px; margin-bottom: 22px; }
@@ -1574,7 +1578,7 @@
         </div>
     </div>
 
-    <audio id="ptbAudioPlayer" preload="auto"></audio>
+    <audio id="ptbAudioPlayer" preload="auto" crossorigin="anonymous"></audio>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
@@ -2424,14 +2428,10 @@
     
     function initFarmMockState(user){ 
         if(user){ 
-            // Расширенный поиск флага активности фарма на случай разной структуры БД
-            farmState.active = user.farm?.active === true || 
-                               user.farm?.is_active === true || 
-                               user.farm_active === true || 
-                               user.is_farm_active === true;
-                               
-            farmState.timeLevel = user.farm?.timeLevel || user.farm?.time_level || user.farm_time_level || 0; 
-            farmState.incomeLevel = user.farm?.incomeLevel || user.farm?.income_level || user.farm_income_level || 0; 
+            // Жесткая проверка всех возможных вариантов написания из БД
+            farmState.active = !!(user.farm?.active || user.farm?.is_active || user.farm_active || user.is_farm_active || user.isFarmActive);
+            farmState.timeLevel = parseInt(user.farm?.timeLevel || user.farm?.time_level || user.farm_time_level || user.timeLevel || 0); 
+            farmState.incomeLevel = parseInt(user.farm?.incomeLevel || user.farm?.income_level || user.farm_income_level || user.incomeLevel || 0); 
         } else {
             farmState.active = false;
             farmState.timeLevel = 0;
@@ -2455,8 +2455,9 @@
             const td = timeUpgrades[farmState.timeLevel] || timeUpgrades[timeUpgrades.length-1]; 
             const id = incomeUpgrades[farmState.incomeLevel] || incomeUpgrades[incomeUpgrades.length-1]; 
             
-            document.getElementById('fTimeVal').innerText = td.val; 
-            document.getElementById('fIncVal').innerText = id.val; 
+            // ВЫВОДИМ УРОВЕНЬ ПРОКАЧКИ ВИЗУАЛЬНО
+            document.getElementById('fTimeVal').innerHTML = `<span style="font-size:0.45em; color:var(--text-muted); vertical-align:middle; margin-right:6px;">УР.${farmState.timeLevel}</span>${td.val}`; 
+            document.getElementById('fIncVal').innerHTML = `<span style="font-size:0.45em; color:var(--text-muted); vertical-align:middle; margin-right:6px;">УР.${farmState.incomeLevel}</span>+${id.val}`; 
             
             const bt = document.getElementById('btnUpTime'); 
             if(bt){ 
@@ -2689,10 +2690,14 @@
         quizCorrectName = correctTrack.title;
         
         const cover = document.getElementById('quizCover');
-        cover.src = correctTrack.cover_url || '/dslogo.png'; 
         
+        // Отключаем анимацию, жестко блюрим, меняем сорс, форсируем рендер и возвращаем анимацию
+        cover.classList.add('no-transition'); 
         cover.classList.add('blurred');
-        
+        cover.src = correctTrack.cover_url || '/dslogo.png'; 
+        void cover.offsetWidth; // Принудительный рендер DOM
+        cover.classList.remove('no-transition');
+
         document.getElementById('quizHint').textContent = "Нейросеть исказила обложку... Угадай трек по цветам.";
         document.getElementById('btnQuiz').disabled = true;
 
@@ -3115,12 +3120,11 @@
 
         document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (10 сек)...`;
         
+        // ЖЕСТКИЙ ЗАПУСК БЕЗ ОЖИДАНИЯ МЕТАДАННЫХ
         audioPlayer.src = targetTrack.audio_url;
-        audioPlayer.onloadedmetadata = () => {
-            let maxStart = Math.max(0, audioPlayer.duration - 10);
-            audioPlayer.currentTime = Math.random() * maxStart;
-            audioPlayer.play().catch(e => console.log('Autoplay issue', e));
-            
+        audioPlayer.currentTime = 0; // Всегда стартуем с 0, чтобы избежать проблем с Infinity duration
+        
+        audioPlayer.play().then(() => {
             clearTimeout(ptbTimeout);
             ptbTimeout = setTimeout(() => {
                 audioPlayer.pause();
@@ -3128,7 +3132,10 @@
                     document.getElementById('ptbPrompt').textContent = `Время вышло! Выбирай ответ.`;
                 }
             }, 10000);
-        };
+        }).catch(e => {
+            console.log('Autoplay blocked or CORS error:', e);
+            document.getElementById('ptbPrompt').textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`;
+        });
 
         let opts = [targetTrack.title];
         let shuffled = [...validAudioTracks].filter(t => t.title !== targetTrack.title).sort(() => Math.random() - 0.5);
