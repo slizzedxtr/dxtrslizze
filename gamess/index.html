@@ -2901,10 +2901,20 @@
 
     function getPlinkoResultIndex() {
         const r = Math.random();
-        if (r < 0.21) return 4; 
-        if (r < 0.42) return Math.random() < 0.5 ? 3 : 5; 
-        if (r < 0.82) return Math.random() < 0.5 ? 2 : 6; 
-        if (r < 0.97) return Math.random() < 0.5 ? 1 : 7; 
+
+        // 0.5x — шанс 19.5% (центральная ячейка, индекс 4)
+        if (r < 0.195) return 4; 
+
+        // 1x — шанс 60% (ячейки по бокам от центра, индексы 3 или 5)
+        if (r < 0.795) return Math.random() < 0.5 ? 3 : 5; 
+
+        // 1.5x — шанс 15% (индексы 2 или 6)
+        if (r < 0.945) return Math.random() < 0.5 ? 2 : 6; 
+
+        // 3x — шанс 5% (индексы 1 или 7)
+        if (r < 0.995) return Math.random() < 0.5 ? 1 : 7; 
+
+        // 10x — шанс 0.5% (самые крайние ячейки, индексы 0 или 8)
         return Math.random() < 0.5 ? 0 : 8; 
     }
 
