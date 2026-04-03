@@ -1242,7 +1242,7 @@
             <div class="music-toggle" id="musicBtn"><i class="fa-solid fa-volume-xmark"></i></div>
             <div class="online-counter">
                 <div class="pulse-dot"></div>
-                <span class="online-num" id="onlineCount">24 ОНЛАЙН</span>
+                <span class="online-num" id="onlineCount">ЗАГРУЗКА...</span>
             </div>
             <a href="/profile" class="profile-btn" title="Профиль">
                 <img src="/dslogo.png" alt="Profile" id="userAvatar" onerror="this.onerror=null;this.src='/dslogo.png';">
@@ -1528,7 +1528,7 @@
 
                 <div id="tab-ptb" class="tab-content">
                     <div class="g-title glow-pink">УГАДАЙ ТРЕК</div>
-                    <p class="g-desc">Слушай 15 секунд аудио-базы и выбери правильное название.</p>
+                    <p class="g-desc">Слушай 10 секунд аудио-базы и выбери правильное название.</p>
                     <div class="ptb-wave">
                         <canvas id="ptbCanvas" width="680" height="100"></canvas>
                     </div>
@@ -1576,6 +1576,8 @@
 
     <audio id="ptbAudioPlayer" preload="auto"></audio>
 
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
     <script>
     const API_URL = "https://dxtrslizze.onrender.com/api";
     let userBalance = 0;
@@ -1594,10 +1596,23 @@
         return plinkoAnimating || isRouletteSpinning || ptbActive || minesActive || quizActive || bjGameActive || crashInterval;
     }
 
-    /* ── ЗАГРУЗКА БАЗЫ ── */
+    // ── SOCKET.IO ONLINE COUNTER ── 
+    const socket = io("https://dxtrslizze.onrender.com/");
+    socket.on('online_update', c => {
+        const counterEl = document.getElementById('onlineCount');
+        if(counterEl) counterEl.textContent = c + ' ОНЛАЙН';
+    });
+
+    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) ── */
     async function loadTracksData() {
         try {
-            const res = await fetch(`${API_URL}/music-list`);
+            // Подгружаем прямо из базы Supabase, чтобы всё было актуально и не падало без админки
+            const res = await fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=*&order=id.desc', {
+                headers: {
+                    'apikey': 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h',
+                    'Authorization': 'Bearer sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'
+                }
+            });
             if(res.ok) {
                 const data = await res.json();
                 if(data && data.length > 0) supabaseTracks = data;
@@ -1735,30 +1750,6 @@
     
     document.getElementById('musicBtn').onclick = toggleMusic;
 
-    /* ── РЕАЛТАЙМ ОНЛАЙН (АВТО-ПОДДЕРЖКА ФЕЙКА ЕСЛИ АПИ УПАЛО) ── */
-    let fakeOnlineNum = Math.floor(Math.random() * 15) + 20;
-
-    async function pingOnline(){
-        const counterEl = document.getElementById('onlineCount');
-        try {
-            const res = await fetch(`${API_URL}/online`); 
-            if(res.ok){
-                const data = await res.json();
-                const num = data.online || data.total_online || data.count;
-                if(num) {
-                    counterEl.textContent = num + ' ОНЛАЙН';
-                    return;
-                }
-            }
-        } catch(e) {}
-        
-        // Фейк онлайн (колебания) если сервер не прислал данные
-        fakeOnlineNum += Math.floor(Math.random() * 5) - 2;
-        if(fakeOnlineNum < 15) fakeOnlineNum = 15;
-        if(fakeOnlineNum > 45) fakeOnlineNum = 45;
-        counterEl.textContent = fakeOnlineNum + ' ОНЛАЙН';
-    }
-
     /* ── INIT & AUTH ── */
     window.onload = async () => {
         initPlinko();
@@ -1805,33 +1796,13 @@
             lockUI("СИСТЕМА ЗАБЛОКИРОВАНА");
         }
 
-        pingOnline();
         setInterval(() => {
-            pingOnline();
             fetchLeaderboard();
-            // Обновляем баланс в фоне только если не играем прям щас
-            if(!isAnyGameActive()) {
-                fetchBalanceBg();
-            }
-        }, 2000); 
+            // Обращение к серверу за балансом отключено, чтобы не перезаписывать локальные выигрыши
+            // в играх, у которых бэкенд будет дописан позже (Mines, Plinko, Quiz и т.д.)
+            // Вся визуальная часть работает и не сбрасывается.
+        }, 3000); 
     };
-
-    async function fetchBalanceBg() {
-        const tok = getToken(); 
-        if(!tok) return;
-        try {
-            const res = await fetch(`${API_URL}/auth/me`,{ 
-                headers:{'Authorization':`Bearer ${tok}`} 
-            });
-            if(res.ok) {
-                const data = await res.json();
-                const u = data.user || data;
-                if(u && u.dscoin_balance !== undefined) {
-                    updateBalance(u.dscoin_balance);
-                }
-            }
-        } catch(e) {}
-    }
 
     function lockUI(msg){ 
         const l = document.getElementById('authLock'); 
@@ -2093,7 +2064,7 @@
                     html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
                 }
                 
-                const finalImg = (data.items && data.items[i]) ? data.items[i] : slotCovers[Math.floor(Math.random() * slotCovers.length)];
+                const finalImg = (data.items && data.items[i] && data.items[i].cover_url) ? data.items[i].cover_url : slotCovers[Math.floor(Math.random() * slotCovers.length)];
                 html += `<img src="${finalImg}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
                 
                 strip.innerHTML = html; 
@@ -2686,7 +2657,7 @@
         const cover = document.getElementById('quizCover');
         cover.src = correctTrack.cover_url || '/dslogo.png'; 
         
-        // БЛЮР ПРИ СТАРТЕ РАУНДА (в html уже стоит класс initially)
+        // БЛЮР ПРИ СТАРТЕ РАУНДА
         cover.classList.add('blurred');
         
         document.getElementById('quizHint').textContent = "Нейросеть исказила обложку... Угадай трек по цветам.";
@@ -2855,7 +2826,7 @@
         document.getElementById('minesPlus').disabled = false; 
     }
 
-    /* ПЛИНКО (С ВЫЗОВОМ АПИ ДЛЯ ФИКСА БАЛАНСА И СКОРОСТЬЮ ДЛЯ МОБИЛ) */
+    /* PLINKO */
     const PLINKO_ROWS = 8;
     const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10];
     const BUCKET_COLORS = ['#ff007f', '#ff6b35', '#ffea00', '#00e5ff', '#9d00ff', '#00e5ff', '#ffea00', '#ff6b35', '#ff007f'];
@@ -2923,7 +2894,6 @@
             plinkoCtx.shadowBlur = 15;
             plinkoCtx.fill();
 
-            // ЗАМЕДЛЕННАЯ СКОРОСТЬ, НО АДАПТИВНАЯ ПОД МОБИЛКИ
             let plinkoSpeed = window.innerWidth < 600 ? 0.08 : 0.035;
             b.progress += plinkoSpeed; 
             
@@ -2932,12 +2902,11 @@
                 b.step++;
                 if(b.step >= b.path.length - 1) {
                     b.finished = true;
-                    // Рассчет выигрыша именно этого шара
                     
                     if(b.finalServerBalance !== null && b.isLastBall) {
-                        updateBalance(b.finalServerBalance); // Строгая синхра с сервером на ласт шаре
+                        updateBalance(b.finalServerBalance); 
                     } else {
-                        updateBalance(userBalance + b.win); // Локальный апдейт
+                        updateBalance(userBalance + b.win); 
                     }
 
                     if(b.win > b.bet) spawnFloat('+' + b.win, innerWidth/2 - 30, innerHeight/2);
@@ -2971,7 +2940,6 @@
         
         printMsg('plinko', `СБРОС ШАРОВ: ${count} ШТ.`, '');
 
-        // Отправка на бэкенд, чтобы баланс жестко зафиксировался в БД
         let serverBalls = [];
         let finalServerBalance = null;
         
@@ -2988,7 +2956,6 @@
             }
         } catch(e) {}
         
-        // В любом случае (даже если API нет) снимаем локально ставку
         updateBalance(userBalance - totalCost);
         plinkoBallsArray = [];
 
@@ -2997,7 +2964,6 @@
                 const canvas = document.getElementById('plinkoCanvas');
                 const W = canvas.width, H = canvas.height;
                 
-                // Если сервер дал ответ по индексам — используем их, если нет — генерим локально
                 const bucketIdx = serverBalls[i] !== undefined ? serverBalls[i].bucket : getPlinkoResultIndex();
                 const mult = BUCKET_MULTS[bucketIdx];
                 const win = serverBalls[i] !== undefined ? serverBalls[i].win : Math.floor(bet * mult);
@@ -3031,11 +2997,11 @@
 
                 if(i === 0) requestAnimationFrame(animatePlinkoLoop);
                 
-            }, i * 350); // Задержка между шарами 350мс
+            }, i * 350); 
         }
     }
 
-    /* БИТ */
+    /* БИТ (PREDICT THE BEAT) */
     let ptbRound = 0, ptbCorrect = 0, ptbActive = false, ptbAnswered = false;
     let ptbWaveAnim = null; 
     let audioPlayer = document.getElementById('ptbAudioPlayer'); 
@@ -3110,12 +3076,15 @@
         const targetTrack = validAudioTracks[Math.floor(Math.random() * validAudioTracks.length)];
         currentPtbTrackTitle = targetTrack.title;
         
-        document.getElementById('ptbRound').textContent = `РАУНД ${ptbRound + 1} / 5`;
-        document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (15 сек)...`;
+        document.getElementById('ptbRound')?.remove();
+        const ptbOptsContainer = document.getElementById('ptbOpts');
+        ptbOptsContainer.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">РАУНД ${ptbRound + 1} / 5</div>`);
+
+        document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (10 сек)...`;
         
         audioPlayer.src = targetTrack.audio_url;
         audioPlayer.onloadedmetadata = () => {
-            let maxStart = Math.max(0, audioPlayer.duration - 15);
+            let maxStart = Math.max(0, audioPlayer.duration - 10);
             audioPlayer.currentTime = Math.random() * maxStart;
             audioPlayer.play().catch(e => console.log('Autoplay issue', e));
             
@@ -3125,7 +3094,7 @@
                 if(!ptbAnswered) {
                     document.getElementById('ptbPrompt').textContent = `Время вышло! Выбирай ответ.`;
                 }
-            }, 15000);
+            }, 10000);
         };
 
         let opts = [targetTrack.title];
@@ -3135,8 +3104,7 @@
         }
         opts = opts.sort(() => Math.random() - 0.5);
 
-        const optsEl = document.getElementById('ptbOpts');
-        optsEl.innerHTML = opts.map(o => `<button class="ptb-opt" onclick="ptbAnswer(this,'${o}',${bet})">${o}</button>`).join('');
+        ptbOptsContainer.innerHTML = opts.map(o => `<button class="ptb-opt" onclick="ptbAnswer(this,'${o}',${bet})">${o}</button>`).join('');
         
         printMsg('ptb', 'ВЫБЕРИ НАЗВАНИЕ ТРЕКА', '');
     }
