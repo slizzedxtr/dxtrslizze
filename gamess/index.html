@@ -1639,10 +1639,10 @@
     async function loadTracksData() {
         // Фоллбэк массив на случай если БД пустая или CORS блочит запрос
         const fallbackData = [
-            { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', audio_url: ambientTracks[0] || 'ambient1.mp3' },
-            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', audio_url: ambientTracks[1] || 'ambient2.mp3' },
-            { id:3, title:'SLIZZE MODE', cover_url:'/dslogo.png', audio_url: ambientTracks[2] || 'ambient3.mp3' },
-            { id:4, title:'DXTR WAVE', cover_url:'/dslogo.png', audio_url: ambientTracks[3] || 'ambient4.mp3' }
+            { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', mp3_url: ambientTracks[0] || 'ambient1.mp3' },
+            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', mp3_url: ambientTracks[1] || 'ambient2.mp3' },
+            { id:3, title:'SLIZZE MODE', cover_url:'/dslogo.png', mp3_url: ambientTracks[2] || 'ambient3.mp3' },
+            { id:4, title:'DXTR WAVE', cover_url:'/dslogo.png', mp3_url: ambientTracks[3] || 'ambient4.mp3' }
         ];
 
         try {
@@ -3131,7 +3131,7 @@
         document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (10 сек)...`;
         
         // ЖЕСТКИЙ ЗАПУСК БЕЗ ОЖИДАНИЯ МЕТАДАННЫХ
-        audioPlayer.src = targetTrack.audio_url;
+        audioPlayer.src = targetTrack.mp3_url;
         audioPlayer.currentTime = 0; // Всегда стартуем с 0, чтобы избежать проблем с Infinity duration
         
         audioPlayer.play().then(() => {
