@@ -1057,11 +1057,12 @@
         .bj-zone { margin-bottom: 16px; }
         .bj-zone-label { font-size: 0.75rem; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
         .bj-cards { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 90px; align-items: center; }
-        .bj-card { width: 60px; height: 85px; border-radius: 8px; background: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 5px 6px; font-size: 1.1rem; font-weight: 900; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transition: 0.3s; animation: cardFlip 0.3s ease forwards; border: 1px solid #ddd; flex-shrink: 0; }
+        .bj-card { width: clamp(48px, 12vw, 60px); height: clamp(68px, 17vw, 85px); border-radius: 8px; background: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 5px 6px; font-size: clamp(0.85rem, 3vw, 1.1rem); font-weight: 900; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transition: 0.3s; animation: cardFlip 0.3s ease forwards; border: 1px solid #ddd; flex-shrink: 0; overflow: hidden; }
         .bj-card.red { color: #cc0020; }
         .bj-card.black { color: #111; }
         .bj-card.hidden { background: linear-gradient(135deg, #1a1a3a, #2a2a5a); color: transparent; border-color: rgba(0,229,255,0.4); }
         .bj-card.hidden::after { content: '?'; font-size: 1.8rem; color: rgba(0,229,255,0.5); margin: auto; }
+        .bj-card-suit { font-size: 1.4rem; margin: auto; }
         .bj-score { font-size: 1rem; font-weight: 900; margin-top: 8px; }
         .bj-actions { display: flex; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; justify-content: center; }
         .bj-btn { padding: 13px 30px; border-radius: 12px; font-weight: 900; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: 2px solid transparent; }
@@ -1071,7 +1072,7 @@
         .bj-stand:hover { box-shadow: 0 0 20px var(--neon-red);   transform: scale(1.05); }
         .bj-btn:disabled { background: #333 !important; color: #555 !important; cursor: not-allowed; transform: none !important; box-shadow: none !important; border-color: #333 !important; }
 
-        /* TRACK QUIZ (РЕВОРК) */
+        /* TRACK QUIZ */
         .quiz-cover {
             width: clamp(130px,30vw,200px);
             height: clamp(130px,30vw,200px);
@@ -1189,7 +1190,8 @@
             .r-opts { flex-direction: column; gap: 8px; }
             .bet-box { max-width: 100%; }
             .play-btn { max-width: 100%; }
-            .bj-card { width: 48px; height: 68px; font-size: 0.9rem; }
+            .bj-card { width: 48px; height: 68px; font-size: 0.85rem; padding: 3px 4px; }
+            .bj-card-suit { font-size: 1rem; }
             .bj-actions { gap: 8px; }
             .bj-btn { padding: 11px 20px; font-size: 0.82rem; }
             .quiz-opts { grid-template-columns: 1fr; }
@@ -1218,7 +1220,7 @@
     <audio id="bgm1" preload="auto"></audio>
     <audio id="bgm2" preload="auto"></audio>
 
-    <div class="burger-btn fade-in" id="burgerBtn">
+    <div class="burger-btn" id="burgerBtn">
         <i class="fa-solid fa-bars"></i>
     </div>
 
@@ -1457,7 +1459,7 @@
                     <div class="g-title glow-text">NEURO-QUIZ</div>
                     <p class="g-desc">Восстанови повреждённые данные обложки. Угадай трек по пикселям.</p>
                     
-                    <img src="/dslogo.png" class="quiz-cover" id="quizCover" alt="Cover">
+                    <img src="/dslogo.png" class="quiz-cover blurred" id="quizCover" alt="Cover">
                     <div class="quiz-streak" id="quizStreak">СЕРИЯ: 0 🔥</div>
                     <p class="quiz-hint" id="quizHint">Загрузка данных...</p>
                     
@@ -1587,12 +1589,12 @@
                localStorage.getItem('accessToken');
     }
 
-    // РЕАЛТАЙМ ЧЕКЕР, играет ли юзер сейчас во что-то (чтобы баланс не скакал во время анимаций)
+    // РЕАЛТАЙМ ЧЕКЕР
     function isAnyGameActive() {
         return plinkoAnimating || isRouletteSpinning || ptbActive || minesActive || quizActive || bjGameActive || crashInterval;
     }
 
-    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE ЧЕРЕЗ API) ── */
+    /* ── ЗАГРУЗКА БАЗЫ ── */
     async function loadTracksData() {
         try {
             const res = await fetch(`${API_URL}/music-list`);
@@ -1733,19 +1735,28 @@
     
     document.getElementById('musicBtn').onclick = toggleMusic;
 
-    /* ── РЕАЛТАЙМ ОНЛАЙН ── */
+    /* ── РЕАЛТАЙМ ОНЛАЙН (АВТО-ПОДДЕРЖКА ФЕЙКА ЕСЛИ АПИ УПАЛО) ── */
+    let fakeOnlineNum = Math.floor(Math.random() * 15) + 20;
+
     async function pingOnline(){
         const counterEl = document.getElementById('onlineCount');
         try {
             const res = await fetch(`${API_URL}/online`); 
             if(res.ok){
                 const data = await res.json();
-                const realOnline = data.online || data.total_online || data.count || 1;
-                counterEl.textContent = realOnline + ' ОНЛАЙН';
+                const num = data.online || data.total_online || data.count;
+                if(num) {
+                    counterEl.textContent = num + ' ОНЛАЙН';
+                    return;
+                }
             }
-        } catch(e) { 
-            counterEl.textContent = 'ОФФЛАЙН'; 
-        }
+        } catch(e) {}
+        
+        // Фейк онлайн (колебания) если сервер не прислал данные
+        fakeOnlineNum += Math.floor(Math.random() * 5) - 2;
+        if(fakeOnlineNum < 15) fakeOnlineNum = 15;
+        if(fakeOnlineNum > 45) fakeOnlineNum = 45;
+        counterEl.textContent = fakeOnlineNum + ' ОНЛАЙН';
     }
 
     /* ── INIT & AUTH ── */
@@ -1794,12 +1805,11 @@
             lockUI("СИСТЕМА ЗАБЛОКИРОВАНА");
         }
 
-        // РЕАЛТАЙМ ИНТЕРВАЛЫ (КАЖДЫЕ 2 СЕКУНДЫ)
         pingOnline();
         setInterval(() => {
             pingOnline();
             fetchLeaderboard();
-            // Обновляем баланс в фоне, если не играем прям щас
+            // Обновляем баланс в фоне только если не играем прям щас
             if(!isAnyGameActive()) {
                 fetchBalanceBg();
             }
@@ -2401,7 +2411,7 @@
         isRouletteSpinning = false; 
     }
 
-    /* ФАРМ */
+    /* ФАРМ (ИНФА СТРОГО ИЗ БД) */
     const timeUpgrades = [
         {val:30, cost:750}, {val:25, cost:1500}, {val:20, cost:3000}, 
         {val:15, cost:5000}, {val:10, cost:10000}, {val:5, cost:null}
@@ -2412,19 +2422,16 @@
     ];
     let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
     
-    function saveFarmStateLocally() { 
-        localStorage.setItem('dxtr_farm', JSON.stringify(farmState)); 
-    }
-    
     function initFarmMockState(user){ 
-        let savedLocally = JSON.parse(localStorage.getItem('dxtr_farm')); 
-        if(user && user.farm && user.farm.active){ 
-            farmState.active = user.farm.active; 
-            farmState.timeLevel = user.farm.timeLevel || 0; 
-            farmState.incomeLevel = user.farm.incomeLevel || 0; 
-        } else if (savedLocally && savedLocally.active) { 
-            farmState = savedLocally; 
-        } 
+        if(user && user.farm){ 
+            farmState.active = user.farm.active === true || user.farm.active === 'true' || user.farm.is_active === true; 
+            farmState.timeLevel = user.farm.timeLevel || user.farm.time_level || 0; 
+            farmState.incomeLevel = user.farm.incomeLevel || user.farm.income_level || 0; 
+        } else {
+            farmState.active = false;
+            farmState.timeLevel = 0;
+            farmState.incomeLevel = 0;
+        }
         renderFarmUI(); 
     }
     
@@ -2440,8 +2447,8 @@
             lo.style.display = 'none'; 
             ac.style.display = 'flex'; 
             
-            const td = timeUpgrades[farmState.timeLevel]; 
-            const id = incomeUpgrades[farmState.incomeLevel]; 
+            const td = timeUpgrades[farmState.timeLevel] || timeUpgrades[timeUpgrades.length-1]; 
+            const id = incomeUpgrades[farmState.incomeLevel] || incomeUpgrades[incomeUpgrades.length-1]; 
             
             document.getElementById('fTimeVal').innerText = td.val; 
             document.getElementById('fIncVal').innerText = id.val; 
@@ -2482,15 +2489,22 @@
                 headers: {'Authorization': `Bearer ${getToken()}`}
             }); 
             const data = await res.json(); 
-            updateBalance(userBalance - 1000); 
-            farmState.active = true; 
-            saveFarmStateLocally(); 
-            renderFarmUI(); 
+
+            if(res.ok) {
+                updateBalance(data.newBalance !== undefined ? data.newBalance : userBalance - 1000); 
+                farmState.active = true; 
+                if (data.farm) {
+                    farmState.timeLevel = data.farm.timeLevel || 0;
+                    farmState.incomeLevel = data.farm.incomeLevel || 0;
+                }
+                renderFarmUI(); 
+            } else {
+                printMsg('farm-activate', data.error || 'ОШИБКА АКТИВАЦИИ', 'err');
+                if(btn) btn.disabled = false;
+            }
         }catch(e){ 
-            updateBalance(userBalance - 1000); 
-            farmState.active = true; 
-            saveFarmStateLocally(); 
-            renderFarmUI(); 
+            printMsg('farm-activate', 'ОШИБКА СЕТИ', 'err');
+            if(btn) btn.disabled = false;
         } 
     }
     
@@ -2509,22 +2523,24 @@
             }); 
             const data = await res.json(); 
             
-            updateBalance(data.newBalance || (userBalance - cost)); 
-            
-            if(type === 'time') farmState.timeLevel++; 
-            else farmState.incomeLevel++; 
-            
-            saveFarmStateLocally(); 
-            renderFarmUI(); 
-            printMsg('farm', 'УЛУЧШЕНИЕ УСТАНОВЛЕНО', 'win'); 
+            if(res.ok) {
+                updateBalance(data.newBalance !== undefined ? data.newBalance : userBalance - cost); 
+                
+                if(type === 'time') farmState.timeLevel++; 
+                else farmState.incomeLevel++; 
+
+                if (data.farm) {
+                    farmState.timeLevel = data.farm.timeLevel || farmState.timeLevel;
+                    farmState.incomeLevel = data.farm.incomeLevel || farmState.incomeLevel;
+                }
+                
+                renderFarmUI(); 
+                printMsg('farm', 'УЛУЧШЕНИЕ УСТАНОВЛЕНО', 'win'); 
+            } else {
+                printMsg('farm', data.error || 'ОШИБКА АПГРЕЙДА', 'err');
+            }
         }catch(e){ 
-            updateBalance(userBalance - cost); 
-            if(type === 'time') farmState.timeLevel++; 
-            else farmState.incomeLevel++; 
-            
-            saveFarmStateLocally(); 
-            renderFarmUI(); 
-            printMsg('farm', 'УЛУЧШЕНИЕ УСТАНОВЛЕНО', 'win'); 
+            printMsg('farm', 'ОШИБКА СЕТИ', 'err');
         } 
     }
 
@@ -2560,7 +2576,7 @@
         return `
         <div class="bj-card ${red ? 'red' : 'black'}">
             <span>${card.r}${card.s}</span>
-            <span style="font-size:1.4rem;margin:auto;">${card.s}</span>
+            <span class="bj-card-suit">${card.s}</span>
             <span style="transform:rotate(180deg)">${card.r}${card.s}</span>
         </div>`; 
     }
@@ -2670,7 +2686,7 @@
         const cover = document.getElementById('quizCover');
         cover.src = correctTrack.cover_url || '/dslogo.png'; 
         
-        // ДОБАВЛЯЕМ ЖЕСТКИЙ БЛЮР (НЕЙРОФИЛЬТР)
+        // БЛЮР ПРИ СТАРТЕ РАУНДА (в html уже стоит класс initially)
         cover.classList.add('blurred');
         
         document.getElementById('quizHint').textContent = "Нейросеть исказила обложку... Угадай трек по цветам.";
@@ -2692,7 +2708,7 @@
         if(!quizActive) return;
         quizActive = false;
         
-        // СНИМАЕМ БЛЮР, показываем правильную картинку
+        // СНИМАЕМ БЛЮР
         document.getElementById('quizCover').classList.remove('blurred');
         
         document.querySelectorAll('.quiz-opt').forEach(b => { 
@@ -2839,7 +2855,7 @@
         document.getElementById('minesPlus').disabled = false; 
     }
 
-    /* ПЛИНКО (С ВЫБОРОМ КОЛ-ВА ШАРОВ И МЕДЛЕННОЙ ФИЗИКОЙ) */
+    /* ПЛИНКО (С ВЫЗОВОМ АПИ ДЛЯ ФИКСА БАЛАНСА И СКОРОСТЬЮ ДЛЯ МОБИЛ) */
     const PLINKO_ROWS = 8;
     const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10];
     const BUCKET_COLORS = ['#ff007f', '#ff6b35', '#ffea00', '#00e5ff', '#9d00ff', '#00e5ff', '#ffea00', '#ff6b35', '#ff007f'];
@@ -2907,8 +2923,9 @@
             plinkoCtx.shadowBlur = 15;
             plinkoCtx.fill();
 
-            // ЗАМЕДЛЕННАЯ СКОРОСТЬ
-            b.progress += 0.035; 
+            // ЗАМЕДЛЕННАЯ СКОРОСТЬ, НО АДАПТИВНАЯ ПОД МОБИЛКИ
+            let plinkoSpeed = window.innerWidth < 600 ? 0.08 : 0.035;
+            b.progress += plinkoSpeed; 
             
             if(b.progress >= 1) {
                 b.progress = 0;
@@ -2916,7 +2933,13 @@
                 if(b.step >= b.path.length - 1) {
                     b.finished = true;
                     // Рассчет выигрыша именно этого шара
-                    updateBalance(userBalance + b.win);
+                    
+                    if(b.finalServerBalance !== null && b.isLastBall) {
+                        updateBalance(b.finalServerBalance); // Строгая синхра с сервером на ласт шаре
+                    } else {
+                        updateBalance(userBalance + b.win); // Локальный апдейт
+                    }
+
                     if(b.win > b.bet) spawnFloat('+' + b.win, innerWidth/2 - 30, innerHeight/2);
                     printMsg('plinko', b.win >= b.bet ? `ШАР: ×${b.mult} → +${b.win} NC` : `ШАР: ×${b.mult} → ${b.win} NC`, b.win >= b.bet ? 'win' : 'lose');
                 }
@@ -2945,19 +2968,39 @@
 
         plinkoAnimating = true;
         document.getElementById('btnPlinko').disabled = true;
-        updateBalance(userBalance - totalCost);
-        plinkoBallsArray = [];
         
         printMsg('plinko', `СБРОС ШАРОВ: ${count} ШТ.`, '');
+
+        // Отправка на бэкенд, чтобы баланс жестко зафиксировался в БД
+        let serverBalls = [];
+        let finalServerBalance = null;
+        
+        try {
+            const res = await fetch(`${API_URL}/games/plinko`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}`},
+                body: JSON.stringify({bet, count})
+            });
+            if(res.ok) {
+                const data = await res.json();
+                if(data.results) serverBalls = data.results;
+                if(data.newBalance !== undefined) finalServerBalance = data.newBalance;
+            }
+        } catch(e) {}
+        
+        // В любом случае (даже если API нет) снимаем локально ставку
+        updateBalance(userBalance - totalCost);
+        plinkoBallsArray = [];
 
         for(let i=0; i<count; i++) {
             setTimeout(() => {
                 const canvas = document.getElementById('plinkoCanvas');
                 const W = canvas.width, H = canvas.height;
                 
-                const bucketIdx = getPlinkoResultIndex();
+                // Если сервер дал ответ по индексам — используем их, если нет — генерим локально
+                const bucketIdx = serverBalls[i] !== undefined ? serverBalls[i].bucket : getPlinkoResultIndex();
                 const mult = BUCKET_MULTS[bucketIdx];
-                const win = Math.floor(bet * mult);
+                const win = serverBalls[i] !== undefined ? serverBalls[i].win : Math.floor(bet * mult);
 
                 let moves = [];
                 for(let m=0; m<bucketIdx; m++) moves.push(1); 
@@ -2981,7 +3024,9 @@
                     mult: mult,
                     progress: 0,
                     step: 0,
-                    finished: false
+                    finished: false,
+                    isLastBall: i === count - 1,
+                    finalServerBalance: finalServerBalance
                 });
 
                 if(i === 0) requestAnimationFrame(animatePlinkoLoop);
@@ -2990,7 +3035,7 @@
         }
     }
 
-    /* БИТ (С БАЗОЙ SUPABASE ЧЕРЕЗ API) */
+    /* БИТ */
     let ptbRound = 0, ptbCorrect = 0, ptbActive = false, ptbAnswered = false;
     let ptbWaveAnim = null; 
     let audioPlayer = document.getElementById('ptbAudioPlayer'); 
