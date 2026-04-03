@@ -8,7 +8,6 @@
     <link rel="icon" type="image.png" href="/dslogo.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         /* ══════════════════════════════════════════
@@ -1128,7 +1127,7 @@
                     <p class="g-desc">Угадай трек DXTR | SlizZe по обложке — серия = бонус.</p>
                     <img src="/dslogo.png" class="quiz-cover" id="quizCover" alt="Cover">
                     <div class="quiz-streak" id="quizStreak">СЕРИЯ: 0 🔥</div>
-                    <p class="quiz-hint" id="quizHint">Загрузка данных из БД...</p>
+                    <p class="quiz-hint" id="quizHint">Загрузка данных...</p>
                     <div class="quiz-opts" id="quizOpts"></div>
                     <div class="bet-box">
                         <div class="bet-label">СТАВКА ЗА РАУНД</div>
@@ -1195,7 +1194,7 @@
                         </div>
                     </div>
                     <button class="play-btn" id="btnPtb" onclick="startPtb()" disabled>НАЧАТЬ</button>
-                    <div class="sys-msg" id="msg-ptb">Загрузка треков из базы данных...</div>
+                    <div class="sys-msg" id="msg-ptb">Загрузка треков...</div>
                 </div>
 
             </div></div></main>
@@ -1230,35 +1229,28 @@
 
     <script>
     /* ════════════════════════════════════════════════════════════
-       SUPABASE INITIALIZATION (ДЛЯ БД)
+       ЗАГРУЗКА ТРЕКОВ ЧЕРЕЗ ВАШ RENDER БЭКЕНД
     ════════════════════════════════════════════════════════════ */
-    // Здесь вам нужно будет вставить ваш анонимный ключ
-    const SUPABASE_URL = 'https://lcbcsyvcciobmqdbonps.supabase.co';
-    const SUPABASE_ANON_KEY = 'ВСТАВЬТЕ_ВАШ_КЛЮЧ_СЮДА'; // <--- ЗАМЕНИТЕ НА ВАШ КЛЮЧ
-    
-    // Инициализация (сработает если ключ валидный)
-    let supabase = null;
-    try {
-        if(SUPABASE_ANON_KEY !== 'ВСТАВЬТЕ_ВАШ_КЛЮЧ_СЮДА') {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-    } catch(e) { console.error("Supabase init error", e); }
+    const API_URL = "https://dxtrslizze.onrender.com/api";
+    const token = localStorage.getItem('token') || localStorage.getItem('dxtr_token');
+    let userBalance = 0;
 
     let supabaseTracks = [];
     let slotCovers = ['/dslogo.png']; 
     
-    // Загрузка треков и обложек из таблицы Supabase (ID таблицы: 18663)
-    async function loadSupabaseData() {
-        if(supabase) {
-            try {
-                const { data, error } = await supabase.from('tracks').select('*'); // замените 'tracks' на точное имя вашей таблицы
+    async function loadTracksData() {
+        try {
+            const res = await fetch(`${API_URL}/music-list`);
+            if(res.ok) {
+                const data = await res.json();
                 if(data && data.length > 0) {
                     supabaseTracks = data;
                 }
-            } catch(e) { console.error(e); }
+            }
+        } catch(e) { 
+            console.error("Ошибка загрузки треков с сервера Render", e); 
         }
         
-        // Fallback-заглушка на случай, если БД недоступна или пуста
         if(supabaseTracks.length === 0) {
             supabaseTracks = [
                 { id:1, title:'GUSTO', cover_url:'/logo_GUSTO.jpeg', audio_url:'' },
@@ -1269,13 +1261,11 @@
             ];
         }
 
-        // Заполняем обложки для слотов и Quiz
         slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
         if(slotCovers.length === 0) slotCovers = ['/dslogo.png'];
 
-        initReels(); // Обновляем слоты свежими обложками сразу
+        initReels(); 
         
-        // Включаем кнопки игр, зависящих от БД
         document.getElementById('quizHint').textContent = "Выбери правильный трек...";
         document.getElementById('btnQuiz').disabled = false;
         
@@ -1336,9 +1326,6 @@
     /* ════════════════════════════════════════════════════════════
        CORE
     ════════════════════════════════════════════════════════════ */
-    const API_URL = "https://dxtrslizze.onrender.com/api";
-    const token = localStorage.getItem('token') || localStorage.getItem('dxtr_token');
-    let userBalance = 0;
 
     /* ── FLOAT WIN EFFECT ────────────────────────────────────── */
     function spawnFloat(text, x, y){
@@ -1375,7 +1362,7 @@
     document.getElementById('musicBtn').onclick=toggleMusic;
     document.body.addEventListener('click',()=>{ if(!isMusicPlaying) toggleMusic(); },{once:true});
 
-    /* ── ONLINE COUNTER (Fixed) ───────────────────────────────── */
+    /* ── ONLINE COUNTER ───────────────────────────────── */
     async function pingOnline(){
         const counterEl = document.getElementById('onlineCount');
         try {
@@ -1388,17 +1375,15 @@
                 const data = await res.json();
                 if(data.online !== undefined){
                     counterEl.textContent = data.online + ' ОНЛАЙН';
-                    return; // Успешно, выходим
+                    return; 
                 }
             }
         } catch(e) {}
         
-        // Симуляция онлайна, если сервер не отвечает, чтобы не было прочерка
         let currentNum = parseInt(counterEl.textContent) || 24;
-        // Колебание +- 2 человека
         let fluctuation = Math.floor(Math.random() * 3) * (Math.random() > 0.5 ? 1 : -1);
         currentNum += fluctuation;
-        if(currentNum < 12) currentNum = 12 + Math.floor(Math.random() * 5); // минимум 12
+        if(currentNum < 12) currentNum = 12 + Math.floor(Math.random() * 5); 
         if(currentNum > 80) currentNum -= 5;
         counterEl.textContent = currentNum + ' ОНЛАЙН';
     }
@@ -1409,7 +1394,7 @@
     window.onload = async () => {
         initPlinko();
         initPtbWave();
-        loadSupabaseData(); // Подтягиваем данные из БД
+        loadTracksData(); 
         
         if(token){
             try{
@@ -1523,14 +1508,12 @@
         setTimeout(()=>{ if(btn) btn.disabled=false; printMsg('dash','',''); },3000);
     }
 
-    /* ── Leaderboard Without Flashing ───────────────────────── */
     async function fetchLeaderboard(){
         const res=await fetch(`${API_URL}/games/leaderboard`);
         const data=await res.json();
         const lb=document.getElementById('leaderboardData');
         if(data.success&&data.leaders.length>0 && lb){
             const top5 = data.leaders.slice(0,5);
-            // Если элементы уже созданы, обновляем только текст, чтобы не было анимации
             if(lb.children.length === top5.length && !lb.innerHTML.includes('Загрузка')) {
                 top5.forEach((u, i) => {
                     const item = lb.children[i];
@@ -1540,7 +1523,6 @@
                     if(scoreEl) scoreEl.innerHTML = `${u.dscoin_balance} <img src="/valuta.png" class="valuta-icon">`;
                 });
             } else {
-                // Первичная отрисовка
                 const html=top5.map((u,i)=>{
                     let rc=i<3?`rank-${i+1}`:'';
                     let c=i===0?'#ffea00':i===1?'#c0c0c0':i===2?'#cd7f32':'var(--text-muted)';
@@ -1579,7 +1561,6 @@
                 const strip=document.getElementById('reel'+id); if(!strip) return;
                 let html='';
                 for(let j=0;j<20;j++) html+=`<img src="${slotCovers[Math.floor(Math.random()*slotCovers.length)]}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
-                // Подставляем выигрышный или рандомный айтем
                 const finalImg = (data.items&&data.items[i]) ? data.items[i] : slotCovers[Math.floor(Math.random()*slotCovers.length)];
                 html+=`<img src="${finalImg}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
                 strip.innerHTML=html; strip.style.transition='none'; strip.style.transform='translateY(0px)';
@@ -1672,7 +1653,7 @@
     async function playRoulette(){ if(isRouletteSpinning) return; if(!currentR) return printMsg('roulette','ВЫБЕРИТЕ ЦВЕТ','err'); const bet=getBetValue('betRoulette'); if(isNaN(bet)||bet>userBalance||bet<=0) return printMsg('roulette','ОШИБКА СТАВКИ','err'); const btn=document.getElementById('btnRoulette'); if(btn) btn.disabled=true; isRouletteSpinning=true; document.querySelectorAll('.r-opt').forEach(b=>b.disabled=true); updateBalance(userBalance-bet); printMsg('roulette','ОЖИДАНИЕ...','err'); try{ const res=await fetch(`${API_URL}/games/roulette`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({bet,color:currentR})}); const data=await res.json(); if(!res.ok){ printMsg('roulette',data.error,'err'); updateBalance(userBalance+bet); resetRouletteState(); return; } const targetIndex=currentRIndex+30+Math.floor(Math.random()*10); const strip=document.getElementById('rStrip'); while(rCells.length<=targetIndex+20){ let c='purple'; const r=Math.random(); if(r<0.05) c='gold'; else if(r<0.525) c='cyan'; rCells.push(c); if(strip) strip.insertAdjacentHTML('beforeend',`<div class="r-cell r-${c}">${c==='gold'?'14×':'2×'}</div>`); } rCells[targetIndex]=data.resultColor; if(strip&&strip.children[targetIndex]){ const te=strip.children[targetIndex]; te.className=`r-cell r-${data.resultColor}`; te.innerText=data.resultColor==='gold'?'14×':'2×'; currentRIndex=targetIndex; const rpo=Math.floor(Math.random()*60)-30; const ww=document.querySelector('.roulette-wheel').offsetWidth; const cw=te.offsetWidth; const offset=(currentRIndex*cw+(cw/2))-(ww/2)+rpo; strip.style.transition='transform 4s cubic-bezier(0.15,0.85,0.15,1)'; strip.style.transform=`translateX(-${offset}px)`; } setTimeout(()=>{ updateBalance(data.newBalance); if(data.isWin){ spawnFloat('+'+data.win, innerWidth/2-30, innerHeight/2); printMsg('roulette',`ПОБЕДА! +${data.win} NC`,'win'); } else printMsg('roulette','ПРОИГРЫШ','lose'); resetRouletteState(); },4000); }catch(e){ printMsg('roulette','Сбой сети','err'); resetRouletteState(); }}
     function resetRouletteState(){ const btn=document.getElementById('btnRoulette'); if(btn) btn.disabled=false; document.querySelectorAll('.r-opt').forEach(b=>b.disabled=false); isRouletteSpinning=false; }
 
-    /* ── Фарм (Исправленное сохранение состояния) ───────────────────────── */
+    /* ── Фарм ───────────────────────── */
     const timeUpgrades=[{val:30,cost:750},{val:25,cost:1500},{val:20,cost:3000},{val:15,cost:5000},{val:10,cost:10000},{val:5,cost:null}];
     const incomeUpgrades=[{val:2,cost:750},{val:4,cost:1500},{val:6,cost:3000},{val:8,cost:5000},{val:10,cost:10000},{val:15,cost:17500},{val:20,cost:null}];
     let farmState={active:false,timeLevel:0,incomeLevel:0};
@@ -1724,7 +1705,6 @@
                 saveFarmStateLocally();
                 renderFarmUI(); 
             } else{ 
-                // Если API сбоит, активируем локально (поскольку это mock-логика)
                 updateBalance(userBalance-1000); 
                 farmState.active=true; 
                 saveFarmStateLocally();
@@ -1832,17 +1812,16 @@
     }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 2 — TRACK QUIZ (Supabase)
+       NEW GAME 2 — TRACK QUIZ
     ════════════════════════════════════════════════════════════ */
     let quizStreak=0, quizActive=false, quizCorrectName="";
 
     function startQuiz(){
-        if(supabaseTracks.length < 4) return printMsg('quiz','МАЛО ДАННЫХ В БД','err');
+        if(supabaseTracks.length < 4) return printMsg('quiz','МАЛО ДАННЫХ','err');
         const bet=getBetValue('betQuiz');
         if(bet<=0||bet>userBalance) return printMsg('quiz','ОШИБКА СТАВКИ','err');
         quizActive=true;
         
-        // Выбираем правильный трек, у которого есть обложка
         const validTracks = supabaseTracks.filter(t => t.cover_url && t.title);
         const correctTrack = validTracks[Math.floor(Math.random()*validTracks.length)];
         quizCorrectName = correctTrack.title;
@@ -1853,7 +1832,6 @@
         document.getElementById('quizHint').textContent = "Внимательно посмотри на обложку...";
         document.getElementById('btnQuiz').disabled=true;
 
-        // Генерация 4 вариантов ответа
         let opts=[correctTrack.title];
         let shuffled=[...validTracks].filter(t => t.title !== correctTrack.title).sort(()=>Math.random()-0.5);
         for(let i=0; i<3; i++) {
@@ -1894,7 +1872,7 @@
     }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 3 — MINES (Динамическая настройка количества мин)
+       NEW GAME 3 — MINES 
     ════════════════════════════════════════════════════════════ */
     const TOTAL_CELLS=25;
     let NUM_MINES=3;
@@ -1908,14 +1886,13 @@
         document.getElementById('mineCount').textContent = NUM_MINES;
     }
 
-    // Рассчитываем множитель математически в зависимости от количества мин
     function calculateMinesMult(mines, opened) {
         if (opened === 0) return 1.0;
         let prob = 1.0;
         for (let i = 0; i < opened; i++) {
             prob *= (TOTAL_CELLS - mines - i) / (TOTAL_CELLS - i);
         }
-        let mult = (1 / prob) * 0.95; // 5% house edge
+        let mult = (1 / prob) * 0.95; 
         return mult;
     }
 
@@ -1966,7 +1943,6 @@
             cell.classList.add('safe','revealed'); cell.textContent='💎';
             minesSafe++;
             updateMinesMult();
-            // Проверка на полное прохождение (остались только мины)
             if(minesSafe === TOTAL_CELLS - NUM_MINES) {
                 minesCashout();
             }
@@ -1996,10 +1972,9 @@
     }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 4 — PLINKO (Точная физика и строгие шансы)
+       NEW GAME 4 — PLINKO 
     ════════════════════════════════════════════════════════════ */
     const PLINKO_ROWS=8;
-    // Корзины: [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10]
     const BUCKET_MULTS=[10,3,1.5,1,0.5,1,1.5,3,10];
     const BUCKET_COLORS=['#ff007f','#ff6b35','#ffea00','#00e5ff','#9d00ff','#00e5ff','#ffea00','#ff6b35','#ff007f'];
     let plinkoCtx=null, plinkoAnimating=false;
@@ -2028,15 +2003,13 @@
         }
     }
 
-    // Выбор индекса корзины на основе заданных вероятностей
-    // 10x - 3%, 3x - 15%, 1.5x - 40%, 1x - 21%, 0.5x - 21%
     function getPlinkoResultIndex() {
         const r = Math.random();
-        if (r < 0.21) return 4; // 0.5x
-        if (r < 0.42) return Math.random() < 0.5 ? 3 : 5; // 1x
-        if (r < 0.82) return Math.random() < 0.5 ? 2 : 6; // 1.5x
-        if (r < 0.97) return Math.random() < 0.5 ? 1 : 7; // 3x
-        return Math.random() < 0.5 ? 0 : 8; // 10x
+        if (r < 0.21) return 4; 
+        if (r < 0.42) return Math.random() < 0.5 ? 3 : 5; 
+        if (r < 0.82) return Math.random() < 0.5 ? 2 : 6; 
+        if (r < 0.97) return Math.random() < 0.5 ? 1 : 7; 
+        return Math.random() < 0.5 ? 0 : 8; 
     }
 
     async function dropPlinko(){
@@ -2050,20 +2023,15 @@
         document.getElementById('btnPlinko').disabled=true;
         updateBalance(userBalance-bet);
 
-        // Определяем куда упадет шар по строгим шансам
         const bucketIdx = getPlinkoResultIndex();
         const mult = BUCKET_MULTS[bucketIdx];
         const win = Math.floor(bet*mult);
 
-        // Чтобы попасть в bucketIdx за 8 рядов, нужно сделать ровно (bucketIdx) движений ВПРАВО
-        // и (8 - bucketIdx) движений ВЛЕВО.
         let moves = [];
-        for(let i=0; i<bucketIdx; i++) moves.push(1); // вправо
-        for(let i=0; i<(8-bucketIdx); i++) moves.push(0); // влево
-        // Перемешиваем путь, чтобы падение было случайным
+        for(let i=0; i<bucketIdx; i++) moves.push(1); 
+        for(let i=0; i<(8-bucketIdx); i++) moves.push(0); 
         moves.sort(() => Math.random() - 0.5);
 
-        // Генерируем опорные точки анимации
         let pathPoints = [{ x: W/2, y: 10 }];
         let currCol = 0;
         for(let row=0; row<PLINKO_ROWS; row++) {
@@ -2072,7 +2040,6 @@
             let py = 30 + row*28;
             pathPoints.push({ x: px, y: py });
         }
-        // Последняя точка (дно)
         let finalX = pathPoints[pathPoints.length-1].x;
         pathPoints.push({ x: finalX, y: H - 10 });
 
@@ -2080,16 +2047,12 @@
         let progress = 0;
 
         function animate(){
-            initPlinko(); // Очищаем и рисуем штыри
+            initPlinko(); 
             
-            // Физика дуги от одной точки к другой
             const p1 = pathPoints[currentStep];
             const p2 = pathPoints[currentStep+1];
             
-            // Интерполяция X
             let bx = p1.x + (p2.x - p1.x) * progress;
-            // Интерполяция Y с параболическим прыжком вверх
-            // height of bounce
             let bounceY = Math.sin(progress * Math.PI) * 12; 
             let by = p1.y + (p2.y - p1.y) * progress - bounceY;
 
@@ -2100,7 +2063,7 @@
             plinkoCtx.shadowBlur=15;
             plinkoCtx.fill();
 
-            progress += 0.08; // скорость анимации (кадра)
+            progress += 0.08; 
             if(progress >= 1) {
                 progress = 0;
                 currentStep++;
@@ -2123,7 +2086,7 @@
     }
 
     /* ════════════════════════════════════════════════════════════
-       NEW GAME 5 — PREDICT THE BEAT (Угадай трек)
+       NEW GAME 5 — PREDICT THE BEAT 
     ════════════════════════════════════════════════════════════ */
     let ptbRound=0, ptbCorrect=0, ptbActive=false, ptbAnswered=false;
     let ptbWaveAnim=null;
@@ -2142,7 +2105,6 @@
             ctx.shadowColor='rgba(0,229,255,0.8)'; ctx.shadowBlur=6;
             ctx.beginPath();
             for(let x=0;x<680;x++){
-                // Увеличиваем амплитуду если играет музыка
                 let amp = ptbActive && !ptbAnswered ? 35 : 20; 
                 const y=50+Math.sin(x*0.04+t)*amp+Math.sin(x*0.09+t*1.3)*(amp/2);
                 x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
@@ -2164,12 +2126,11 @@
     }
 
     function startPtb(){
-        // Убираем фоновую музыку, чтобы не мешала
         if(isMusicPlaying) toggleMusic();
         
         const validAudioTracks = supabaseTracks.filter(t => t.audio_url && t.title);
         if(validAudioTracks.length < 4) {
-            printMsg('ptb','МАЛО АУДИО ТРЕКОВ В БД','err');
+            printMsg('ptb','МАЛО АУДИО ТРЕКОВ','err');
             return;
         }
 
@@ -2193,15 +2154,12 @@
         document.getElementById('ptbRound').textContent=`РАУНД ${ptbRound+1} / 5`;
         document.getElementById('ptbPrompt').textContent=`Слушай фрагмент (15 сек)...`;
         
-        // Аудио логика
         audioPlayer.src = targetTrack.audio_url;
         audioPlayer.onloadedmetadata = () => {
-            // Выбираем случайную стартовую позицию (минимум 15 сек до конца)
             let maxStart = Math.max(0, audioPlayer.duration - 15);
             audioPlayer.currentTime = Math.random() * maxStart;
             audioPlayer.play().catch(e => console.log('Autoplay issue', e));
             
-            // Останавливаем через 15 секунд
             clearTimeout(ptbTimeout);
             ptbTimeout = setTimeout(() => {
                 audioPlayer.pause();
@@ -2209,7 +2167,6 @@
             }, 15000);
         };
 
-        // Генерация кнопок ответов
         let opts=[targetTrack.title];
         let shuffled=[...validAudioTracks].filter(t => t.title !== targetTrack.title).sort(()=>Math.random()-0.5);
         for(let i=0; i<3; i++) {
