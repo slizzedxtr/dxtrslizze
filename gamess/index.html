@@ -1617,33 +1617,46 @@
 
     /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) + ФОЛЛБЭК ДЛЯ ИГРОВЫХ АССЕТОВ ── */
     async function loadTracksData() {
-        const fallbackData = [
-            { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', mp3_url: ambientTracks[0] || 'ambient1.mp3' },
-            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', mp3_url: ambientTracks[1] || 'ambient2.mp3' }
-        ];
+    const fallbackData = [
+        { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', mp3_url: ambientTracks[0] || 'ambient1.mp3' },
+        { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', mp3_url: ambientTracks[1] || 'ambient2.mp3' }
+    ];
 
-        try {
-            const res = await fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=*&order=id.desc', {
-                headers: {
-                    'apikey': 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h',
-                    'Authorization': 'Bearer sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'
-                }
-            });
-            if(res.ok) {
-                const data = await res.json();
-                supabaseTracks = data.length >= 4 ? data : [...data, ...fallbackData];
-            } else {
-                supabaseTracks = fallbackData;
+    try {
+        const res = await fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=*&order=id.desc', {
+            headers: {
+                'apikey': 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h',
+                'Authorization': 'Bearer sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'
             }
-        } catch(e) {
+        });
+        if(res.ok) {
+            const data = await res.json();
+            supabaseTracks = data.length >= 4 ? data : [...data, ...fallbackData];
+        } else {
             supabaseTracks = fallbackData;
         }
-        
-        slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
-        if(slotCovers.length === 0) slotCovers = ['/dslogo.png'];
-
-        initReels(); 
+    } catch(e) {
+        supabaseTracks = fallbackData;
     }
+    
+    slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
+    if(slotCovers.length === 0) slotCovers = ['/dslogo.png'];
+
+    initReels(); 
+    
+    // ВОЗВРАЩАЕМ АКТИВАЦИЮ КНОПОК И ТЕКСТОВ
+    const hint = document.getElementById('quizHint');
+    if(hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
+    
+    const btnQuiz = document.getElementById('btnQuiz');
+    if(btnQuiz) btnQuiz.disabled = false;
+    
+    const msgPtb = document.getElementById('msg-ptb');
+    if(msgPtb) msgPtb.textContent = "";
+    
+    const btnPtb = document.getElementById('btnPtb');
+    if(btnPtb) btnPtb.disabled = false;
+}
 
     /* ── ЧАСТИЦЫ НА ФОНЕ ── */
     (function(){
@@ -1892,13 +1905,18 @@
     let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
     
     function initFarmMockState(user){ 
-        if(user){ 
-            farmState.active = !!(user.farm?.active);
-            farmState.timeLevel = parseInt(user.farm?.timeLevel || 0); 
-            farmState.incomeLevel = parseInt(user.farm?.incomeLevel || 0); 
-        }
-        renderFarmUI(); 
+    if(user){ 
+        // Вернул железобетонную проверку всех возможных вариантов
+        farmState.active = !!(user.farm?.active || user.farm?.is_active || user.farm_active || user.is_farm_active || user.isFarmActive);
+        farmState.timeLevel = parseInt(user.farm?.timeLevel || user.farm?.time_level || user.farm_time_level || user.timeLevel || 0); 
+        farmState.incomeLevel = parseInt(user.farm?.incomeLevel || user.farm?.income_level || user.farm_income_level || user.incomeLevel || 0); 
+    } else {
+        farmState.active = false;
+        farmState.timeLevel = 0;
+        farmState.incomeLevel = 0;
     }
+    renderFarmUI(); 
+}
     
     function renderFarmUI(){ 
         const lo = document.getElementById('farm-locked'); const ac = document.getElementById('farm-active'); 
@@ -1955,12 +1973,23 @@
 
     /* ── СЛОТЫ, ДАЙС, КРАШ, РУЛЕТКА (ОСТАЮТСЯ КАК БЫЛИ - ОНИ УЖЕ НА БЭКЕ) ── */
     function initReels(){
-        [1, 2, 3].forEach(id => {
-            let html = ''; for(let i=0; i<30; i++) html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}">`;
-            const strip = document.getElementById('reel' + id); 
-            if(strip){ strip.innerHTML = html; strip.style.transform = 'translateY(0px)'; }
-        });
-    }
+        // Внутри функции playSlots() найди блок [1, 2, 3].forEach и замени его на этот:
+[1, 2, 3].forEach((id, i) => {
+    const strip = document.getElementById('reel' + id); if(!strip) return;
+    let html = ''; for(let j=0; j<20; j++) html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}">`;
+    const finalImg = (data.items && data.items[i] && data.items[i].cover_url) ? data.items[i].cover_url : slotCovers[0];
+    html += `<img src="${finalImg}">`;
+    strip.innerHTML = html; 
+    strip.style.transition = 'none'; 
+    strip.style.transform = 'translateY(0px)';
+    
+    // Форсируем перерисовку DOM
+    void strip.offsetWidth; 
+    
+    // Жестко задаем 145px (высота слота из CSS), чтобы не было прыжков
+    strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.15,0.85,0.15,1)`; 
+    strip.style.transform = `translateY(-${20 * 145}px)`;
+});
 
     async function playSlots(){
         const bet = getBetValue('betSlots'); if(bet > userBalance || bet <= 0) return printMsg('slots', 'ОШИБКА СТАВКИ', 'err');
