@@ -1,15 +1,12 @@
 const jwt = require('jsonwebtoken');
 
-// Секретный ключ (должен совпадать с auth.js)
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 
-// Константы для пассивного фарма
 const FARM_TIME_MINUTES = [30, 25, 20, 15, 10, 5];
 const FARM_TIME_COSTS = [750, 1500, 3000, 5000, 10000];
 const FARM_INCOME_COINS = [2, 4, 6, 8, 10, 15, 20];
 const FARM_INCOME_COSTS = [750, 1500, 3000, 5000, 10000, 17500];
 
-// Константы для игр
 const MINES_TOTAL_CELLS = 25;
 const BJ_SUITS = ['♠', '♥', '♦', '♣'];
 const BJ_RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
@@ -20,9 +17,6 @@ let musicCache = { data: [], lastFetch: 0 };
 
 module.exports = function(app, User, supabase) {
 
-    // ==========================================
-    // ВНУТРЕННИЙ ПОМОЩНИК: АВТОРИЗАЦИЯ
-    // ==========================================
     const authenticate = async (req, res) => {
         try {
             const authHeader = req.headers.authorization;
@@ -39,7 +33,6 @@ module.exports = function(app, User, supabase) {
                 return null;
             }
 
-            // ПАССИВНЫЙ ФАРМ
             if (user.farm && user.farm.active) {
                 const now = Date.now();
                 const lastClaim = user.farm.lastClaim || now;
@@ -93,9 +86,6 @@ module.exports = function(app, User, supabase) {
         return score;
     }
 
-    // ==========================================
-    // 0. ИНФО И ФАРМ
-    // ==========================================
     app.get('/api/games/leaderboard', async (req, res) => {
         try {
             const leaders = await User.find({}, 'username nickname dscoin_balance avatarUrl')
@@ -173,9 +163,6 @@ module.exports = function(app, User, supabase) {
         res.json({ success: true, newBalance: user.dscoin_balance });
     });
 
-    // ==========================================
-    // 2. БЕЗГРЕШНЫЕ ИГРЫ (STATELESS)
-    // ==========================================
     app.post('/api/games/slots', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
@@ -365,10 +352,6 @@ module.exports = function(app, User, supabase) {
 
         res.json({ success: true, results, newBalance: user.dscoin_balance });
     });
-    
-    // ==========================================
-    // 3. ИГРЫ С СОСТОЯНИЕМ (STATEFUL) - [ФИКСЫ ЗДЕСЬ]
-    // ==========================================
 
     // --- МИНЫ ---
     app.post('/api/games/mines/start', async (req, res) => {
@@ -515,7 +498,7 @@ module.exports = function(app, User, supabase) {
 
         const catalog = await getMusicCatalog();
         const validTracks = catalog.filter(t => t.cover_url && t.title);
-        if (validTracks.length === 0) return res.status(500).json({ error: 'База треков пуста' });
+        if (validTracks.length === 0) return res.status(500).json({ error: 'База пуста' });
 
         const correctTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
         
@@ -527,7 +510,7 @@ module.exports = function(app, User, supabase) {
         let options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]];
         options.sort(() => 0.5 - Math.random()); 
 
-        user.dscoin_balance -= bet;
+        // ИСПРАВЛЕНИЕ ДЛЯ MONGOOSE
         user.current_game = { type: 'quiz', bet, correctTitle: correctTrack.title, streak: req.body.streak || 0, active: true };
         user.markModified('current_game');
         await user.save();
@@ -541,6 +524,10 @@ module.exports = function(app, User, supabase) {
 
         const { answer } = req.body;
         const game = user.current_game;
+        
+        // ЖУЧОК ДЛЯ ЛОГОВ СЕРВЕРА
+        console.log(`[QUIZ] Фронт прислал: "${answer}", мы ожидали: "${game.correctTitle}"`);
+
         let win = 0;
         let newStreak = 0;
 
@@ -584,7 +571,7 @@ module.exports = function(app, User, supabase) {
         const catalog = await getMusicCatalog();
         const validAudio = catalog.filter(t => t.mp3_url && t.title);
         
-        if (validAudio.length === 0) return res.status(500).json({ error: 'База аудио пуста' });
+        if (validAudio.length === 0) return res.status(500).json({ error: 'База пуста' });
 
         const correctTrack = validAudio[Math.floor(Math.random() * validAudio.length)];
 
@@ -596,12 +583,16 @@ module.exports = function(app, User, supabase) {
         let options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]];
         options.sort(() => 0.5 - Math.random());
 
-        user.current_game.round += 1;
-        user.current_game.currentCorrectTitle = correctTrack.title;
+        // ЖЕЛЕЗОБЕТОННОЕ СОХРАНЕНИЕ ОБЪЕКТА ДЛЯ БАЗЫ (MONGOOSE)
+        const updatedGame = { ...user.current_game };
+        updatedGame.round += 1;
+        updatedGame.currentCorrectTitle = correctTrack.title;
+        
+        user.current_game = updatedGame;
         user.markModified('current_game');
         await user.save();
 
-        res.json({ success: true, mp3Url: correctTrack.mp3_url, options, round: user.current_game.round });
+        res.json({ success: true, mp3Url: correctTrack.mp3_url, options, round: updatedGame.round });
     });
 
     app.post('/api/games/ptb/answer', async (req, res) => {
@@ -611,28 +602,35 @@ module.exports = function(app, User, supabase) {
         const { answer } = req.body;
         const game = user.current_game;
         
+        // ЖУЧОК ДЛЯ ЛОГОВ
+        console.log(`[PTB] Раунд ${game.round}. Фронт прислал: "${answer}", мы ожидали: "${game.currentCorrectTitle}"`);
+        
         const cleanAnswer = String(answer).trim().toLowerCase();
         const cleanCorrect = String(game.currentCorrectTitle).trim().toLowerCase();
         const isCorrect = (cleanAnswer === cleanCorrect);
 
-        if (isCorrect) game.correctAnswers++;
+        const updatedGame = { ...game };
+
+        if (isCorrect) updatedGame.correctAnswers++;
 
         let win = 0;
         let isFinished = false;
 
-        if (game.round >= 5) {
+        if (updatedGame.round >= 5) {
             isFinished = true;
-            const ratio = game.correctAnswers / 5;
+            const ratio = updatedGame.correctAnswers / 5;
             const mult = ratio >= 0.8 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.4 ? 1.5 : ratio >= 0.2 ? 1 : 0;
-            win = Math.floor(game.bet * mult);
+            win = Math.floor(updatedGame.bet * mult);
             user.dscoin_balance += win;
             user.current_game = null; 
+        } else {
+            user.current_game = updatedGame;
         }
 
         user.markModified('current_game');
         await user.save();
 
-        res.json({ success: true, isCorrect, isFinished, correctAnswers: game ? game.correctAnswers : 0, win, newBalance: user.dscoin_balance });
+        res.json({ success: true, isCorrect, isFinished, correctAnswers: updatedGame.correctAnswers || 0, win, newBalance: user.dscoin_balance });
     });
 
-}; // <--- ВОТ ТЕПЕРЬ ОНА НА СВОЕМ ЗАКОННОМ МЕСТЕ В САМОМ КОНЦЕ
+};
