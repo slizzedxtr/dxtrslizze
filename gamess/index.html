@@ -2484,7 +2484,11 @@
             const res = await fetch(`${API_URL}/games/ptb/round`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
             
+            // ВОТ ЭТА СТРОКА СПАСЕТ ОТ UNDEFINED:
+            if (!res.ok) { printMsg('ptb', data.error || 'Ошибка раунда', 'err'); return; }
+            
             document.getElementById('ptbRound')?.remove();
+            // ... остальной код функции оставляешь как был ...
             const container = document.getElementById('ptbOpts');
             container.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">РАУНД ${data.round} / 5</div>`);
             document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (10 сек)...`;
