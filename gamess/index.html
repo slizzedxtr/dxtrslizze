@@ -787,7 +787,7 @@
 <script>
     const API_URL = "https://dxtrslizze.onrender.com/api";
     
-    // ГЛОБАЛЬНЫЕ СТЕЙТЫ (ДОБАВЛЕНЫ НЕДОСТАЮЩИЕ)
+    // ГЛОБАЛЬНЫЕ СТЕЙТЫ
     let userBalance = 0;
     let supabaseTracks = [];
     let slotCovers = ['/dslogo.png']; 
@@ -799,15 +799,11 @@
     let quizActive = false, quizStreak = 0;
     let bjGameActive = false, bjBet = 0;
     let crashInterval = null;
-    let currentDice = null; // <- ИЗ-ЗА ЭТОГО ПАДАЛИ ДАЙСЫ
+    let currentDice = null;
 
-    // ТОКЕН И ЭСКЕЙП
+    // ТОКЕН
     function getToken() {
         return localStorage.getItem('token') || localStorage.getItem('dxtr_token') || localStorage.getItem('accessToken');
-    }
-
-    function escapeHTML(str) {
-        return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
     function isAnyGameActive() {
@@ -829,22 +825,22 @@
             if(counterEl) counterEl.textContent = c + ' ОНЛАЙН';
         });
     } else {
-        console.warn("Socket.io не загрузился (скорее всего, блокировщик рекламы).");
+        console.warn("Socket.io не загрузился.");
         document.addEventListener('DOMContentLoaded', () => {
             const counterEl = document.getElementById('onlineCount');
             if(counterEl) counterEl.textContent = 'ОФФЛАЙН';
         });
     }
 
-    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) ── */
+    /* ── ЗАГРУЗКА БАЗЫ ДЛЯ ВИЗУАЛА СЛОТОВ ── */
     async function loadTracksData() {
         const fallbackData = [
-            { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', mp3_url: 'ambient1.mp3' },
-            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', mp3_url: 'ambient2.mp3' }
+            { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png' },
+            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png' }
         ];
 
         try {
-            const res = await fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=*&order=id.desc', {
+            const res = await fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=id,cover_url,title&order=id.desc', {
                 headers: {
                     'apikey': 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h',
                     'Authorization': 'Bearer sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'
@@ -853,31 +849,16 @@
             if(res.ok) {
                 const data = await res.json();
                 supabaseTracks = data.length >= 4 ? data : [...data, ...fallbackData];
-            } else {
-                supabaseTracks = fallbackData;
-            }
-        } catch(e) {
-            supabaseTracks = fallbackData;
-        }
+            } else supabaseTracks = fallbackData;
+        } catch(e) { supabaseTracks = fallbackData; }
         
         slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
         if(slotCovers.length === 0) slotCovers = ['/dslogo.png'];
-
         if (typeof initReels === 'function') initReels(); 
-        
-        const hint = document.getElementById('quizHint');
-        if(hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
-        const btnQuiz = document.getElementById('btnQuiz');
-        if(btnQuiz) btnQuiz.disabled = false;
-        const msgPtb = document.getElementById('msg-ptb');
-        if(msgPtb) msgPtb.textContent = "";
-        const btnPtb = document.getElementById('btnPtb');
-        if(btnPtb) btnPtb.disabled = false;
     }
 
     /* ── БЕЗОПАСНАЯ ПРИВЯЗКА DOM И UI ── */
     document.addEventListener('DOMContentLoaded', () => {
-        // ЧАСТИЦЫ НА ФОНЕ
         const c = document.getElementById('particle-canvas');
         if (c) {
             const ctx = c.getContext('2d');
@@ -904,51 +885,25 @@
                 }
             }
             for(let i=0;i<120;i++) particles.push(new Particle());
-            function loop(){
-                ctx.clearRect(0,0,W,H);
-                particles.forEach((p,i) => {
-                    p.update(); p.draw();
-                    if(p.life >= p.maxLife || p.y < 0) particles[i] = new Particle();
-                });
-                requestAnimationFrame(loop);
-            }
+            function loop(){ ctx.clearRect(0,0,W,H); particles.forEach((p,i) => { p.update(); p.draw(); if(p.life >= p.maxLife || p.y < 0) particles[i] = new Particle(); }); requestAnimationFrame(loop); }
             loop();
         }
 
-        // БУРГЕР МЕНЮ
         const burgerBtn = document.getElementById('burgerBtn');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const closeSidebar = document.getElementById('closeSidebar');
-
-        function toggleMenu(){ 
-            if(sidebar) sidebar.classList.toggle('active'); 
-            if(sidebarOverlay) sidebarOverlay.classList.toggle('active'); 
-        }
+        function toggleMenu(){ if(sidebar) sidebar.classList.toggle('active'); if(sidebarOverlay) sidebarOverlay.classList.toggle('active'); }
         if(burgerBtn) burgerBtn.onclick = toggleMenu; 
         if(closeSidebar) closeSidebar.onclick = toggleMenu; 
         if(sidebarOverlay) sidebarOverlay.onclick = toggleMenu;
 
-        // NUMPAD 
         const npModal = document.getElementById('numpad-modal');
         const npHeader = document.getElementById('np-header');
         if(npHeader && npModal) {
             let isDragging = false, startX, startY, initialX, initialY;
-            function ds(e){ 
-                isDragging = true; 
-                if(e.type === 'touchstart'){ startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
-                else { startX = e.clientX; startY = e.clientY; } 
-                initialX = npModal.offsetLeft; 
-                initialY = npModal.offsetTop; 
-            }
-            function dm(e){ 
-                if(!isDragging) return; e.preventDefault(); 
-                let cx, cy; 
-                if(e.type === 'touchmove'){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-                else { cx = e.clientX; cy = e.clientY; } 
-                npModal.style.left = (initialX + (cx - startX)) + 'px'; 
-                npModal.style.top = (initialY + (cy - startY)) + 'px'; 
-            }
+            function ds(e){ isDragging = true; if(e.type === 'touchstart'){ startX = e.touches[0].clientX; startY = e.touches[0].clientY; } else { startX = e.clientX; startY = e.clientY; } initialX = npModal.offsetLeft; initialY = npModal.offsetTop; }
+            function dm(e){ if(!isDragging) return; e.preventDefault(); let cx, cy; if(e.type === 'touchmove'){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; } else { cx = e.clientX; cy = e.clientY; } npModal.style.left = (initialX + (cx - startX)) + 'px'; npModal.style.top = (initialY + (cy - startY)) + 'px'; }
             function de(){ isDragging = false; }
             npHeader.addEventListener('mousedown', ds); document.addEventListener('mousemove', dm); document.addEventListener('mouseup', de);
             npHeader.addEventListener('touchstart', ds, {passive:true}); document.addEventListener('touchmove', dm, {passive:false}); document.addEventListener('touchend', de);
@@ -1095,6 +1050,7 @@
         } catch(e) {}
     }
 
+    /* ── ФЕРМА ── */
     const timeUpgrades = [{val:30, cost:750}, {val:25, cost:1500}, {val:20, cost:3000}, {val:15, cost:5000}, {val:10, cost:10000}, {val:5, cost:null}];
     const incomeUpgrades = [{val:2, cost:750}, {val:4, cost:1500}, {val:6, cost:3000}, {val:8, cost:5000}, {val:10, cost:10000}, {val:15, cost:17500}, {val:20, cost:null}];
     function renderFarmUI(){ 
@@ -1144,6 +1100,7 @@
         }catch(e){ printMsg('farm', 'ОШИБКА СЕТИ', 'err'); } 
     }
 
+    /* ── СЛОТЫ ── */
     function initReels(){
         [1, 2, 3].forEach(id => {
             const strip = document.getElementById('reel' + id); if(!strip) return;
@@ -1183,6 +1140,7 @@
         }catch(e){ if(btn) btn.disabled = false; printMsg('slots', 'Сбой сети', 'err'); initReels(); }
     }
 
+    /* ── ДАЙС ── */
     function selectDice(choice){ 
         currentDice = choice; document.querySelectorAll('.d-opt').forEach(b => b.classList.remove('active')); 
         const o = document.getElementById('d-opt-' + choice); if(o) o.classList.add('active'); 
@@ -1217,6 +1175,7 @@
         }catch(e){ clearInterval(spin); if(btn) btn.disabled = false; }
     }
 
+    /* ── КРАШ ── */
     async function playCrash(){
         const bet = getBetValue('betCrash'); const target = getBetValue('targetCrash', true);
         if(bet > userBalance || bet <= 0) return printMsg('crash', 'ОШИБКА СТАВКИ', 'err');
@@ -1247,13 +1206,13 @@
         }catch(e){ if(btn) btn.disabled = false; printMsg('crash', 'Сбой', 'err'); }
     }
 
+    /* ── РУЛЕТКА ── */
     function selectRoulette(color){ 
         if(isRouletteSpinning) return; currentR = color; 
         document.querySelectorAll('.r-opt').forEach(b => b.classList.remove('active')); 
         const o = document.getElementById('r-opt-' + color); if(o) o.classList.add('active'); 
         printMsg('roulette', 'ЦВЕТ УТВЕРЖДЁН', 'err'); 
     }
-    
     function updateRoulettePosition(t=0){ 
         const strip = document.getElementById('rStrip'); const wheel = document.querySelector('.roulette-wheel'); const cell = document.querySelector('.r-cell'); 
         if(!strip || !wheel || !cell) return; 
@@ -1294,12 +1253,12 @@
     }
     function resetRouletteState(){ const btn = document.getElementById('btnRoulette'); if(btn) btn.disabled = false; document.querySelectorAll('.r-opt').forEach(b => b.disabled = false); isRouletteSpinning = false; }
 
+    /* ── МИНЫ ── */
     function changeMinesCount(delta) { 
         if(minesActive) return; NUM_MINES += delta; 
         if(NUM_MINES < 3) NUM_MINES = 3; if(NUM_MINES > 20) NUM_MINES = 20; 
         const mc = document.getElementById('mineCount'); if(mc) mc.textContent = NUM_MINES; 
     }
-    
     function buildMinesGrid(){ 
         const grid = document.getElementById('minesGrid'); if(!grid) return; grid.innerHTML = ''; 
         for(let i=0; i<25; i++){ 
@@ -1372,6 +1331,7 @@
         const mp = document.getElementById('minesPlus'); if(mp) mp.disabled = false; 
     }
 
+    /* ── БЛЭКДЖЕК ── */
     function bjCardHTML(card, hidden = false){ 
         if(hidden) return `<div class="bj-card hidden"></div>`; 
         const red = ['♥', '♦'].includes(card.s); 
@@ -1406,6 +1366,8 @@
         try {
             const res = await fetch(`${API_URL}/games/bj/hit`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
+            if(data.error) return printMsg('bj', data.error, 'err');
+
             const pc = document.getElementById('bjPlayerCards'); if(pc) pc.innerHTML += bjCardHTML(data.card); 
             const ps = document.getElementById('bjPlayerScore'); if(ps) ps.textContent = data.score; 
             
@@ -1426,6 +1388,8 @@
         try {
             const res = await fetch(`${API_URL}/games/bj/stand`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
+            if(data.error) return printMsg('bj', data.error, 'err');
+
             const dc = document.getElementById('bjDealerCards'); if(dc) dc.innerHTML = data.dealerHand.map(c => bjCardHTML(c)).join('');
             const ds = document.getElementById('bjDealerScore'); if(ds) ds.textContent = data.dScore;
             
@@ -1439,6 +1403,7 @@
         } catch(e) { printMsg('bj', 'Сбой', 'err'); }
     }
 
+    /* ── QUIZ (Исправлено создание кнопок) ── */
     async function startQuiz(){
         const bet = getBetValue('betQuiz'); if(bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
         const btn = document.getElementById('btnQuiz'); if(btn) btn.disabled = true;
@@ -1452,21 +1417,40 @@
             if(cover) { cover.classList.add('no-transition'); cover.classList.add('blurred'); cover.src = data.coverUrl || '/dslogo.png'; void cover.offsetWidth; cover.classList.remove('no-transition'); }
 
             const hint = document.getElementById('quizHint'); if(hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
+            
+            // ИСПРАВЛЕНИЕ: Создаем кнопки через DOM API, чтобы не ломались спецсимволы
             const container = document.getElementById('quizOpts');
-            if(container) container.innerHTML = data.options.map(name => `<button class="quiz-opt" data-answer="${escapeHTML(name)}" onclick="quizAnswer(this)">${escapeHTML(name)}</button>`).join('');
+            if(container) {
+                container.innerHTML = '';
+                data.options.forEach(optText => {
+                    const b = document.createElement('button');
+                    b.className = 'quiz-opt';
+                    b.dataset.answer = optText; // Сырая строка!
+                    b.textContent = optText;    // Браузер сам безопасно отрендерит
+                    b.onclick = () => quizAnswer(b);
+                    container.appendChild(b);
+                });
+            }
             printMsg('quiz', '', '');
         } catch(e) { printMsg('quiz', 'Сбой сети', 'err'); if(btn) btn.disabled = false; }
     }
 
     async function quizAnswer(btn){
         if(!quizActive) return; quizActive = false;
-        const chosen = btn.getAttribute('data-answer');
+        const chosen = btn.dataset.answer; // Берем чистую строку
         try {
             const res = await fetch(`${API_URL}/games/quiz/answer`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ answer: chosen }) });
             const data = await res.json();
             
             const cover = document.getElementById('quizCover'); if(cover) cover.classList.remove('blurred');
-            document.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; if(b.textContent === data.correctTitle) b.classList.add('correct'); });
+            
+            // Подсветка кнопок
+            document.querySelectorAll('.quiz-opt').forEach(b => { 
+                b.disabled = true; 
+                if(b.dataset.answer.trim().toLowerCase() === data.correctTitle?.trim().toLowerCase()) {
+                    b.classList.add('correct'); 
+                }
+            });
             
             updateBalance(data.newBalance);
             if(data.isCorrect){
@@ -1483,6 +1467,7 @@
         } catch(e) { printMsg('quiz', 'Ошибка', 'err'); const bq = document.getElementById('btnQuiz'); if(bq) bq.disabled = false; }
     }
 
+    /* ── ПЛИНКО ── */
     const PLINKO_ROWS = 8; const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10]; const BUCKET_COLORS = ['#ff007f', '#ff6b35', '#ffea00', '#00e5ff', '#9d00ff', '#00e5ff', '#ffea00', '#ff6b35', '#ff007f'];
     function initPlinko(){
         const canvas = document.getElementById('plinkoCanvas'); if(!canvas) return;
@@ -1555,6 +1540,7 @@
         } catch(e) { printMsg('plinko', 'Сбой сети', 'err'); if(btn) btn.disabled = false; }
     }
 
+    /* ── PTB (Исправлено создание кнопок) ── */
     function initPtbWave(){
         const canvas = document.getElementById('ptbCanvas'); if(!canvas) return; const ctx = canvas.getContext('2d'); let t = 0;
         function drawWave(){
@@ -1567,7 +1553,6 @@
         } drawWave();
     }
 
-    // ИЗМЕНЕНИЕ ЗДЕСЬ (Убрали краш с проверкой isMusicPlaying)
     async function startPtb(){
         if(typeof isMusicPlaying !== 'undefined' && isMusicPlaying && typeof toggleMusic === 'function') toggleMusic();
         
@@ -1609,7 +1594,19 @@
                     }).catch(e => { if(pmt) pmt.textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`; });
                 };
             }
-            if(container) container.innerHTML = data.options.map(o => `<button class="ptb-opt" data-answer="${escapeHTML(o)}" onclick="ptbAnswer(this)">${escapeHTML(o)}</button>`).join('');
+
+            // ИСПРАВЛЕНИЕ: Безопасное создание кнопок ответов
+            if(container) {
+                container.innerHTML = '';
+                data.options.forEach(optText => {
+                    const b = document.createElement('button');
+                    b.className = 'ptb-opt';
+                    b.dataset.answer = optText; // Идеальная сырая строка
+                    b.textContent = optText;
+                    b.onclick = () => ptbAnswer(b);
+                    container.appendChild(b);
+                });
+            }
             printMsg('ptb', 'ВЫБЕРИ НАЗВАНИЕ ТРЕКА', '');
         } catch(e) { printMsg('ptb', 'Сбой раунда', 'err'); }
     }
@@ -1619,10 +1616,11 @@
         let audioPlayer = document.getElementById('ptbAudioPlayer'); if(audioPlayer) audioPlayer.pause(); 
         if (ptbTimeout) clearTimeout(ptbTimeout);
         
-        const chosen = btn.getAttribute('data-answer');
+        const chosen = btn.dataset.answer; // Берем строку 1 в 1
         try {
             const res = await fetch(`${API_URL}/games/ptb/answer`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ answer: chosen }) });
             const data = await res.json();
+            if(data.error) return printMsg('ptb', data.error, 'err');
             
             document.querySelectorAll('.ptb-opt').forEach(b => { b.disabled = true; });
             if(data.isCorrect){ btn.classList.add('correct'); printMsg('ptb', `ВЕРНО! ${data.correctAnswers}/5`, 'win'); } 
