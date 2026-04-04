@@ -3130,22 +3130,33 @@
 
         document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (10 сек)...`;
         
-        // ЖЕСТКИЙ ЗАПУСК БЕЗ ОЖИДАНИЯ МЕТАДАННЫХ
         audioPlayer.src = targetTrack.mp3_url;
-        audioPlayer.currentTime = 0; // Всегда стартуем с 0, чтобы избежать проблем с Infinity duration
-        
-        audioPlayer.play().then(() => {
-            clearTimeout(ptbTimeout);
-            ptbTimeout = setTimeout(() => {
-                audioPlayer.pause();
-                if(!ptbAnswered) {
-                    document.getElementById('ptbPrompt').textContent = `Время вышло! Выбирай ответ.`;
-                }
-            }, 10000);
-        }).catch(e => {
-            console.log('Autoplay blocked or CORS error:', e);
-            document.getElementById('ptbPrompt').textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`;
-        });
+
+        // Ждем получения длины трека (метаданных) от браузера
+        audioPlayer.onloadedmetadata = () => {
+            let duration = audioPlayer.duration;
+            
+            // Если трек длиннее 10 сек и его длина известна, берем случайный кусок
+            if (isFinite(duration) && duration > 10) {
+                // (duration - 10) гарантирует, что трек не оборвется раньше таймера
+                audioPlayer.currentTime = Math.random() * (duration - 10);
+            } else {
+                audioPlayer.currentTime = 0; // Страховка для коротких/кривых файлов
+            }
+
+            audioPlayer.play().then(() => {
+                clearTimeout(ptbTimeout);
+                ptbTimeout = setTimeout(() => {
+                    audioPlayer.pause();
+                    if(!ptbAnswered) {
+                        document.getElementById('ptbPrompt').textContent = `Время вышло! Выбирай ответ.`;
+                    }
+                }, 10000);
+            }).catch(e => {
+                console.log('Autoplay blocked or CORS error:', e);
+                document.getElementById('ptbPrompt').textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`;
+            });
+        };
 
         let opts = [targetTrack.title];
         let shuffled = [...validAudioTracks].filter(t => t.title !== targetTrack.title).sort(() => Math.random() - 0.5);
