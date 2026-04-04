@@ -140,6 +140,12 @@ module.exports = function(app, User, supabase) {
         res.json({ success: true, newBalance: user.dscoin_balance, message: 'ФЕРМА АКТИВИРОВАНА' });
     });
 
+    app.get('/api/games/farm/status', async (req, res) => {
+        const user = await authenticate(req, res);
+        if (!user) return;
+        res.json({ success: true, farm: user.farm || { active: false, timeLevel: 0, incomeLevel: 0 } });
+    });
+    
     app.post('/api/games/farm/upgrade', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
@@ -541,7 +547,12 @@ module.exports = function(app, User, supabase) {
         let win = 0;
         let newStreak = 0;
 
-        if (answer === game.correctTitle) {
+        // ЖЕСТКИЙ ФИКС СРАВНЕНИЯ (режет пробелы и игнорирует регистр)
+        const cleanAnswer = String(answer).trim().toLowerCase();
+        const cleanCorrect = String(game.correctTitle).trim().toLowerCase();
+        const isCorrect = (cleanAnswer === cleanCorrect);
+
+        if (isCorrect) {
             newStreak = game.streak + 1;
             const mult = 1 + (newStreak * 0.5);
             win = Math.floor(game.bet * mult);
@@ -552,7 +563,7 @@ module.exports = function(app, User, supabase) {
         user.markModified('current_game');
         await user.save();
 
-        res.json({ success: true, isCorrect: answer === game.correctTitle, win, newStreak, newBalance: user.dscoin_balance, correctTitle: game.correctTitle });
+        res.json({ success: true, isCorrect: isCorrect, win, newStreak, newBalance: user.dscoin_balance, correctTitle: game.correctTitle });
     });
 
     // --- БИТ (Predict The Beat) ---
@@ -605,9 +616,14 @@ module.exports = function(app, User, supabase) {
 
         const { answer } = req.body;
         const game = user.current_game;
-        const isCorrect = answer === game.currentCorrectTitle;
+        
+        // ЖЕСТКИЙ ФИКС СРАВНЕНИЯ
+        const cleanAnswer = String(answer).trim().toLowerCase();
+        const cleanCorrect = String(game.currentCorrectTitle).trim().toLowerCase();
+        const isCorrect = (cleanAnswer === cleanCorrect);
 
         if (isCorrect) game.correctAnswers++;
+        // ВНИМАНИЕ: Я убрал отсюда game.round++, теперь раунды не двоятся!
 
         let win = 0;
         let isFinished = false;
@@ -626,4 +642,3 @@ module.exports = function(app, User, supabase) {
 
         res.json({ success: true, isCorrect, isFinished, correctAnswers: game ? game.correctAnswers : 0, win, newBalance: user.dscoin_balance });
     });
-};
