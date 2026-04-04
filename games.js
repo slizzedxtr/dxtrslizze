@@ -205,7 +205,6 @@ module.exports = function(app, User, supabase) {
         } else {
             resultTracks = [getRandomTrack(), getRandomTrack(), getRandomTrack()];
             if (resultTracks[0].cover_url === resultTracks[1].cover_url && resultTracks[1].cover_url === resultTracks[2].cover_url) {
-                // ФИКС АБУЗА: если в базе всего 1 трек, слоты всегда выдавали джекпот. Теперь мы подменяем последнюю картинку на фейк-луз.
                 resultTracks[2] = slotPool.find(t => t.cover_url !== resultTracks[0].cover_url) || { id: 999, title: 'Lose', cover_url: '/valuta.png', is_main: false };
             }
         }
@@ -395,7 +394,7 @@ module.exports = function(app, User, supabase) {
 
         res.json({ success: true, newBalance: user.dscoin_balance });
     });
-};
+
     app.post('/api/games/mines/step', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user || !user.current_game || user.current_game.type !== 'mines') return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ' });
@@ -487,7 +486,6 @@ module.exports = function(app, User, supabase) {
         const game = user.current_game;
         let dScore = getBJScore(game.dealerHand);
         
-        // ФИКС: Безопасный добор карт дилером
         while(dScore < 17 && game.deck.length > 0) {
             game.dealerHand.push(game.deck.pop());
             dScore = getBJScore(game.dealerHand);
@@ -521,14 +519,13 @@ module.exports = function(app, User, supabase) {
 
         const correctTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
         
-        // БРОНЕБОЙНЫЙ ФИКС: Умная генерация опций, которая никогда не упадет
         let uniqueTitles = new Set(validTracks.map(t => t.title));
-        FALLBACK_TITLES.forEach(t => uniqueTitles.add(t)); // Заливаем фейки на всякий случай
-        uniqueTitles.delete(correctTrack.title); // Убираем правильный ответ из пула
+        FALLBACK_TITLES.forEach(t => uniqueTitles.add(t)); 
+        uniqueTitles.delete(correctTrack.title); 
 
         let optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
         let options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]];
-        options.sort(() => 0.5 - Math.random()); // Перемешиваем итоговый массив
+        options.sort(() => 0.5 - Math.random()); 
 
         user.dscoin_balance -= bet;
         user.current_game = { type: 'quiz', bet, correctTitle: correctTrack.title, streak: req.body.streak || 0, active: true };
@@ -547,7 +544,6 @@ module.exports = function(app, User, supabase) {
         let win = 0;
         let newStreak = 0;
 
-        // ЖЕСТКИЙ ФИКС СРАВНЕНИЯ (режет пробелы и игнорирует регистр)
         const cleanAnswer = String(answer).trim().toLowerCase();
         const cleanCorrect = String(game.correctTitle).trim().toLowerCase();
         const isCorrect = (cleanAnswer === cleanCorrect);
@@ -592,7 +588,6 @@ module.exports = function(app, User, supabase) {
 
         const correctTrack = validAudio[Math.floor(Math.random() * validAudio.length)];
 
-        // БРОНЕБОЙНЫЙ ФИКС: Умная генерация как в Квизе
         let uniqueTitles = new Set(validAudio.map(t => t.title));
         FALLBACK_TITLES.forEach(t => uniqueTitles.add(t));
         uniqueTitles.delete(correctTrack.title);
@@ -601,7 +596,6 @@ module.exports = function(app, User, supabase) {
         let options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]];
         options.sort(() => 0.5 - Math.random());
 
-        // ФИКС ЛОГИКИ РАУНДОВ: счетчик должен плюсоваться здесь, чтобы фронт и бэк не рассинхронизировались
         user.current_game.round += 1;
         user.current_game.currentCorrectTitle = correctTrack.title;
         user.markModified('current_game');
@@ -617,13 +611,11 @@ module.exports = function(app, User, supabase) {
         const { answer } = req.body;
         const game = user.current_game;
         
-        // ЖЕСТКИЙ ФИКС СРАВНЕНИЯ
         const cleanAnswer = String(answer).trim().toLowerCase();
         const cleanCorrect = String(game.currentCorrectTitle).trim().toLowerCase();
         const isCorrect = (cleanAnswer === cleanCorrect);
 
         if (isCorrect) game.correctAnswers++;
-        // ВНИМАНИЕ: Я убрал отсюда game.round++, теперь раунды не двоятся!
 
         let win = 0;
         let isFinished = false;
@@ -642,3 +634,5 @@ module.exports = function(app, User, supabase) {
 
         res.json({ success: true, isCorrect, isFinished, correctAnswers: game ? game.correctAnswers : 0, win, newBalance: user.dscoin_balance });
     });
+
+}; // <--- ВОТ ТЕПЕРЬ ОНА НА СВОЕМ ЗАКОННОМ МЕСТЕ В САМОМ КОНЦЕ
