@@ -26,57 +26,51 @@ module.exports = function(app, User, supabase) {
     // ФИКС: ферма обновляется через updateOne, чтобы НЕ затирать current_game
     // ══════════════════════════════════════════════════════════════
     const authenticate = async (req, res) => {
-        try {
-            const authHeader = req.headers.authorization;
-            if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                res.status(401).json({ error: 'Отсутствует токен авторизации' });
-                return null;
-            }
-            const token   = authHeader.split(' ')[1];
-            const decoded = jwt.verify(token, JWT_SECRET);
-            const user    = await User.findOne({ clientId: decoded.clientId });
-
-            if (!user) {
-                res.status(401).json({ error: 'Пользователь не найден' });
-                return null;
-            }
-
-            // Автоначисление фермы при каждом запросе
-            // ФИКС: используем updateOne вместо user.save() чтобы не затереть current_game
-            if (user.farm && user.farm.active) {
-                const now         = Date.now();
-                const lastClaim   = user.farm.lastClaim || now;
-                const intervalMs  = FARM_TIME_MINUTES[user.farm.timeLevel  || 0] * 60 * 1000;
-                const income      = FARM_INCOME_COINS [user.farm.incomeLevel|| 0];
-                const timePassed  = now - lastClaim;
-
-                if (timePassed >= intervalMs) {
-                    const intervals = Math.floor(timePassed / intervalMs);
-                    const newBalance = Math.floor(Number(user.dscoin_balance || 0) + intervals * income);
-                    const newLastClaim = lastClaim + intervals * intervalMs;
-
-                    // Обновляем только поля фермы и баланс, НЕ трогая current_game
-                    await User.updateOne(
-                        { clientId: decoded.clientId },
-                        {
-                            $set: {
-                                dscoin_balance: newBalance,
-                                'farm.lastClaim': newLastClaim
-                            }
-                        }
-                    );
-
-                    // Обновляем локальный объект для текущего запроса
-                    user.dscoin_balance = newBalance;
-                    user.farm.lastClaim = newLastClaim;
-                }
-            }
-            return user;
-        } catch (err) {
-            res.status(401).json({ error: 'Сессия истекла' });
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            res.status(401).json({ error: 'Отсутствует токен авторизации' });
             return null;
         }
-    };
+
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        let user = await User.findOne({ clientId: decoded.clientId });
+
+        if (!user) {
+            res.status(401).json({ error: 'Пользователь не найден' });
+            return null;
+        }
+
+        // === АВТОНАЧИСЛЕНИЕ ФЕРМЫ ===
+        if (user.farm && user.farm.active) {
+            const now = Date.now();
+            const lastClaim = user.farm.lastClaim || now;
+            const intervalMs = FARM_TIME_MINUTES[user.farm.timeLevel || 0] * 60 * 1000;
+            const income = FARM_INCOME_COINS[user.farm.incomeLevel || 0];
+            const timePassed = now - lastClaim;
+
+            if (timePassed >= intervalMs) {
+                const intervals = Math.floor(timePassed / intervalMs);
+                const newBalance = Math.floor(Number(user.dscoin_balance || 0) + intervals * income);
+                const newLastClaim = lastClaim + intervals * intervalMs;
+
+                await User.updateOne(
+                    { clientId: decoded.clientId },
+                    { $set: { dscoin_balance: newBalance, 'farm.lastClaim': newLastClaim } }
+                );
+            }
+        }
+
+        // ←←← КРИТИЧНЫЙ ФИКС: перезагружаем документ после updateOne
+        user = await User.findOne({ clientId: decoded.clientId });
+
+        return user;
+    } catch (err) {
+        res.status(401).json({ error: 'Сессия истекла' });
+        return null;
+    }
+};
 
     // ══════════════════════════════════════════════════════════════
     // ЗАГРУЗКА МУЗЫКАЛЬНОГО КАТАЛОГА (с кэшем 5 мин)
@@ -140,10 +134,9 @@ module.exports = function(app, User, supabase) {
 
     // ФИКС: patchGame — сохраняем plain-object и явно указываем все поля
     function patchGame(user, patch) {
-        const plain = JSON.parse(JSON.stringify(patch));
-        user.current_game = plain;
-        user.markModified('current_game');
-    }
+    user.current_game = JSON.parse(JSON.stringify(patch)); // надёжный deep clone
+    user.markModified('current_game');
+}
 
     // ══════════════════════════════════════════════════════════════
     // ЛИДЕРБОРД
