@@ -805,7 +805,7 @@ musicBtn.addEventListener('click', () => {
     }
 
     // ══════════════════════════════════════════
-    // ЗАГРУЗКА ТРЕКОВ
+    // ОБНОВЛЕННАЯ ЗАГРУЗКА ТРЕКОВ
     // ══════════════════════════════════════════
     async function loadTracksData() {
         try {
@@ -830,15 +830,119 @@ musicBtn.addEventListener('click', () => {
         slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
         if (slotCovers.length === 0) slotCovers = ['/dslogo.png'];
 
+        // Разблокировка Квиза
         const btnQuiz = document.getElementById('btnQuiz');
         if (btnQuiz) btnQuiz.disabled = false;
+        const hintQuiz = document.getElementById('quizHint');
+        if (hintQuiz) hintQuiz.textContent = "Готово. Жми 'НОВЫЙ РАУНД'.";
+
+        // Разблокировка Бита
         const btnPtb = document.getElementById('btnPtb');
         if (btnPtb) {
             btnPtb.disabled = false;
             printMsg('ptb', 'ТРЕКИ ЗАГРУЖЕНЫ — ГОТОВ', 'win');
+            const ptbPrompt = document.getElementById('ptbPrompt');
+            if (ptbPrompt) ptbPrompt.textContent = "Готово. Жми 'НАЧАТЬ'.";
         }
 
         initReels();
+    }
+
+    // ══════════════════════════════════════════
+    // ОБНОВЛЕННЫЙ СТАРТ КВИЗА
+    // ══════════════════════════════════════════
+    async function startQuiz() {
+        const bet = getBetValue('betQuiz');
+        if (bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
+        const btn = document.getElementById('btnQuiz'); if (btn) btn.disabled = true;
+        
+        const hint = document.getElementById('quizHint');
+        if (hint) hint.textContent = "Связь с базой...";
+
+        try {
+            const res = await fetch(`${API_URL}/games/quiz/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                body: JSON.stringify({ bet, streak: quizStreak })
+            });
+            const data = await res.json();
+            
+            if (!res.ok) { 
+                printMsg('quiz', data.error || 'Ошибка базы', 'err'); 
+                if (btn) btn.disabled = false; 
+                if (hint) hint.textContent = "Сбой соединения. Жми 'НОВЫЙ РАУНД'.";
+                return; 
+            }
+
+            updateBalance(data.newBalance);
+            quizActive = true;
+
+            const cover = document.getElementById('quizCover');
+            if (cover) {
+                cover.classList.add('no-transition');
+                cover.src = data.coverUrl || '/dslogo.png';
+                void cover.offsetWidth;
+                cover.classList.remove('no-transition');
+                cover.classList.add('blurred');
+            }
+
+            if (hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
+
+            const container = document.getElementById('quizOpts');
+            if (container) {
+                container.innerHTML = '';
+                data.options.forEach(optText => {
+                    const b = document.createElement('button');
+                    b.className = 'quiz-opt';
+                    b.dataset.answer = optText;
+                    b.textContent = optText;
+                    b.onclick = () => quizAnswer(b);
+                    container.appendChild(b);
+                });
+            }
+            printMsg('quiz', '', '');
+        } catch (e) {
+            printMsg('quiz', 'Сбой сети', 'err'); 
+            if (btn) btn.disabled = false;
+            if (hint) hint.textContent = "Сервер не отвечает. Жми 'НОВЫЙ РАУНД'.";
+        }
+    }
+
+    // ══════════════════════════════════════════
+    // ОБНОВЛЕННЫЙ СТАРТ БИТА (PTB)
+    // ══════════════════════════════════════════
+    async function startPtb() {
+        if(typeof isMusicPlaying !== 'undefined' && isMusicPlaying && typeof toggleMusic === 'function') toggleMusic();
+        
+        const bet = getBetValue('betPtb');
+        if (bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
+        const btn = document.getElementById('btnPtb'); if (btn) btn.disabled = true;
+        
+        const ptbPrompt = document.getElementById('ptbPrompt');
+        if (ptbPrompt) ptbPrompt.textContent = "Связь с базой...";
+
+        try {
+            const res = await fetch(`${API_URL}/games/ptb/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                body: JSON.stringify({ bet })
+            });
+            const data = await res.json();
+            if (!res.ok) { 
+                printMsg('ptb', data.error || 'Ошибка запуска', 'err'); 
+                if (btn) btn.disabled = false; 
+                if (ptbPrompt) ptbPrompt.textContent = "Ошибка. Жми 'НАЧАТЬ'.";
+                return; 
+            }
+            
+            updateBalance(data.newBalance);
+            ptbActive = true;
+            ptbNextRound();
+        } catch (e) {
+            printMsg('ptb', 'Сбой сети', 'err'); 
+            if (btn) btn.disabled = false;
+            if (ptbPrompt) ptbPrompt.textContent = "Сервер не отвечает. Жми 'НАЧАТЬ'.";
+        }
     }
 
     // ══════════════════════════════════════════
