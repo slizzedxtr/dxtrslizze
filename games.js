@@ -35,6 +35,8 @@ module.exports = function(app, User, supabase) {
 
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, JWT_SECRET);
+
+        // Сначала находим пользователя
         let user = await User.findOne({ clientId: decoded.clientId });
 
         if (!user) {
@@ -42,7 +44,7 @@ module.exports = function(app, User, supabase) {
             return null;
         }
 
-        // === АВТОНАЧИСЛЕНИЕ ФЕРМЫ ===
+        // Автоначисление фермы (если нужно)
         if (user.farm && user.farm.active) {
             const now = Date.now();
             const lastClaim = user.farm.lastClaim || now;
@@ -62,11 +64,12 @@ module.exports = function(app, User, supabase) {
             }
         }
 
-        // ←←← КРИТИЧНЫЙ ФИКС: перезагружаем документ после updateOne
+        // КРИТИЧНЫЙ ФИКС: ВСЕГДА перезагружаем свежий документ
         user = await User.findOne({ clientId: decoded.clientId });
 
         return user;
     } catch (err) {
+        console.error('Auth error:', err);
         res.status(401).json({ error: 'Сессия истекла' });
         return null;
     }
