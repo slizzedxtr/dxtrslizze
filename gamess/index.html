@@ -787,10 +787,20 @@
 
     <script>
     const API_URL = "https://dxtrslizze.onrender.com/api";
+    
+    // ГЛОБАЛЬНЫЕ СТЕЙТЫ — вынесены наверх, чтобы избежать ReferenceError в любой момент
     let userBalance = 0;
     let supabaseTracks = [];
     let slotCovers = ['/dslogo.png']; 
-    
+    let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
+    let plinkoCtx = null, plinkoAnimating = false, plinkoBallsArray = [];
+    let currentR = null, isRouletteSpinning = false, rCells = [], currentRIndex = 3;
+    let ptbActive = false, ptbAnswered = false, ptbWaveAnim = null;
+    let NUM_MINES = 3, minesActive = false, minesBet = 0;
+    let quizActive = false, quizStreak = 0;
+    let bjGameActive = false, bjBet = 0;
+    let crashInterval = null;
+
     // Получение токена
     function getToken() {
         return localStorage.getItem('token') || 
@@ -798,7 +808,7 @@
                localStorage.getItem('accessToken');
     }
 
-    // ХЕЛПЕР ДЛЯ ЭСКРАПИРОВАНИЯ СТРОК (БРОНЕЖИЛЕТ ОТ КАВЫЧЕК В НАЗВАНИЯХ)
+    // ХЕЛПЕР ДЛЯ ЭСКРАПИРОВАНИЯ СТРОК
     function escapeHTML(str) {
         return String(str)
             .replace(/&/g, "&amp;")
@@ -813,21 +823,28 @@
         return plinkoAnimating || isRouletteSpinning || ptbActive || minesActive || quizActive || bjGameActive || crashInterval;
     }
 
-    // ── БЕЗОПАСНОЕ ОБНОВЛЕНИЕ БАЛАНСА (ЛОКАЛЬНО + UI) ──
+    // БЕЗОПАСНОЕ ОБНОВЛЕНИЕ БАЛАНСА
     function updateBalance(val){
         userBalance = val;
         const el = document.getElementById('uiBalance'); 
         if(el) el.innerText = val;
     }
 
-    // ── SOCKET.IO ONLINE COUNTER ── 
-    const socket = io("https://dxtrslizze.onrender.com/");
-    socket.on('online_update', c => {
+    // SOCKET.IO БЕЗОПАСНЫЙ ИНИТ (защита от краша при недоступном CDN)
+    let socket = null;
+    if (typeof io !== 'undefined') {
+        socket = io("https://dxtrslizze.onrender.com/");
+        socket.on('online_update', c => {
+            const counterEl = document.getElementById('onlineCount');
+            if(counterEl) counterEl.textContent = c + ' ОНЛАЙН';
+        });
+    } else {
+        console.warn("Socket.io не загрузился (скорее всего, блокировщик рекламы).");
         const counterEl = document.getElementById('onlineCount');
-        if(counterEl) counterEl.textContent = c + ' ОНЛАЙН';
-    });
+        if(counterEl) counterEl.textContent = 'ОФФЛАЙН';
+    }
 
-    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) + ФОЛЛБЭК ДЛЯ ИГРОВЫХ АССЕТОВ ── */
+    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) ── */
     async function loadTracksData() {
         const fallbackData = [
             { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', mp3_url: ambientTracks[0] || 'ambient1.mp3' },
@@ -1027,7 +1044,7 @@
         if(id === 'plinko') initPlinko();
     }
 
-    /* ── NUMPAD ── */
+    /* ── NUMPAD (ИСПРАВЛЕНО ДЕРГАНИЕ) ── */
     const npModal = document.getElementById('numpad-modal');
     const npHeader = document.getElementById('np-header');
     let isDragging = false, startX, startY, initialX, initialY;
@@ -1039,15 +1056,17 @@
         isDragging = true; 
         if(e.type === 'touchstart'){ startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
         else { startX = e.clientX; startY = e.clientY; } 
-        const r = npModal.getBoundingClientRect(); initialX = r.left; initialY = r.top; 
-        npModal.style.transform = 'none'; npModal.style.left = initialX + 'px'; npModal.style.top = initialY + 'px'; npModal.style.animation = 'none'; 
+        // Исправлен баг, из-за которого окно прыгало при клике
+        initialX = npModal.offsetLeft; 
+        initialY = npModal.offsetTop; 
     }
     function dm(e){ 
         if(!isDragging) return; e.preventDefault(); 
         let cx, cy; 
         if(e.type === 'touchmove'){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
         else { cx = e.clientX; cy = e.clientY; } 
-        npModal.style.left = (initialX + (cx - startX)) + 'px'; npModal.style.top = (initialY + (cy - startY)) + 'px'; 
+        npModal.style.left = (initialX + (cx - startX)) + 'px'; 
+        npModal.style.top = (initialY + (cy - startY)) + 'px'; 
     }
     function de(){ isDragging = false; }
     
@@ -1075,10 +1094,12 @@
         disp.innerText = cur;
     }
     
+    // БЕЗОПАСНЫЙ ПАРСИНГ: Защита от NaN, если инпут сломан
     function getBetValue(id, isFloat = false){ 
         const el = document.getElementById(id + '_disp'); 
         if(!el) return 0; 
-        return isFloat ? parseFloat(el.innerText) : parseInt(el.innerText); 
+        const val = isFloat ? parseFloat(el.innerText) : parseInt(el.innerText); 
+        return isNaN(val) ? 0 : val; 
     }
 
     // ==========================================
@@ -1102,7 +1123,8 @@
             const res = await fetch(`${API_URL}/games/leaderboard`);
             const data = await res.json();
             const lb = document.getElementById('leaderboardData');
-            if(data.success && data.leaders && lb){
+            // Добавил проверку Array.isArray, чтобы не крашилось, если с сервера прилетит мусор
+            if(data.success && Array.isArray(data.leaders) && lb){
                 lb.innerHTML = data.leaders.slice(0, 5).map((u, i) => {
                     let rc = i < 3 ? `rank-${i+1}` : ''; 
                     let c = i === 0 ? '#ffea00' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)';
@@ -1123,7 +1145,6 @@
     /* ── ФАРМ ── */
     const timeUpgrades = [{val:30, cost:750}, {val:25, cost:1500}, {val:20, cost:3000}, {val:15, cost:5000}, {val:10, cost:10000}, {val:5, cost:null}];
     const incomeUpgrades = [{val:2, cost:750}, {val:4, cost:1500}, {val:6, cost:3000}, {val:8, cost:5000}, {val:10, cost:10000}, {val:15, cost:17500}, {val:20, cost:null}];
-    let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
     
     function renderFarmUI(){ 
         const lo = document.getElementById('farm-locked'); const ac = document.getElementById('farm-active'); 
@@ -1178,7 +1199,7 @@
         }catch(e){ printMsg('farm', 'ОШИБКА СЕТИ', 'err'); } 
     }
 
-    /* ── СЛОТЫ, ДАЙС, КРАШ, РУЛЕТКА (ОСТАЮТСЯ КАК БЫЛИ) ── */
+    /* ── СЛОТЫ, ДАЙС, КРАШ, РУЛЕТКА ── */
     function initReels(){
         [1, 2, 3].forEach(id => {
             const strip = document.getElementById('reel' + id); if(!strip) return;
@@ -1229,7 +1250,7 @@
     
     async function playDice(){
         if(!currentDice) return printMsg('dice', 'ВЫБЕРИТЕ СЕКТОР', 'err');
-        const bet = getBetValue('betDice'); if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('dice', 'ОШИБКА СТАВКИ', 'err');
+        const bet = getBetValue('betDice'); if(bet > userBalance || bet <= 0) return printMsg('dice', 'ОШИБКА СТАВКИ', 'err');
         const btn = document.getElementById('btnDice'); if(btn) btn.disabled = true;
         const disp = document.getElementById('diceDisplay'); 
         let spin = setInterval(() => { if(disp) disp.innerText = Math.floor(Math.random() * 100) + 1; }, 50);
@@ -1255,11 +1276,10 @@
         }catch(e){ clearInterval(spin); if(btn) btn.disabled = false; }
     }
 
-    let crashInterval;
     async function playCrash(){
         const bet = getBetValue('betCrash'); const target = getBetValue('targetCrash', true);
-        if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('crash', 'ОШИБКА СТАВКИ', 'err');
-        if(isNaN(target) || target < 1.1) return printMsg('crash', 'МИН. ВЫВОД 1.1', 'err');
+        if(bet > userBalance || bet <= 0) return printMsg('crash', 'ОШИБКА СТАВКИ', 'err');
+        if(target < 1.1) return printMsg('crash', 'МИН. ВЫВОД 1.1', 'err');
         const btn = document.getElementById('btnCrash'); if(btn) btn.disabled = true;
         const disp = document.getElementById('crMult'); const line = document.getElementById('crLine');
         if(disp){ disp.style.color = ''; disp.style.textShadow = ''; }
@@ -1286,7 +1306,6 @@
         }catch(e){ if(btn) btn.disabled = false; printMsg('crash', 'Сбой', 'err'); }
     }
 
-    let currentR = null, isRouletteSpinning = false, rCells = [], currentRIndex = 3;
     function selectRoulette(color){ 
         if(isRouletteSpinning) return; currentR = color; 
         document.querySelectorAll('.r-opt').forEach(b => b.classList.remove('active')); 
@@ -1313,7 +1332,7 @@
     
     async function playRoulette(){
         if(isRouletteSpinning || !currentR) return printMsg('roulette', 'ВЫБЕРИТЕ ЦВЕТ', 'err');
-        const bet = getBetValue('betRoulette'); if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('roulette', 'ОШИБКА СТАВКИ', 'err');
+        const bet = getBetValue('betRoulette'); if(bet > userBalance || bet <= 0) return printMsg('roulette', 'ОШИБКА СТАВКИ', 'err');
         const btn = document.getElementById('btnRoulette'); if(btn) btn.disabled = true; isRouletteSpinning = true; 
         document.querySelectorAll('.r-opt').forEach(b => b.disabled = true); updateBalance(userBalance - bet); printMsg('roulette', 'ОЖИДАНИЕ...', 'err');
         
@@ -1343,8 +1362,8 @@
     }
     function resetRouletteState(){ const btn = document.getElementById('btnRoulette'); if(btn) btn.disabled = false; document.querySelectorAll('.r-opt').forEach(b => b.disabled = false); isRouletteSpinning = false; }
 
-    /* ── MINES (СЕРВЕРНАЯ ЛОГИКА) ── */
-    const TOTAL_CELLS = 25; let NUM_MINES = 3; let minesActive = false, minesBet = 0;
+    /* ── MINES ── */
+    const TOTAL_CELLS = 25;
     
     function changeMinesCount(delta) { 
         if(minesActive) return; NUM_MINES += delta; 
@@ -1428,9 +1447,7 @@
         document.getElementById('btnMines').disabled = false; document.getElementById('minesMinus').disabled = false; document.getElementById('minesPlus').disabled = false; 
     }
 
-    /* ── БЛЭКДЖЕК (СЕРВЕРНАЯ ЛОГИКА) ── */
-    let bjGameActive = false, bjBet = 0;
-    
+    /* ── БЛЭКДЖЕК ── */
     function bjCardHTML(card, hidden = false){ 
         if(hidden) return `<div class="bj-card hidden"></div>`; 
         const red = ['♥', '♦'].includes(card.s); 
@@ -1502,9 +1519,7 @@
         } catch(e) { printMsg('bj', 'Сбой', 'err'); }
     }
 
-    /* ── КВИЗ (СЕРВЕРНАЯ ЛОГИКА) ── */
-    let quizActive = false, quizStreak = 0;
-    
+    /* ── КВИЗ ── */
     async function startQuiz(){
         const bet = getBetValue('betQuiz'); if(bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
         const btn = document.getElementById('btnQuiz'); btn.disabled = true;
@@ -1527,7 +1542,6 @@
             document.getElementById('quizHint').textContent = "Нейросеть исказила обложку... Угадай трек.";
             const container = document.getElementById('quizOpts');
             
-            // ИСПРАВЛЕНИЕ: КНОПКИ ЗАЩИЩЕНЫ ОТ КАВЫЧЕК ЧЕРЕЗ DATA-АТРИБУТ
             container.innerHTML = data.options.map(name => 
                 `<button class="quiz-opt" data-answer="${escapeHTML(name)}" onclick="quizAnswer(this)">${escapeHTML(name)}</button>`
             ).join('');
@@ -1538,7 +1552,6 @@
     async function quizAnswer(btn){
         if(!quizActive) return; quizActive = false;
         
-        // БЕРЕМ НАЗВАНИЕ БЕЗ ОШИБОК КОДИРОВКИ
         const chosen = btn.getAttribute('data-answer');
         
         try {
@@ -1570,9 +1583,8 @@
         } catch(e) { printMsg('quiz', 'Ошибка', 'err'); document.getElementById('btnQuiz').disabled = false; }
     }
 
-    /* ── PLINKO (СЕРВЕРНАЯ ЛОГИКА) ── */
+    /* ── PLINKO ── */
     const PLINKO_ROWS = 8; const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10]; const BUCKET_COLORS = ['#ff007f', '#ff6b35', '#ffea00', '#00e5ff', '#9d00ff', '#00e5ff', '#ffea00', '#ff6b35', '#ff007f'];
-    let plinkoCtx = null, plinkoAnimating = false, plinkoBallsArray = [];
 
     function initPlinko(){
         const canvas = document.getElementById('plinkoCanvas'); if(!canvas) return;
@@ -1618,6 +1630,9 @@
         const bet = getBetValue('betPlinko'), count = getBetValue('ballsPlinko');
         if(bet <= 0 || count <= 0) return printMsg('plinko', 'ОШИБКА ВВОДА', 'err');
         
+        // Лимит шаров, чтобы матрица пользователя не сдохла
+        if(count > 50) return printMsg('plinko', 'МАКСИМУМ 50 ШАРОВ', 'err');
+        
         const btn = document.getElementById('btnPlinko'); btn.disabled = true;
         printMsg('plinko', `СВЯЗЬ С СЕРВЕРОМ...`, '');
         
@@ -1654,8 +1669,7 @@
         } catch(e) { printMsg('plinko', 'Сбой сети', 'err'); btn.disabled = false; }
     }
 
-    /* ── БИТ (PTB - СЕРВЕРНАЯ ЛОГИКА) ── */
-    let ptbActive = false, ptbAnswered = false, ptbWaveAnim = null; 
+    /* ── БИТ (PTB) ── */
     let audioPlayer = document.getElementById('ptbAudioPlayer'), ptbTimeout;
 
     function initPtbWave(){
@@ -1720,7 +1734,6 @@
                 }).catch(e => { document.getElementById('ptbPrompt').textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`; });
             };
             
-            // ИСПРАВЛЕНИЕ: КНОПКИ ЗАЩИЩЕНЫ ОТ КАВЫЧЕК ЧЕРЕЗ DATA-АТРИБУТ
             container.innerHTML = data.options.map(o => 
                 `<button class="ptb-opt" data-answer="${escapeHTML(o)}" onclick="ptbAnswer(this)">${escapeHTML(o)}</button>`
             ).join('');
@@ -1732,7 +1745,6 @@
         if(ptbAnswered) return; ptbAnswered = true;
         audioPlayer.pause(); clearTimeout(ptbTimeout);
         
-        // БЕРЕМ НАЗВАНИЕ БЕЗ ОШИБОК
         const chosen = btn.getAttribute('data-answer');
         
         try {
