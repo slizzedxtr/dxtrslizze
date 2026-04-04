@@ -687,20 +687,18 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
     // ══════════════════════════════════════════
-    // КОНФИГУРАЦИЯ — единственное место для URL
+    // КОНФИГУРАЦИЯ
     // ══════════════════════════════════════════
     const API_URL = "https://dxtrslizze.onrender.com/api";
 
     // ══ ГЛОБАЛЬНЫЕ СТЕЙТЫ ══
     let userBalance = 0;
-    let supabaseTracks = [];          // заполняется через /api/tracks
+    let supabaseTracks = [];
     let slotCovers = ['/dslogo.png'];
     let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
     let plinkoCtx = null, plinkoAnimating = false, plinkoBallsArray = [];
     let currentR = null, isRouletteSpinning = false;
-    // rCells — накопленный массив цветов полосы рулетки
     let rCells = [];
-    // currentRIndex — индекс «центральной» ячейки колеса
     let currentRIndex = 0;
     let ptbActive = false, ptbAnswered = false, ptbWaveAnim = null, ptbTimeout = null;
     let NUM_MINES = 3, minesActive = false, minesBet = 0;
@@ -738,8 +736,7 @@
     }
 
     // ══════════════════════════════════════════
-    // ЗАГРУЗКА ТРЕКОВ — только через свой бэкенд
-    // Убрали прямой Supabase-запрос с ключом на фронте
+    // ЗАГРУЗКА ТРЕКОВ
     // ══════════════════════════════════════════
     async function loadTracksData() {
         try {
@@ -754,7 +751,6 @@
             console.warn('Не удалось загрузить треки:', e);
         }
 
-        // Фолбэк если треки не пришли
         if (supabaseTracks.length === 0) {
             supabaseTracks = [
                 { id: 1, title: 'NIGHT CITY LIGHTS', cover_url: '/dslogo.png', mp3_url: '' },
@@ -762,12 +758,9 @@
             ];
         }
 
-        slotCovers = supabaseTracks
-            .filter(t => t.cover_url)
-            .map(t => t.cover_url);
+        slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
         if (slotCovers.length === 0) slotCovers = ['/dslogo.png'];
 
-        // Разблокируем кнопки игр, требующих треки
         const btnQuiz = document.getElementById('btnQuiz');
         if (btnQuiz) btnQuiz.disabled = false;
         const btnPtb = document.getElementById('btnPtb');
@@ -776,7 +769,7 @@
             printMsg('ptb', 'ТРЕКИ ЗАГРУЖЕНЫ — ГОТОВ', 'win');
         }
 
-        initReels(); // теперь вызывается ПОСЛЕ загрузки треков
+        initReels();
     }
 
     // ══════════════════════════════════════════
@@ -833,12 +826,9 @@
                 isDragging = true;
                 const cx = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
                 const cy = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
-                // Читаем текущую позицию из style (устанавливается при открытии)
                 const rect = npModal.getBoundingClientRect();
-                initialLeft = rect.left;
-                initialTop = rect.top;
+                initialLeft = rect.left; initialTop = rect.top;
                 startX = cx; startY = cy;
-                // Переводим в абсолютное позиционирование на момент перетаскивания
                 npModal.style.transform = 'none';
                 npModal.style.left = initialLeft + 'px';
                 npModal.style.top = initialTop + 'px';
@@ -860,7 +850,6 @@
             document.addEventListener('touchend', endDrag);
         }
 
-        // Инициализация рулетки (наполняем полосу сразу)
         initRouletteStrip();
     });
 
@@ -912,7 +901,6 @@
         if (!npModal) return;
         activeInputId = targetId;
         isDecimalAllowed = allowDecimal;
-        // Сбрасываем позицию в центр при каждом открытии
         npModal.style.transform = 'translate(-50%, -50%)';
         npModal.style.left = '50%';
         npModal.style.top = '50%';
@@ -956,9 +944,6 @@
     window.onload = async () => {
         initPlinko();
         initPtbWave();
-
-        // Загружаем треки до попытки авторизации,
-        // чтобы слоты/квиз не ждали auth
         loadTracksData();
 
         const token = getToken();
@@ -986,7 +971,6 @@
                     }
                     updateBalance(user.dscoin_balance || 0);
 
-                    // Подгружаем статус фермы
                     fetch(`${API_URL}/games/farm/status`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     })
@@ -1036,9 +1020,9 @@
             if (data.success && Array.isArray(data.leaders) && lb) {
                 lb.innerHTML = data.leaders.slice(0, 5).map((u, i) => {
                     const rc = i < 3 ? `rank-${i+1}` : '';
-                    const c = i === 0 ? '#ffea00' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)';
+                    const col = i === 0 ? '#ffea00' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)';
                     return `<div class="ld-item ${rc}" style="animation-delay:${i*0.08}s;">
-                        <div class="ld-rank" style="color:${c};text-shadow:0 0 10px ${c};">#${i+1}</div>
+                        <div class="ld-rank" style="color:${col};text-shadow:0 0 10px ${col};">#${i+1}</div>
                         <img src="${u.avatarUrl||'/dslogo.png'}" class="ld-avatar" onerror="this.onerror=null;this.src='/dslogo.png';">
                         <div class="ld-info">
                             <div class="ld-name">${u.nickname||u.username}</div>
@@ -1296,12 +1280,8 @@
     }
 
     // ══════════════════════════════════════════
-    // РУЛЕТКА — ИСПРАВЛЕНА: инициализация полосы
+    // РУЛЕТКА
     // ══════════════════════════════════════════
-    /**
-     * Заполняем полосу 80 ячейками при загрузке страницы.
-     * currentRIndex указывает на «видимую» центральную ячейку.
-     */
     function initRouletteStrip() {
         const strip = document.getElementById('rStrip');
         if (!strip) return;
@@ -1312,7 +1292,7 @@
             rCells.push(color);
             strip.appendChild(createRouletteCell(color));
         }
-        currentRIndex = 10; // начинаем с 11-й ячейки как «центральной»
+        currentRIndex = 10;
         updateRoulettePosition(0);
     }
 
@@ -1384,16 +1364,13 @@
             }
 
             const strip = document.getElementById('rStrip');
-            // Добавляем 30-50 новых ячеек для прокрутки
             const spinSteps = 30 + Math.floor(Math.random() * 10);
             for (let i = 0; i < spinSteps; i++) {
                 rCells.push(generateRouletteColor());
                 strip.appendChild(createRouletteCell(rCells[rCells.length - 1]));
             }
 
-            // Целевой индекс — предпоследняя из добавленных (финальный результат)
             const targetIndex = rCells.length - 2;
-            // Переписываем ячейку на серверный результат
             rCells[targetIndex] = data.resultColor;
             if (strip.children[targetIndex]) {
                 strip.children[targetIndex].className = `r-cell r-${data.resultColor}`;
@@ -1485,6 +1462,10 @@
                 body: JSON.stringify({ cellIndex: idx })
             });
             const data = await res.json();
+            if (!res.ok) {
+                printMsg('mines', data.error || 'ОШИБКА ХОДА', 'err');
+                return;
+            }
             if (data.status === 'lose') {
                 data.bombs.forEach(bIdx => {
                     const c = document.querySelector(`.mine-cell[data-idx='${bIdx}']`);
@@ -1521,6 +1502,8 @@
                 updateBalance(data.newBalance);
                 spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2);
                 printMsg('mines', `КЭШАУТ +${data.win} NC`, 'win');
+            } else {
+                printMsg('mines', data.error || 'ОШИБКА ВЫВОДА', 'err');
             }
         } catch (e) {
             printMsg('mines', 'Ошибка вывода', 'err');
@@ -1532,7 +1515,15 @@
 
     // ══════════════════════════════════════════
     // БЛЭКДЖЕК
+    // ФИКС: правильный расчёт очков для отображения
     // ══════════════════════════════════════════
+    function calcBJScore(hand) {
+        let score = hand.reduce((a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r, 10)), 0);
+        let aces = hand.filter(c => c.r === 'A').length;
+        while (score > 21 && aces > 0) { score -= 10; aces--; }
+        return score;
+    }
+
     function bjCardHTML(card, hidden = false) {
         if (hidden) return `<div class="bj-card hidden"></div>`;
         const red = ['♥', '♦'].includes(card.s);
@@ -1564,7 +1555,8 @@
             const pc = document.getElementById('bjPlayerCards'); if (pc) pc.innerHTML = data.playerHand.map(c => bjCardHTML(c)).join('');
             const dc = document.getElementById('bjDealerCards'); if (dc) dc.innerHTML = bjCardHTML(data.dealerCard) + bjCardHTML(null, true);
 
-            const pScore = data.playerHand.reduce((a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r)), 0);
+            // ФИКС: используем правильный calcBJScore
+            const pScore = calcBJScore(data.playerHand);
             const ps = document.getElementById('bjPlayerScore'); if (ps) ps.textContent = pScore;
             const dVal = data.dealerCard.r === 'A' ? 11 : ['J','Q','K'].includes(data.dealerCard.r) ? 10 : parseInt(data.dealerCard.r);
             const ds = document.getElementById('bjDealerScore'); if (ds) ds.textContent = dVal;
@@ -1582,7 +1574,7 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }
             });
             const data = await res.json();
-            if (data.error) return printMsg('bj', data.error, 'err');
+            if (!res.ok) { printMsg('bj', data.error || 'ОШИБКА', 'err'); return; }
 
             const pc = document.getElementById('bjPlayerCards'); if (pc) pc.innerHTML += bjCardHTML(data.card);
             const ps = document.getElementById('bjPlayerScore'); if (ps) ps.textContent = data.score;
@@ -1609,7 +1601,7 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }
             });
             const data = await res.json();
-            if (data.error) return printMsg('bj', data.error, 'err');
+            if (!res.ok) { printMsg('bj', data.error || 'ОШИБКА', 'err'); return; }
 
             const dc = document.getElementById('bjDealerCards'); if (dc) dc.innerHTML = data.dealerHand.map(c => bjCardHTML(c)).join('');
             const ds = document.getElementById('bjDealerScore'); if (ds) ds.textContent = data.dScore;
@@ -1617,7 +1609,7 @@
             updateBalance(data.newBalance);
 
             let msg = 'ДИЛЕР ПОБЕДИЛ', type = 'lose';
-            if (data.win > bjBet)     { msg = `ПОБЕДА! +${data.win} NC`; type = 'win'; spawnFloat('+' + (data.win - bjBet), innerWidth / 2 - 30, innerHeight / 2); }
+            if (data.win > bjBet)      { msg = `ПОБЕДА! +${data.win} NC`; type = 'win'; spawnFloat('+' + (data.win - bjBet), innerWidth / 2 - 30, innerHeight / 2); }
             else if (data.win === bjBet) { msg = 'НИЧЬЯ — ВОЗВРАТ'; type = 'err'; }
             printMsg('bj', msg, type);
             setTimeout(() => { const bd = document.getElementById('bjDealBtn'); if (bd) bd.disabled = false; }, 1000);
@@ -1628,6 +1620,7 @@
 
     // ══════════════════════════════════════════
     // КВИЗ
+    // ФИКС: trim на стороне фронта перед отправкой
     // ══════════════════════════════════════════
     async function startQuiz() {
         const bet = getBetValue('betQuiz');
@@ -1642,6 +1635,7 @@
             const data = await res.json();
             if (!res.ok) { printMsg('quiz', data.error, 'err'); if (btn) btn.disabled = false; return; }
 
+            // ФИКС: обновляем баланс сразу из ответа сервера (не дублируем вычитание)
             updateBalance(data.newBalance);
             quizActive = true;
 
@@ -1657,13 +1651,13 @@
             const hint = document.getElementById('quizHint');
             if (hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
 
-            // Безопасное создание кнопок через DOM
             const container = document.getElementById('quizOpts');
             if (container) {
                 container.innerHTML = '';
                 data.options.forEach(optText => {
                     const b = document.createElement('button');
                     b.className = 'quiz-opt';
+                    // ФИКС: сохраняем оригинальный текст в dataset для точного сравнения
                     b.dataset.answer = optText;
                     b.textContent = optText;
                     b.onclick = () => quizAnswer(b);
@@ -1679,6 +1673,7 @@
     async function quizAnswer(btn) {
         if (!quizActive) return;
         quizActive = false;
+        // ФИКС: передаём точный текст опции без лишних преобразований
         const chosen = btn.dataset.answer;
         try {
             const res = await fetch(`${API_URL}/games/quiz/answer`, {
@@ -1687,12 +1682,14 @@
                 body: JSON.stringify({ answer: chosen })
             });
             const data = await res.json();
+            if (!res.ok) { printMsg('quiz', data.error || 'ОШИБКА', 'err'); quizActive = false; return; }
 
             const cover = document.getElementById('quizCover');
             if (cover) cover.classList.remove('blurred');
 
             document.querySelectorAll('.quiz-opt').forEach(b => {
                 b.disabled = true;
+                // ФИКС: подсвечиваем правильный ответ через сравнение с correctTitle от сервера
                 if (b.dataset.answer.trim().toLowerCase() === (data.correctTitle || '').trim().toLowerCase()) {
                     b.classList.add('correct');
                 }
@@ -1707,7 +1704,7 @@
             } else {
                 quizStreak = 0;
                 btn.classList.add('wrong');
-                printMsg('quiz', 'НЕВЕРНО — СЕРИЯ СБРОШЕНА', 'lose');
+                printMsg('quiz', `НЕВЕРНО — ПРАВИЛЬНО: ${data.correctTitle}`, 'lose');
             }
 
             const qs = document.getElementById('quizStreak'); if (qs) qs.textContent = `СЕРИЯ: ${quizStreak} 🔥`;
@@ -1820,7 +1817,6 @@
                     const bucketIdx = data.results[i].bucket;
                     const mult = BUCKET_MULTS[bucketIdx];
 
-                    // Строим путь шара по треугольной сетке
                     let moves = [];
                     for (let m = 0; m < bucketIdx; m++) moves.push(1);
                     for (let m = 0; m < (PLINKO_ROWS - bucketIdx); m++) moves.push(0);
@@ -1850,6 +1846,7 @@
 
     // ══════════════════════════════════════════
     // PTB (УГАДАЙ ТРЕК)
+    // ФИКС: trim при отправке ответа
     // ══════════════════════════════════════════
     function initPtbWave() {
         const canvas = document.getElementById('ptbCanvas'); if (!canvas) return;
@@ -1890,8 +1887,10 @@
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                 body: JSON.stringify({ bet })
             });
-            if (!res.ok) { const d = await res.json(); printMsg('ptb', d.error, 'err'); if (btn) btn.disabled = false; return; }
-            updateBalance(userBalance - bet);
+            const data = await res.json();
+            if (!res.ok) { printMsg('ptb', data.error, 'err'); if (btn) btn.disabled = false; return; }
+            // ФИКС: обновляем баланс из ответа сервера
+            updateBalance(data.newBalance);
             ptbActive = true;
             ptbNextRound();
         } catch (e) {
@@ -1909,14 +1908,12 @@
             const data = await res.json();
             if (!res.ok) { printMsg('ptb', data.error || 'Ошибка раунда', 'err'); return; }
 
-            // Заголовок раунда
             const oldRound = document.getElementById('ptbRound'); if (oldRound) oldRound.remove();
             const container = document.getElementById('ptbOpts');
             if (container) container.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">РАУНД ${data.round} / 5</div>`);
 
             const pmt = document.getElementById('ptbPrompt'); if (pmt) pmt.textContent = 'Слушай фрагмент (10 сек)...';
 
-            // Аудио
             const audioPlayer = document.getElementById('ptbAudioPlayer');
             if (audioPlayer && data.mp3Url) {
                 audioPlayer.src = data.mp3Url;
@@ -1933,7 +1930,6 @@
                 };
             }
 
-            // Кнопки ответов — безопасно через DOM
             if (container) {
                 container.innerHTML = '';
                 data.options.forEach(optText => {
@@ -1958,6 +1954,7 @@
         if (audioPlayer) audioPlayer.pause();
         if (ptbTimeout) clearTimeout(ptbTimeout);
 
+        // ФИКС: передаём точный текст из dataset
         const chosen = btn.dataset.answer;
         try {
             const res = await fetch(`${API_URL}/games/ptb/answer`, {
@@ -1966,12 +1963,12 @@
                 body: JSON.stringify({ answer: chosen })
             });
             const data = await res.json();
-            if (data.error) return printMsg('ptb', data.error, 'err');
+            if (!res.ok) { printMsg('ptb', data.error || 'ОШИБКА', 'err'); ptbAnswered = false; return; }
 
             document.querySelectorAll('.ptb-opt').forEach(b => { b.disabled = true; });
 
             if (data.isCorrect) { btn.classList.add('correct'); printMsg('ptb', `ВЕРНО! ${data.correctAnswers}/5`, 'win'); }
-            else                { btn.classList.add('wrong');   printMsg('ptb', 'МИМО — ПРОДОЛЖАЙ', 'lose'); }
+            else                { btn.classList.add('wrong');   printMsg('ptb', `МИМО — ${data.correctAnswers}/5`, 'lose'); }
 
             if (data.isFinished) {
                 ptbActive = false;
@@ -1988,6 +1985,7 @@
             }
         } catch (e) {
             printMsg('ptb', 'Сбой проверки', 'err');
+            ptbAnswered = false;
         }
     }
     </script>
