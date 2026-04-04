@@ -784,11 +784,10 @@
     <audio id="ptbAudioPlayer" preload="auto" crossorigin="anonymous"></audio>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-
-    <script>
+<script>
     const API_URL = "https://dxtrslizze.onrender.com/api";
     
-    // ГЛОБАЛЬНЫЕ СТЕЙТЫ — вынесены наверх, чтобы избежать ReferenceError в любой момент
+    // ГЛОБАЛЬНЫЕ СТЕЙТЫ
     let userBalance = 0;
     let supabaseTracks = [];
     let slotCovers = ['/dslogo.png']; 
@@ -801,36 +800,26 @@
     let bjGameActive = false, bjBet = 0;
     let crashInterval = null;
 
-    // Получение токена
+    // ТОКЕН И ЭСКЕЙП
     function getToken() {
-        return localStorage.getItem('token') || 
-               localStorage.getItem('dxtr_token') || 
-               localStorage.getItem('accessToken');
+        return localStorage.getItem('token') || localStorage.getItem('dxtr_token') || localStorage.getItem('accessToken');
     }
 
-    // ХЕЛПЕР ДЛЯ ЭСКРАПИРОВАНИЯ СТРОК
     function escapeHTML(str) {
-        return String(str)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+        return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    // РЕАЛТАЙМ ЧЕКЕР АНИМАЦИЙ
     function isAnyGameActive() {
         return plinkoAnimating || isRouletteSpinning || ptbActive || minesActive || quizActive || bjGameActive || crashInterval;
     }
 
-    // БЕЗОПАСНОЕ ОБНОВЛЕНИЕ БАЛАНСА
     function updateBalance(val){
         userBalance = val;
         const el = document.getElementById('uiBalance'); 
         if(el) el.innerText = val;
     }
 
-    // SOCKET.IO БЕЗОПАСНЫЙ ИНИТ (защита от краша при недоступном CDN)
+    // SOCKET.IO БЕЗОПАСНЫЙ ИНИТ
     let socket = null;
     if (typeof io !== 'undefined') {
         socket = io("https://dxtrslizze.onrender.com/");
@@ -840,15 +829,17 @@
         });
     } else {
         console.warn("Socket.io не загрузился (скорее всего, блокировщик рекламы).");
-        const counterEl = document.getElementById('onlineCount');
-        if(counterEl) counterEl.textContent = 'ОФФЛАЙН';
+        document.addEventListener('DOMContentLoaded', () => {
+            const counterEl = document.getElementById('onlineCount');
+            if(counterEl) counterEl.textContent = 'ОФФЛАЙН';
+        });
     }
 
     /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) ── */
     async function loadTracksData() {
         const fallbackData = [
-            { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', mp3_url: ambientTracks[0] || 'ambient1.mp3' },
-            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', mp3_url: ambientTracks[1] || 'ambient2.mp3' }
+            { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', mp3_url: 'ambient1.mp3' },
+            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', mp3_url: 'ambient2.mp3' }
         ];
 
         try {
@@ -871,64 +862,99 @@
         slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
         if(slotCovers.length === 0) slotCovers = ['/dslogo.png'];
 
-        initReels(); 
+        if (typeof initReels === 'function') initReels(); 
         
         const hint = document.getElementById('quizHint');
         if(hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
-        
         const btnQuiz = document.getElementById('btnQuiz');
         if(btnQuiz) btnQuiz.disabled = false;
-        
         const msgPtb = document.getElementById('msg-ptb');
         if(msgPtb) msgPtb.textContent = "";
-        
         const btnPtb = document.getElementById('btnPtb');
         if(btnPtb) btnPtb.disabled = false;
     }
 
-    /* ── ЧАСТИЦЫ НА ФОНЕ ── */
-    (function(){
+    /* ── БЕЗОПАСНАЯ ПРИВЯЗКА DOM И UI ── */
+    document.addEventListener('DOMContentLoaded', () => {
+        // ЧАСТИЦЫ НА ФОНЕ
         const c = document.getElementById('particle-canvas');
-        const ctx = c.getContext('2d');
-        let W, H, particles = [];
-        
-        function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
-        resize(); window.addEventListener('resize', resize);
-        
-        const COLORS = ['rgba(0,229,255,', 'rgba(157,0,255,', 'rgba(255,0,127,', 'rgba(0,255,136,'];
-        
-        class Particle {
-            constructor(){
-                this.x = Math.random() * W; this.y = Math.random() * H;
-                this.r = Math.random() * 1.5 + 0.5;
-                this.vx = (Math.random() - 0.5) * 0.3; this.vy = -Math.random() * 0.4 - 0.1;
-                this.alpha = Math.random() * 0.6 + 0.1;
-                this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-                this.life = 0; this.maxLife = 200 + Math.random() * 300;
+        if (c) {
+            const ctx = c.getContext('2d');
+            let W, H, particles = [];
+            function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+            resize(); window.addEventListener('resize', resize);
+            const COLORS = ['rgba(0,229,255,', 'rgba(157,0,255,', 'rgba(255,0,127,', 'rgba(0,255,136,'];
+            class Particle {
+                constructor(){
+                    this.x = Math.random() * W; this.y = Math.random() * H;
+                    this.r = Math.random() * 1.5 + 0.5;
+                    this.vx = (Math.random() - 0.5) * 0.3; this.vy = -Math.random() * 0.4 - 0.1;
+                    this.alpha = Math.random() * 0.6 + 0.1;
+                    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                    this.life = 0; this.maxLife = 200 + Math.random() * 300;
+                }
+                update(){
+                    this.x += this.vx; this.y += this.vy; this.life++;
+                    this.alpha = this.life < 50 ? this.life/50*0.6 : Math.max(0,(1 - this.life/this.maxLife)*0.6);
+                }
+                draw(){
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+                    ctx.fillStyle = this.color + this.alpha + ')'; ctx.fill();
+                }
             }
-            update(){
-                this.x += this.vx; this.y += this.vy; this.life++;
-                this.alpha = this.life < 50 ? this.life/50*0.6 : Math.max(0,(1 - this.life/this.maxLife)*0.6);
+            for(let i=0;i<120;i++) particles.push(new Particle());
+            function loop(){
+                ctx.clearRect(0,0,W,H);
+                particles.forEach((p,i) => {
+                    p.update(); p.draw();
+                    if(p.life >= p.maxLife || p.y < 0) particles[i] = new Particle();
+                });
+                requestAnimationFrame(loop);
             }
-            draw(){
-                ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-                ctx.fillStyle = this.color + this.alpha + ')'; ctx.fill();
-            }
+            loop();
         }
-        
-        for(let i=0;i<120;i++) particles.push(new Particle());
-        function loop(){
-            ctx.clearRect(0,0,W,H);
-            particles.forEach((p,i) => {
-                p.update(); p.draw();
-                if(p.life >= p.maxLife || p.y < 0) particles[i] = new Particle();
-            });
-            requestAnimationFrame(loop);
-        }
-        loop();
-    })();
 
-    /* ── FLOAT WIN ── */
+        // БУРГЕР МЕНЮ
+        const burgerBtn = document.getElementById('burgerBtn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const closeSidebar = document.getElementById('closeSidebar');
+
+        function toggleMenu(){ 
+            if(sidebar) sidebar.classList.toggle('active'); 
+            if(sidebarOverlay) sidebarOverlay.classList.toggle('active'); 
+        }
+        if(burgerBtn) burgerBtn.onclick = toggleMenu; 
+        if(closeSidebar) closeSidebar.onclick = toggleMenu; 
+        if(sidebarOverlay) sidebarOverlay.onclick = toggleMenu;
+
+        // NUMPAD 
+        const npModal = document.getElementById('numpad-modal');
+        const npHeader = document.getElementById('np-header');
+        if(npHeader && npModal) {
+            let isDragging = false, startX, startY, initialX, initialY;
+            function ds(e){ 
+                isDragging = true; 
+                if(e.type === 'touchstart'){ startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
+                else { startX = e.clientX; startY = e.clientY; } 
+                initialX = npModal.offsetLeft; 
+                initialY = npModal.offsetTop; 
+            }
+            function dm(e){ 
+                if(!isDragging) return; e.preventDefault(); 
+                let cx, cy; 
+                if(e.type === 'touchmove'){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+                else { cx = e.clientX; cy = e.clientY; } 
+                npModal.style.left = (initialX + (cx - startX)) + 'px'; 
+                npModal.style.top = (initialY + (cy - startY)) + 'px'; 
+            }
+            function de(){ isDragging = false; }
+            npHeader.addEventListener('mousedown', ds); document.addEventListener('mousemove', dm); document.addEventListener('mouseup', de);
+            npHeader.addEventListener('touchstart', ds, {passive:true}); document.addEventListener('touchmove', dm, {passive:false}); document.addEventListener('touchend', de);
+        }
+    });
+
+    /* ── ГЛОБАЛЬНЫЕ UI ФУНКЦИИ ── */
     function spawnFloat(text, x, y){
         const el = document.createElement('div');
         el.className = 'float-win'; el.textContent = text;
@@ -937,88 +963,9 @@
         setTimeout(() => el.remove(), 1500);
     }
 
-    /* ── МУЗЫКА ── */
-    const ambientTracks = [];
-    for(let i=1; i<=10; i++) ambientTracks.push(`ambient${i}.mp3`);
-    let currentTrackIndex = 0, isMusicPlaying = false;
-    const audio1 = document.getElementById('bgm1'), audio2 = document.getElementById('bgm2');
-    let activeAudio = audio1, inactiveAudio = audio2;
-    
-    audio1.src = ambientTracks[0]; audio2.src = ambientTracks[1];
-
-    function toggleMusic(){
-        const btn = document.getElementById('musicBtn');
-        if(isMusicPlaying){ 
-            activeAudio.pause(); btn.classList.remove('playing'); 
-            btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>'; 
-        } else { 
-            activeAudio.volume = 0.2; activeAudio.play().catch(()=>{}); 
-            btn.classList.add('playing'); btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>'; 
-            scheduleNextTrack(); 
-        }
-        isMusicPlaying = !isMusicPlaying;
-    }
-
-    function scheduleNextTrack(){
-        activeAudio.onended = () => {
-            currentTrackIndex = (currentTrackIndex + 1) % ambientTracks.length;
-            inactiveAudio.src = ambientTracks[currentTrackIndex]; 
-            inactiveAudio.volume = 0.2; inactiveAudio.play().catch(()=>{});
-            let t = activeAudio; activeAudio = inactiveAudio; inactiveAudio = t;
-            scheduleNextTrack();
-        };
-    }
-    document.getElementById('musicBtn').onclick = toggleMusic;
-
-    /* ── INIT & AUTH ── */
-    window.onload = async () => {
-        initPlinko(); initPtbWave(); loadTracksData(); 
-        const currentToken = getToken();
-        
-        if(currentToken){
-            try{
-                const lockScreen = document.getElementById('authLock');
-                if(lockScreen) lockScreen.querySelector('h2').innerText = "ПОДКЛЮЧЕНИЕ...";
-                
-                const res = await fetch(`${API_URL}/auth/me`,{ headers:{'Authorization':`Bearer ${currentToken}`} });
-                
-                if(res.ok){
-                    const data = await res.json();
-                    const user = data.user || data; 
-                    
-                    if(user && (data.success !== false)){
-                        document.getElementById('authLock').style.display = 'none';
-                        document.getElementById('globalBalanceWrap').classList.add('active');
-                        
-                        if(user.avatarUrl && user.avatarUrl !== 'dslogo.png'){
-                            const av = document.getElementById('userAvatar'); 
-                            if(av) av.src = user.avatarUrl;
-                        }
-                        
-                        updateBalance(user.dscoin_balance || 0);
-                        
-                        // ИСТИННАЯ СИНХРОНИЗАЦИЯ ФАРМА НАПРЯМУЮ С СЕРВЕРОМ
-                        fetch(`${API_URL}/games/farm/status`, { headers: { 'Authorization': `Bearer ${currentToken}` } })
-                            .then(r => r.json())
-                            .then(d => {
-                                if (d.success && d.farm) {
-                                    farmState = d.farm;
-                                    renderFarmUI();
-                                }
-                            }).catch(e => console.log('Ошибка проверки фарма:', e));
-
-                        fetchLeaderboard();
-                    } else lockUI("ОШИБКА АВТОРИЗАЦИИ");
-                } else lockUI("СЕССИЯ ИСТЕКЛА");
-            }catch(e){ lockUI("СЕРВЕР НЕДОСТУПЕН"); }
-        } else lockUI("СИСТЕМА ЗАБЛОКИРОВАНА");
-
-        setInterval(fetchLeaderboard, 5000); 
-    };
-
     function lockUI(msg){ 
         const l = document.getElementById('authLock'); 
-        if(l) { l.style.opacity = '1'; l.style.display = 'flex'; if(msg) l.querySelector('h2').innerText = msg; }
+        if(l) { l.style.opacity = '1'; l.style.display = 'flex'; if(msg) { const h2 = l.querySelector('h2'); if(h2) h2.innerText = msg; } }
     }
 
     function printMsg(id, text, type){
@@ -1026,59 +973,30 @@
         if(el){ el.className = 'sys-msg sys-' + type; el.innerHTML = text.replace(/NC/g, '<img src="/valuta.png" class="valuta-icon">'); }
     }
 
-    /* ── МЕНЮ И ТАБЫ ── */
-    const burgerBtn = document.getElementById('burgerBtn');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-    
-    function toggleMenu(){ sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
-    burgerBtn.onclick = toggleMenu; document.getElementById('closeSidebar').onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
-
     function switchTab(id, btn){
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         const t = document.getElementById('tab-' + id); 
         if(t) t.classList.add('active');
         if(btn) btn.classList.add('active');
-        if(id === 'roulette') setTimeout(() => updateRoulettePosition(0), 10);
-        if(id === 'plinko') initPlinko();
+        if(id === 'roulette' && typeof updateRoulettePosition === 'function') setTimeout(() => updateRoulettePosition(0), 10);
+        if(id === 'plinko' && typeof initPlinko === 'function') initPlinko();
     }
 
-    /* ── NUMPAD (ИСПРАВЛЕНО ДЕРГАНИЕ) ── */
-    const npModal = document.getElementById('numpad-modal');
-    const npHeader = document.getElementById('np-header');
-    let isDragging = false, startX, startY, initialX, initialY;
-    
-    npHeader.addEventListener('mousedown', ds); document.addEventListener('mousemove', dm); document.addEventListener('mouseup', de);
-    npHeader.addEventListener('touchstart', ds, {passive:true}); document.addEventListener('touchmove', dm, {passive:false}); document.addEventListener('touchend', de);
-    
-    function ds(e){ 
-        isDragging = true; 
-        if(e.type === 'touchstart'){ startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
-        else { startX = e.clientX; startY = e.clientY; } 
-        // Исправлен баг, из-за которого окно прыгало при клике
-        initialX = npModal.offsetLeft; 
-        initialY = npModal.offsetTop; 
-    }
-    function dm(e){ 
-        if(!isDragging) return; e.preventDefault(); 
-        let cx, cy; 
-        if(e.type === 'touchmove'){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
-        else { cx = e.clientX; cy = e.clientY; } 
-        npModal.style.left = (initialX + (cx - startX)) + 'px'; 
-        npModal.style.top = (initialY + (cy - startY)) + 'px'; 
-    }
-    function de(){ isDragging = false; }
-    
+    // Ввод ставки
     let activeInputId = null, isDecimalAllowed = false;
-    
     function openNumpad(targetId, allowDecimal = false){ 
+        const npModal = document.getElementById('numpad-modal');
+        if(!npModal) return;
         activeInputId = targetId; isDecimalAllowed = allowDecimal; 
         npModal.style.animation = 'npPop 0.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards'; 
         npModal.style.left = '50%'; npModal.style.top = '50%'; npModal.classList.add('active'); 
     }
-    function closeNumpad(){ npModal.classList.remove('active'); activeInputId = null; }
-    
+    function closeNumpad(){ 
+        const npModal = document.getElementById('numpad-modal');
+        if(npModal) npModal.classList.remove('active'); 
+        activeInputId = null; 
+    }
     function npPress(val){
         if(!activeInputId) return; 
         const disp = document.getElementById(activeInputId + '_disp'); 
@@ -1093,8 +1011,6 @@
         }
         disp.innerText = cur;
     }
-    
-    // БЕЗОПАСНЫЙ ПАРСИНГ: Защита от NaN, если инпут сломан
     function getBetValue(id, isFloat = false){ 
         const el = document.getElementById(id + '_disp'); 
         if(!el) return 0; 
@@ -1102,11 +1018,49 @@
         return isNaN(val) ? 0 : val; 
     }
 
-    // ==========================================
-    // СЕТЕВЫЕ ИГРЫ (SERVER-SIDE)
-    // ==========================================
+    /* ── INIT & AUTH ── */
+    window.onload = async () => {
+        // БЕЗОПАСНЫЙ ВЫЗОВ — если функции обрезались, ошибки не будет
+        if (typeof initPlinko === 'function') initPlinko(); 
+        if (typeof initPtbWave === 'function') initPtbWave(); 
+        if (typeof loadTracksData === 'function') loadTracksData(); 
+        
+        const currentToken = getToken();
+        if(currentToken){
+            try{
+                const lockScreen = document.getElementById('authLock');
+                if(lockScreen) { const h2 = lockScreen.querySelector('h2'); if(h2) h2.innerText = "ПОДКЛЮЧЕНИЕ..."; }
+                
+                const res = await fetch(`${API_URL}/auth/me`,{ headers:{'Authorization':`Bearer ${currentToken}`} });
+                if(res.ok){
+                    const data = await res.json();
+                    const user = data.user || data; 
+                    
+                    if(user && (data.success !== false)){
+                        if(document.getElementById('authLock')) document.getElementById('authLock').style.display = 'none';
+                        if(document.getElementById('globalBalanceWrap')) document.getElementById('globalBalanceWrap').classList.add('active');
+                        
+                        if(user.avatarUrl && user.avatarUrl !== 'dslogo.png'){
+                            const av = document.getElementById('userAvatar'); 
+                            if(av) av.src = user.avatarUrl;
+                        }
+                        updateBalance(user.dscoin_balance || 0);
+                        
+                        fetch(`${API_URL}/games/farm/status`, { headers: { 'Authorization': `Bearer ${currentToken}` } })
+                            .then(r => r.json())
+                            .then(d => { if (d.success && d.farm) { farmState = d.farm; renderFarmUI(); } })
+                            .catch(e => console.log('Ошибка фарма:', e));
 
-    /* ── БАЗА И ЕЖЕДНЕВКА ── */
+                        fetchLeaderboard();
+                    } else lockUI("ОШИБКА АВТОРИЗАЦИИ");
+                } else lockUI("СЕССИЯ ИСТЕКЛА");
+            }catch(e){ lockUI("СЕРВЕР НЕДОСТУПЕН"); }
+        } else lockUI("СИСТЕМА ЗАБЛОКИРОВАНА");
+
+        setInterval(fetchLeaderboard, 5000); 
+    };
+
+    /* ── ИГРЫ И СЕРВЕРНАЯ ЛОГИКА ── */
     async function claimDaily(){
         const btn = document.getElementById('btnDaily'); if(btn) btn.disabled = true;
         try{
@@ -1123,7 +1077,6 @@
             const res = await fetch(`${API_URL}/games/leaderboard`);
             const data = await res.json();
             const lb = document.getElementById('leaderboardData');
-            // Добавил проверку Array.isArray, чтобы не крашилось, если с сервера прилетит мусор
             if(data.success && Array.isArray(data.leaders) && lb){
                 lb.innerHTML = data.leaders.slice(0, 5).map((u, i) => {
                     let rc = i < 3 ? `rank-${i+1}` : ''; 
@@ -1142,33 +1095,28 @@
         } catch(e) {}
     }
 
-    /* ── ФАРМ ── */
     const timeUpgrades = [{val:30, cost:750}, {val:25, cost:1500}, {val:20, cost:3000}, {val:15, cost:5000}, {val:10, cost:10000}, {val:5, cost:null}];
     const incomeUpgrades = [{val:2, cost:750}, {val:4, cost:1500}, {val:6, cost:3000}, {val:8, cost:5000}, {val:10, cost:10000}, {val:15, cost:17500}, {val:20, cost:null}];
-    
     function renderFarmUI(){ 
         const lo = document.getElementById('farm-locked'); const ac = document.getElementById('farm-active'); 
         if(!lo || !ac) return; 
-        
         if(!farmState.active){ lo.style.display = 'block'; ac.style.display = 'none'; } 
         else { 
             lo.style.display = 'none'; ac.style.display = 'flex'; 
             const td = timeUpgrades[farmState.timeLevel] || timeUpgrades[timeUpgrades.length-1]; 
             const id = incomeUpgrades[farmState.incomeLevel] || incomeUpgrades[incomeUpgrades.length-1]; 
-            
-            document.getElementById('fTimeVal').innerHTML = `<span style="font-size:0.45em; color:var(--text-muted); vertical-align:middle; margin-right:6px;">УР.${farmState.timeLevel}</span>${td.val}`; 
-            document.getElementById('fIncVal').innerHTML = `<span style="font-size:0.45em; color:var(--text-muted); vertical-align:middle; margin-right:6px;">УР.${farmState.incomeLevel}</span>+${id.val}`; 
+            const tv = document.getElementById('fTimeVal'); if(tv) tv.innerHTML = `<span style="font-size:0.45em; color:var(--text-muted); vertical-align:middle; margin-right:6px;">УР.${farmState.timeLevel}</span>${td.val}`; 
+            const iv = document.getElementById('fIncVal'); if(iv) iv.innerHTML = `<span style="font-size:0.45em; color:var(--text-muted); vertical-align:middle; margin-right:6px;">УР.${farmState.incomeLevel}</span>+${id.val}`; 
             
             const bt = document.getElementById('btnUpTime'); 
             if(bt){ 
                 if(td.cost === null){ bt.disabled = true; bt.innerHTML = '<span>МАКС. УРОВЕНЬ</span>'; } 
-                else { bt.disabled = false; document.getElementById('fTimeCostDisplay').innerHTML = `${td.cost} <img src="/valuta.png" class="valuta-icon">`; }
+                else { bt.disabled = false; const c = document.getElementById('fTimeCostDisplay'); if(c) c.innerHTML = `${td.cost} <img src="/valuta.png" class="valuta-icon">`; }
             } 
-            
             const bi = document.getElementById('btnUpInc'); 
             if(bi){ 
                 if(id.cost === null){ bi.disabled = true; bi.innerHTML = '<span>МАКС. УРОВЕНЬ</span>'; } 
-                else { bi.disabled = false; document.getElementById('fIncCostDisplay').innerHTML = `${id.cost} <img src="/valuta.png" class="valuta-icon">`; }
+                else { bi.disabled = false; const c = document.getElementById('fIncCostDisplay'); if(c) c.innerHTML = `${id.cost} <img src="/valuta.png" class="valuta-icon">`; }
             } 
         } 
     }
@@ -1186,10 +1134,7 @@
     
     async function upgradeFarm(type){ 
         try{ 
-            const res = await fetch(`${API_URL}/games/farm/upgrade`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                body: JSON.stringify({type})
-            }); 
+            const res = await fetch(`${API_URL}/games/farm/upgrade`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({type}) }); 
             const data = await res.json(); 
             if(res.ok) {
                 updateBalance(data.newBalance); 
@@ -1199,15 +1144,12 @@
         }catch(e){ printMsg('farm', 'ОШИБКА СЕТИ', 'err'); } 
     }
 
-    /* ── СЛОТЫ, ДАЙС, КРАШ, РУЛЕТКА ── */
     function initReels(){
         [1, 2, 3].forEach(id => {
             const strip = document.getElementById('reel' + id); if(!strip) return;
             let html = ''; 
             for(let j=0; j<21; j++) html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}">`;
-            strip.innerHTML = html;
-            strip.style.transition = 'none'; 
-            strip.style.transform = 'translateY(0px)';
+            strip.innerHTML = html; strip.style.transition = 'none'; strip.style.transform = 'translateY(0px)';
         });
     }
 
@@ -1226,7 +1168,7 @@
                 const finalImg = (data.items && data.items[i] && data.items[i].cover_url) ? data.items[i].cover_url : slotCovers[0];
                 html += `<img src="${finalImg}">`;
                 strip.innerHTML = html; strip.style.transition = 'none'; strip.style.transform = 'translateY(0px)';
-                void strip.offsetWidth; // trigger reflow
+                void strip.offsetWidth; 
                 strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.15,0.85,0.15,1)`; 
                 strip.style.transform = `translateY(-${20 * (strip.children[0].offsetHeight || 145)}px)`;
             });
@@ -1241,7 +1183,6 @@
         }catch(e){ if(btn) btn.disabled = false; printMsg('slots', 'Сбой сети', 'err'); initReels(); }
     }
 
-    let currentDice = null;
     function selectDice(choice){ 
         currentDice = choice; document.querySelectorAll('.d-opt').forEach(b => b.classList.remove('active')); 
         const o = document.getElementById('d-opt-' + choice); if(o) o.classList.add('active'); 
@@ -1313,15 +1254,6 @@
         printMsg('roulette', 'ЦВЕТ УТВЕРЖДЁН', 'err'); 
     }
     
-    function initRoulette(){ 
-        const strip = document.getElementById('rStrip'); if(!strip) return; strip.innerHTML = ''; rCells = []; 
-        for(let i=0; i<40; i++){ 
-            let c = 'purple', r = Math.random(); if(r < 0.05) c = 'gold'; else if(r < 0.525) c = 'cyan'; 
-            rCells.push(c); strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold'?'14×':'2×'}</div>`); 
-        }
-    }
-    initRoulette();
-    
     function updateRoulettePosition(t=0){ 
         const strip = document.getElementById('rStrip'); const wheel = document.querySelector('.roulette-wheel'); const cell = document.querySelector('.r-cell'); 
         if(!strip || !wheel || !cell) return; 
@@ -1362,18 +1294,15 @@
     }
     function resetRouletteState(){ const btn = document.getElementById('btnRoulette'); if(btn) btn.disabled = false; document.querySelectorAll('.r-opt').forEach(b => b.disabled = false); isRouletteSpinning = false; }
 
-    /* ── MINES ── */
-    const TOTAL_CELLS = 25;
-    
     function changeMinesCount(delta) { 
         if(minesActive) return; NUM_MINES += delta; 
         if(NUM_MINES < 3) NUM_MINES = 3; if(NUM_MINES > 20) NUM_MINES = 20; 
-        document.getElementById('mineCount').textContent = NUM_MINES; 
+        const mc = document.getElementById('mineCount'); if(mc) mc.textContent = NUM_MINES; 
     }
     
     function buildMinesGrid(){ 
-        const grid = document.getElementById('minesGrid'); grid.innerHTML = ''; 
-        for(let i=0; i<TOTAL_CELLS; i++){ 
+        const grid = document.getElementById('minesGrid'); if(!grid) return; grid.innerHTML = ''; 
+        for(let i=0; i<25; i++){ 
             const cell = document.createElement('div'); cell.className = 'mine-cell'; cell.dataset.idx = i; 
             cell.addEventListener('click', () => mineClick(i, cell)); grid.appendChild(cell); 
         } 
@@ -1382,59 +1311,54 @@
     async function startMines(){ 
         minesBet = getBetValue('betMines'); 
         if(minesBet <= 0 || minesBet > userBalance) return printMsg('mines', 'ОШИБКА СТАВКИ', 'err'); 
-        
-        const btn = document.getElementById('btnMines'); btn.disabled = true;
+        const btn = document.getElementById('btnMines'); if(btn) btn.disabled = true;
         
         try {
-            const res = await fetch(`${API_URL}/games/mines/start`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                body: JSON.stringify({ bet: minesBet, minesCount: NUM_MINES })
-            });
+            const res = await fetch(`${API_URL}/games/mines/start`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet: minesBet, minesCount: NUM_MINES }) });
             const data = await res.json();
-            if(!res.ok) { printMsg('mines', data.error, 'err'); btn.disabled = false; return; }
+            if(!res.ok) { printMsg('mines', data.error, 'err'); if(btn) btn.disabled = false; return; }
             
-            updateBalance(data.newBalance); 
-            minesActive = true; 
+            updateBalance(data.newBalance); minesActive = true; 
+            const cb = document.getElementById('minesCashoutBtn'); if(cb) cb.disabled = false; 
+            const mm = document.getElementById('minesMinus'); if(mm) mm.disabled = true; 
+            const mp = document.getElementById('minesPlus'); if(mp) mp.disabled = true; 
             
-            document.getElementById('minesCashoutBtn').disabled = false; 
-            document.getElementById('minesMinus').disabled = true; document.getElementById('minesPlus').disabled = true; 
-            
-            buildMinesGrid(); document.getElementById('minesMult').textContent = '×1.00'; document.getElementById('mineOpened').textContent = '0'; document.getElementById('minesCashoutAmt').textContent = minesBet;
+            buildMinesGrid(); 
+            const multEl = document.getElementById('minesMult'); if(multEl) multEl.textContent = '×1.00'; 
+            const mo = document.getElementById('mineOpened'); if(mo) mo.textContent = '0'; 
+            const amt = document.getElementById('minesCashoutAmt'); if(amt) amt.textContent = minesBet;
             printMsg('mines', 'ИЩИ КРИСТАЛЛЫ!', 'win'); 
-        } catch(e) { printMsg('mines', 'Ошибка сети', 'err'); btn.disabled = false; }
+        } catch(e) { printMsg('mines', 'Ошибка сети', 'err'); if(btn) btn.disabled = false; }
     }
     
     async function mineClick(idx, cell){ 
         if(!minesActive || cell.classList.contains('revealed') || cell.classList.contains('exploded')) return; 
-        
         try {
-            const res = await fetch(`${API_URL}/games/mines/step`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                body: JSON.stringify({ cellIndex: idx })
-            });
+            const res = await fetch(`${API_URL}/games/mines/step`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ cellIndex: idx }) });
             const data = await res.json();
-            
             if (data.status === 'lose') {
                 data.bombs.forEach(bIdx => {
                     const c = document.querySelector(`.mine-cell[data-idx='${bIdx}']`);
                     if(c) { c.classList.add('exploded'); c.textContent = '💣'; }
                 });
                 minesActive = false; 
-                document.getElementById('minesCashoutBtn').disabled = true; document.getElementById('btnMines').disabled = false; 
-                document.getElementById('minesMinus').disabled = false; document.getElementById('minesPlus').disabled = false; 
+                const cb = document.getElementById('minesCashoutBtn'); if(cb) cb.disabled = true; 
+                const bm = document.getElementById('btnMines'); if(bm) bm.disabled = false; 
+                const mm = document.getElementById('minesMinus'); if(mm) mm.disabled = false; 
+                const mp = document.getElementById('minesPlus'); if(mp) mp.disabled = false; 
                 printMsg('mines', 'БОМБА! ПРОИГРЫШ', 'lose'); 
             } else if (data.status === 'safe') {
                 cell.classList.add('safe', 'revealed'); cell.textContent = '💎'; 
-                document.getElementById('minesMult').textContent = '×' + data.multiplier.toFixed(2); 
-                document.getElementById('mineOpened').textContent = data.openedCount; 
-                document.getElementById('minesCashoutAmt').textContent = Math.floor(minesBet * data.multiplier); 
+                const multEl = document.getElementById('minesMult'); if(multEl) multEl.textContent = '×' + data.multiplier.toFixed(2); 
+                const mo = document.getElementById('mineOpened'); if(mo) mo.textContent = data.openedCount; 
+                const amt = document.getElementById('minesCashoutAmt'); if(amt) amt.textContent = Math.floor(minesBet * data.multiplier); 
             }
         } catch(e) { printMsg('mines', 'Ошибка шага', 'err'); }
     }
     
     async function minesCashout(){ 
-        if(!minesActive) return; minesActive = false; document.getElementById('minesCashoutBtn').disabled = true;
-        
+        if(!minesActive) return; minesActive = false; 
+        const cb = document.getElementById('minesCashoutBtn'); if(cb) cb.disabled = true;
         try {
             const res = await fetch(`${API_URL}/games/mines/cashout`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
@@ -1443,11 +1367,11 @@
                 printMsg('mines', `КЭШАУТ +${data.win} NC`, 'win'); 
             }
         } catch(e) { printMsg('mines', 'Ошибка вывода', 'err'); }
-        
-        document.getElementById('btnMines').disabled = false; document.getElementById('minesMinus').disabled = false; document.getElementById('minesPlus').disabled = false; 
+        const bm = document.getElementById('btnMines'); if(bm) bm.disabled = false; 
+        const mm = document.getElementById('minesMinus'); if(mm) mm.disabled = false; 
+        const mp = document.getElementById('minesPlus'); if(mp) mp.disabled = false; 
     }
 
-    /* ── БЛЭКДЖЕК ── */
     function bjCardHTML(card, hidden = false){ 
         if(hidden) return `<div class="bj-card hidden"></div>`; 
         const red = ['♥', '♦'].includes(card.s); 
@@ -1456,27 +1380,25 @@
     
     async function bjDeal(){ 
         bjBet = getBetValue('betBJ'); if(bjBet <= 0 || bjBet > userBalance) return printMsg('bj', 'ОШИБКА СТАВКИ', 'err'); 
-        const btn = document.getElementById('bjDealBtn'); btn.disabled = true;
-        
+        const btn = document.getElementById('bjDealBtn'); if(btn) btn.disabled = true;
         try {
-            const res = await fetch(`${API_URL}/games/bj/start`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet: bjBet })
-            });
+            const res = await fetch(`${API_URL}/games/bj/start`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet: bjBet }) });
             const data = await res.json();
-            if(!res.ok) { printMsg('bj', data.error, 'err'); btn.disabled = false; return; }
+            if(!res.ok) { printMsg('bj', data.error, 'err'); if(btn) btn.disabled = false; return; }
             
             updateBalance(data.newBalance); bjGameActive = true; 
-            document.getElementById('bjHitBtn').disabled = false; document.getElementById('bjStandBtn').disabled = false; 
+            const hb = document.getElementById('bjHitBtn'); if(hb) hb.disabled = false; 
+            const sb = document.getElementById('bjStandBtn'); if(sb) sb.disabled = false; 
             
-            document.getElementById('bjPlayerCards').innerHTML = data.playerHand.map(c => bjCardHTML(c)).join(''); 
-            document.getElementById('bjDealerCards').innerHTML = bjCardHTML(data.dealerCard) + bjCardHTML(null, true); 
+            const pc = document.getElementById('bjPlayerCards'); if(pc) pc.innerHTML = data.playerHand.map(c => bjCardHTML(c)).join(''); 
+            const dc = document.getElementById('bjDealerCards'); if(dc) dc.innerHTML = bjCardHTML(data.dealerCard) + bjCardHTML(null, true); 
             
             const pScore = data.playerHand.reduce((a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r)), 0);
-            document.getElementById('bjPlayerScore').textContent = pScore; 
-            document.getElementById('bjDealerScore').textContent = (data.dealerCard.r === 'A' ? 11 : ['J','Q','K'].includes(data.dealerCard.r) ? 10 : parseInt(data.dealerCard.r)); 
+            const ps = document.getElementById('bjPlayerScore'); if(ps) ps.textContent = pScore; 
+            const ds = document.getElementById('bjDealerScore'); if(ds) ds.textContent = (data.dealerCard.r === 'A' ? 11 : ['J','Q','K'].includes(data.dealerCard.r) ? 10 : parseInt(data.dealerCard.r)); 
             
             printMsg('bj', '', ''); 
-        } catch(e) { printMsg('bj', 'Сбой', 'err'); btn.disabled = false; }
+        } catch(e) { printMsg('bj', 'Сбой', 'err'); if(btn) btn.disabled = false; }
     }
     
     async function bjHit(){ 
@@ -1484,91 +1406,69 @@
         try {
             const res = await fetch(`${API_URL}/games/bj/hit`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
-            
-            document.getElementById('bjPlayerCards').innerHTML += bjCardHTML(data.card); 
-            document.getElementById('bjPlayerScore').textContent = data.score; 
+            const pc = document.getElementById('bjPlayerCards'); if(pc) pc.innerHTML += bjCardHTML(data.card); 
+            const ps = document.getElementById('bjPlayerScore'); if(ps) ps.textContent = data.score; 
             
             if(data.status === 'bust'){ 
-                bjGameActive = false; document.getElementById('bjHitBtn').disabled = true; document.getElementById('bjStandBtn').disabled = true; 
+                bjGameActive = false; 
+                const hb = document.getElementById('bjHitBtn'); if(hb) hb.disabled = true; 
+                const sb = document.getElementById('bjStandBtn'); if(sb) sb.disabled = true; 
                 printMsg('bj', 'ПЕРЕБОР — ПРОИГРЫШ', 'lose'); 
-                setTimeout(() => { document.getElementById('bjDealBtn').disabled = false; }, 1000);
+                setTimeout(() => { const bd = document.getElementById('bjDealBtn'); if(bd) bd.disabled = false; }, 1000);
             } 
         } catch(e) { printMsg('bj', 'Сбой', 'err'); }
     }
     
     async function bjStand(){ 
         if(!bjGameActive) return; 
-        document.getElementById('bjHitBtn').disabled = true; document.getElementById('bjStandBtn').disabled = true; 
-        
+        const hb = document.getElementById('bjHitBtn'); if(hb) hb.disabled = true; 
+        const sb = document.getElementById('bjStandBtn'); if(sb) sb.disabled = true; 
         try {
             const res = await fetch(`${API_URL}/games/bj/stand`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
+            const dc = document.getElementById('bjDealerCards'); if(dc) dc.innerHTML = data.dealerHand.map(c => bjCardHTML(c)).join('');
+            const ds = document.getElementById('bjDealerScore'); if(ds) ds.textContent = data.dScore;
             
-            document.getElementById('bjDealerCards').innerHTML = data.dealerHand.map(c => bjCardHTML(c)).join('');
-            document.getElementById('bjDealerScore').textContent = data.dScore;
-            
-            bjGameActive = false;
-            updateBalance(data.newBalance);
-            
+            bjGameActive = false; updateBalance(data.newBalance);
             let msg = 'ДИЛЕР ПОБЕДИЛ', type = 'lose';
             if(data.win > bjBet){ msg = `ПОБЕДА! +${data.win} NC`; type = 'win'; spawnFloat('+' + (data.win - bjBet), innerWidth/2 - 30, innerHeight/2); }
             else if(data.win === bjBet){ msg = 'НИЧЬЯ — ВОЗВРАТ'; type = 'err'; }
             
             printMsg('bj', msg, type);
-            setTimeout(() => { document.getElementById('bjDealBtn').disabled = false; }, 1000);
+            setTimeout(() => { const bd = document.getElementById('bjDealBtn'); if(bd) bd.disabled = false; }, 1000);
         } catch(e) { printMsg('bj', 'Сбой', 'err'); }
     }
 
-    /* ── КВИЗ ── */
     async function startQuiz(){
         const bet = getBetValue('betQuiz'); if(bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
-        const btn = document.getElementById('btnQuiz'); btn.disabled = true;
-        
+        const btn = document.getElementById('btnQuiz'); if(btn) btn.disabled = true;
         try {
-            const res = await fetch(`${API_URL}/games/quiz/start`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                body: JSON.stringify({ bet, streak: quizStreak })
-            });
+            const res = await fetch(`${API_URL}/games/quiz/start`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet, streak: quizStreak }) });
             const data = await res.json();
-            if(!res.ok) { printMsg('quiz', data.error, 'err'); btn.disabled = false; return; }
+            if(!res.ok) { printMsg('quiz', data.error, 'err'); if(btn) btn.disabled = false; return; }
             
             updateBalance(data.newBalance); quizActive = true;
-            
             const cover = document.getElementById('quizCover');
-            cover.classList.add('no-transition'); cover.classList.add('blurred');
-            cover.src = data.coverUrl || '/dslogo.png'; 
-            void cover.offsetWidth; cover.classList.remove('no-transition');
+            if(cover) { cover.classList.add('no-transition'); cover.classList.add('blurred'); cover.src = data.coverUrl || '/dslogo.png'; void cover.offsetWidth; cover.classList.remove('no-transition'); }
 
-            document.getElementById('quizHint').textContent = "Нейросеть исказила обложку... Угадай трек.";
+            const hint = document.getElementById('quizHint'); if(hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
             const container = document.getElementById('quizOpts');
-            
-            container.innerHTML = data.options.map(name => 
-                `<button class="quiz-opt" data-answer="${escapeHTML(name)}" onclick="quizAnswer(this)">${escapeHTML(name)}</button>`
-            ).join('');
+            if(container) container.innerHTML = data.options.map(name => `<button class="quiz-opt" data-answer="${escapeHTML(name)}" onclick="quizAnswer(this)">${escapeHTML(name)}</button>`).join('');
             printMsg('quiz', '', '');
-        } catch(e) { printMsg('quiz', 'Сбой сети', 'err'); btn.disabled = false; }
+        } catch(e) { printMsg('quiz', 'Сбой сети', 'err'); if(btn) btn.disabled = false; }
     }
 
     async function quizAnswer(btn){
         if(!quizActive) return; quizActive = false;
-        
         const chosen = btn.getAttribute('data-answer');
-        
         try {
-            const res = await fetch(`${API_URL}/games/quiz/answer`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                body: JSON.stringify({ answer: chosen })
-            });
+            const res = await fetch(`${API_URL}/games/quiz/answer`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ answer: chosen }) });
             const data = await res.json();
             
-            document.getElementById('quizCover').classList.remove('blurred');
-            document.querySelectorAll('.quiz-opt').forEach(b => { 
-                b.disabled = true; 
-                if(b.textContent === data.correctTitle) b.classList.add('correct'); 
-            });
+            const cover = document.getElementById('quizCover'); if(cover) cover.classList.remove('blurred');
+            document.querySelectorAll('.quiz-opt').forEach(b => { b.disabled = true; if(b.textContent === data.correctTitle) b.classList.add('correct'); });
             
             updateBalance(data.newBalance);
-            
             if(data.isCorrect){
                 quizStreak = data.newStreak; btn.classList.add('correct');
                 spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2);
@@ -1578,18 +1478,15 @@
                 printMsg('quiz', 'НЕВЕРНО — СЕРИЯ СБРОШЕНА', 'lose');
             }
             
-            document.getElementById('quizStreak').textContent = `СЕРИЯ: ${quizStreak} 🔥`;
-            setTimeout(() => { document.getElementById('btnQuiz').disabled = false; }, 1200);
-        } catch(e) { printMsg('quiz', 'Ошибка', 'err'); document.getElementById('btnQuiz').disabled = false; }
+            const qs = document.getElementById('quizStreak'); if(qs) qs.textContent = `СЕРИЯ: ${quizStreak} 🔥`;
+            setTimeout(() => { const bq = document.getElementById('btnQuiz'); if(bq) bq.disabled = false; }, 1200);
+        } catch(e) { printMsg('quiz', 'Ошибка', 'err'); const bq = document.getElementById('btnQuiz'); if(bq) bq.disabled = false; }
     }
 
-    /* ── PLINKO ── */
     const PLINKO_ROWS = 8; const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10]; const BUCKET_COLORS = ['#ff007f', '#ff6b35', '#ffea00', '#00e5ff', '#9d00ff', '#00e5ff', '#ffea00', '#ff6b35', '#ff007f'];
-
     function initPlinko(){
         const canvas = document.getElementById('plinkoCanvas'); if(!canvas) return;
         plinkoCtx = canvas.getContext('2d'); const W = canvas.width, H = canvas.height; plinkoCtx.clearRect(0, 0, W, H);
-        
         for(let row=0; row<PLINKO_ROWS; row++){
             const cols = row + 2;
             for(let col=0; col<cols; col++){
@@ -1622,70 +1519,50 @@
             }
         }
         if(stillAnimating) requestAnimationFrame(animatePlinkoLoop);
-        else { plinkoAnimating = false; document.getElementById('btnPlinko').disabled = false; initPlinko(); }
+        else { plinkoAnimating = false; const bp = document.getElementById('btnPlinko'); if(bp) bp.disabled = false; initPlinko(); }
     }
 
     async function dropPlinko(){
         if(plinkoAnimating) return;
         const bet = getBetValue('betPlinko'), count = getBetValue('ballsPlinko');
         if(bet <= 0 || count <= 0) return printMsg('plinko', 'ОШИБКА ВВОДА', 'err');
-        
-        // Лимит шаров, чтобы матрица пользователя не сдохла
         if(count > 50) return printMsg('plinko', 'МАКСИМУМ 50 ШАРОВ', 'err');
         
-        const btn = document.getElementById('btnPlinko'); btn.disabled = true;
+        const btn = document.getElementById('btnPlinko'); if(btn) btn.disabled = true;
         printMsg('plinko', `СВЯЗЬ С СЕРВЕРОМ...`, '');
         
         try {
-            const res = await fetch(`${API_URL}/games/plinko`, {
-                method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}`},
-                body: JSON.stringify({bet, count})
-            });
+            const res = await fetch(`${API_URL}/games/plinko`, { method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}`}, body: JSON.stringify({bet, count}) });
             const data = await res.json();
-            if(!res.ok) { printMsg('plinko', data.error, 'err'); btn.disabled = false; return; }
+            if(!res.ok) { printMsg('plinko', data.error, 'err'); if(btn) btn.disabled = false; return; }
             
-            updateBalance(userBalance - (bet * count)); 
-            plinkoAnimating = true; plinkoBallsArray = [];
+            updateBalance(userBalance - (bet * count)); plinkoAnimating = true; plinkoBallsArray = [];
 
             for(let i=0; i<count; i++) {
                 setTimeout(() => {
-                    const canvas = document.getElementById('plinkoCanvas'); const W = canvas.width, H = canvas.height;
+                    const canvas = document.getElementById('plinkoCanvas'); if(!canvas) return; const W = canvas.width, H = canvas.height;
                     const bucketIdx = data.results[i].bucket; const mult = BUCKET_MULTS[bucketIdx];
                     let moves = []; for(let m=0; m<bucketIdx; m++) moves.push(1); for(let m=0; m<(8 - bucketIdx); m++) moves.push(0); moves.sort(() => Math.random() - 0.5);
 
                     let pathPoints = [{ x: W/2, y: 10 }], currCol = 0;
-                    for(let row=0; row<PLINKO_ROWS; row++) {
-                        currCol += moves[row]; pathPoints.push({ x: W/2 - (row + 1)*24 + currCol*48, y: 30 + row*28 });
-                    }
+                    for(let row=0; row<PLINKO_ROWS; row++) { currCol += moves[row]; pathPoints.push({ x: W/2 - (row + 1)*24 + currCol*48, y: 30 + row*28 }); }
                     pathPoints.push({ x: pathPoints[pathPoints.length - 1].x, y: H - 10 });
 
-                    plinkoBallsArray.push({
-                        path: pathPoints, bet: bet, win: data.results[i].win, mult: mult, progress: 0, step: 0, finished: false,
-                        isLastBall: i === count - 1, finalServerBalance: data.newBalance
-                    });
+                    plinkoBallsArray.push({ path: pathPoints, bet: bet, win: data.results[i].win, mult: mult, progress: 0, step: 0, finished: false, isLastBall: i === count - 1, finalServerBalance: data.newBalance });
                     if(i === 0) requestAnimationFrame(animatePlinkoLoop);
                 }, i * 350); 
             }
-        } catch(e) { printMsg('plinko', 'Сбой сети', 'err'); btn.disabled = false; }
+        } catch(e) { printMsg('plinko', 'Сбой сети', 'err'); if(btn) btn.disabled = false; }
     }
-
-    /* ── БИТ (PTB) ── */
-    let audioPlayer = document.getElementById('ptbAudioPlayer'), ptbTimeout;
 
     function initPtbWave(){
         const canvas = document.getElementById('ptbCanvas'); if(!canvas) return; const ctx = canvas.getContext('2d'); let t = 0;
         function drawWave(){
             ctx.clearRect(0, 0, 680, 100); ctx.strokeStyle = 'rgba(0,229,255,0.6)'; ctx.lineWidth = 2; ctx.shadowColor = 'rgba(0,229,255,0.8)'; ctx.shadowBlur = 6;
             ctx.beginPath();
-            for(let x=0; x<680; x++){ 
-                let amp = ptbActive && !ptbAnswered ? 35 : 20; const y = 50 + Math.sin(x * 0.04 + t) * amp + Math.sin(x * 0.09 + t * 1.3) * (amp/2); 
-                x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); 
-            } ctx.stroke();
+            for(let x=0; x<680; x++){ let amp = ptbActive && !ptbAnswered ? 35 : 20; const y = 50 + Math.sin(x * 0.04 + t) * amp + Math.sin(x * 0.09 + t * 1.3) * (amp/2); x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
             ctx.strokeStyle = 'rgba(157,0,255,0.4)'; ctx.beginPath();
-            for(let x=0; x<680; x++){ 
-                let amp = ptbActive && !ptbAnswered ? 25 : 12; const y = 50 + Math.sin(x * 0.03 + t * 0.7) * amp + Math.sin(x * 0.11 + t * 2) * (amp/1.5); 
-                x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); 
-            } ctx.stroke();
+            for(let x=0; x<680; x++){ let amp = ptbActive && !ptbAnswered ? 25 : 12; const y = 50 + Math.sin(x * 0.03 + t * 0.7) * amp + Math.sin(x * 0.11 + t * 2) * (amp/1.5); x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
             t += 0.04; ptbWaveAnim = requestAnimationFrame(drawWave);
         } drawWave();
     }
@@ -1693,16 +1570,12 @@
     async function startPtb(){
         if(isMusicPlaying) toggleMusic();
         const bet = getBetValue('betPtb'); if(bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
-        const btn = document.getElementById('btnPtb'); btn.disabled = true;
-        
+        const btn = document.getElementById('btnPtb'); if(btn) btn.disabled = true;
         try {
-            const res = await fetch(`${API_URL}/games/ptb/start`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet })
-            });
-            if(!res.ok) { const data = await res.json(); printMsg('ptb', data.error, 'err'); btn.disabled = false; return; }
-            
+            const res = await fetch(`${API_URL}/games/ptb/start`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet }) });
+            if(!res.ok) { const data = await res.json(); printMsg('ptb', data.error, 'err'); if(btn) btn.disabled = false; return; }
             updateBalance(userBalance - bet); ptbActive = true; ptbNextRound();
-        } catch(e) { printMsg('ptb', 'Сбой сети', 'err'); btn.disabled = false; }
+        } catch(e) { printMsg('ptb', 'Сбой сети', 'err'); if(btn) btn.disabled = false; }
     }
 
     async function ptbNextRound(){
@@ -1710,52 +1583,44 @@
         try {
             const res = await fetch(`${API_URL}/games/ptb/round`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
-            
             if (!res.ok) { printMsg('ptb', data.error || 'Ошибка раунда', 'err'); return; }
             
-            document.getElementById('ptbRound')?.remove();
-            
+            const pr = document.getElementById('ptbRound'); if(pr) pr.remove();
             const container = document.getElementById('ptbOpts');
-            container.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">РАУНД ${data.round} / 5</div>`);
-            document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (10 сек)...`;
+            if(container) container.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">РАУНД ${data.round} / 5</div>`);
+            const pmt = document.getElementById('ptbPrompt'); if(pmt) pmt.textContent = `Слушай фрагмент (10 сек)...`;
             
-            audioPlayer.src = data.mp3Url;
-            audioPlayer.onloadedmetadata = () => {
-                let duration = audioPlayer.duration;
-                if (isFinite(duration) && duration > 10) audioPlayer.currentTime = Math.random() * (duration - 10);
-                else audioPlayer.currentTime = 0;
-                
-                audioPlayer.play().then(() => {
-                    clearTimeout(ptbTimeout);
-                    ptbTimeout = setTimeout(() => {
-                        audioPlayer.pause();
-                        if(!ptbAnswered) document.getElementById('ptbPrompt').textContent = `Время вышло! Выбирай ответ.`;
-                    }, 10000);
-                }).catch(e => { document.getElementById('ptbPrompt').textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`; });
-            };
-            
-            container.innerHTML = data.options.map(o => 
-                `<button class="ptb-opt" data-answer="${escapeHTML(o)}" onclick="ptbAnswer(this)">${escapeHTML(o)}</button>`
-            ).join('');
+            let audioPlayer = document.getElementById('ptbAudioPlayer');
+            if(audioPlayer) {
+                audioPlayer.src = data.mp3Url;
+                audioPlayer.onloadedmetadata = () => {
+                    let duration = audioPlayer.duration;
+                    if (isFinite(duration) && duration > 10) audioPlayer.currentTime = Math.random() * (duration - 10);
+                    else audioPlayer.currentTime = 0;
+                    
+                    audioPlayer.play().then(() => {
+                        clearTimeout(ptbTimeout);
+                        ptbTimeout = setTimeout(() => {
+                            audioPlayer.pause();
+                            if(!ptbAnswered && pmt) pmt.textContent = `Время вышло! Выбирай ответ.`;
+                        }, 10000);
+                    }).catch(e => { if(pmt) pmt.textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`; });
+                };
+            }
+            if(container) container.innerHTML = data.options.map(o => `<button class="ptb-opt" data-answer="${escapeHTML(o)}" onclick="ptbAnswer(this)">${escapeHTML(o)}</button>`).join('');
             printMsg('ptb', 'ВЫБЕРИ НАЗВАНИЕ ТРЕКА', '');
         } catch(e) { printMsg('ptb', 'Сбой раунда', 'err'); }
     }
 
     async function ptbAnswer(btn){
         if(ptbAnswered) return; ptbAnswered = true;
-        audioPlayer.pause(); clearTimeout(ptbTimeout);
-        
+        let audioPlayer = document.getElementById('ptbAudioPlayer'); if(audioPlayer) audioPlayer.pause(); clearTimeout(ptbTimeout);
         const chosen = btn.getAttribute('data-answer');
-        
         try {
-            const res = await fetch(`${API_URL}/games/ptb/answer`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                body: JSON.stringify({ answer: chosen })
-            });
+            const res = await fetch(`${API_URL}/games/ptb/answer`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ answer: chosen }) });
             const data = await res.json();
             
             document.querySelectorAll('.ptb-opt').forEach(b => { b.disabled = true; });
-            
             if(data.isCorrect){ btn.classList.add('correct'); printMsg('ptb', `ВЕРНО! ${data.correctAnswers}/5`, 'win'); } 
             else { btn.classList.add('wrong'); printMsg('ptb', 'МИМО — ПРОДОЛЖАЙ', 'lose'); }
             
@@ -1764,11 +1629,9 @@
                 if(data.win > 0) spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2);
                 updateBalance(data.newBalance);
                 printMsg('ptb', `ИТОГ: ${data.correctAnswers}/5 верных → ${data.win > 0 ? '+' + data.win : '0'} NC`, data.win > 0 ? 'win' : 'lose');
-                document.getElementById('btnPtb').disabled = false;
-                document.getElementById('ptbPrompt').textContent = `Игра завершена`;
-            } else {
-                setTimeout(() => ptbNextRound(), 2000);
-            }
+                const bp = document.getElementById('btnPtb'); if(bp) bp.disabled = false;
+                const pmt = document.getElementById('ptbPrompt'); if(pmt) pmt.textContent = `Игра завершена`;
+            } else { setTimeout(() => ptbNextRound(), 2000); }
         } catch(e) { printMsg('ptb', 'Сбой проверки', 'err'); }
     }
 </script>
