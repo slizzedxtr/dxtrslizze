@@ -395,7 +395,7 @@ module.exports = function(app, User, supabase) {
 
         res.json({ success: true, newBalance: user.dscoin_balance });
     });
-
+};
     app.post('/api/games/mines/step', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user || !user.current_game || user.current_game.type !== 'mines') return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ' });
