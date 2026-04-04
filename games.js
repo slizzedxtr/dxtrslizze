@@ -14,6 +14,7 @@ const MINES_TOTAL_CELLS = 25;
 const BJ_SUITS = ['♠', '♥', '♦', '♣'];
 const BJ_RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const PLINKO_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10];
+const FALLBACK_TITLES = ['Night City Lights', 'Cyber Drop', 'Neon Rain', 'Synthwave Overdrive', 'Netrunner', 'Digital Ghost', 'Neon Blood'];
 
 let musicCache = { data: [], lastFetch: 0 };
 
@@ -198,7 +199,8 @@ module.exports = function(app, User, supabase) {
         } else {
             resultTracks = [getRandomTrack(), getRandomTrack(), getRandomTrack()];
             if (resultTracks[0].cover_url === resultTracks[1].cover_url && resultTracks[1].cover_url === resultTracks[2].cover_url) {
-                resultTracks[2] = slotPool.find(t => t.cover_url !== resultTracks[0].cover_url) || slotPool[0];
+                // ФИКС АБУЗА: если в базе всего 1 трек, слоты всегда выдавали джекпот. Теперь мы подменяем последнюю картинку на фейк-луз.
+                resultTracks[2] = slotPool.find(t => t.cover_url !== resultTracks[0].cover_url) || { id: 999, title: 'Lose', cover_url: '/valuta.png', is_main: false };
             }
         }
 
@@ -215,7 +217,6 @@ module.exports = function(app, User, supabase) {
         });
     });
 
-    // === ПОТЕРЯННЫЙ МАГАЗИН ===
     app.post('/api/shop/buy', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
@@ -268,7 +269,6 @@ module.exports = function(app, User, supabase) {
         res.json({ success: true, newBalance: user.dscoin_balance, message: `Трек забущен на ${burnAmount}!` });
     });
 
-    // === ПОТЕРЯННЫЕ ПРОСТЫЕ ИГРЫ ===
     app.post('/api/games/dice', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
@@ -370,12 +370,10 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
         
-        // [ФИКС] Парсинг с проверкой на NaN
         const bet = parseInt(req.body.bet, 10);
         const mines = parseInt(req.body.minesCount, 10);
 
         if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-        // [ФИКС] Раньше NaN проходил сквозь проверку < 3, теперь пресекается
         if (isNaN(mines) || mines < 3 || mines > 20) return res.status(400).json({ error: 'НЕВЕРНОЕ КОЛ-ВО МИН' });
 
         const bombs = [];
@@ -396,7 +394,6 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user || !user.current_game || user.current_game.type !== 'mines') return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ' });
 
-        // [ФИКС] Защита от пустых кликов
         const cellIndex = parseInt(req.body.cellIndex, 10);
         if (isNaN(cellIndex) || cellIndex < 0 || cellIndex > 24) return res.status(400).json({ error: 'Неверная ячейка' });
 
@@ -405,7 +402,7 @@ module.exports = function(app, User, supabase) {
         if (game.bombs.includes(cellIndex)) {
             const bombs = game.bombs;
             user.current_game = null; 
-            user.markModified('current_game'); // [ФИКС] Гарантия сохранения обнуления
+            user.markModified('current_game'); 
             await user.save();
             return res.json({ status: 'lose', bombs });
         }
@@ -428,7 +425,7 @@ module.exports = function(app, User, supabase) {
 
         user.dscoin_balance += win;
         user.current_game = null;
-        user.markModified('current_game'); // [ФИКС]
+        user.markModified('current_game');
         await user.save();
 
         res.json({ success: true, win, newBalance: user.dscoin_balance });
@@ -467,7 +464,7 @@ module.exports = function(app, User, supabase) {
 
         if (score > 21) {
             user.current_game = null;
-            user.markModified('current_game'); // [ФИКС]
+            user.markModified('current_game');
             await user.save();
             return res.json({ status: 'bust', card, score });
         }
@@ -483,7 +480,9 @@ module.exports = function(app, User, supabase) {
 
         const game = user.current_game;
         let dScore = getBJScore(game.dealerHand);
-        while(dScore < 17) {
+        
+        // ФИКС: Безопасный добор карт дилером
+        while(dScore < 17 && game.deck.length > 0) {
             game.dealerHand.push(game.deck.pop());
             dScore = getBJScore(game.dealerHand);
         }
@@ -497,7 +496,7 @@ module.exports = function(app, User, supabase) {
 
         user.dscoin_balance += win;
         user.current_game = null;
-        user.markModified('current_game'); // [ФИКС]
+        user.markModified('current_game');
         await user.save();
 
         res.json({ win, pScore, dScore, dealerHand: game.dealerHand, newBalance: user.dscoin_balance });
@@ -512,14 +511,18 @@ module.exports = function(app, User, supabase) {
 
         const catalog = await getMusicCatalog();
         const validTracks = catalog.filter(t => t.cover_url && t.title);
-        if (validTracks.length < 4) return res.status(500).json({ error: 'Недостаточно треков с обложками в БД (нужно минимум 4)' });
+        if (validTracks.length === 0) return res.status(500).json({ error: 'База треков пуста' });
 
         const correctTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
         
-        let options = [correctTrack.title];
-        let others = validTracks.filter(t => t.title !== correctTrack.title).sort(() => 0.5 - Math.random());
-        options.push(others[0].title, others[1].title, others[2].title);
-        options.sort(() => 0.5 - Math.random());
+        // БРОНЕБОЙНЫЙ ФИКС: Умная генерация опций, которая никогда не упадет
+        let uniqueTitles = new Set(validTracks.map(t => t.title));
+        FALLBACK_TITLES.forEach(t => uniqueTitles.add(t)); // Заливаем фейки на всякий случай
+        uniqueTitles.delete(correctTrack.title); // Убираем правильный ответ из пула
+
+        let optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
+        let options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]];
+        options.sort(() => 0.5 - Math.random()); // Перемешиваем итоговый массив
 
         user.dscoin_balance -= bet;
         user.current_game = { type: 'quiz', bet, correctTitle: correctTrack.title, streak: req.body.streak || 0, active: true };
@@ -546,7 +549,7 @@ module.exports = function(app, User, supabase) {
         }
 
         user.current_game = null;
-        user.markModified('current_game'); // [ФИКС]
+        user.markModified('current_game');
         await user.save();
 
         res.json({ success: true, isCorrect: answer === game.correctTitle, win, newStreak, newBalance: user.dscoin_balance, correctTitle: game.correctTitle });
@@ -574,21 +577,26 @@ module.exports = function(app, User, supabase) {
         const catalog = await getMusicCatalog();
         const validAudio = catalog.filter(t => t.mp3_url && t.title);
         
-        // [ФИКС] Раньше этой проверки не было, и если треков было < 4, сервер КРАШИЛСЯ при обращении к others[1]
-        if (validAudio.length < 4) return res.status(500).json({ error: 'Недостаточно аудио-треков в БД (нужно минимум 4)' });
+        if (validAudio.length === 0) return res.status(500).json({ error: 'База аудио пуста' });
 
         const correctTrack = validAudio[Math.floor(Math.random() * validAudio.length)];
 
-        let options = [correctTrack.title];
-        let others = validAudio.filter(t => t.title !== correctTrack.title).sort(() => 0.5 - Math.random());
-        options.push(others[0].title, others[1].title, others[2].title);
+        // БРОНЕБОЙНЫЙ ФИКС: Умная генерация как в Квизе
+        let uniqueTitles = new Set(validAudio.map(t => t.title));
+        FALLBACK_TITLES.forEach(t => uniqueTitles.add(t));
+        uniqueTitles.delete(correctTrack.title);
+
+        let optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
+        let options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]];
         options.sort(() => 0.5 - Math.random());
 
+        // ФИКС ЛОГИКИ РАУНДОВ: счетчик должен плюсоваться здесь, чтобы фронт и бэк не рассинхронизировались
+        user.current_game.round += 1;
         user.current_game.currentCorrectTitle = correctTrack.title;
         user.markModified('current_game');
         await user.save();
 
-        res.json({ success: true, mp3Url: correctTrack.mp3_url, options, round: user.current_game.round + 1 });
+        res.json({ success: true, mp3Url: correctTrack.mp3_url, options, round: user.current_game.round });
     });
 
     app.post('/api/games/ptb/answer', async (req, res) => {
@@ -600,7 +608,6 @@ module.exports = function(app, User, supabase) {
         const isCorrect = answer === game.currentCorrectTitle;
 
         if (isCorrect) game.correctAnswers++;
-        game.round++;
 
         let win = 0;
         let isFinished = false;
