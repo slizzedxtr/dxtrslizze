@@ -787,18 +787,19 @@
 <script>
     const API_URL = "https://dxtrslizze.onrender.com/api";
     
-    // ГЛОБАЛЬНЫЕ СТЕЙТЫ
+    // ГЛОБАЛЬНЫЕ СТЕЙТЫ (ДОБАВЛЕНЫ НЕДОСТАЮЩИЕ)
     let userBalance = 0;
     let supabaseTracks = [];
     let slotCovers = ['/dslogo.png']; 
     let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
     let plinkoCtx = null, plinkoAnimating = false, plinkoBallsArray = [];
     let currentR = null, isRouletteSpinning = false, rCells = [], currentRIndex = 3;
-    let ptbActive = false, ptbAnswered = false, ptbWaveAnim = null;
+    let ptbActive = false, ptbAnswered = false, ptbWaveAnim = null, ptbTimeout = null;
     let NUM_MINES = 3, minesActive = false, minesBet = 0;
     let quizActive = false, quizStreak = 0;
     let bjGameActive = false, bjBet = 0;
     let crashInterval = null;
+    let currentDice = null; // <- ИЗ-ЗА ЭТОГО ПАДАЛИ ДАЙСЫ
 
     // ТОКЕН И ЭСКЕЙП
     function getToken() {
@@ -810,7 +811,7 @@
     }
 
     function isAnyGameActive() {
-        return plinkoAnimating || isRouletteSpinning || ptbActive || minesActive || quizActive || bjGameActive || crashInterval;
+        return plinkoAnimating || isRouletteSpinning || ptbActive || minesActive || quizActive || bjGameActive || crashInterval !== null;
     }
 
     function updateBalance(val){
@@ -1020,7 +1021,6 @@
 
     /* ── INIT & AUTH ── */
     window.onload = async () => {
-        // БЕЗОПАСНЫЙ ВЫЗОВ — если функции обрезались, ошибки не будет
         if (typeof initPlinko === 'function') initPlinko(); 
         if (typeof initPtbWave === 'function') initPtbWave(); 
         if (typeof loadTracksData === 'function') loadTracksData(); 
@@ -1567,8 +1567,10 @@
         } drawWave();
     }
 
+    // ИЗМЕНЕНИЕ ЗДЕСЬ (Убрали краш с проверкой isMusicPlaying)
     async function startPtb(){
-        if(isMusicPlaying) toggleMusic();
+        if(typeof isMusicPlaying !== 'undefined' && isMusicPlaying && typeof toggleMusic === 'function') toggleMusic();
+        
         const bet = getBetValue('betPtb'); if(bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
         const btn = document.getElementById('btnPtb'); if(btn) btn.disabled = true;
         try {
@@ -1599,7 +1601,7 @@
                     else audioPlayer.currentTime = 0;
                     
                     audioPlayer.play().then(() => {
-                        clearTimeout(ptbTimeout);
+                        if (ptbTimeout) clearTimeout(ptbTimeout);
                         ptbTimeout = setTimeout(() => {
                             audioPlayer.pause();
                             if(!ptbAnswered && pmt) pmt.textContent = `Время вышло! Выбирай ответ.`;
@@ -1614,7 +1616,9 @@
 
     async function ptbAnswer(btn){
         if(ptbAnswered) return; ptbAnswered = true;
-        let audioPlayer = document.getElementById('ptbAudioPlayer'); if(audioPlayer) audioPlayer.pause(); clearTimeout(ptbTimeout);
+        let audioPlayer = document.getElementById('ptbAudioPlayer'); if(audioPlayer) audioPlayer.pause(); 
+        if (ptbTimeout) clearTimeout(ptbTimeout);
+        
         const chosen = btn.getAttribute('data-answer');
         try {
             const res = await fetch(`${API_URL}/games/ptb/answer`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ answer: chosen }) });
