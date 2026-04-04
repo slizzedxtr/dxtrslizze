@@ -1973,23 +1973,15 @@
 
     /* ── СЛОТЫ, ДАЙС, КРАШ, РУЛЕТКА (ОСТАЮТСЯ КАК БЫЛИ - ОНИ УЖЕ НА БЭКЕ) ── */
     function initReels(){
-        // Внутри функции playSlots() найди блок [1, 2, 3].forEach и замени его на этот:
-[1, 2, 3].forEach((id, i) => {
-    const strip = document.getElementById('reel' + id); if(!strip) return;
-    let html = ''; for(let j=0; j<20; j++) html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}">`;
-    const finalImg = (data.items && data.items[i] && data.items[i].cover_url) ? data.items[i].cover_url : slotCovers[0];
-    html += `<img src="${finalImg}">`;
-    strip.innerHTML = html; 
-    strip.style.transition = 'none'; 
-    strip.style.transform = 'translateY(0px)';
-    
-    // Форсируем перерисовку DOM
-    void strip.offsetWidth; 
-    
-    // Жестко задаем 145px (высота слота из CSS), чтобы не было прыжков
-    strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.15,0.85,0.15,1)`; 
-    strip.style.transform = `translateY(-${20 * 145}px)`;
-});
+        [1, 2, 3].forEach(id => {
+            const strip = document.getElementById('reel' + id); if(!strip) return;
+            let html = ''; 
+            for(let j=0; j<21; j++) html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}">`;
+            strip.innerHTML = html;
+            strip.style.transition = 'none'; 
+            strip.style.transform = 'translateY(0px)';
+        });
+    }
 
     async function playSlots(){
         const bet = getBetValue('betSlots'); if(bet > userBalance || bet <= 0) return printMsg('slots', 'ОШИБКА СТАВКИ', 'err');
