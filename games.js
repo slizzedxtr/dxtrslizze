@@ -2,21 +2,28 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 
-const FARM_TIME_MINUTES = [30, 25, 20, 15, 10, 5];
-const FARM_TIME_COSTS = [750, 1500, 3000, 5000, 10000];
-const FARM_INCOME_COINS = [2, 4, 6, 8, 10, 15, 20];
-const FARM_INCOME_COSTS = [750, 1500, 3000, 5000, 10000, 17500];
+const FARM_TIME_MINUTES  = [30, 25, 20, 15, 10, 5];
+const FARM_TIME_COSTS    = [750, 1500, 3000, 5000, 10000];
+const FARM_INCOME_COINS  = [2, 4, 6, 8, 10, 15, 20];
+const FARM_INCOME_COSTS  = [750, 1500, 3000, 5000, 10000, 17500];
 
 const MINES_TOTAL_CELLS = 25;
-const BJ_SUITS = ['♠', '♥', '♦', '♣'];
-const BJ_RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const BJ_SUITS  = ['♠', '♥', '♦', '♣'];
+const BJ_RANKS  = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 const PLINKO_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10];
-const FALLBACK_TITLES = ['Night City Lights', 'Cyber Drop', 'Neon Rain', 'Synthwave Overdrive', 'Netrunner', 'Digital Ghost', 'Neon Blood'];
+const FALLBACK_TITLES = [
+    'Night City Lights','Cyber Drop','Neon Rain',
+    'Synthwave Overdrive','Netrunner','Digital Ghost','Neon Blood'
+];
 
+// ── Кэш Supabase ──────────────────────────────────────────────────────────────
 let musicCache = { data: [], lastFetch: 0 };
 
 module.exports = function(app, User, supabase) {
 
+    // ══════════════════════════════════════════════════════════════
+    // АУТЕНТИФИКАЦИЯ (хелпер)
+    // ══════════════════════════════════════════════════════════════
     const authenticate = async (req, res) => {
         try {
             const authHeader = req.headers.authorization;
@@ -24,26 +31,27 @@ module.exports = function(app, User, supabase) {
                 res.status(401).json({ error: 'Отсутствует токен авторизации' });
                 return null;
             }
-            const token = authHeader.split(' ')[1];
+            const token   = authHeader.split(' ')[1];
             const decoded = jwt.verify(token, JWT_SECRET);
-            const user = await User.findOne({ clientId: decoded.clientId });
-            
+            const user    = await User.findOne({ clientId: decoded.clientId });
+
             if (!user) {
                 res.status(401).json({ error: 'Пользователь не найден' });
                 return null;
             }
 
+            // Автоначисление фермы при каждом запросе
             if (user.farm && user.farm.active) {
-                const now = Date.now();
-                const lastClaim = user.farm.lastClaim || now;
-                const intervalMs = FARM_TIME_MINUTES[user.farm.timeLevel || 0] * 60 * 1000;
-                const income = FARM_INCOME_COINS[user.farm.incomeLevel || 0];
-                const timePassed = now - lastClaim;
+                const now         = Date.now();
+                const lastClaim   = user.farm.lastClaim || now;
+                const intervalMs  = FARM_TIME_MINUTES[user.farm.timeLevel  || 0] * 60 * 1000;
+                const income      = FARM_INCOME_COINS [user.farm.incomeLevel|| 0];
+                const timePassed  = now - lastClaim;
 
                 if (timePassed >= intervalMs) {
                     const intervals = Math.floor(timePassed / intervalMs);
-                    user.dscoin_balance = Math.floor(Number(user.dscoin_balance || 0) + (intervals * income));
-                    user.farm.lastClaim = lastClaim + (intervals * intervalMs);
+                    user.dscoin_balance = Math.floor(Number(user.dscoin_balance || 0) + intervals * income);
+                    user.farm.lastClaim = lastClaim + intervals * intervalMs;
                     user.markModified('farm');
                     await user.save();
                 }
@@ -55,9 +63,12 @@ module.exports = function(app, User, supabase) {
         }
     };
 
+    // ══════════════════════════════════════════════════════════════
+    // ЗАГРУЗКА МУЗЫКАЛЬНОГО КАТАЛОГА (с кэшем 5 мин)
+    // ══════════════════════════════════════════════════════════════
     const getMusicCatalog = async () => {
         const now = Date.now();
-        if (musicCache.data.length > 0 && (now - musicCache.lastFetch < 5 * 60 * 1000)) {
+        if (musicCache.data.length > 0 && now - musicCache.lastFetch < 5 * 60 * 1000) {
             return musicCache.data;
         }
         const { data, error } = await supabase
@@ -69,41 +80,94 @@ module.exports = function(app, User, supabase) {
             musicCache = { data, lastFetch: now };
             return data;
         }
-        return musicCache.data;
+        return musicCache.data; // возвращаем устаревший кэш при ошибке
     };
 
+    // ══════════════════════════════════════════════════════════════
+    // ПУБЛИЧНЫЙ РОУТ — ТРЕКИ ДЛЯ ФРОНТЕНДА
+    // Фронт запрашивает сюда вместо прямых Supabase-запросов с ключом
+    // ══════════════════════════════════════════════════════════════
+    app.get('/api/tracks', async (req, res) => {
+        try {
+            const tracks = await getMusicCatalog();
+            // Возвращаем только нужные поля, без внутренних флагов
+            res.json(tracks.map(t => ({
+                id:        t.id,
+                title:     t.title,
+                cover_url: t.cover_url,
+                mp3_url:   t.mp3_url,
+                is_main:   t.is_main
+            })));
+        } catch (e) {
+            res.status(500).json({ error: 'Ошибка загрузки треков' });
+        }
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    // ══════════════════════════════════════════════════════════════
     function getMinesMult(mines, opened) {
         if (opened === 0) return 1.0;
         let prob = 1.0;
-        for (let i = 0; i < opened; i++) prob *= (MINES_TOTAL_CELLS - mines - i) / (MINES_TOTAL_CELLS - i);
+        for (let i = 0; i < opened; i++) {
+            prob *= (MINES_TOTAL_CELLS - mines - i) / (MINES_TOTAL_CELLS - i);
+        }
         return parseFloat(((1 / prob) * 0.95).toFixed(2));
     }
 
     function getBJScore(hand) {
-        let score = hand.reduce((a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r)), 0);
+        let score = hand.reduce(
+            (a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r, 10)),
+            0
+        );
         let aces = hand.filter(c => c.r === 'A').length;
         while (score > 21 && aces > 0) { score -= 10; aces--; }
         return score;
     }
 
+    // Безопасное сохранение объекта current_game в Mongoose.
+    // Нельзя использовать spread-оператор ({...doc.field}) —
+    // он снимает Proxy и markModified перестаёт работать.
+    // Используем Object.assign в plain-object, сохранённый затем целиком.
+    function patchGame(user, patch) {
+        const plain = JSON.parse(JSON.stringify(user.current_game || {}));
+        Object.assign(plain, patch);
+        user.current_game = plain;
+        user.markModified('current_game');
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ЛИДЕРБОРД
+    // ══════════════════════════════════════════════════════════════
     app.get('/api/games/leaderboard', async (req, res) => {
         try {
-            const leaders = await User.find({}, 'username nickname dscoin_balance avatarUrl')
-                .sort({ dscoin_balance: -1 }).limit(5);
-            const processed = leaders.map(l => ({
-                username: l.username, nickname: l.nickname, dscoin_balance: l.dscoin_balance,
-                avatarUrl: (l.avatarUrl && l.avatarUrl.trim() !== '') ? l.avatarUrl : '/dslogo.png'
-            }));
-            res.json({ success: true, leaders: processed });
+            const leaders = await User
+                .find({}, 'username nickname dscoin_balance avatarUrl')
+                .sort({ dscoin_balance: -1 })
+                .limit(5);
+
+            res.json({
+                success: true,
+                leaders: leaders.map(l => ({
+                    username:        l.username,
+                    nickname:        l.nickname,
+                    dscoin_balance:  l.dscoin_balance,
+                    avatarUrl:       l.avatarUrl && l.avatarUrl.trim() ? l.avatarUrl : '/dslogo.png'
+                }))
+            });
         } catch (err) {
             res.status(500).json({ error: 'Ошибка получения топа' });
         }
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // ЕЖЕДНЕВНАЯ ПОСТАВКА
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/daily', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        const now = Date.now();
+
+        const now      = Date.now();
         const cooldown = 6 * 60 * 60 * 1000;
 
         if (now - (user.lastDaily || 0) < cooldown) {
@@ -117,6 +181,9 @@ module.exports = function(app, User, supabase) {
         res.json({ success: true, reward: 100, newBalance: user.dscoin_balance, message: 'ПОСТАВКА ПОЛУЧЕНА' });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // ФЕРМА
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/farm/activate', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
@@ -135,7 +202,7 @@ module.exports = function(app, User, supabase) {
         if (!user) return;
         res.json({ success: true, farm: user.farm || { active: false, timeLevel: 0, incomeLevel: 0 } });
     });
-    
+
     app.post('/api/games/farm/upgrade', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
@@ -150,28 +217,34 @@ module.exports = function(app, User, supabase) {
         } else if (type === 'income') {
             if (user.farm.incomeLevel >= FARM_INCOME_COSTS.length) return res.status(400).json({ error: 'МАКС. УРОВЕНЬ' });
             cost = FARM_INCOME_COSTS[user.farm.incomeLevel];
-        } else return res.status(400).json({ error: 'НЕВЕРНЫЙ ПАРАМЕТР' });
+        } else {
+            return res.status(400).json({ error: 'НЕВЕРНЫЙ ПАРАМЕТР' });
+        }
 
         if (Number(user.dscoin_balance) < cost) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
         user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - cost);
-        if (type === 'time') user.farm.timeLevel += 1;
-        else user.farm.incomeLevel += 1;
-
+        if (type === 'time') user.farm.timeLevel   += 1;
+        else                 user.farm.incomeLevel += 1;
         user.markModified('farm');
         await user.save();
         res.json({ success: true, newBalance: user.dscoin_balance });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // СЛОТЫ — обложки берутся из Supabase через getMusicCatalog
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/slots', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
+
         const bet = parseInt(req.body.bet, 10);
         if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
 
         const allTracks = await getMusicCatalog();
         if (!allTracks || allTracks.length === 0) return res.status(500).json({ error: 'Каталог пуст' });
 
+        // Берём первые 15 + все is_main треки для пула
         let slotPool = allTracks.slice(0, 15);
         allTracks.forEach(track => {
             if (track.is_main && !slotPool.some(t => t.cover_url === track.cover_url)) slotPool.push(track);
@@ -179,20 +252,21 @@ module.exports = function(app, User, supabase) {
 
         const isWin = Math.random() < 0.15;
         let resultTracks = [];
-        const getRandomTrack = () => slotPool[Math.floor(Math.random() * slotPool.length)];
-        
+        const getRand = () => slotPool[Math.floor(Math.random() * slotPool.length)];
+
         if (isWin) {
-            let weightedPool = [];
-            slotPool.forEach(track => {
-                const weight = track.is_main ? 1 : 4;
-                for(let i=0; i<weight; i++) weightedPool.push(track);
-            });
-            const winTrack = weightedPool[Math.floor(Math.random() * weightedPool.length)];
+            // Взвешенный выбор — is_main реже выпадают (больший выигрыш)
+            let weighted = [];
+            slotPool.forEach(t => { const w = t.is_main ? 1 : 4; for (let i = 0; i < w; i++) weighted.push(t); });
+            const winTrack = weighted[Math.floor(Math.random() * weighted.length)];
             resultTracks = [winTrack, winTrack, winTrack];
         } else {
-            resultTracks = [getRandomTrack(), getRandomTrack(), getRandomTrack()];
-            if (resultTracks[0].cover_url === resultTracks[1].cover_url && resultTracks[1].cover_url === resultTracks[2].cover_url) {
-                resultTracks[2] = slotPool.find(t => t.cover_url !== resultTracks[0].cover_url) || { id: 999, title: 'Lose', cover_url: '/valuta.png', is_main: false };
+            resultTracks = [getRand(), getRand(), getRand()];
+            // Гарантируем проигрыш — третий отличается
+            if (resultTracks[0].cover_url === resultTracks[1].cover_url &&
+                resultTracks[1].cover_url === resultTracks[2].cover_url) {
+                const diffTrack = slotPool.find(t => t.cover_url !== resultTracks[0].cover_url);
+                resultTracks[2] = diffTrack || { id: 999, title: 'Lose', cover_url: '/valuta.png', is_main: false };
             }
         }
 
@@ -201,24 +275,28 @@ module.exports = function(app, User, supabase) {
         await user.save();
 
         res.json({
-            success: true,
-            items: resultTracks.map(t => ({ id: t.id, title: t.title, cover_url: t.cover_url, mp3_url: t.mp3_url, is_main: t.is_main })),
-            win: winTotal,
+            success:   true,
+            items:     resultTracks.map(t => ({ id: t.id, title: t.title, cover_url: t.cover_url, mp3_url: t.mp3_url, is_main: t.is_main })),
+            win:       winTotal,
             newBalance: user.dscoin_balance,
             isJackpot: isWin && resultTracks[0].is_main
         });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // МАГАЗИН
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/shop/buy', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        const { itemType, itemId } = req.body;
+
+        const { itemId } = req.body;
         const SHOP_ITEMS = {
-            snippet_nightcity: { price: 500, type: 'snippet', name: 'Night City Lights' },
-            frame_neon_green: { price: 300, type: 'frame', name: 'Toxic Glow' },
-            frame_cyber_pulse: { price: 600, type: 'frame', name: 'Cyber Pulse (Anim)' },
-            title_netrunner: { price: 1000, type: 'title', name: 'Netrunner' },
-            title_legend: { price: 5000, type: 'title', name: 'Cyber Legend' }
+            snippet_nightcity: { price: 500,  type: 'snippet', name: 'Night City Lights' },
+            frame_neon_green:  { price: 300,  type: 'frame',   name: 'Toxic Glow' },
+            frame_cyber_pulse: { price: 600,  type: 'frame',   name: 'Cyber Pulse (Anim)' },
+            title_netrunner:   { price: 1000, type: 'title',   name: 'Netrunner' },
+            title_legend:      { price: 5000, type: 'title',   name: 'Cyber Legend' }
         };
 
         const item = SHOP_ITEMS[itemId];
@@ -228,15 +306,12 @@ module.exports = function(app, User, supabase) {
         if (!user.inventory) user.inventory = { frames: [], titles: [], snippets: [] };
         const category = item.type + 's';
         if (!user.inventory[category]) user.inventory[category] = [];
-
         if (user.inventory[category].includes(itemId)) return res.status(400).json({ error: 'Уже куплено' });
 
         user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - item.price);
         user.inventory[category].push(itemId);
-        
         if (item.type === 'frame') user.activeFrame = itemId;
         if (item.type === 'title') user.activeTitle = item.name;
-
         user.markModified('inventory');
         await user.save();
         res.json({ success: true, newBalance: user.dscoin_balance, message: `Куплено: ${item.name}` });
@@ -245,9 +320,9 @@ module.exports = function(app, User, supabase) {
     app.post('/api/shop/boost', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
+
         const { trackId, amount } = req.body;
         const burnAmount = parseInt(amount, 10);
-
         if (isNaN(burnAmount) || burnAmount <= 0) return res.status(400).json({ error: 'Укажите сумму буста' });
         if (Number(user.dscoin_balance) < burnAmount) return res.status(400).json({ error: 'Недостаточно средств' });
 
@@ -261,20 +336,25 @@ module.exports = function(app, User, supabase) {
         res.json({ success: true, newBalance: user.dscoin_balance, message: `Трек забущен на ${burnAmount}!` });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // ДАЙС
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/dice', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        const bet = parseInt(req.body.bet, 10);
+
+        const bet    = parseInt(req.body.bet,   10);
         const choice = parseInt(req.body.guess, 10);
-        if (![1, 2, 3, 4].includes(choice) || isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
+        if (![1,2,3,4].includes(choice) || isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
+            return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
 
         const roll = Math.floor(Math.random() * 100) + 1;
         let isWin = false, mult = 0;
 
-        if (choice === 1 && roll <= 25) { isWin = true; mult = 3; }
-        else if (choice === 2 && roll >= 26 && roll <= 50) { isWin = true; mult = 2; }
-        else if (choice === 3 && roll >= 51 && roll <= 75) { isWin = true; mult = 2; }
-        else if (choice === 4 && roll >= 76) { isWin = true; mult = 3; }
+        if      (choice === 1 && roll <= 25)                    { isWin = true; mult = 3; }
+        else if (choice === 2 && roll >= 26 && roll <= 50)      { isWin = true; mult = 2; }
+        else if (choice === 3 && roll >= 51 && roll <= 75)      { isWin = true; mult = 2; }
+        else if (choice === 4 && roll >= 76)                    { isWin = true; mult = 3; }
 
         const winTotal = isWin ? bet * mult : 0;
         user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - bet + winTotal);
@@ -283,20 +363,25 @@ module.exports = function(app, User, supabase) {
         res.json({ success: true, roll, win: winTotal, newBalance: user.dscoin_balance });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // КРАШ
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/crash', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        const bet = parseInt(req.body.bet, 10);
+
+        const bet    = parseInt(req.body.bet, 10);
         const target = parseFloat(req.body.targetMultiplier);
-        if (isNaN(target) || target < 1.1 || isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
+        if (isNaN(target) || target < 1.1 || isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
+            return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
 
         const e = 2 ** 32;
         const h = Math.floor(Math.random() * e);
-        let crashPoint = Math.max(1.00, (e / (h + 1))); 
-        if (crashPoint > 50) crashPoint = 50.00; 
+        let crashPoint = Math.max(1.00, e / (h + 1));
+        if (crashPoint > 50) crashPoint = 50.00;
         crashPoint = parseFloat(crashPoint.toFixed(2));
 
-        const isWin = target <= crashPoint;
+        const isWin    = target <= crashPoint;
         const winTotal = isWin ? Math.floor(bet * target) : 0;
 
         user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - bet + winTotal);
@@ -305,16 +390,21 @@ module.exports = function(app, User, supabase) {
         res.json({ success: true, crashPoint, target, win: winTotal, newBalance: user.dscoin_balance });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // РУЛЕТКА
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/roulette', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        const bet = parseInt(req.body.bet, 10);
-        const color = req.body.color; 
-        if (!['purple', 'cyan', 'gold'].includes(color) || isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
+
+        const bet   = parseInt(req.body.bet, 10);
+        const color = req.body.color;
+        if (!['purple','cyan','gold'].includes(color) || isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
+            return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
 
         const roll = Math.random() * 100;
-        let resultColor = roll < 5 ? 'gold' : roll < 52.5 ? 'cyan' : 'purple';
-        const isWin = color === resultColor;
+        const resultColor = roll < 5 ? 'gold' : roll < 52.5 ? 'cyan' : 'purple';
+        const isWin   = color === resultColor;
         const winTotal = isWin ? bet * (resultColor === 'gold' ? 14 : 2) : 0;
 
         user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - bet + winTotal);
@@ -323,56 +413,66 @@ module.exports = function(app, User, supabase) {
         res.json({ success: true, resultColor, isWin, win: winTotal, newBalance: user.dscoin_balance });
     });
 
+    // ══════════════════════════════════════════════════════════════
+    // ПЛИНКО
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/plinko', async (req, res) => {
-        const user = await authenticate(req, res);
+        const user  = await authenticate(req, res);
         if (!user) return;
-        const bet = parseInt(req.body.bet, 10);
-        const count = parseInt(req.body.count, 10);
-        if (isNaN(bet) || bet <= 0 || isNaN(count) || count <= 0 || (bet * count) > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
 
-        let results = [];
+        const bet   = parseInt(req.body.bet,   10);
+        const count = parseInt(req.body.count, 10);
+        if (isNaN(bet) || bet <= 0 || isNaN(count) || count <= 0 || bet * count > user.dscoin_balance)
+            return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+        if (count > 50) return res.status(400).json({ error: 'МАКСИМУМ 50 ШАРОВ' });
+
+        let results  = [];
         let totalWin = 0;
 
-        for(let i=0; i<count; i++) {
+        for (let i = 0; i < count; i++) {
+            // Распределение соответствует видимым множителям BUCKET_MULTS
+            // Центр (индекс 4, ×0.5) — самый вероятный
             const r = Math.random();
             let bucket;
-            if (r < 0.195) bucket = 4;
-            else if (r < 0.795) bucket = Math.random() < 0.5 ? 3 : 5;
-            else if (r < 0.945) bucket = Math.random() < 0.5 ? 2 : 6;
-            else if (r < 0.995) bucket = Math.random() < 0.5 ? 1 : 7;
-            else bucket = Math.random() < 0.5 ? 0 : 8;
+            if      (r < 0.195) bucket = 4;
+            else if (r < 0.495) bucket = Math.random() < 0.5 ? 3 : 5;
+            else if (r < 0.745) bucket = Math.random() < 0.5 ? 2 : 6;
+            else if (r < 0.945) bucket = Math.random() < 0.5 ? 1 : 7;
+            else                bucket = Math.random() < 0.5 ? 0 : 8;
 
             const win = Math.floor(bet * PLINKO_MULTS[bucket]);
             totalWin += win;
             results.push({ bucket, win });
         }
 
-        user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - (bet * count) + totalWin);
+        user.dscoin_balance = Math.floor(Number(user.dscoin_balance) - bet * count + totalWin);
         await user.save();
 
         res.json({ success: true, results, newBalance: user.dscoin_balance });
     });
 
-    // --- МИНЫ ---
+    // ══════════════════════════════════════════════════════════════
+    // МИНЫ
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/mines/start', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        
-        const bet = parseInt(req.body.bet, 10);
+
+        const bet   = parseInt(req.body.bet,        10);
         const mines = parseInt(req.body.minesCount, 10);
 
-        if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-        if (isNaN(mines) || mines < 3 || mines > 20) return res.status(400).json({ error: 'НЕВЕРНОЕ КОЛ-ВО МИН' });
+        if (isNaN(bet)   || bet   <= 0  || bet   > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+        if (isNaN(mines) || mines < 3   || mines > 20)                  return res.status(400).json({ error: 'НЕВЕРНОЕ КОЛ-ВО МИН' });
 
         const bombs = [];
-        while(bombs.length < mines) {
+        while (bombs.length < mines) {
             const r = Math.floor(Math.random() * 25);
-            if(!bombs.includes(r)) bombs.push(r);
+            if (!bombs.includes(r)) bombs.push(r);
         }
 
         user.dscoin_balance -= bet;
-        user.current_game = { type: 'mines', bet, mines, bombs, opened: [], active: true };
-        user.markModified('current_game');
+        // Сохраняем игру как plain-object
+        patchGame(user, { type: 'mines', bet, mines, bombs, opened: [], active: true });
         await user.save();
 
         res.json({ success: true, newBalance: user.dscoin_balance });
@@ -380,52 +480,62 @@ module.exports = function(app, User, supabase) {
 
     app.post('/api/games/mines/step', async (req, res) => {
         const user = await authenticate(req, res);
-        if (!user || !user.current_game || user.current_game.type !== 'mines') return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ' });
+        if (!user) return;
+        if (!user.current_game || user.current_game.type !== 'mines')
+            return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ' });
 
         const cellIndex = parseInt(req.body.cellIndex, 10);
-        if (isNaN(cellIndex) || cellIndex < 0 || cellIndex > 24) return res.status(400).json({ error: 'Неверная ячейка' });
+        if (isNaN(cellIndex) || cellIndex < 0 || cellIndex > 24)
+            return res.status(400).json({ error: 'Неверная ячейка' });
 
         const game = user.current_game;
 
         if (game.bombs.includes(cellIndex)) {
-            const bombs = game.bombs;
-            user.current_game = null; 
-            user.markModified('current_game'); 
+            const bombs = [...game.bombs];
+            user.current_game = null;
+            user.markModified('current_game');
             await user.save();
             return res.json({ status: 'lose', bombs });
         }
 
-        if (!game.opened.includes(cellIndex)) game.opened.push(cellIndex);
-        const currentMult = getMinesMult(game.mines, game.opened.length);
-        user.markModified('current_game');
+        const opened = [...game.opened];
+        if (!opened.includes(cellIndex)) opened.push(cellIndex);
+        const currentMult = getMinesMult(game.mines, opened.length);
+
+        patchGame(user, { ...game, opened });
         await user.save();
 
-        res.json({ status: 'safe', multiplier: currentMult, openedCount: game.opened.length });
+        res.json({ status: 'safe', multiplier: currentMult, openedCount: opened.length });
     });
 
     app.post('/api/games/mines/cashout', async (req, res) => {
         const user = await authenticate(req, res);
-        if (!user || !user.current_game || user.current_game.type !== 'mines') return res.status(400).json({ error: 'НЕЧЕГО ВЫВОДИТЬ' });
+        if (!user) return;
+        if (!user.current_game || user.current_game.type !== 'mines')
+            return res.status(400).json({ error: 'НЕЧЕГО ВЫВОДИТЬ' });
 
         const game = user.current_game;
         const mult = getMinesMult(game.mines, game.opened.length);
-        const win = Math.floor(game.bet * mult);
+        const win  = Math.floor(game.bet * mult);
 
         user.dscoin_balance += win;
-        user.current_game = null;
+        user.current_game   = null;
         user.markModified('current_game');
         await user.save();
 
         res.json({ success: true, win, newBalance: user.dscoin_balance });
     });
 
-    // --- БЛЭКДЖЕК ---
+    // ══════════════════════════════════════════════════════════════
+    // БЛЭКДЖЕК
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/bj/start', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        
+
         const bet = parseInt(req.body.bet, 10);
-        if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+        if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
+            return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
 
         const deck = [];
         BJ_SUITS.forEach(s => BJ_RANKS.forEach(r => deck.push({ r, s })));
@@ -435,8 +545,7 @@ module.exports = function(app, User, supabase) {
         const dealerHand = [deck.pop(), deck.pop()];
 
         user.dscoin_balance -= bet;
-        user.current_game = { type: 'bj', bet, deck, playerHand, dealerHand, active: true };
-        user.markModified('current_game');
+        patchGame(user, { type: 'bj', bet, deck, playerHand, dealerHand, active: true });
         await user.save();
 
         res.json({ success: true, playerHand, dealerCard: dealerHand[0], newBalance: user.dscoin_balance });
@@ -444,11 +553,15 @@ module.exports = function(app, User, supabase) {
 
     app.post('/api/games/bj/hit', async (req, res) => {
         const user = await authenticate(req, res);
-        if (!user || !user.current_game || user.current_game.type !== 'bj') return res.status(400).json({ error: 'Нет игры' });
-        
-        const card = user.current_game.deck.pop();
-        user.current_game.playerHand.push(card);
-        const score = getBJScore(user.current_game.playerHand);
+        if (!user) return;
+        if (!user.current_game || user.current_game.type !== 'bj')
+            return res.status(400).json({ error: 'Нет игры' });
+
+        const game = user.current_game;
+        const deck = [...game.deck];
+        const card = deck.pop();
+        const playerHand = [...game.playerHand, card];
+        const score = getBJScore(playerHand);
 
         if (score > 21) {
             user.current_game = null;
@@ -457,62 +570,77 @@ module.exports = function(app, User, supabase) {
             return res.json({ status: 'bust', card, score });
         }
 
-        user.markModified('current_game');
+        patchGame(user, { ...game, deck, playerHand });
         await user.save();
         res.json({ status: 'continue', card, score });
     });
 
     app.post('/api/games/bj/stand', async (req, res) => {
         const user = await authenticate(req, res);
-        if (!user || !user.current_game || user.current_game.type !== 'bj') return res.status(400).json({ error: 'Ошибка' });
+        if (!user) return;
+        if (!user.current_game || user.current_game.type !== 'bj')
+            return res.status(400).json({ error: 'Ошибка' });
 
-        const game = user.current_game;
-        let dScore = getBJScore(game.dealerHand);
-        
-        while(dScore < 17 && game.deck.length > 0) {
-            game.dealerHand.push(game.deck.pop());
-            dScore = getBJScore(game.dealerHand);
+        const game       = user.current_game;
+        let   deck       = [...game.deck];
+        let   dealerHand = [...game.dealerHand];
+        let   dScore     = getBJScore(dealerHand);
+
+        while (dScore < 17 && deck.length > 0) {
+            dealerHand.push(deck.pop());
+            dScore = getBJScore(dealerHand);
         }
 
         const pScore = getBJScore(game.playerHand);
         let win = 0;
-        
-        if (pScore === 21 && game.playerHand.length === 2 && dScore !== 21) win = Math.floor(game.bet * 2.5);
-        else if (dScore > 21 || pScore > dScore) win = Math.floor(game.bet * 2);
-        else if (pScore === dScore) win = game.bet;
+
+        if      (pScore === 21 && game.playerHand.length === 2 && dScore !== 21) win = Math.floor(game.bet * 2.5);
+        else if (dScore > 21 || pScore > dScore)                                 win = Math.floor(game.bet * 2);
+        else if (pScore === dScore)                                               win = game.bet;
 
         user.dscoin_balance += win;
-        user.current_game = null;
+        user.current_game   = null;
         user.markModified('current_game');
         await user.save();
 
-        res.json({ win, pScore, dScore, dealerHand: game.dealerHand, newBalance: user.dscoin_balance });
+        res.json({ win, pScore, dScore, dealerHand, newBalance: user.dscoin_balance });
     });
 
-    // --- КВИЗ (Neuro-Quiz) ---
+    // ══════════════════════════════════════════════════════════════
+    // КВИЗ (Neuro-Quiz)
+    // ИСПРАВЛЕНО: ставка вычитается при старте; plain-object для Mongoose
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/quiz/start', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        const bet = parseInt(req.body.bet, 10);
-        if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
 
-        const catalog = await getMusicCatalog();
-        const validTracks = catalog.filter(t => t.cover_url && t.title);
+        const bet = parseInt(req.body.bet, 10);
+        if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
+            return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+
+        const catalog      = await getMusicCatalog();
+        const validTracks  = catalog.filter(t => t.cover_url && t.title);
         if (validTracks.length === 0) return res.status(500).json({ error: 'База пуста' });
 
         const correctTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
-        
+
         let uniqueTitles = new Set(validTracks.map(t => t.title));
-        FALLBACK_TITLES.forEach(t => uniqueTitles.add(t)); 
-        uniqueTitles.delete(correctTrack.title); 
+        FALLBACK_TITLES.forEach(t => uniqueTitles.add(t));
+        uniqueTitles.delete(correctTrack.title);
 
-        let optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
-        let options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]];
-        options.sort(() => 0.5 - Math.random()); 
+        const optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
+        const options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]]
+            .sort(() => 0.5 - Math.random());
 
-        // ИСПРАВЛЕНИЕ ДЛЯ MONGOOSE
-        user.current_game = { type: 'quiz', bet, correctTitle: correctTrack.title, streak: req.body.streak || 0, active: true };
-        user.markModified('current_game');
+        // Вычитаем ставку при старте (как в остальных играх)
+        user.dscoin_balance -= bet;
+        patchGame(user, {
+            type:         'quiz',
+            bet,
+            correctTitle: correctTrack.title,
+            streak:       parseInt(req.body.streak, 10) || 0,
+            active:       true
+        });
         await user.save();
 
         res.json({ success: true, coverUrl: correctTrack.cover_url, options, newBalance: user.dscoin_balance });
@@ -520,24 +648,25 @@ module.exports = function(app, User, supabase) {
 
     app.post('/api/games/quiz/answer', async (req, res) => {
         const user = await authenticate(req, res);
-        if (!user || !user.current_game || user.current_game.type !== 'quiz') return res.status(400).json({ error: 'ИГРА НЕ НАЙДЕНА' });
+        if (!user) return;
+        if (!user.current_game || user.current_game.type !== 'quiz')
+            return res.status(400).json({ error: 'ИГРА НЕ НАЙДЕНА' });
 
         const { answer } = req.body;
         const game = user.current_game;
-        
-        // ЖУЧОК ДЛЯ ЛОГОВ СЕРВЕРА
-        console.log(`[QUIZ] Фронт прислал: "${answer}", мы ожидали: "${game.correctTitle}"`);
 
-        let win = 0;
+        console.log(`[QUIZ] Фронт прислал: "${answer}", ожидали: "${game.correctTitle}"`);
+
+        const cleanAnswer  = String(answer      || '').trim().toLowerCase();
+        const cleanCorrect = String(game.correctTitle || '').trim().toLowerCase();
+        const isCorrect    = cleanAnswer === cleanCorrect;
+
+        let win       = 0;
         let newStreak = 0;
-
-        const cleanAnswer = String(answer).trim().toLowerCase();
-        const cleanCorrect = String(game.correctTitle).trim().toLowerCase();
-        const isCorrect = (cleanAnswer === cleanCorrect);
 
         if (isCorrect) {
             newStreak = game.streak + 1;
-            const mult = 1 + (newStreak * 0.5);
+            const mult = 1 + newStreak * 0.5;
             win = Math.floor(game.bet * mult);
             user.dscoin_balance += win;
         }
@@ -546,19 +675,31 @@ module.exports = function(app, User, supabase) {
         user.markModified('current_game');
         await user.save();
 
-        res.json({ success: true, isCorrect: isCorrect, win, newStreak, newBalance: user.dscoin_balance, correctTitle: game.correctTitle });
+        res.json({
+            success:      true,
+            isCorrect,
+            win,
+            newStreak,
+            newBalance:   user.dscoin_balance,
+            correctTitle: game.correctTitle
+        });
     });
 
-    // --- БИТ (Predict The Beat) ---
+    // ══════════════════════════════════════════════════════════════
+    // БИТ (Predict The Beat)
+    // ИСПРАВЛЕНО: не используем spread на Mongoose-документе;
+    //             patchGame для каждого изменения
+    // ══════════════════════════════════════════════════════════════
     app.post('/api/games/ptb/start', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
+
         const bet = parseInt(req.body.bet, 10);
-        if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+        if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
+            return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
 
         user.dscoin_balance -= bet;
-        user.current_game = { type: 'ptb', bet, round: 0, correctAnswers: 0, active: true };
-        user.markModified('current_game');
+        patchGame(user, { type: 'ptb', bet, round: 0, correctAnswers: 0, active: true, currentCorrectTitle: null });
         await user.save();
 
         res.json({ success: true, newBalance: user.dscoin_balance });
@@ -566,11 +707,12 @@ module.exports = function(app, User, supabase) {
 
     app.post('/api/games/ptb/round', async (req, res) => {
         const user = await authenticate(req, res);
-        if (!user || !user.current_game || user.current_game.type !== 'ptb') return res.status(400).json({ error: 'Нет активной игры' });
+        if (!user) return;
+        if (!user.current_game || user.current_game.type !== 'ptb')
+            return res.status(400).json({ error: 'Нет активной игры' });
 
-        const catalog = await getMusicCatalog();
+        const catalog   = await getMusicCatalog();
         const validAudio = catalog.filter(t => t.mp3_url && t.title);
-        
         if (validAudio.length === 0) return res.status(500).json({ error: 'База пуста' });
 
         const correctTrack = validAudio[Math.floor(Math.random() * validAudio.length)];
@@ -579,58 +721,73 @@ module.exports = function(app, User, supabase) {
         FALLBACK_TITLES.forEach(t => uniqueTitles.add(t));
         uniqueTitles.delete(correctTrack.title);
 
-        let optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
-        let options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]];
-        options.sort(() => 0.5 - Math.random());
+        const optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
+        const options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]]
+            .sort(() => 0.5 - Math.random());
 
-        // ЖЕЛЕЗОБЕТОННОЕ СОХРАНЕНИЕ ОБЪЕКТА ДЛЯ БАЗЫ (MONGOOSE)
-        const updatedGame = { ...user.current_game };
-        updatedGame.round += 1;
-        updatedGame.currentCorrectTitle = correctTrack.title;
-        
-        user.current_game = updatedGame;
-        user.markModified('current_game');
+        const newRound = (user.current_game.round || 0) + 1;
+
+        // patchGame — единственный безопасный способ обновить вложенный объект
+        patchGame(user, {
+            type:                'ptb',
+            bet:                 user.current_game.bet,
+            round:               newRound,
+            correctAnswers:      user.current_game.correctAnswers || 0,
+            active:              true,
+            currentCorrectTitle: correctTrack.title
+        });
         await user.save();
 
-        res.json({ success: true, mp3Url: correctTrack.mp3_url, options, round: updatedGame.round });
+        res.json({ success: true, mp3Url: correctTrack.mp3_url, options, round: newRound });
     });
 
     app.post('/api/games/ptb/answer', async (req, res) => {
         const user = await authenticate(req, res);
-        if (!user || !user.current_game || user.current_game.type !== 'ptb') return res.status(400).json({ error: 'Нет игры' });
+        if (!user) return;
+        if (!user.current_game || user.current_game.type !== 'ptb')
+            return res.status(400).json({ error: 'Нет игры' });
 
         const { answer } = req.body;
-        const game = user.current_game;
-        
-        // ЖУЧОК ДЛЯ ЛОГОВ
-        console.log(`[PTB] Раунд ${game.round}. Фронт прислал: "${answer}", мы ожидали: "${game.currentCorrectTitle}"`);
-        
-        const cleanAnswer = String(answer).trim().toLowerCase();
-        const cleanCorrect = String(game.currentCorrectTitle).trim().toLowerCase();
-        const isCorrect = (cleanAnswer === cleanCorrect);
+        const game       = user.current_game;
 
-        const updatedGame = { ...game };
+        console.log(`[PTB] Раунд ${game.round}. Фронт прислал: "${answer}", ожидали: "${game.currentCorrectTitle}"`);
 
-        if (isCorrect) updatedGame.correctAnswers++;
+        const cleanAnswer  = String(answer                    || '').trim().toLowerCase();
+        const cleanCorrect = String(game.currentCorrectTitle  || '').trim().toLowerCase();
+        const isCorrect    = cleanAnswer === cleanCorrect;
+
+        const correctAnswers = (game.correctAnswers || 0) + (isCorrect ? 1 : 0);
+        const isFinished     = game.round >= 5;
 
         let win = 0;
-        let isFinished = false;
-
-        if (updatedGame.round >= 5) {
-            isFinished = true;
-            const ratio = updatedGame.correctAnswers / 5;
-            const mult = ratio >= 0.8 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.4 ? 1.5 : ratio >= 0.2 ? 1 : 0;
-            win = Math.floor(updatedGame.bet * mult);
+        if (isFinished) {
+            const ratio = correctAnswers / 5;
+            const mult  = ratio >= 0.8 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.4 ? 1.5 : ratio >= 0.2 ? 1 : 0;
+            win = Math.floor(game.bet * mult);
             user.dscoin_balance += win;
-            user.current_game = null; 
+            user.current_game   = null;
+            user.markModified('current_game');
         } else {
-            user.current_game = updatedGame;
+            patchGame(user, {
+                type:                'ptb',
+                bet:                 game.bet,
+                round:               game.round,
+                correctAnswers,
+                active:              true,
+                currentCorrectTitle: game.currentCorrectTitle
+            });
         }
 
-        user.markModified('current_game');
         await user.save();
 
-        res.json({ success: true, isCorrect, isFinished, correctAnswers: updatedGame.correctAnswers || 0, win, newBalance: user.dscoin_balance });
+        res.json({
+            success:        true,
+            isCorrect,
+            isFinished,
+            correctAnswers,
+            win,
+            newBalance:     user.dscoin_balance
+        });
     });
 
 };
