@@ -1818,15 +1818,11 @@
                             if(av) av.src = user.avatarUrl;
                         }
                         
-                        // Если сервер не отдал баланс, но в локалСторэдж есть сохраненный после победы (чтобы не затирался)
-                        let cachedBal = localStorage.getItem('cached_balance');
                         let actualBal = user.dscoin_balance || 0;
-                        if(cachedBal && parseInt(cachedBal) > actualBal) {
-                            actualBal = parseInt(cachedBal);
-                            syncBalanceToServer(actualBal); // пушим обратно на серв
-                        }
-                        
-                        updateBalance(actualBal);
+updateBalance(actualBal);
+
+// Опционально: зачищаем следы старого кэша у игроков при входе
+localStorage.removeItem('cached_balance');
                         
                         // Инициализируем фарм (расширенная проверка)
                         try{ initFarmMockState(user); }catch(e){}
