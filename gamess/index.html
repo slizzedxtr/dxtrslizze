@@ -1944,6 +1944,27 @@
             } 
         } 
     }
+
+    async function loadFarmStatus() {
+    try {
+        const res = await fetch('/api/games/farm/status', {
+            headers: { 'Authorization': `Bearer ${getToken()}` } // Твоя функция получения токена
+        });
+        const data = await res.json();
+        
+        if (data.success && data.farm && data.farm.active) {
+            // Если ферма куплена — прячем кнопку активации и показываем уровни
+            document.getElementById('activateBtn').style.display = 'none';
+            document.getElementById('farmUpgradesPanel').style.display = 'block'; // Твоя панель с прокачкой
+            
+            // Здесь же можно отрисовать текущие уровни: data.farm.timeLevel и data.farm.incomeLevel
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки фермы', e);
+    }
+}
+
+// Вызови loadFarmStatus() когда пользователь заходит на страницу фарма
     
     async function activateFarm(){ 
         if(userBalance < 1000) return printMsg('farm-activate', 'НЕДОСТАТОЧНО СРЕДСТВ', 'err'); 
