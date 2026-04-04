@@ -1595,37 +1595,17 @@
                localStorage.getItem('accessToken');
     }
 
-    // РЕАЛТАЙМ ЧЕКЕР
+    // РЕАЛТАЙМ ЧЕКЕР АНИМАЦИЙ
     function isAnyGameActive() {
         return plinkoAnimating || isRouletteSpinning || ptbActive || minesActive || quizActive || bjGameActive || crashInterval;
     }
 
-    // ── СИНХРОНИЗАЦИЯ БАЛАНСА НА СЕРВЕР (ФИКС ПРОПАЖИ ДЕНЕГ) ──
-    async function syncBalanceToServer(bal) {
-        // Локальное кэширование на случай, если бэк упал
-        localStorage.setItem('cached_balance', bal);
-        try {
-            // Тебе нужно будет добавить этот роут на бэке (index.js)
-            await fetch(`${API_URL}/user/sync-balance`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`
-                },
-                body: JSON.stringify({ dscoin_balance: bal })
-            });
-        } catch(e) {
-            console.log("Бэк не принял баланс, сохранен в кэш");
-        }
-    }
-
-    // Функция обновления баланса с принудительной синхронизацией
-    function updateBalance(val, forceSync = false){
+    // ── БЕЗОПАСНОЕ ОБНОВЛЕНИЕ БАЛАНСА (ЛОКАЛЬНО + UI) ──
+    // Больше никакого syncBalanceToServer! Сервер сам знает, сколько у нас денег.
+    function updateBalance(val){
         userBalance = val;
         const el = document.getElementById('uiBalance'); 
         if(el) el.innerText = val;
-        
-        if(forceSync) syncBalanceToServer(val);
     }
 
     // ── SOCKET.IO ONLINE COUNTER ── 
@@ -1635,14 +1615,11 @@
         if(counterEl) counterEl.textContent = c + ' ОНЛАЙН';
     });
 
-    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) + ФОЛЛБЭК ДЛЯ СЛОТОВ И БИТ ── */
+    /* ── ЗАГРУЗКА БАЗЫ (SUPABASE) + ФОЛЛБЭК ДЛЯ ИГРОВЫХ АССЕТОВ ── */
     async function loadTracksData() {
-        // Фоллбэк массив на случай если БД пустая или CORS блочит запрос
         const fallbackData = [
             { id:1, title:'NIGHT CITY LIGHTS', cover_url:'/dslogo.png', mp3_url: ambientTracks[0] || 'ambient1.mp3' },
-            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', mp3_url: ambientTracks[1] || 'ambient2.mp3' },
-            { id:3, title:'SLIZZE MODE', cover_url:'/dslogo.png', mp3_url: ambientTracks[2] || 'ambient3.mp3' },
-            { id:4, title:'DXTR WAVE', cover_url:'/dslogo.png', mp3_url: ambientTracks[3] || 'ambient4.mp3' }
+            { id:2, title:'CYBER DROP', cover_url:'/dslogo.png', mp3_url: ambientTracks[1] || 'ambient2.mp3' }
         ];
 
         try {
@@ -1654,17 +1631,11 @@
             });
             if(res.ok) {
                 const data = await res.json();
-                if(data && data.length >= 4) {
-                    supabaseTracks = data;
-                } else {
-                    // Если данных мало (меньше 4), объединяем с фоллбэком чтобы игры работали
-                    supabaseTracks = [...data, ...fallbackData];
-                }
+                supabaseTracks = data.length >= 4 ? data : [...data, ...fallbackData];
             } else {
                 supabaseTracks = fallbackData;
             }
         } catch(e) {
-            console.log("Supabase load error, using fallback data", e);
             supabaseTracks = fallbackData;
         }
         
@@ -1672,12 +1643,6 @@
         if(slotCovers.length === 0) slotCovers = ['/dslogo.png'];
 
         initReels(); 
-        
-        document.getElementById('quizHint').textContent = "Нейросеть исказила обложку...";
-        document.getElementById('btnQuiz').disabled = false;
-        
-        document.getElementById('msg-ptb').textContent = "";
-        document.getElementById('btnPtb').disabled = false;
     }
 
     /* ── ЧАСТИЦЫ НА ФОНЕ ── */
@@ -1686,49 +1651,35 @@
         const ctx = c.getContext('2d');
         let W, H, particles = [];
         
-        function resize(){ 
-            W = c.width = innerWidth; 
-            H = c.height = innerHeight; 
-        }
-        
-        resize(); 
-        window.addEventListener('resize', resize);
+        function resize(){ W = c.width = innerWidth; H = c.height = innerHeight; }
+        resize(); window.addEventListener('resize', resize);
         
         const COLORS = ['rgba(0,229,255,', 'rgba(157,0,255,', 'rgba(255,0,127,', 'rgba(0,255,136,'];
         
         class Particle {
             constructor(){
-                this.x = Math.random() * W; 
-                this.y = Math.random() * H;
+                this.x = Math.random() * W; this.y = Math.random() * H;
                 this.r = Math.random() * 1.5 + 0.5;
-                this.vx = (Math.random() - 0.5) * 0.3; 
-                this.vy = -Math.random() * 0.4 - 0.1;
+                this.vx = (Math.random() - 0.5) * 0.3; this.vy = -Math.random() * 0.4 - 0.1;
                 this.alpha = Math.random() * 0.6 + 0.1;
                 this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
-                this.life = 0; 
-                this.maxLife = 200 + Math.random() * 300;
+                this.life = 0; this.maxLife = 200 + Math.random() * 300;
             }
             update(){
-                this.x += this.vx; 
-                this.y += this.vy; 
-                this.life++;
+                this.x += this.vx; this.y += this.vy; this.life++;
                 this.alpha = this.life < 50 ? this.life/50*0.6 : Math.max(0,(1 - this.life/this.maxLife)*0.6);
             }
             draw(){
-                ctx.beginPath(); 
-                ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
-                ctx.fillStyle = this.color + this.alpha + ')'; 
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+                ctx.fillStyle = this.color + this.alpha + ')'; ctx.fill();
             }
         }
         
         for(let i=0;i<120;i++) particles.push(new Particle());
-        
         function loop(){
             ctx.clearRect(0,0,W,H);
             particles.forEach((p,i) => {
-                p.update(); 
-                p.draw();
+                p.update(); p.draw();
                 if(p.life >= p.maxLife || p.y < 0) particles[i] = new Particle();
             });
             requestAnimationFrame(loop);
@@ -1739,10 +1690,8 @@
     /* ── FLOAT WIN ── */
     function spawnFloat(text, x, y){
         const el = document.createElement('div');
-        el.className = 'float-win'; 
-        el.textContent = text;
-        el.style.left = x + 'px'; 
-        el.style.top = y + 'px';
+        el.className = 'float-win'; el.textContent = text;
+        el.style.left = x + 'px'; el.style.top = y + 'px';
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 1500);
     }
@@ -1754,20 +1703,16 @@
     const audio1 = document.getElementById('bgm1'), audio2 = document.getElementById('bgm2');
     let activeAudio = audio1, inactiveAudio = audio2;
     
-    audio1.src = ambientTracks[0]; 
-    audio2.src = ambientTracks[1];
+    audio1.src = ambientTracks[0]; audio2.src = ambientTracks[1];
 
     function toggleMusic(){
         const btn = document.getElementById('musicBtn');
         if(isMusicPlaying){ 
-            activeAudio.pause(); 
-            btn.classList.remove('playing'); 
+            activeAudio.pause(); btn.classList.remove('playing'); 
             btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>'; 
         } else { 
-            activeAudio.volume = 0.2; 
-            activeAudio.play().catch(()=>{}); 
-            btn.classList.add('playing'); 
-            btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>'; 
+            activeAudio.volume = 0.2; activeAudio.play().catch(()=>{}); 
+            btn.classList.add('playing'); btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>'; 
             scheduleNextTrack(); 
         }
         isMusicPlaying = !isMusicPlaying;
@@ -1777,33 +1722,24 @@
         activeAudio.onended = () => {
             currentTrackIndex = (currentTrackIndex + 1) % ambientTracks.length;
             inactiveAudio.src = ambientTracks[currentTrackIndex]; 
-            inactiveAudio.volume = 0.2; 
-            inactiveAudio.play().catch(()=>{});
-            let t = activeAudio; 
-            activeAudio = inactiveAudio; 
-            inactiveAudio = t;
+            inactiveAudio.volume = 0.2; inactiveAudio.play().catch(()=>{});
+            let t = activeAudio; activeAudio = inactiveAudio; inactiveAudio = t;
             scheduleNextTrack();
         };
     }
-    
     document.getElementById('musicBtn').onclick = toggleMusic;
 
     /* ── INIT & AUTH ── */
     window.onload = async () => {
-        initPlinko();
-        initPtbWave();
-        loadTracksData(); 
-        
+        initPlinko(); initPtbWave(); loadTracksData(); 
         const currentToken = getToken();
         
         if(currentToken){
             try{
                 const lockScreen = document.getElementById('authLock');
-                if(lockScreen) lockScreen.querySelector('h2').innerText = "ПОДКЛЮЧЕНИЕ К СЕРВЕРУ...";
+                if(lockScreen) lockScreen.querySelector('h2').innerText = "ПОДКЛЮЧЕНИЕ...";
                 
-                const res = await fetch(`${API_URL}/auth/me`,{ 
-                    headers:{'Authorization':`Bearer ${currentToken}`} 
-                });
+                const res = await fetch(`${API_URL}/auth/me`,{ headers:{'Authorization':`Bearer ${currentToken}`} });
                 
                 if(res.ok){
                     const data = await res.json();
@@ -1818,50 +1754,25 @@
                             if(av) av.src = user.avatarUrl;
                         }
                         
-                        let actualBal = user.dscoin_balance || 0;
-updateBalance(actualBal);
-
-// Опционально: зачищаем следы старого кэша у игроков при входе
-localStorage.removeItem('cached_balance');
-                        
-                        // Инициализируем фарм (расширенная проверка)
+                        updateBalance(user.dscoin_balance || 0);
                         try{ initFarmMockState(user); }catch(e){}
-                        
                         fetchLeaderboard();
-                    } else {
-                        lockUI("ОШИБКА АВТОРИЗАЦИИ");
-                    }
-                } else {
-                    lockUI("СЕССИЯ ИСТЕКЛА");
-                }
-            }catch(e){ 
-                lockUI("СЕРВЕР НЕДОСТУПЕН"); 
-            }
-        } else {
-            lockUI("СИСТЕМА ЗАБЛОКИРОВАНА");
-        }
+                    } else lockUI("ОШИБКА АВТОРИЗАЦИИ");
+                } else lockUI("СЕССИЯ ИСТЕКЛА");
+            }catch(e){ lockUI("СЕРВЕР НЕДОСТУПЕН"); }
+        } else lockUI("СИСТЕМА ЗАБЛОКИРОВАНА");
 
-        // ЖЕСТКАЯ ОБНОВЛЕНИЕ ЛИДЕРБОРДА КАЖДЫЕ 5 СЕК
-        setInterval(() => {
-            fetchLeaderboard();
-        }, 5000); 
+        setInterval(fetchLeaderboard, 5000); 
     };
 
     function lockUI(msg){ 
         const l = document.getElementById('authLock'); 
-        if(l) { 
-            l.style.opacity = '1'; 
-            l.style.display = 'flex'; 
-            if(msg) l.querySelector('h2').innerText = msg; 
-        }
+        if(l) { l.style.opacity = '1'; l.style.display = 'flex'; if(msg) l.querySelector('h2').innerText = msg; }
     }
 
     function printMsg(id, text, type){
         const el = document.getElementById('msg-' + id);
-        if(el){ 
-            el.className = 'sys-msg sys-' + type; 
-            el.innerHTML = text.replace(/NC/g, '<img src="/valuta.png" class="valuta-icon">'); 
-        }
+        if(el){ el.className = 'sys-msg sys-' + type; el.innerHTML = text.replace(/NC/g, '<img src="/valuta.png" class="valuta-icon">'); }
     }
 
     /* ── МЕНЮ И ТАБЫ ── */
@@ -1869,24 +1780,15 @@ localStorage.removeItem('cached_balance');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     
-    function toggleMenu(){ 
-        sidebar.classList.toggle('active'); 
-        sidebarOverlay.classList.toggle('active'); 
-    }
-    
-    burgerBtn.onclick = toggleMenu; 
-    document.getElementById('closeSidebar').onclick = toggleMenu; 
-    sidebarOverlay.onclick = toggleMenu;
+    function toggleMenu(){ sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
+    burgerBtn.onclick = toggleMenu; document.getElementById('closeSidebar').onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
 
     function switchTab(id, btn){
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        
         const t = document.getElementById('tab-' + id); 
         if(t) t.classList.add('active');
-        
         if(btn) btn.classList.add('active');
-        
         if(id === 'roulette') setTimeout(() => updateRoulettePosition(0), 10);
         if(id === 'plinko') initPlinko();
     }
@@ -1896,87 +1798,45 @@ localStorage.removeItem('cached_balance');
     const npHeader = document.getElementById('np-header');
     let isDragging = false, startX, startY, initialX, initialY;
     
-    npHeader.addEventListener('mousedown', ds); 
-    document.addEventListener('mousemove', dm); 
-    document.addEventListener('mouseup', de);
-    
-    npHeader.addEventListener('touchstart', ds, {passive:true}); 
-    document.addEventListener('touchmove', dm, {passive:false}); 
-    document.addEventListener('touchend', de);
+    npHeader.addEventListener('mousedown', ds); document.addEventListener('mousemove', dm); document.addEventListener('mouseup', de);
+    npHeader.addEventListener('touchstart', ds, {passive:true}); document.addEventListener('touchmove', dm, {passive:false}); document.addEventListener('touchend', de);
     
     function ds(e){ 
         isDragging = true; 
-        if(e.type === 'touchstart'){
-            startX = e.touches[0].clientX; 
-            startY = e.touches[0].clientY;
-        } else {
-            startX = e.clientX; 
-            startY = e.clientY;
-        } 
-        const r = npModal.getBoundingClientRect(); 
-        initialX = r.left; 
-        initialY = r.top; 
-        npModal.style.transform = 'none'; 
-        npModal.style.left = initialX + 'px'; 
-        npModal.style.top = initialY + 'px'; 
-        npModal.style.animation = 'none'; 
+        if(e.type === 'touchstart'){ startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
+        else { startX = e.clientX; startY = e.clientY; } 
+        const r = npModal.getBoundingClientRect(); initialX = r.left; initialY = r.top; 
+        npModal.style.transform = 'none'; npModal.style.left = initialX + 'px'; npModal.style.top = initialY + 'px'; npModal.style.animation = 'none'; 
     }
-    
     function dm(e){ 
-        if(!isDragging) return; 
-        e.preventDefault(); 
+        if(!isDragging) return; e.preventDefault(); 
         let cx, cy; 
-        if(e.type === 'touchmove'){
-            cx = e.touches[0].clientX; 
-            cy = e.touches[0].clientY;
-        } else {
-            cx = e.clientX; 
-            cy = e.clientY;
-        } 
-        npModal.style.left = (initialX + (cx - startX)) + 'px'; 
-        npModal.style.top = (initialY + (cy - startY)) + 'px'; 
+        if(e.type === 'touchmove'){ cx = e.touches[0].clientX; cy = e.touches[0].clientY; }
+        else { cx = e.clientX; cy = e.clientY; } 
+        npModal.style.left = (initialX + (cx - startX)) + 'px'; npModal.style.top = (initialY + (cy - startY)) + 'px'; 
     }
-    
     function de(){ isDragging = false; }
     
     let activeInputId = null, isDecimalAllowed = false;
     
     function openNumpad(targetId, allowDecimal = false){ 
-        activeInputId = targetId; 
-        isDecimalAllowed = allowDecimal; 
+        activeInputId = targetId; isDecimalAllowed = allowDecimal; 
         npModal.style.animation = 'npPop 0.3s cubic-bezier(0.175,0.885,0.32,1.275) forwards'; 
-        npModal.style.left = '50%'; 
-        npModal.style.top = '50%'; 
-        npModal.classList.add('active'); 
+        npModal.style.left = '50%'; npModal.style.top = '50%'; npModal.classList.add('active'); 
     }
-    
-    function closeNumpad(){ 
-        npModal.classList.remove('active'); 
-        activeInputId = null; 
-    }
+    function closeNumpad(){ npModal.classList.remove('active'); activeInputId = null; }
     
     function npPress(val){
         if(!activeInputId) return; 
         const disp = document.getElementById(activeInputId + '_disp'); 
         if(!disp) return;
-        
         let cur = disp.innerText;
-        
-        if(val === 'DEL'){ 
-            cur = cur.slice(0, -1); 
-            if(cur === '') cur = '0'; 
-        }
-        else if(val === '.'){ 
-            if(isDecimalAllowed && !cur.includes('.')) cur += '.'; 
-        }
+        if(val === 'DEL'){ cur = cur.slice(0, -1); if(cur === '') cur = '0'; }
+        else if(val === '.'){ if(isDecimalAllowed && !cur.includes('.')) cur += '.'; }
         else { 
-            if(cur === '0' && val !== '0') {
-                cur = val; 
-            } else if(cur === '0' && val === '0'){
-                // do nothing
-            } else if(cur.length < 8) {
-                cur += val; 
-            }
+            if(cur === '0' && val !== '0') cur = val; 
+            else if(cur === '0' && val === '0'){} 
+            else if(cur.length < 8) cur += val; 
         }
         disp.innerText = cur;
     }
@@ -1987,46 +1847,29 @@ localStorage.removeItem('cached_balance');
         return isFloat ? parseFloat(el.innerText) : parseInt(el.innerText); 
     }
 
-    /* ── GAMES ── */
+    // ==========================================
+    // СЕТЕВЫЕ ИГРЫ (SERVER-SIDE)
+    // ==========================================
+
+    /* ── БАЗА И ЕЖЕДНЕВКА ── */
     async function claimDaily(){
-        const btn = document.getElementById('btnDaily'); 
-        if(btn) btn.disabled = true;
-        
+        const btn = document.getElementById('btnDaily'); if(btn) btn.disabled = true;
         try{
-            const res = await fetch(`${API_URL}/games/daily`, {
-                method: 'POST',
-                headers: {'Authorization': `Bearer ${getToken()}`}
-            });
+            const res = await fetch(`${API_URL}/games/daily`, { method: 'POST', headers: {'Authorization': `Bearer ${getToken()}`} });
             const data = await res.json();
-            
-            if(res.ok){ 
-                updateBalance(data.newBalance); 
-                printMsg('dash', data.message, 'win'); 
-            } else {
-                printMsg('dash', data.error, 'err');
-            }
-        }catch(e){ 
-            printMsg('dash', 'Ошибка связи', 'err'); 
-        }
-        
-        setTimeout(() => { 
-            if(btn) btn.disabled = false; 
-            printMsg('dash', '', ''); 
-        }, 3000);
+            if(res.ok){ updateBalance(data.newBalance); printMsg('dash', data.message, 'win'); } 
+            else { printMsg('dash', data.error, 'err'); }
+        }catch(e){ printMsg('dash', 'Ошибка связи', 'err'); }
+        setTimeout(() => { if(btn) btn.disabled = false; printMsg('dash', '', ''); }, 3000);
     }
 
-    // ── ЖЕСТКОЕ ПЕРЕРИСОВЫВАНИЕ ЛИДЕРБОРДА ──
     async function fetchLeaderboard(){
         try {
             const res = await fetch(`${API_URL}/games/leaderboard`);
             const data = await res.json();
             const lb = document.getElementById('leaderboardData');
-            
             if(data.success && data.leaders && lb){
-                const top5 = data.leaders.slice(0, 5);
-                
-                // Перерисовываем полностью каждый раз, чтобы инфа обновлялась
-                const html = top5.map((u, i) => {
+                lb.innerHTML = data.leaders.slice(0, 5).map((u, i) => {
                     let rc = i < 3 ? `rank-${i+1}` : ''; 
                     let c = i === 0 ? '#ffea00' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)';
                     return `
@@ -2039,1172 +1882,640 @@ localStorage.removeItem('cached_balance');
                         </div>
                     </div>`;
                 }).join('');
-                lb.innerHTML = html;
             }
         } catch(e) {}
     }
 
-    function initReels(){
-        [1, 2, 3].forEach(id => {
-            let html = ''; 
-            for(let i=0; i<30; i++) {
-                html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
-            }
-            const strip = document.getElementById('reel' + id); 
-            if(strip){ 
-                strip.innerHTML = html; 
-                strip.style.transform = 'translateY(0px)'; 
-            }
-        });
-    }
-
-    async function playSlots(){
-        const bet = getBetValue('betSlots'); 
-        if(bet > userBalance || bet <= 0) return printMsg('slots', 'ОШИБКА СТАВКИ', 'err');
-        
-        const btn = document.getElementById('btnSlots'); 
-        if(btn) btn.disabled = true; 
-        
-        printMsg('slots', 'ВРАЩЕНИЕ...', 'err');
-        
-        try{
-            const res = await fetch(`${API_URL}/games/slots`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`
-                },
-                body: JSON.stringify({bet})
-            });
-            const data = await res.json();
-            
-            if(!res.ok){ 
-                printMsg('slots', data.error, 'err'); 
-                if(btn) btn.disabled = false; 
-                return; 
-            }
-            
-            [1, 2, 3].forEach((id, i) => {
-                const strip = document.getElementById('reel' + id); 
-                if(!strip) return;
-                
-                let html = ''; 
-                for(let j=0; j<20; j++) {
-                    html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
-                }
-                
-                const finalImg = (data.items && data.items[i] && data.items[i].cover_url) ? data.items[i].cover_url : slotCovers[Math.floor(Math.random() * slotCovers.length)];
-                html += `<img src="${finalImg}" onerror="this.onerror=null;this.src='/dslogo.png';">`;
-                
-                strip.innerHTML = html; 
-                strip.style.transition = 'none'; 
-                strip.style.transform = 'translateY(0px)'; 
-                
-                void strip.offsetWidth; // trigger reflow
-                
-                strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.15,0.85,0.15,1)`; 
-                strip.style.transform = `translateY(-${20 * (strip.children[0].offsetHeight || 145)}px)`;
-            });
-            
-            setTimeout(() => {
-                if(data.win > 0){ 
-                    spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); 
-                    [1, 2, 3].forEach(id => { 
-                        const s = document.getElementById('reel' + id); 
-                        if(s && s.lastChild){ 
-                            s.lastChild.style.filter = 'drop-shadow(0 0 25px var(--neon-green))'; 
-                        }
-                    }); 
-                    printMsg('slots', `JACKPOT! +${data.win} NC`, 'win'); 
-                } else {
-                    printMsg('slots', 'ПРОИГРЫШ', 'lose');
-                }
-                updateBalance(data.newBalance); 
-                if(btn) btn.disabled = false; 
-                setTimeout(initReels, 3500);
-            }, 3000);
-            
-        }catch(e){ 
-            if(btn) btn.disabled = false; 
-            printMsg('slots', 'Сбой сети', 'err'); 
-            initReels(); 
-        }
-    }
-
-    let currentDice = null;
-    
-    function selectDice(choice){ 
-        currentDice = choice; 
-        document.querySelectorAll('.d-opt').forEach(b => b.classList.remove('active')); 
-        const o = document.getElementById('d-opt-' + choice); 
-        if(o) o.classList.add('active'); 
-        printMsg('dice', 'СЕКТОР ВЫБРАН', 'err'); 
-    }
-    
-    async function playDice(){
-        if(!currentDice) return printMsg('dice', 'ВЫБЕРИТЕ СЕКТОР', 'err');
-        
-        const bet = getBetValue('betDice'); 
-        if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('dice', 'ОШИБКА СТАВКИ', 'err');
-        
-        const btn = document.getElementById('btnDice'); 
-        if(btn) btn.disabled = true;
-        
-        const disp = document.getElementById('diceDisplay'); 
-        let spin; 
-        if(disp) spin = setInterval(() => { disp.innerText = Math.floor(Math.random() * 100) + 1; }, 50);
-        
-        try{
-            const res = await fetch(`${API_URL}/games/dice`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`
-                },
-                body: JSON.stringify({bet, guess: currentDice})
-            });
-            const data = await res.json();
-            
-            setTimeout(() => {
-                clearInterval(spin);
-                if(res.ok){
-                    if(disp) disp.innerText = data.roll; 
-                    updateBalance(data.newBalance);
-                    
-                    if(data.win > 0){ 
-                        spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); 
-                        printMsg('dice', `УСПЕХ! +${data.win} NC`, 'win'); 
-                        if(disp){ 
-                            disp.style.color = 'var(--neon-green)'; 
-                            disp.style.textShadow = '0 0 30px var(--neon-green)'; 
-                        }
-                    } else { 
-                        printMsg('dice', 'ПРОВАЛ', 'lose'); 
-                        if(disp){ 
-                            disp.style.color = 'var(--neon-red)'; 
-                            disp.style.textShadow = '0 0 30px var(--neon-red)'; 
-                        }
-                    }
-                    setTimeout(() => { 
-                        if(disp){ 
-                            disp.style.color = ''; 
-                            disp.style.textShadow = ''; 
-                        }
-                    }, 2000);
-                } else { 
-                    if(disp) disp.innerText = '0'; 
-                    printMsg('dice', data.error, 'err'); 
-                }
-                if(btn) btn.disabled = false;
-            }, 1000);
-        }catch(e){ 
-            clearInterval(spin); 
-            if(btn) btn.disabled = false; 
-        }
-    }
-
-    let crashInterval;
-    async function playCrash(){
-        const bet = getBetValue('betCrash'); 
-        const target = getBetValue('targetCrash', true);
-        
-        if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('crash', 'ОШИБКА СТАВКИ', 'err');
-        if(isNaN(target) || target < 1.1) return printMsg('crash', 'МИН. ВЫВОД 1.1', 'err');
-        
-        const btn = document.getElementById('btnCrash'); 
-        if(btn) btn.disabled = true;
-        
-        const disp = document.getElementById('crMult'); 
-        const line = document.getElementById('crLine');
-        
-        if(disp){ 
-            disp.style.color = ''; 
-            disp.style.textShadow = ''; 
-        }
-        
-        try{
-            const res = await fetch(`${API_URL}/games/crash`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`
-                },
-                body: JSON.stringify({bet, targetMultiplier: target})
-            });
-            const data = await res.json();
-            
-            if(!res.ok){ 
-                printMsg('crash', data.error, 'err'); 
-                if(btn) btn.disabled = false; 
-                return; 
-            }
-            
-            printMsg('crash', 'ЗАПУСК СИСТЕМЫ...', 'err'); 
-            updateBalance(userBalance - bet);
-            
-            let cur = 1.00;
-            
-            crashInterval = setInterval(() => {
-                cur += 0.02; 
-                if(disp) disp.innerText = cur.toFixed(2) + '×'; 
-                if(line) line.style.transform = `scaleY(${cur})`;
-                
-                if(cur >= data.crashPoint && data.win === 0){
-                    clearInterval(crashInterval); 
-                    crashInterval = null;
-                    if(disp){ 
-                        disp.innerText = data.crashPoint.toFixed(2) + '×'; 
-                        disp.style.color = 'var(--neon-red)'; 
-                        disp.style.textShadow = '0 0 30px rgba(255,0,85,0.6)'; 
-                    }
-                    printMsg('crash', 'КРАШ!', 'lose'); 
-                    updateBalance(data.newBalance); 
-                    if(btn) btn.disabled = false;
-                } 
-                else if(cur >= data.target && data.win > 0){
-                    clearInterval(crashInterval); 
-                    crashInterval = null;
-                    if(disp){ 
-                        disp.innerText = data.target.toFixed(2) + '×'; 
-                        disp.style.color = 'var(--neon-green)'; 
-                        disp.style.textShadow = '0 0 30px rgba(0,255,136,0.6)'; 
-                    }
-                    spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); 
-                    printMsg('crash', `ВЫВОД: +${data.win} NC`, 'win'); 
-                    updateBalance(data.newBalance); 
-                    if(btn) btn.disabled = false;
-                }
-            }, 40);
-        }catch(e){ 
-            if(btn) btn.disabled = false; 
-            printMsg('crash', 'Сбой', 'err'); 
-        }
-    }
-
-    let currentR = null, isRouletteSpinning = false, rCells = [], currentRIndex = 3;
-    
-    function selectRoulette(color){ 
-        if(isRouletteSpinning) return; 
-        currentR = color; 
-        document.querySelectorAll('.r-opt').forEach(b => b.classList.remove('active')); 
-        const o = document.getElementById('r-opt-' + color); 
-        if(o) o.classList.add('active'); 
-        printMsg('roulette', 'ЦВЕТ УТВЕРЖДЁН', 'err'); 
-    }
-    
-    function initRoulette(){ 
-        const strip = document.getElementById('rStrip'); 
-        if(!strip) return; 
-        strip.innerHTML = ''; 
-        rCells = []; 
-        for(let i=0; i<40; i++){ 
-            let c = 'purple'; 
-            const r = Math.random(); 
-            if(r < 0.05) c = 'gold'; 
-            else if(r < 0.525) c = 'cyan'; 
-            rCells.push(c); 
-            strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold'?'14×':'2×'}</div>`); 
-        }
-    }
-    initRoulette();
-    
-    function updateRoulettePosition(t=0){ 
-        const strip = document.getElementById('rStrip'); 
-        const wheel = document.querySelector('.roulette-wheel'); 
-        const cell = document.querySelector('.r-cell'); 
-        if(!strip || !wheel || !cell) return; 
-        const ww = wheel.offsetWidth || 620; 
-        const cw = cell.offsetWidth || 90; 
-        const offset = (currentRIndex * cw + (cw/2)) - (ww/2); 
-        strip.style.transition = t > 0 ? `transform ${t}s cubic-bezier(0.15,0.85,0.15,1)` : 'none'; 
-        strip.style.transform = `translateX(-${offset}px)`; 
-    }
-    
-    window.addEventListener('resize', () => { 
-        const tab = document.getElementById('tab-roulette'); 
-        if(tab && tab.classList.contains('active') && !isRouletteSpinning) updateRoulettePosition(0); 
-    });
-    
-    async function playRoulette(){
-        if(isRouletteSpinning) return; 
-        if(!currentR) return printMsg('roulette', 'ВЫБЕРИТЕ ЦВЕТ', 'err');
-        
-        const bet = getBetValue('betRoulette'); 
-        if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('roulette', 'ОШИБКА СТАВКИ', 'err');
-        
-        const btn = document.getElementById('btnRoulette'); 
-        if(btn) btn.disabled = true; 
-        isRouletteSpinning = true; 
-        
-        document.querySelectorAll('.r-opt').forEach(b => b.disabled = true); 
-        updateBalance(userBalance - bet); 
-        printMsg('roulette', 'ОЖИДАНИЕ...', 'err');
-        
-        try{
-            const res = await fetch(`${API_URL}/games/roulette`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`
-                },
-                body: JSON.stringify({bet, color: currentR})
-            });
-            const data = await res.json();
-            
-            if(!res.ok){ 
-                printMsg('roulette', data.error, 'err'); 
-                updateBalance(userBalance + bet); 
-                resetRouletteState(); 
-                return; 
-            }
-            
-            const targetIndex = currentRIndex + 30 + Math.floor(Math.random() * 10); 
-            const strip = document.getElementById('rStrip');
-            
-            while(rCells.length <= targetIndex + 20){ 
-                let c = 'purple'; 
-                const r = Math.random(); 
-                if(r < 0.05) c = 'gold'; 
-                else if(r < 0.525) c = 'cyan'; 
-                rCells.push(c); 
-                if(strip) strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold'?'14×':'2×'}</div>`); 
-            }
-            
-            rCells[targetIndex] = data.resultColor;
-            
-            if(strip && strip.children[targetIndex]){
-                const te = strip.children[targetIndex]; 
-                te.className = `r-cell r-${data.resultColor}`; 
-                te.innerText = data.resultColor === 'gold' ? '14×' : '2×'; 
-                currentRIndex = targetIndex;
-                
-                const rpo = Math.floor(Math.random() * 60) - 30; 
-                const ww = document.querySelector('.roulette-wheel').offsetWidth; 
-                const cw = te.offsetWidth; 
-                const offset = (currentRIndex * cw + (cw/2)) - (ww/2) + rpo;
-                
-                strip.style.transition = 'transform 4s cubic-bezier(0.15,0.85,0.15,1)'; 
-                strip.style.transform = `translateX(-${offset}px)`;
-            }
-            
-            setTimeout(() => { 
-                updateBalance(data.newBalance); 
-                if(data.isWin){ 
-                    spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); 
-                    printMsg('roulette', `ПОБЕДА! +${data.win} NC`, 'win'); 
-                } else {
-                    printMsg('roulette', 'ПРОИГРЫШ', 'lose'); 
-                }
-                resetRouletteState(); 
-            }, 4000);
-            
-        }catch(e){ 
-            printMsg('roulette', 'Сбой сети', 'err'); 
-            resetRouletteState(); 
-        }
-    }
-    
-    function resetRouletteState(){ 
-        const btn = document.getElementById('btnRoulette'); 
-        if(btn) btn.disabled = false; 
-        document.querySelectorAll('.r-opt').forEach(b => b.disabled = false); 
-        isRouletteSpinning = false; 
-    }
-
-    /* ── ФАРМ (ИНФА ИЗ БД - РАСШИРЕННАЯ ПРОВЕРКА) ── */
-    const timeUpgrades = [
-        {val:30, cost:750}, {val:25, cost:1500}, {val:20, cost:3000}, 
-        {val:15, cost:5000}, {val:10, cost:10000}, {val:5, cost:null}
-    ];
-    const incomeUpgrades = [
-        {val:2, cost:750}, {val:4, cost:1500}, {val:6, cost:3000}, 
-        {val:8, cost:5000}, {val:10, cost:10000}, {val:15, cost:17500}, {val:20, cost:null}
-    ];
+    /* ── ФАРМ ── */
+    const timeUpgrades = [{val:30, cost:750}, {val:25, cost:1500}, {val:20, cost:3000}, {val:15, cost:5000}, {val:10, cost:10000}, {val:5, cost:null}];
+    const incomeUpgrades = [{val:2, cost:750}, {val:4, cost:1500}, {val:6, cost:3000}, {val:8, cost:5000}, {val:10, cost:10000}, {val:15, cost:17500}, {val:20, cost:null}];
     let farmState = { active: false, timeLevel: 0, incomeLevel: 0 };
     
     function initFarmMockState(user){ 
         if(user){ 
-            // Жесткая проверка всех возможных вариантов написания из БД
-            farmState.active = !!(user.farm?.active || user.farm?.is_active || user.farm_active || user.is_farm_active || user.isFarmActive);
-            farmState.timeLevel = parseInt(user.farm?.timeLevel || user.farm?.time_level || user.farm_time_level || user.timeLevel || 0); 
-            farmState.incomeLevel = parseInt(user.farm?.incomeLevel || user.farm?.income_level || user.farm_income_level || user.incomeLevel || 0); 
-        } else {
-            farmState.active = false;
-            farmState.timeLevel = 0;
-            farmState.incomeLevel = 0;
+            farmState.active = !!(user.farm?.active);
+            farmState.timeLevel = parseInt(user.farm?.timeLevel || 0); 
+            farmState.incomeLevel = parseInt(user.farm?.incomeLevel || 0); 
         }
         renderFarmUI(); 
     }
     
     function renderFarmUI(){ 
-        const lo = document.getElementById('farm-locked'); 
-        const ac = document.getElementById('farm-active'); 
+        const lo = document.getElementById('farm-locked'); const ac = document.getElementById('farm-active'); 
         if(!lo || !ac) return; 
         
-        if(!farmState.active){ 
-            lo.style.display = 'block'; 
-            ac.style.display = 'none'; 
-        } else { 
-            lo.style.display = 'none'; 
-            ac.style.display = 'flex'; 
-            
+        if(!farmState.active){ lo.style.display = 'block'; ac.style.display = 'none'; } 
+        else { 
+            lo.style.display = 'none'; ac.style.display = 'flex'; 
             const td = timeUpgrades[farmState.timeLevel] || timeUpgrades[timeUpgrades.length-1]; 
             const id = incomeUpgrades[farmState.incomeLevel] || incomeUpgrades[incomeUpgrades.length-1]; 
             
-            // ВЫВОДИМ УРОВЕНЬ ПРОКАЧКИ ВИЗУАЛЬНО
             document.getElementById('fTimeVal').innerHTML = `<span style="font-size:0.45em; color:var(--text-muted); vertical-align:middle; margin-right:6px;">УР.${farmState.timeLevel}</span>${td.val}`; 
             document.getElementById('fIncVal').innerHTML = `<span style="font-size:0.45em; color:var(--text-muted); vertical-align:middle; margin-right:6px;">УР.${farmState.incomeLevel}</span>+${id.val}`; 
             
             const bt = document.getElementById('btnUpTime'); 
             if(bt){ 
-                if(td.cost === null){ 
-                    bt.disabled = true; 
-                    bt.innerHTML = '<span>МАКС. УРОВЕНЬ</span>'; 
-                } else { 
-                    bt.disabled = false; 
-                    document.getElementById('fTimeCostDisplay').innerHTML = `${td.cost} <img src="/valuta.png" class="valuta-icon">`; 
-                }
+                if(td.cost === null){ bt.disabled = true; bt.innerHTML = '<span>МАКС. УРОВЕНЬ</span>'; } 
+                else { bt.disabled = false; document.getElementById('fTimeCostDisplay').innerHTML = `${td.cost} <img src="/valuta.png" class="valuta-icon">`; }
             } 
             
             const bi = document.getElementById('btnUpInc'); 
             if(bi){ 
-                if(id.cost === null){ 
-                    bi.disabled = true; 
-                    bi.innerHTML = '<span>МАКС. УРОВЕНЬ</span>'; 
-                } else { 
-                    bi.disabled = false; 
-                    document.getElementById('fIncCostDisplay').innerHTML = `${id.cost} <img src="/valuta.png" class="valuta-icon">`; 
-                }
+                if(id.cost === null){ bi.disabled = true; bi.innerHTML = '<span>МАКС. УРОВЕНЬ</span>'; } 
+                else { bi.disabled = false; document.getElementById('fIncCostDisplay').innerHTML = `${id.cost} <img src="/valuta.png" class="valuta-icon">`; }
             } 
         } 
     }
     
     async function activateFarm(){ 
         if(userBalance < 1000) return printMsg('farm-activate', 'НЕДОСТАТОЧНО СРЕДСТВ', 'err'); 
-        
-        const btn = document.getElementById('btnActivateFarm'); 
-        if(btn) btn.disabled = true; 
-        
+        const btn = document.getElementById('btnActivateFarm'); if(btn) btn.disabled = true; 
         try{ 
-            const res = await fetch(`${API_URL}/games/farm/activate`, {
-                method: 'POST',
-                headers: {'Authorization': `Bearer ${getToken()}`}
-            }); 
+            const res = await fetch(`${API_URL}/games/farm/activate`, { method: 'POST', headers: {'Authorization': `Bearer ${getToken()}`} }); 
             const data = await res.json(); 
-
-            if(res.ok) {
-                updateBalance(data.newBalance !== undefined ? data.newBalance : userBalance - 1000); 
-                farmState.active = true; 
-                if (data.farm) {
-                    farmState.timeLevel = data.farm.timeLevel || 0;
-                    farmState.incomeLevel = data.farm.incomeLevel || 0;
-                }
-                renderFarmUI(); 
-            } else {
-                printMsg('farm-activate', data.error || 'ОШИБКА АКТИВАЦИИ', 'err');
-                if(btn) btn.disabled = false;
-            }
-        }catch(e){ 
-            printMsg('farm-activate', 'ОШИБКА СЕТИ', 'err');
-            if(btn) btn.disabled = false;
-        } 
+            if(res.ok) { updateBalance(data.newBalance); farmState.active = true; renderFarmUI(); } 
+            else { printMsg('farm-activate', data.error || 'ОШИБКА АКТИВАЦИИ', 'err'); if(btn) btn.disabled = false; }
+        }catch(e){ printMsg('farm-activate', 'ОШИБКА СЕТИ', 'err'); if(btn) btn.disabled = false; } 
     }
     
     async function upgradeFarm(type){ 
-        let cost = type === 'time' ? timeUpgrades[farmState.timeLevel].cost : incomeUpgrades[farmState.incomeLevel].cost; 
-        if(userBalance < cost) return printMsg('farm', 'НЕДОСТАТОЧНО СРЕДСТВ', 'err'); 
-        
         try{ 
             const res = await fetch(`${API_URL}/games/farm/upgrade`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${getToken()}`
-                },
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
                 body: JSON.stringify({type})
             }); 
             const data = await res.json(); 
-            
             if(res.ok) {
-                updateBalance(data.newBalance !== undefined ? data.newBalance : userBalance - cost); 
-                
-                if(type === 'time') farmState.timeLevel++; 
-                else farmState.incomeLevel++; 
+                updateBalance(data.newBalance); 
+                if(type === 'time') farmState.timeLevel++; else farmState.incomeLevel++; 
+                renderFarmUI(); printMsg('farm', 'УЛУЧШЕНИЕ УСТАНОВЛЕНО', 'win'); 
+            } else { printMsg('farm', data.error || 'ОШИБКА АПГРЕЙДА', 'err'); }
+        }catch(e){ printMsg('farm', 'ОШИБКА СЕТИ', 'err'); } 
+    }
 
-                if (data.farm) {
-                    farmState.timeLevel = data.farm.timeLevel || farmState.timeLevel;
-                    farmState.incomeLevel = data.farm.incomeLevel || farmState.incomeLevel;
+    /* ── СЛОТЫ, ДАЙС, КРАШ, РУЛЕТКА (ОСТАЮТСЯ КАК БЫЛИ - ОНИ УЖЕ НА БЭКЕ) ── */
+    function initReels(){
+        [1, 2, 3].forEach(id => {
+            let html = ''; for(let i=0; i<30; i++) html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}">`;
+            const strip = document.getElementById('reel' + id); 
+            if(strip){ strip.innerHTML = html; strip.style.transform = 'translateY(0px)'; }
+        });
+    }
+
+    async function playSlots(){
+        const bet = getBetValue('betSlots'); if(bet > userBalance || bet <= 0) return printMsg('slots', 'ОШИБКА СТАВКИ', 'err');
+        const btn = document.getElementById('btnSlots'); if(btn) btn.disabled = true; 
+        printMsg('slots', 'ВРАЩЕНИЕ...', 'err');
+        try{
+            const res = await fetch(`${API_URL}/games/slots`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({bet}) });
+            const data = await res.json();
+            if(!res.ok){ printMsg('slots', data.error, 'err'); if(btn) btn.disabled = false; return; }
+            
+            [1, 2, 3].forEach((id, i) => {
+                const strip = document.getElementById('reel' + id); if(!strip) return;
+                let html = ''; for(let j=0; j<20; j++) html += `<img src="${slotCovers[Math.floor(Math.random() * slotCovers.length)]}">`;
+                const finalImg = (data.items && data.items[i] && data.items[i].cover_url) ? data.items[i].cover_url : slotCovers[0];
+                html += `<img src="${finalImg}">`;
+                strip.innerHTML = html; strip.style.transition = 'none'; strip.style.transform = 'translateY(0px)';
+                void strip.offsetWidth; // trigger reflow
+                strip.style.transition = `transform ${2 + i*0.5}s cubic-bezier(0.15,0.85,0.15,1)`; 
+                strip.style.transform = `translateY(-${20 * (strip.children[0].offsetHeight || 145)}px)`;
+            });
+            setTimeout(() => {
+                if(data.win > 0){ 
+                    spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); 
+                    [1, 2, 3].forEach(id => { const s = document.getElementById('reel' + id); if(s && s.lastChild) s.lastChild.style.filter = 'drop-shadow(0 0 25px var(--neon-green))'; }); 
+                    printMsg('slots', `JACKPOT! +${data.win} NC`, 'win'); 
+                } else printMsg('slots', 'ПРОИГРЫШ', 'lose');
+                updateBalance(data.newBalance); if(btn) btn.disabled = false; setTimeout(initReels, 3500);
+            }, 3000);
+        }catch(e){ if(btn) btn.disabled = false; printMsg('slots', 'Сбой сети', 'err'); initReels(); }
+    }
+
+    let currentDice = null;
+    function selectDice(choice){ 
+        currentDice = choice; document.querySelectorAll('.d-opt').forEach(b => b.classList.remove('active')); 
+        const o = document.getElementById('d-opt-' + choice); if(o) o.classList.add('active'); 
+        printMsg('dice', 'СЕКТОР ВЫБРАН', 'err'); 
+    }
+    
+    async function playDice(){
+        if(!currentDice) return printMsg('dice', 'ВЫБЕРИТЕ СЕКТОР', 'err');
+        const bet = getBetValue('betDice'); if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('dice', 'ОШИБКА СТАВКИ', 'err');
+        const btn = document.getElementById('btnDice'); if(btn) btn.disabled = true;
+        const disp = document.getElementById('diceDisplay'); 
+        let spin = setInterval(() => { if(disp) disp.innerText = Math.floor(Math.random() * 100) + 1; }, 50);
+        
+        try{
+            const res = await fetch(`${API_URL}/games/dice`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({bet, guess: currentDice}) });
+            const data = await res.json();
+            setTimeout(() => {
+                clearInterval(spin);
+                if(res.ok){
+                    if(disp) disp.innerText = data.roll; updateBalance(data.newBalance);
+                    if(data.win > 0){ 
+                        spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); printMsg('dice', `УСПЕХ! +${data.win} NC`, 'win'); 
+                        if(disp){ disp.style.color = 'var(--neon-green)'; disp.style.textShadow = '0 0 30px var(--neon-green)'; }
+                    } else { 
+                        printMsg('dice', 'ПРОВАЛ', 'lose'); 
+                        if(disp){ disp.style.color = 'var(--neon-red)'; disp.style.textShadow = '0 0 30px var(--neon-red)'; }
+                    }
+                    setTimeout(() => { if(disp){ disp.style.color = ''; disp.style.textShadow = ''; } }, 2000);
+                } else { if(disp) disp.innerText = '0'; printMsg('dice', data.error, 'err'); }
+                if(btn) btn.disabled = false;
+            }, 1000);
+        }catch(e){ clearInterval(spin); if(btn) btn.disabled = false; }
+    }
+
+    let crashInterval;
+    async function playCrash(){
+        const bet = getBetValue('betCrash'); const target = getBetValue('targetCrash', true);
+        if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('crash', 'ОШИБКА СТАВКИ', 'err');
+        if(isNaN(target) || target < 1.1) return printMsg('crash', 'МИН. ВЫВОД 1.1', 'err');
+        const btn = document.getElementById('btnCrash'); if(btn) btn.disabled = true;
+        const disp = document.getElementById('crMult'); const line = document.getElementById('crLine');
+        if(disp){ disp.style.color = ''; disp.style.textShadow = ''; }
+        
+        try{
+            const res = await fetch(`${API_URL}/games/crash`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({bet, targetMultiplier: target}) });
+            const data = await res.json();
+            if(!res.ok){ printMsg('crash', data.error, 'err'); if(btn) btn.disabled = false; return; }
+            
+            printMsg('crash', 'ЗАПУСК СИСТЕМЫ...', 'err'); updateBalance(userBalance - bet);
+            let cur = 1.00;
+            crashInterval = setInterval(() => {
+                cur += 0.02; if(disp) disp.innerText = cur.toFixed(2) + '×'; if(line) line.style.transform = `scaleY(${cur})`;
+                if(cur >= data.crashPoint && data.win === 0){
+                    clearInterval(crashInterval); crashInterval = null;
+                    if(disp){ disp.innerText = data.crashPoint.toFixed(2) + '×'; disp.style.color = 'var(--neon-red)'; disp.style.textShadow = '0 0 30px rgba(255,0,85,0.6)'; }
+                    printMsg('crash', 'КРАШ!', 'lose'); updateBalance(data.newBalance); if(btn) btn.disabled = false;
+                } else if(cur >= data.target && data.win > 0){
+                    clearInterval(crashInterval); crashInterval = null;
+                    if(disp){ disp.innerText = data.target.toFixed(2) + '×'; disp.style.color = 'var(--neon-green)'; disp.style.textShadow = '0 0 30px rgba(0,255,136,0.6)'; }
+                    spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); printMsg('crash', `ВЫВОД: +${data.win} NC`, 'win'); updateBalance(data.newBalance); if(btn) btn.disabled = false;
                 }
-                
-                renderFarmUI(); 
-                printMsg('farm', 'УЛУЧШЕНИЕ УСТАНОВЛЕНО', 'win'); 
-            } else {
-                printMsg('farm', data.error || 'ОШИБКА АПГРЕЙДА', 'err');
+            }, 40);
+        }catch(e){ if(btn) btn.disabled = false; printMsg('crash', 'Сбой', 'err'); }
+    }
+
+    let currentR = null, isRouletteSpinning = false, rCells = [], currentRIndex = 3;
+    function selectRoulette(color){ 
+        if(isRouletteSpinning) return; currentR = color; 
+        document.querySelectorAll('.r-opt').forEach(b => b.classList.remove('active')); 
+        const o = document.getElementById('r-opt-' + color); if(o) o.classList.add('active'); 
+        printMsg('roulette', 'ЦВЕТ УТВЕРЖДЁН', 'err'); 
+    }
+    
+    function initRoulette(){ 
+        const strip = document.getElementById('rStrip'); if(!strip) return; strip.innerHTML = ''; rCells = []; 
+        for(let i=0; i<40; i++){ 
+            let c = 'purple', r = Math.random(); if(r < 0.05) c = 'gold'; else if(r < 0.525) c = 'cyan'; 
+            rCells.push(c); strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold'?'14×':'2×'}</div>`); 
+        }
+    }
+    initRoulette();
+    
+    function updateRoulettePosition(t=0){ 
+        const strip = document.getElementById('rStrip'); const wheel = document.querySelector('.roulette-wheel'); const cell = document.querySelector('.r-cell'); 
+        if(!strip || !wheel || !cell) return; 
+        const offset = (currentRIndex * (cell.offsetWidth||90) + ((cell.offsetWidth||90)/2)) - ((wheel.offsetWidth||620)/2); 
+        strip.style.transition = t > 0 ? `transform ${t}s cubic-bezier(0.15,0.85,0.15,1)` : 'none'; strip.style.transform = `translateX(-${offset}px)`; 
+    }
+    window.addEventListener('resize', () => { const tab = document.getElementById('tab-roulette'); if(tab && tab.classList.contains('active') && !isRouletteSpinning) updateRoulettePosition(0); });
+    
+    async function playRoulette(){
+        if(isRouletteSpinning || !currentR) return printMsg('roulette', 'ВЫБЕРИТЕ ЦВЕТ', 'err');
+        const bet = getBetValue('betRoulette'); if(isNaN(bet) || bet > userBalance || bet <= 0) return printMsg('roulette', 'ОШИБКА СТАВКИ', 'err');
+        const btn = document.getElementById('btnRoulette'); if(btn) btn.disabled = true; isRouletteSpinning = true; 
+        document.querySelectorAll('.r-opt').forEach(b => b.disabled = true); updateBalance(userBalance - bet); printMsg('roulette', 'ОЖИДАНИЕ...', 'err');
+        
+        try{
+            const res = await fetch(`${API_URL}/games/roulette`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({bet, color: currentR}) });
+            const data = await res.json();
+            if(!res.ok){ printMsg('roulette', data.error, 'err'); updateBalance(userBalance + bet); resetRouletteState(); return; }
+            
+            const targetIndex = currentRIndex + 30 + Math.floor(Math.random() * 10); const strip = document.getElementById('rStrip');
+            while(rCells.length <= targetIndex + 20){ 
+                let c = 'purple', r = Math.random(); if(r < 0.05) c = 'gold'; else if(r < 0.525) c = 'cyan'; 
+                rCells.push(c); if(strip) strip.insertAdjacentHTML('beforeend', `<div class="r-cell r-${c}">${c==='gold'?'14×':'2×'}</div>`); 
             }
-        }catch(e){ 
-            printMsg('farm', 'ОШИБКА СЕТИ', 'err');
+            rCells[targetIndex] = data.resultColor;
+            if(strip && strip.children[targetIndex]){
+                const te = strip.children[targetIndex]; te.className = `r-cell r-${data.resultColor}`; te.innerText = data.resultColor === 'gold' ? '14×' : '2×'; currentRIndex = targetIndex;
+                const rpo = Math.floor(Math.random() * 60) - 30; const offset = (currentRIndex * te.offsetWidth + (te.offsetWidth/2)) - (document.querySelector('.roulette-wheel').offsetWidth/2) + rpo;
+                strip.style.transition = 'transform 4s cubic-bezier(0.15,0.85,0.15,1)'; strip.style.transform = `translateX(-${offset}px)`;
+            }
+            setTimeout(() => { 
+                updateBalance(data.newBalance); 
+                if(data.isWin){ spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); printMsg('roulette', `ПОБЕДА! +${data.win} NC`, 'win'); } 
+                else { printMsg('roulette', 'ПРОИГРЫШ', 'lose'); }
+                resetRouletteState(); 
+            }, 4000);
+        }catch(e){ printMsg('roulette', 'Сбой сети', 'err'); resetRouletteState(); }
+    }
+    function resetRouletteState(){ const btn = document.getElementById('btnRoulette'); if(btn) btn.disabled = false; document.querySelectorAll('.r-opt').forEach(b => b.disabled = false); isRouletteSpinning = false; }
+
+    /* ── MINES (СЕРВЕРНАЯ ЛОГИКА) ── */
+    const TOTAL_CELLS = 25; let NUM_MINES = 3; let minesActive = false, minesBet = 0;
+    
+    function changeMinesCount(delta) { 
+        if(minesActive) return; NUM_MINES += delta; 
+        if(NUM_MINES < 3) NUM_MINES = 3; if(NUM_MINES > 20) NUM_MINES = 20; 
+        document.getElementById('mineCount').textContent = NUM_MINES; 
+    }
+    
+    function buildMinesGrid(){ 
+        const grid = document.getElementById('minesGrid'); grid.innerHTML = ''; 
+        for(let i=0; i<TOTAL_CELLS; i++){ 
+            const cell = document.createElement('div'); cell.className = 'mine-cell'; cell.dataset.idx = i; 
+            cell.addEventListener('click', () => mineClick(i, cell)); grid.appendChild(cell); 
         } 
     }
+    
+    async function startMines(){ 
+        minesBet = getBetValue('betMines'); 
+        if(minesBet <= 0 || minesBet > userBalance) return printMsg('mines', 'ОШИБКА СТАВКИ', 'err'); 
+        
+        const btn = document.getElementById('btnMines'); btn.disabled = true;
+        
+        try {
+            const res = await fetch(`${API_URL}/games/mines/start`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                body: JSON.stringify({ bet: minesBet, minesCount: NUM_MINES })
+            });
+            const data = await res.json();
+            if(!res.ok) { printMsg('mines', data.error, 'err'); btn.disabled = false; return; }
+            
+            updateBalance(data.newBalance); 
+            minesActive = true; 
+            
+            document.getElementById('minesCashoutBtn').disabled = false; 
+            document.getElementById('minesMinus').disabled = true; document.getElementById('minesPlus').disabled = true; 
+            
+            buildMinesGrid(); document.getElementById('minesMult').textContent = '×1.00'; document.getElementById('mineOpened').textContent = '0'; document.getElementById('minesCashoutAmt').textContent = minesBet;
+            printMsg('mines', 'ИЩИ КРИСТАЛЛЫ!', 'win'); 
+        } catch(e) { printMsg('mines', 'Ошибка сети', 'err'); btn.disabled = false; }
+    }
+    
+    async function mineClick(idx, cell){ 
+        if(!minesActive || cell.classList.contains('revealed') || cell.classList.contains('exploded')) return; 
+        
+        try {
+            const res = await fetch(`${API_URL}/games/mines/step`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                body: JSON.stringify({ cellIndex: idx })
+            });
+            const data = await res.json();
+            
+            if (data.status === 'lose') {
+                data.bombs.forEach(bIdx => {
+                    const c = document.querySelector(`.mine-cell[data-idx='${bIdx}']`);
+                    if(c) { c.classList.add('exploded'); c.textContent = '💣'; }
+                });
+                minesActive = false; 
+                document.getElementById('minesCashoutBtn').disabled = true; document.getElementById('btnMines').disabled = false; 
+                document.getElementById('minesMinus').disabled = false; document.getElementById('minesPlus').disabled = false; 
+                printMsg('mines', 'БОМБА! ПРОИГРЫШ', 'lose'); 
+            } else if (data.status === 'safe') {
+                cell.classList.add('safe', 'revealed'); cell.textContent = '💎'; 
+                document.getElementById('minesMult').textContent = '×' + data.multiplier.toFixed(2); 
+                document.getElementById('mineOpened').textContent = data.openedCount; 
+                document.getElementById('minesCashoutAmt').textContent = Math.floor(minesBet * data.multiplier); 
+            }
+        } catch(e) { printMsg('mines', 'Ошибка шага', 'err'); }
+    }
+    
+    async function minesCashout(){ 
+        if(!minesActive) return; minesActive = false; document.getElementById('minesCashoutBtn').disabled = true;
+        
+        try {
+            const res = await fetch(`${API_URL}/games/mines/cashout`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
+            const data = await res.json();
+            if(data.success) {
+                updateBalance(data.newBalance); spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2); 
+                printMsg('mines', `КЭШАУТ +${data.win} NC`, 'win'); 
+            }
+        } catch(e) { printMsg('mines', 'Ошибка вывода', 'err'); }
+        
+        document.getElementById('btnMines').disabled = false; document.getElementById('minesMinus').disabled = false; document.getElementById('minesPlus').disabled = false; 
+    }
 
-    /* ── БЛЭКДЖЕК (ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ БАЛАНСА) ── */
-    const SUITS = ['♠', '♥', '♦', '♣']; 
-    const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']; 
-    let bjDeck = [], bjPlayerHand = [], bjDealerHand = [], bjBet = 0, bjGameActive = false;
-    
-    function bjCreateDeck(){ 
-        bjDeck = []; 
-        SUITS.forEach(s => RANKS.forEach(r => bjDeck.push({
-            r, 
-            s, 
-            v: r === 'A' ? 11 : ['10','J','Q','K'].includes(r) ? 10 : parseInt(r)
-        }))); 
-        bjDeck.sort(() => Math.random() - 0.5); 
-    }
-    
-    function bjDraw(){ 
-        return bjDeck.pop(); 
-    } 
-    
-    function bjScore(hand){ 
-        let s = hand.reduce((a, c) => a + c.v, 0); 
-        let aces = hand.filter(c => c.r === 'A').length; 
-        while(s > 21 && aces > 0){ s -= 10; aces--; } 
-        return s; 
-    }
+    /* ── БЛЭКДЖЕК (СЕРВЕРНАЯ ЛОГИКА) ── */
+    let bjGameActive = false, bjBet = 0;
     
     function bjCardHTML(card, hidden = false){ 
         if(hidden) return `<div class="bj-card hidden"></div>`; 
         const red = ['♥', '♦'].includes(card.s); 
-        return `
-        <div class="bj-card ${red ? 'red' : 'black'}">
-            <span>${card.r}${card.s}</span>
-            <span class="bj-card-suit">${card.s}</span>
-            <span style="transform:rotate(180deg)">${card.r}${card.s}</span>
-        </div>`; 
-    }
-    
-    function bjRender(hideDealer = true){ 
-        document.getElementById('bjPlayerCards').innerHTML = bjPlayerHand.map(c => bjCardHTML(c)).join(''); 
-        document.getElementById('bjDealerCards').innerHTML = bjDealerHand.map((c, i) => bjCardHTML(c, hideDealer && i === 1)).join(''); 
-        document.getElementById('bjPlayerScore').textContent = bjScore(bjPlayerHand); 
-        document.getElementById('bjDealerScore').textContent = hideDealer ? bjDealerHand[0].v : bjScore(bjDealerHand); 
+        return `<div class="bj-card ${red ? 'red' : 'black'}"><span>${card.r}${card.s}</span><span class="bj-card-suit">${card.s}</span><span style="transform:rotate(180deg)">${card.r}${card.s}</span></div>`; 
     }
     
     async function bjDeal(){ 
-        bjBet = getBetValue('betBJ'); 
-        if(bjBet <= 0 || bjBet > userBalance) return printMsg('bj', 'ОШИБКА СТАВКИ', 'err'); 
+        bjBet = getBetValue('betBJ'); if(bjBet <= 0 || bjBet > userBalance) return printMsg('bj', 'ОШИБКА СТАВКИ', 'err'); 
+        const btn = document.getElementById('bjDealBtn'); btn.disabled = true;
         
-        updateBalance(userBalance - bjBet, true); // true = sync to server
-        bjCreateDeck(); 
-        bjPlayerHand = [bjDraw(), bjDraw()]; 
-        bjDealerHand = [bjDraw(), bjDraw()]; 
-        bjGameActive = true; 
-        
-        document.getElementById('bjDealBtn').disabled = true; 
-        document.getElementById('bjHitBtn').disabled = false; 
-        document.getElementById('bjStandBtn').disabled = false; 
-        
-        bjRender(true); 
-        printMsg('bj', '', ''); 
-        
-        if(bjScore(bjPlayerHand) === 21){ 
-            await bjEnd(); 
-        } 
+        try {
+            const res = await fetch(`${API_URL}/games/bj/start`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet: bjBet })
+            });
+            const data = await res.json();
+            if(!res.ok) { printMsg('bj', data.error, 'err'); btn.disabled = false; return; }
+            
+            updateBalance(data.newBalance); bjGameActive = true; 
+            document.getElementById('bjHitBtn').disabled = false; document.getElementById('bjStandBtn').disabled = false; 
+            
+            document.getElementById('bjPlayerCards').innerHTML = data.playerHand.map(c => bjCardHTML(c)).join(''); 
+            document.getElementById('bjDealerCards').innerHTML = bjCardHTML(data.dealerCard) + bjCardHTML(null, true); 
+            
+            // Считаем счет локально только для визуала (А туз = 11 для простоты отображения)
+            const pScore = data.playerHand.reduce((a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r)), 0);
+            document.getElementById('bjPlayerScore').textContent = pScore; 
+            document.getElementById('bjDealerScore').textContent = (data.dealerCard.r === 'A' ? 11 : ['J','Q','K'].includes(data.dealerCard.r) ? 10 : parseInt(data.dealerCard.r)); 
+            
+            printMsg('bj', '', ''); 
+        } catch(e) { printMsg('bj', 'Сбой', 'err'); btn.disabled = false; }
     }
     
-    function bjHit(){ 
+    async function bjHit(){ 
         if(!bjGameActive) return; 
-        bjPlayerHand.push(bjDraw()); 
-        bjRender(true); 
-        if(bjScore(bjPlayerHand) > 21){ 
-            bjEnd(); 
-        } 
+        try {
+            const res = await fetch(`${API_URL}/games/bj/hit`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
+            const data = await res.json();
+            
+            document.getElementById('bjPlayerCards').innerHTML += bjCardHTML(data.card); 
+            document.getElementById('bjPlayerScore').textContent = data.score; 
+            
+            if(data.status === 'bust'){ 
+                bjGameActive = false; document.getElementById('bjHitBtn').disabled = true; document.getElementById('bjStandBtn').disabled = true; 
+                printMsg('bj', 'ПЕРЕБОР — ПРОИГРЫШ', 'lose'); 
+                setTimeout(() => { document.getElementById('bjDealBtn').disabled = false; }, 1000);
+            } 
+        } catch(e) { printMsg('bj', 'Сбой', 'err'); }
     }
     
     async function bjStand(){ 
         if(!bjGameActive) return; 
+        document.getElementById('bjHitBtn').disabled = true; document.getElementById('bjStandBtn').disabled = true; 
         
-        document.getElementById('bjHitBtn').disabled = true; 
-        document.getElementById('bjStandBtn').disabled = true; 
-        bjRender(false); 
-        
-        while(bjScore(bjDealerHand) < 17) {
-            bjDealerHand.push(bjDraw());
-        }
-        
-        await new Promise(r => setTimeout(r, 400)); 
-        bjRender(false); 
-        bjEnd(); 
-    }
-    
-    async function bjEnd(){ 
-        bjGameActive = false; 
-        document.getElementById('bjHitBtn').disabled = true; 
-        document.getElementById('bjStandBtn').disabled = true; 
-        bjRender(false); 
-        
-        const ps = bjScore(bjPlayerHand), ds = bjScore(bjDealerHand); 
-        let win = 0, msg = '', type = 'lose'; 
-        
-        if(ps > 21){ 
-            msg = 'ПЕРЕБОР — ПРОИГРЫШ'; 
-        } else if(ds > 21 || ps > ds){ 
-            win = Math.floor(bjBet * (ps === 21 && bjPlayerHand.length === 2 ? 2.5 : 2)); 
-            msg = `ПОБЕДА! +${win} NC`; 
-            type = 'win'; 
-        } else if(ps === ds){ 
-            win = bjBet; 
-            msg = 'НИЧЬЯ — ВОЗВРАТ'; 
-            type = 'err'; 
-        } else { 
-            msg = 'ДИЛЕР ПОБЕДИЛ'; 
-        } 
-        
-        if(win > 0) spawnFloat('+' + (win - bjBet), innerWidth/2 - 30, innerHeight/2); 
-        
-        updateBalance(userBalance + win, true); // true = sync to server
-        printMsg('bj', msg, type); 
-        
-        setTimeout(() => { 
-            document.getElementById('bjDealBtn').disabled = false; 
-        }, 1000); 
-    }
-
-    /* ── КВИЗ (ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ БАЛАНСА) ── */
-    let quizStreak = 0, quizActive = false, quizCorrectName = "";
-    
-    function startQuiz(){
-        if(supabaseTracks.length < 4) return printMsg('quiz', 'МАЛО ДАННЫХ В БД', 'err');
-        
-        const bet = getBetValue('betQuiz');
-        if(bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
-        
-        quizActive = true;
-        
-        const validTracks = supabaseTracks.filter(t => t.cover_url && t.title);
-        const correctTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
-        quizCorrectName = correctTrack.title;
-        
-        const cover = document.getElementById('quizCover');
-        
-        // Отключаем анимацию, жестко блюрим, меняем сорс, форсируем рендер и возвращаем анимацию
-        cover.classList.add('no-transition'); 
-        cover.classList.add('blurred');
-        cover.src = correctTrack.cover_url || '/dslogo.png'; 
-        void cover.offsetWidth; // Принудительный рендер DOM
-        cover.classList.remove('no-transition');
-
-        document.getElementById('quizHint').textContent = "Нейросеть исказила обложку... Угадай трек по цветам.";
-        document.getElementById('btnQuiz').disabled = true;
-
-        let opts = [correctTrack.title];
-        let shuffled = [...validTracks].filter(t => t.title !== correctTrack.title).sort(() => Math.random() - 0.5);
-        for(let i=0; i<3; i++) { 
-            if(shuffled[i]) opts.push(shuffled[i].title); 
-        }
-        opts = opts.sort(() => Math.random() - 0.5);
-
-        const container = document.getElementById('quizOpts');
-        container.innerHTML = opts.map(name => `<button class="quiz-opt" onclick="quizAnswer(this,'${name}',${bet})">${name}</button>`).join('');
-        printMsg('quiz', '', '');
-    }
-
-    function quizAnswer(btn, chosen, bet){
-        if(!quizActive) return;
-        quizActive = false;
-        
-        document.getElementById('quizCover').classList.remove('blurred');
-        
-        document.querySelectorAll('.quiz-opt').forEach(b => { 
-            b.disabled = true; 
-            if(b.textContent === quizCorrectName) b.classList.add('correct'); 
-        });
-        
-        if(chosen === quizCorrectName){
-            quizStreak++; 
-            btn.classList.add('correct');
-            const mult = 1 + quizStreak * 0.5;
-            const win = Math.floor(bet * mult);
-            updateBalance(userBalance + win, true); // SYNC
-            spawnFloat('+' + win, innerWidth/2 - 30, innerHeight/2);
-            printMsg('quiz', `ВЕРНО! ×${mult.toFixed(1)} → +${win} NC`, 'win');
-        } else {
-            quizStreak = 0; 
-            btn.classList.add('wrong');
-            updateBalance(userBalance - bet, true); // SYNC
-            printMsg('quiz', 'НЕВЕРНО — СЕРИЯ СБРОШЕНА', 'lose');
-        }
-        
-        document.getElementById('quizStreak').textContent = `СЕРИЯ: ${quizStreak} 🔥`;
-        
-        setTimeout(() => { 
-            document.getElementById('btnQuiz').disabled = false; 
-        }, 1200);
-    }
-
-    /* ── MINES (ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ БАЛАНСА) ── */
-    const TOTAL_CELLS = 25; 
-    let NUM_MINES = 3; 
-    let minesBombs = [], minesSafe = 0, minesActive = false, minesBet = 0;
-    
-    function changeMinesCount(delta) { 
-        if(minesActive) return; 
-        NUM_MINES += delta; 
-        if(NUM_MINES < 3) NUM_MINES = 3; 
-        if(NUM_MINES > 20) NUM_MINES = 20; 
-        document.getElementById('mineCount').textContent = NUM_MINES; 
-    }
-    
-    function calculateMinesMult(mines, opened) { 
-        if (opened === 0) return 1.0; 
-        let prob = 1.0; 
-        for (let i = 0; i < opened; i++) { 
-            prob *= (TOTAL_CELLS - mines - i) / (TOTAL_CELLS - i); 
-        } 
-        return (1 / prob) * 0.95; 
-    }
-    
-    function buildMinesGrid(){ 
-        const grid = document.getElementById('minesGrid'); 
-        grid.innerHTML = ''; 
-        minesBombs = []; 
-        minesSafe = 0; 
-        const bombSet = new Set(); 
-        
-        while(bombSet.size < NUM_MINES) {
-            bombSet.add(Math.floor(Math.random() * TOTAL_CELLS)); 
-        }
-        minesBombs = [...bombSet]; 
-        
-        for(let i=0; i<TOTAL_CELLS; i++){ 
-            const cell = document.createElement('div'); 
-            cell.className = 'mine-cell'; 
-            cell.dataset.idx = i; 
-            cell.addEventListener('click', () => mineClick(i, cell)); 
-            grid.appendChild(cell); 
-        } 
-    }
-    
-    function startMines(){ 
-        minesBet = getBetValue('betMines'); 
-        if(minesBet <= 0 || minesBet > userBalance) return printMsg('mines', 'ОШИБКА СТАВКИ', 'err'); 
-        
-        updateBalance(userBalance - minesBet, true); // SYNC 
-        minesActive = true; 
-        minesSafe = 0; 
-        
-        document.getElementById('btnMines').disabled = true; 
-        document.getElementById('minesCashoutBtn').disabled = false; 
-        document.getElementById('minesMinus').disabled = true; 
-        document.getElementById('minesPlus').disabled = true; 
-        
-        buildMinesGrid(); 
-        updateMinesMult(); 
-        printMsg('mines', '', ''); 
-    }
-    
-    function mineClick(idx, cell){ 
-        if(!minesActive || cell.classList.contains('revealed') || cell.classList.contains('exploded')) return; 
-        
-        if(minesBombs.includes(idx)){ 
-            cell.classList.add('exploded'); 
-            cell.textContent = '💣'; 
-            document.querySelectorAll('.mine-cell').forEach(c => { 
-                if(minesBombs.includes(parseInt(c.dataset.idx))){ 
-                    c.classList.add('exploded'); 
-                    c.textContent = '💣'; 
-                } 
-            }); 
+        try {
+            const res = await fetch(`${API_URL}/games/bj/stand`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
+            const data = await res.json();
             
-            minesActive = false; 
-            document.getElementById('minesCashoutBtn').disabled = true; 
-            document.getElementById('btnMines').disabled = false; 
-            document.getElementById('minesMinus').disabled = false; 
-            document.getElementById('minesPlus').disabled = false; 
-            printMsg('mines', 'БОМБА! ПРОИГРЫШ', 'lose'); 
-        } else { 
-            cell.classList.add('safe', 'revealed'); 
-            cell.textContent = '💎'; 
-            minesSafe++; 
-            updateMinesMult(); 
+            document.getElementById('bjDealerCards').innerHTML = data.dealerHand.map(c => bjCardHTML(c)).join('');
+            document.getElementById('bjDealerScore').textContent = data.dScore;
             
-            if(minesSafe === TOTAL_CELLS - NUM_MINES) { 
-                minesCashout(); 
-            } 
-        } 
-    }
-    
-    function updateMinesMult(){ 
-        const m = calculateMinesMult(NUM_MINES, minesSafe); 
-        document.getElementById('minesMult').textContent = '×' + m.toFixed(2); 
-        document.getElementById('mineOpened').textContent = minesSafe; 
-        const cashAmt = Math.floor(minesBet * m); 
-        document.getElementById('minesCashoutAmt').textContent = cashAmt; 
-    }
-    
-    function minesCashout(){ 
-        if(!minesActive || minesSafe === 0) return; 
-        minesActive = false; 
-        
-        const m = calculateMinesMult(NUM_MINES, minesSafe); 
-        const win = Math.floor(minesBet * m); 
-        
-        updateBalance(userBalance + win, true); // SYNC
-        spawnFloat('+' + win, innerWidth/2 - 30, innerHeight/2); 
-        printMsg('mines', `КЭШАУТ +${win} NC (×${m.toFixed(2)})`, 'win'); 
-        
-        document.getElementById('minesCashoutBtn').disabled = true; 
-        document.getElementById('btnMines').disabled = false; 
-        document.getElementById('minesMinus').disabled = false; 
-        document.getElementById('minesPlus').disabled = false; 
+            bjGameActive = false;
+            updateBalance(data.newBalance);
+            
+            let msg = 'ДИЛЕР ПОБЕДИЛ', type = 'lose';
+            if(data.win > bjBet){ msg = `ПОБЕДА! +${data.win} NC`; type = 'win'; spawnFloat('+' + (data.win - bjBet), innerWidth/2 - 30, innerHeight/2); }
+            else if(data.win === bjBet){ msg = 'НИЧЬЯ — ВОЗВРАТ'; type = 'err'; }
+            
+            printMsg('bj', msg, type);
+            setTimeout(() => { document.getElementById('bjDealBtn').disabled = false; }, 1000);
+        } catch(e) { printMsg('bj', 'Сбой', 'err'); }
     }
 
-    /* ── PLINKO (ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ БАЛАНСА) ── */
-    const PLINKO_ROWS = 8;
-    const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10];
-    const BUCKET_COLORS = ['#ff007f', '#ff6b35', '#ffea00', '#00e5ff', '#9d00ff', '#00e5ff', '#ffea00', '#ff6b35', '#ff007f'];
-    let plinkoCtx = null, plinkoAnimating = false;
-    let plinkoBallsArray = [];
+    /* ── КВИЗ (СЕРВЕРНАЯ ЛОГИКА) ── */
+    let quizActive = false, quizStreak = 0;
+    
+    async function startQuiz(){
+        const bet = getBetValue('betQuiz'); if(bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
+        const btn = document.getElementById('btnQuiz'); btn.disabled = true;
+        
+        try {
+            const res = await fetch(`${API_URL}/games/quiz/start`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                body: JSON.stringify({ bet, streak: quizStreak })
+            });
+            const data = await res.json();
+            if(!res.ok) { printMsg('quiz', data.error, 'err'); btn.disabled = false; return; }
+            
+            updateBalance(data.newBalance); quizActive = true;
+            
+            const cover = document.getElementById('quizCover');
+            cover.classList.add('no-transition'); cover.classList.add('blurred');
+            cover.src = data.coverUrl || '/dslogo.png'; 
+            void cover.offsetWidth; cover.classList.remove('no-transition');
+
+            document.getElementById('quizHint').textContent = "Нейросеть исказила обложку... Угадай трек.";
+            const container = document.getElementById('quizOpts');
+            container.innerHTML = data.options.map(name => `<button class="quiz-opt" onclick="quizAnswer(this,'${name.replace(/'/g, "\\'")}')">${name}</button>`).join('');
+            printMsg('quiz', '', '');
+        } catch(e) { printMsg('quiz', 'Сбой сети', 'err'); btn.disabled = false; }
+    }
+
+    async function quizAnswer(btn, chosen){
+        if(!quizActive) return; quizActive = false;
+        
+        try {
+            const res = await fetch(`${API_URL}/games/quiz/answer`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                body: JSON.stringify({ answer: chosen })
+            });
+            const data = await res.json();
+            
+            document.getElementById('quizCover').classList.remove('blurred');
+            document.querySelectorAll('.quiz-opt').forEach(b => { 
+                b.disabled = true; 
+                if(b.textContent === data.correctTitle) b.classList.add('correct'); 
+            });
+            
+            updateBalance(data.newBalance);
+            
+            if(data.isCorrect){
+                quizStreak = data.newStreak; btn.classList.add('correct');
+                spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2);
+                printMsg('quiz', `ВЕРНО! +${data.win} NC`, 'win');
+            } else {
+                quizStreak = 0; btn.classList.add('wrong');
+                printMsg('quiz', 'НЕВЕРНО — СЕРИЯ СБРОШЕНА', 'lose');
+            }
+            
+            document.getElementById('quizStreak').textContent = `СЕРИЯ: ${quizStreak} 🔥`;
+            setTimeout(() => { document.getElementById('btnQuiz').disabled = false; }, 1200);
+        } catch(e) { printMsg('quiz', 'Ошибка', 'err'); document.getElementById('btnQuiz').disabled = false; }
+    }
+
+    /* ── PLINKO (СЕРВЕРНАЯ ЛОГИКА) ── */
+    const PLINKO_ROWS = 8; const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10]; const BUCKET_COLORS = ['#ff007f', '#ff6b35', '#ffea00', '#00e5ff', '#9d00ff', '#00e5ff', '#ffea00', '#ff6b35', '#ff007f'];
+    let plinkoCtx = null, plinkoAnimating = false, plinkoBallsArray = [];
 
     function initPlinko(){
-        const canvas = document.getElementById('plinkoCanvas'); 
-        if(!canvas) return;
-        plinkoCtx = canvas.getContext('2d');
-        const W = canvas.width, H = canvas.height;
-        plinkoCtx.clearRect(0, 0, W, H);
+        const canvas = document.getElementById('plinkoCanvas'); if(!canvas) return;
+        plinkoCtx = canvas.getContext('2d'); const W = canvas.width, H = canvas.height; plinkoCtx.clearRect(0, 0, W, H);
         
         for(let row=0; row<PLINKO_ROWS; row++){
             const cols = row + 2;
             for(let col=0; col<cols; col++){
-                const x = W/2 - (cols-1)*24 + col*48; 
-                const y = 30 + row*28;
-                plinkoCtx.beginPath(); 
-                plinkoCtx.arc(x, y, 5, 0, Math.PI*2);
-                plinkoCtx.fillStyle = 'rgba(0,229,255,0.6)'; 
-                plinkoCtx.shadowColor = 'rgba(0,229,255,0.8)'; 
-                plinkoCtx.shadowBlur = 8; 
-                plinkoCtx.fill();
+                const x = W/2 - (cols-1)*24 + col*48, y = 30 + row*28;
+                plinkoCtx.beginPath(); plinkoCtx.arc(x, y, 5, 0, Math.PI*2); plinkoCtx.fillStyle = 'rgba(0,229,255,0.6)'; plinkoCtx.shadowColor = 'rgba(0,229,255,0.8)'; plinkoCtx.shadowBlur = 8; plinkoCtx.fill();
             }
         }
-        
         const buckets = document.getElementById('plinkoBuckets');
-        if(buckets) {
-            buckets.innerHTML = BUCKET_MULTS.map((m, i) => `
-                <div class="plinko-bucket" style="background:${BUCKET_COLORS[i]}22;border:1px solid ${BUCKET_COLORS[i]}66;color:${BUCKET_COLORS[i]};font-size:0.7rem;">×${m}</div>
-            `).join('');
-        }
-    }
-
-    function getPlinkoResultIndex() {
-        const r = Math.random();
-
-        // 0.5x — шанс 19.5% (центральная ячейка, индекс 4)
-        if (r < 0.195) return 4; 
-
-        // 1x — шанс 60% (ячейки по бокам от центра, индексы 3 или 5)
-        if (r < 0.795) return Math.random() < 0.5 ? 3 : 5; 
-
-        // 1.5x — шанс 15% (индексы 2 или 6)
-        if (r < 0.945) return Math.random() < 0.5 ? 2 : 6; 
-
-        // 3x — шанс 5% (индексы 1 или 7)
-        if (r < 0.995) return Math.random() < 0.5 ? 1 : 7; 
-
-        // 10x — шанс 0.5% (самые крайние ячейки, индексы 0 или 8)
-        return Math.random() < 0.5 ? 0 : 8; 
+        if(buckets) buckets.innerHTML = BUCKET_MULTS.map((m, i) => `<div class="plinko-bucket" style="background:${BUCKET_COLORS[i]}22;border:1px solid ${BUCKET_COLORS[i]}66;color:${BUCKET_COLORS[i]};font-size:0.7rem;">×${m}</div>`).join('');
     }
 
     function animatePlinkoLoop() {
-        initPlinko(); 
-        let stillAnimating = false;
-
+        initPlinko(); let stillAnimating = false;
         for(let i = plinkoBallsArray.length - 1; i >= 0; i--) {
-            let b = plinkoBallsArray[i];
-            if(b.finished) continue;
-            stillAnimating = true;
+            let b = plinkoBallsArray[i]; if(b.finished) continue; stillAnimating = true;
+            const p1 = b.path[b.step], p2 = b.path[b.step + 1];
+            let bx = p1.x + (p2.x - p1.x) * b.progress, by = p1.y + (p2.y - p1.y) * b.progress - (Math.sin(b.progress * Math.PI) * 12);
 
-            const p1 = b.path[b.step];
-            const p2 = b.path[b.step + 1];
-            
-            let bx = p1.x + (p2.x - p1.x) * b.progress;
-            let bounceY = Math.sin(b.progress * Math.PI) * 12; 
-            let by = p1.y + (p2.y - p1.y) * b.progress - bounceY;
-
-            plinkoCtx.beginPath();
-            plinkoCtx.arc(bx, by, 8, 0, Math.PI*2);
-            plinkoCtx.fillStyle = 'rgba(255,234,0,0.9)';
-            plinkoCtx.shadowColor = 'rgba(255,234,0,1)';
-            plinkoCtx.shadowBlur = 15;
-            plinkoCtx.fill();
-
-            let plinkoSpeed = window.innerWidth < 600 ? 0.08 : 0.035;
-            b.progress += plinkoSpeed; 
+            plinkoCtx.beginPath(); plinkoCtx.arc(bx, by, 8, 0, Math.PI*2); plinkoCtx.fillStyle = 'rgba(255,234,0,0.9)'; plinkoCtx.shadowColor = 'rgba(255,234,0,1)'; plinkoCtx.shadowBlur = 15; plinkoCtx.fill();
+            b.progress += window.innerWidth < 600 ? 0.08 : 0.035; 
             
             if(b.progress >= 1) {
-                b.progress = 0;
-                b.step++;
+                b.progress = 0; b.step++;
                 if(b.step >= b.path.length - 1) {
                     b.finished = true;
-                    
-                    if(b.finalServerBalance !== null && b.isLastBall) {
-                        updateBalance(b.finalServerBalance); 
-                    } else {
-                        updateBalance(userBalance + b.win, b.isLastBall); // SYNC ONLY ON LAST BALL
-                    }
-
+                    if(b.isLastBall) updateBalance(b.finalServerBalance); 
                     if(b.win > b.bet) spawnFloat('+' + b.win, innerWidth/2 - 30, innerHeight/2);
                     printMsg('plinko', b.win >= b.bet ? `ШАР: ×${b.mult} → +${b.win} NC` : `ШАР: ×${b.mult} → ${b.win} NC`, b.win >= b.bet ? 'win' : 'lose');
                 }
             }
         }
-
-        if(stillAnimating) {
-            requestAnimationFrame(animatePlinkoLoop);
-        } else {
-            plinkoAnimating = false;
-            document.getElementById('btnPlinko').disabled = false;
-            initPlinko();
-        }
+        if(stillAnimating) requestAnimationFrame(animatePlinkoLoop);
+        else { plinkoAnimating = false; document.getElementById('btnPlinko').disabled = false; initPlinko(); }
     }
 
     async function dropPlinko(){
         if(plinkoAnimating) return;
-        
-        const bet = getBetValue('betPlinko');
-        const count = getBetValue('ballsPlinko');
-        
+        const bet = getBetValue('betPlinko'), count = getBetValue('ballsPlinko');
         if(bet <= 0 || count <= 0) return printMsg('plinko', 'ОШИБКА ВВОДА', 'err');
         
-        const totalCost = bet * count;
-        if(totalCost > userBalance) return printMsg('plinko', 'НЕДОСТАТОЧНО СРЕДСТВ', 'err');
-
-        plinkoAnimating = true;
-        document.getElementById('btnPlinko').disabled = true;
+        const btn = document.getElementById('btnPlinko'); btn.disabled = true;
+        printMsg('plinko', `СВЯЗЬ С СЕРВЕРОМ...`, '');
         
-        printMsg('plinko', `СБРОС ШАРОВ: ${count} ШТ.`, '');
-
-        let serverBalls = [];
-        let finalServerBalance = null;
-        
-        // Попытка стукнуться на бэк, если он есть
         try {
             const res = await fetch(`${API_URL}/games/plinko`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}`},
+                method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}`},
                 body: JSON.stringify({bet, count})
             });
-            if(res.ok) {
-                const data = await res.json();
-                if(data.results) serverBalls = data.results;
-                if(data.newBalance !== undefined) finalServerBalance = data.newBalance;
+            const data = await res.json();
+            if(!res.ok) { printMsg('plinko', data.error, 'err'); btn.disabled = false; return; }
+            
+            updateBalance(userBalance - (bet * count)); 
+            plinkoAnimating = true; plinkoBallsArray = [];
+
+            for(let i=0; i<count; i++) {
+                setTimeout(() => {
+                    const canvas = document.getElementById('plinkoCanvas'); const W = canvas.width, H = canvas.height;
+                    const bucketIdx = data.results[i].bucket; const mult = BUCKET_MULTS[bucketIdx];
+                    let moves = []; for(let m=0; m<bucketIdx; m++) moves.push(1); for(let m=0; m<(8 - bucketIdx); m++) moves.push(0); moves.sort(() => Math.random() - 0.5);
+
+                    let pathPoints = [{ x: W/2, y: 10 }], currCol = 0;
+                    for(let row=0; row<PLINKO_ROWS; row++) {
+                        currCol += moves[row]; pathPoints.push({ x: W/2 - (row + 1)*24 + currCol*48, y: 30 + row*28 });
+                    }
+                    pathPoints.push({ x: pathPoints[pathPoints.length - 1].x, y: H - 10 });
+
+                    plinkoBallsArray.push({
+                        path: pathPoints, bet: bet, win: data.results[i].win, mult: mult, progress: 0, step: 0, finished: false,
+                        isLastBall: i === count - 1, finalServerBalance: data.newBalance
+                    });
+                    if(i === 0) requestAnimationFrame(animatePlinkoLoop);
+                }, i * 350); 
             }
-        } catch(e) {}
-        
-        updateBalance(userBalance - totalCost, true); // SYNC DEDUCTION
-        plinkoBallsArray = [];
-
-        for(let i=0; i<count; i++) {
-            setTimeout(() => {
-                const canvas = document.getElementById('plinkoCanvas');
-                const W = canvas.width, H = canvas.height;
-                
-                const bucketIdx = serverBalls[i] !== undefined ? serverBalls[i].bucket : getPlinkoResultIndex();
-                const mult = BUCKET_MULTS[bucketIdx];
-                const win = serverBalls[i] !== undefined ? serverBalls[i].win : Math.floor(bet * mult);
-
-                let moves = [];
-                for(let m=0; m<bucketIdx; m++) moves.push(1); 
-                for(let m=0; m<(8 - bucketIdx); m++) moves.push(0); 
-                moves.sort(() => Math.random() - 0.5);
-
-                let pathPoints = [{ x: W/2, y: 10 }];
-                let currCol = 0;
-                for(let row=0; row<PLINKO_ROWS; row++) {
-                    currCol += moves[row];
-                    let px = W/2 - (row + 1)*24 + currCol*48;
-                    let py = 30 + row*28;
-                    pathPoints.push({ x: px, y: py });
-                }
-                pathPoints.push({ x: pathPoints[pathPoints.length - 1].x, y: H - 10 });
-
-                plinkoBallsArray.push({
-                    path: pathPoints,
-                    bet: bet,
-                    win: win,
-                    mult: mult,
-                    progress: 0,
-                    step: 0,
-                    finished: false,
-                    isLastBall: i === count - 1,
-                    finalServerBalance: finalServerBalance
-                });
-
-                if(i === 0) requestAnimationFrame(animatePlinkoLoop);
-                
-            }, i * 350); 
-        }
+        } catch(e) { printMsg('plinko', 'Сбой сети', 'err'); btn.disabled = false; }
     }
 
-    /* ── БИТ (PREDICT THE BEAT - ЛОКАЛЬНЫЙ, С СИНХРОНИЗАЦИЕЙ) ── */
-    let ptbRound = 0, ptbCorrect = 0, ptbActive = false, ptbAnswered = false;
-    let ptbWaveAnim = null; 
-    let audioPlayer = document.getElementById('ptbAudioPlayer'); 
-    let ptbTimeout;
-    let currentPtbTrackTitle = "";
+    /* ── БИТ (PTB - СЕРВЕРНАЯ ЛОГИКА) ── */
+    let ptbActive = false, ptbAnswered = false, ptbWaveAnim = null; 
+    let audioPlayer = document.getElementById('ptbAudioPlayer'), ptbTimeout;
 
     function initPtbWave(){
-        const canvas = document.getElementById('ptbCanvas'); 
-        if(!canvas) return;
-        const ctx = canvas.getContext('2d'); 
-        let t = 0;
-        
+        const canvas = document.getElementById('ptbCanvas'); if(!canvas) return; const ctx = canvas.getContext('2d'); let t = 0;
         function drawWave(){
-            ctx.clearRect(0, 0, 680, 100); 
-            ctx.strokeStyle = 'rgba(0,229,255,0.6)'; 
-            ctx.lineWidth = 2; 
-            ctx.shadowColor = 'rgba(0,229,255,0.8)'; 
-            ctx.shadowBlur = 6;
-            
+            ctx.clearRect(0, 0, 680, 100); ctx.strokeStyle = 'rgba(0,229,255,0.6)'; ctx.lineWidth = 2; ctx.shadowColor = 'rgba(0,229,255,0.8)'; ctx.shadowBlur = 6;
             ctx.beginPath();
             for(let x=0; x<680; x++){ 
-                let amp = ptbActive && !ptbAnswered ? 35 : 20; 
-                const y = 50 + Math.sin(x * 0.04 + t) * amp + Math.sin(x * 0.09 + t * 1.3) * (amp/2); 
+                let amp = ptbActive && !ptbAnswered ? 35 : 20; const y = 50 + Math.sin(x * 0.04 + t) * amp + Math.sin(x * 0.09 + t * 1.3) * (amp/2); 
                 x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); 
-            }
-            ctx.stroke();
-            
-            ctx.strokeStyle = 'rgba(157,0,255,0.4)'; 
-            ctx.beginPath();
+            } ctx.stroke();
+            ctx.strokeStyle = 'rgba(157,0,255,0.4)'; ctx.beginPath();
             for(let x=0; x<680; x++){ 
-                let amp = ptbActive && !ptbAnswered ? 25 : 12; 
-                const y = 50 + Math.sin(x * 0.03 + t * 0.7) * amp + Math.sin(x * 0.11 + t * 2) * (amp/1.5); 
+                let amp = ptbActive && !ptbAnswered ? 25 : 12; const y = 50 + Math.sin(x * 0.03 + t * 0.7) * amp + Math.sin(x * 0.11 + t * 2) * (amp/1.5); 
                 x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); 
-            }
-            ctx.stroke();
-            
-            t += 0.04; 
-            ptbWaveAnim = requestAnimationFrame(drawWave);
-        }
-        drawWave();
+            } ctx.stroke();
+            t += 0.04; ptbWaveAnim = requestAnimationFrame(drawWave);
+        } drawWave();
     }
 
-    function startPtb(){
+    async function startPtb(){
         if(isMusicPlaying) toggleMusic();
+        const bet = getBetValue('betPtb'); if(bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
+        const btn = document.getElementById('btnPtb'); btn.disabled = true;
         
-        const validAudioTracks = supabaseTracks.filter(t => t.mp3_url && t.title);
-        if(validAudioTracks.length < 4) { 
-            printMsg('ptb', 'МАЛО АУДИО ТРЕКОВ В БД', 'err'); 
-            return; 
-        }
-
-        const bet = getBetValue('betPtb');
-        if(bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
-        
-        updateBalance(userBalance - bet, true); // SYNC DEDUCTION
-        
-        ptbRound = 0; 
-        ptbCorrect = 0; 
-        ptbActive = true;
-        
-        document.getElementById('btnPtb').disabled = true;
-        ptbNextRound(bet);
-    }
-
-    function ptbNextRound(bet){
-        if(ptbRound >= 5){ 
-            return ptbFinish(bet); 
-        }
-        ptbAnswered = false;
-        
-        const validAudioTracks = supabaseTracks.filter(t => t.mp3_url && t.title);
-        const targetTrack = validAudioTracks[Math.floor(Math.random() * validAudioTracks.length)];
-        currentPtbTrackTitle = targetTrack.title;
-        
-        document.getElementById('ptbRound')?.remove();
-        const ptbOptsContainer = document.getElementById('ptbOpts');
-        ptbOptsContainer.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">РАУНД ${ptbRound + 1} / 5</div>`);
-
-        document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (10 сек)...`;
-        
-        audioPlayer.src = targetTrack.mp3_url;
-
-        // Ждем получения длины трека (метаданных) от браузера
-        audioPlayer.onloadedmetadata = () => {
-            let duration = audioPlayer.duration;
-            
-            // Если трек длиннее 10 сек и его длина известна, берем случайный кусок
-            if (isFinite(duration) && duration > 10) {
-                // (duration - 10) гарантирует, что трек не оборвется раньше таймера
-                audioPlayer.currentTime = Math.random() * (duration - 10);
-            } else {
-                audioPlayer.currentTime = 0; // Страховка для коротких/кривых файлов
-            }
-
-            audioPlayer.play().then(() => {
-                clearTimeout(ptbTimeout);
-                ptbTimeout = setTimeout(() => {
-                    audioPlayer.pause();
-                    if(!ptbAnswered) {
-                        document.getElementById('ptbPrompt').textContent = `Время вышло! Выбирай ответ.`;
-                    }
-                }, 10000);
-            }).catch(e => {
-                console.log('Autoplay blocked or CORS error:', e);
-                document.getElementById('ptbPrompt').textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`;
+        try {
+            const res = await fetch(`${API_URL}/games/ptb/start`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet })
             });
-        };
-
-        let opts = [targetTrack.title];
-        let shuffled = [...validAudioTracks].filter(t => t.title !== targetTrack.title).sort(() => Math.random() - 0.5);
-        for(let i=0; i<3; i++) { 
-            if(shuffled[i]) opts.push(shuffled[i].title); 
-        }
-        opts = opts.sort(() => Math.random() - 0.5);
-
-        ptbOptsContainer.innerHTML = opts.map(o => `<button class="ptb-opt" onclick="ptbAnswer(this,'${o}',${bet})">${o}</button>`).join('');
-        
-        printMsg('ptb', 'ВЫБЕРИ НАЗВАНИЕ ТРЕКА', '');
+            if(!res.ok) { const data = await res.json(); printMsg('ptb', data.error, 'err'); btn.disabled = false; return; }
+            
+            updateBalance(userBalance - bet); ptbActive = true; ptbNextRound();
+        } catch(e) { printMsg('ptb', 'Сбой сети', 'err'); btn.disabled = false; }
     }
 
-    function ptbAnswer(btn, chosen, bet){
-        if(ptbAnswered) return;
-        ptbAnswered = true;
-        
-        audioPlayer.pause(); 
-        clearTimeout(ptbTimeout);
-
-        document.querySelectorAll('.ptb-opt').forEach(b => { 
-            b.disabled = true; 
-            if(b.textContent === currentPtbTrackTitle) b.classList.add('correct'); 
-        });
-        
-        if(chosen === currentPtbTrackTitle){ 
-            ptbCorrect++; 
-            btn.classList.add('correct'); 
-            printMsg('ptb', `ВЕРНО! ${ptbCorrect}/${ptbRound + 1}`, 'win'); 
-        } else { 
-            btn.classList.add('wrong'); 
-            printMsg('ptb', 'МИМО — ПРОДОЛЖАЙ', 'lose'); 
-        }
-        
-        ptbRound++;
-        setTimeout(() => ptbNextRound(bet), 2000);
+    async function ptbNextRound(){
+        ptbAnswered = false;
+        try {
+            const res = await fetch(`${API_URL}/games/ptb/round`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
+            const data = await res.json();
+            
+            document.getElementById('ptbRound')?.remove();
+            const container = document.getElementById('ptbOpts');
+            container.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">РАУНД ${data.round} / 5</div>`);
+            document.getElementById('ptbPrompt').textContent = `Слушай фрагмент (10 сек)...`;
+            
+            audioPlayer.src = data.mp3Url;
+            audioPlayer.onloadedmetadata = () => {
+                let duration = audioPlayer.duration;
+                if (isFinite(duration) && duration > 10) audioPlayer.currentTime = Math.random() * (duration - 10);
+                else audioPlayer.currentTime = 0;
+                
+                audioPlayer.play().then(() => {
+                    clearTimeout(ptbTimeout);
+                    ptbTimeout = setTimeout(() => {
+                        audioPlayer.pause();
+                        if(!ptbAnswered) document.getElementById('ptbPrompt').textContent = `Время вышло! Выбирай ответ.`;
+                    }, 10000);
+                }).catch(e => { document.getElementById('ptbPrompt').textContent = `АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.`; });
+            };
+            
+            container.innerHTML = data.options.map(o => `<button class="ptb-opt" onclick="ptbAnswer(this,'${o.replace(/'/g, "\\'")}')">${o}</button>`).join('');
+            printMsg('ptb', 'ВЫБЕРИ НАЗВАНИЕ ТРЕКА', '');
+        } catch(e) { printMsg('ptb', 'Сбой раунда', 'err'); }
     }
 
-    function ptbFinish(bet){
-        ptbActive = false;
-        const ratio = ptbCorrect / 5;
-        const mult = ratio >= 0.8 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.4 ? 1.5 : ratio >= 0.2 ? 1 : 0;
-        const win = Math.floor(bet * mult);
+    async function ptbAnswer(btn, chosen){
+        if(ptbAnswered) return; ptbAnswered = true;
+        audioPlayer.pause(); clearTimeout(ptbTimeout);
         
-        if(win > 0) spawnFloat('+' + win, innerWidth/2 - 30, innerHeight/2);
-        
-        updateBalance(userBalance + win, true); // SYNC WINNING
-        printMsg('ptb', `ИТОГ: ${ptbCorrect}/5 верных → ×${mult} → ${win > 0 ? '+' + win : '-' + bet} NC`, win > 0 ? 'win' : 'lose');
-        
-        document.getElementById('btnPtb').disabled = false;
-        document.getElementById('ptbPrompt').textContent = `Игра завершена`;
+        try {
+            const res = await fetch(`${API_URL}/games/ptb/answer`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+                body: JSON.stringify({ answer: chosen })
+            });
+            const data = await res.json();
+            
+            document.querySelectorAll('.ptb-opt').forEach(b => { b.disabled = true; });
+            
+            if(data.isCorrect){ btn.classList.add('correct'); printMsg('ptb', `ВЕРНО! ${data.correctAnswers}/5`, 'win'); } 
+            else { btn.classList.add('wrong'); printMsg('ptb', 'МИМО — ПРОДОЛЖАЙ', 'lose'); }
+            
+            if(data.isFinished) {
+                ptbActive = false;
+                if(data.win > 0) spawnFloat('+' + data.win, innerWidth/2 - 30, innerHeight/2);
+                updateBalance(data.newBalance);
+                printMsg('ptb', `ИТОГ: ${data.correctAnswers}/5 верных → ${data.win > 0 ? '+' + data.win : '0'} NC`, data.win > 0 ? 'win' : 'lose');
+                document.getElementById('btnPtb').disabled = false;
+                document.getElementById('ptbPrompt').textContent = `Игра завершена`;
+            } else {
+                setTimeout(() => ptbNextRound(), 2000);
+            }
+        } catch(e) { printMsg('ptb', 'Сбой проверки', 'err'); }
     }
-    </script>
+</script>
 </body>
 </html>
