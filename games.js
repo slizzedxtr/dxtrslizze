@@ -27,17 +27,16 @@ module.exports = function(app, User, supabase) {
         await User.updateOne(
             { _id: user._id },
             { $set: updates },
-            { strict: false } // Позволяет сохранять current_game даже если его нет в схеме
+            { strict: false }
         );
         Object.assign(user, updates);
     }
 
-    // Хелперы для безопасного извлечения данных
     const getBody = (req) => req.body || {};
     const safeBalance = (user) => Number(user.dscoin_balance) || 0;
 
     // ══════════════════════════════════════════════════════════════
-    // АУТЕНТИФИКАЦИЯ
+    // АУТЕНТИФИКАЦИЯ (С ФИКСОМ СЕССИЙ)
     // ══════════════════════════════════════════════════════════════
     const authenticate = async (req, res) => {
         try {
@@ -50,14 +49,14 @@ module.exports = function(app, User, supabase) {
             const token = authHeader.split(' ')[1];
             const decoded = jwt.verify(token, JWT_SECRET);
 
-            let user = await User.findOne({ clientId: decoded.clientId });
+            // ФИКС: .lean() вытаскивает current_game из базы напрямую
+            let user = await User.findOne({ clientId: decoded.clientId }).lean();
 
             if (!user) {
                 res.status(401).json({ error: 'Пользователь не найден' });
                 return null;
             }
 
-            // Автоначисление фермы
             if (user.farm && user.farm.active) {
                 const now = Date.now();
                 const lastClaim = user.farm.lastClaim || now;
@@ -77,6 +76,7 @@ module.exports = function(app, User, supabase) {
                 }
             }
 
+            user = await User.findOne({ clientId: decoded.clientId }).lean();
             return user;
         } catch (err) {
             console.error('Auth error:', err);
@@ -86,7 +86,7 @@ module.exports = function(app, User, supabase) {
     };
 
     // ══════════════════════════════════════════════════════════════
-    // ЗАГРУЗКА МУЗЫКАЛЬНОГО КАТАЛОГА (с фоллбэком)
+    // ЗАГРУЗКА МУЗЫКАЛЬНОГО КАТАЛОГА
     // ══════════════════════════════════════════════════════════════
     const getMusicCatalog = async () => {
         const now = Date.now();
@@ -109,10 +109,7 @@ module.exports = function(app, User, supabase) {
         }
 
         return [
-            { id: 1, title: 'Night City Lights', cover_url: '/dslogo.png', mp3_url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3', is_main: true },
-            { id: 2, title: 'Cyber Drop', cover_url: '/dslogo.png', mp3_url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', is_main: true },
-            { id: 3, title: 'Neon Rain', cover_url: '/dslogo.png', mp3_url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3', is_main: false },
-            { id: 4, title: 'Synthwave Overdrive', cover_url: '/dslogo.png', mp3_url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', is_main: false }
+            { id: 1, title: 'Night City Lights', cover_url: '/dslogo.png', mp3_url: '', is_main: true }
         ];
     };
 
@@ -137,17 +134,12 @@ module.exports = function(app, User, supabase) {
     function getMinesMult(mines, opened) {
         if (opened === 0) return 1.0;
         let prob = 1.0;
-        for (let i = 0; i < opened; i++) {
-            prob *= (MINES_TOTAL_CELLS - mines - i) / (MINES_TOTAL_CELLS - i);
-        }
+        for (let i = 0; i < opened; i++) prob *= (MINES_TOTAL_CELLS - mines - i) / (MINES_TOTAL_CELLS - i);
         return parseFloat(((1 / prob) * 0.95).toFixed(2));
     }
 
     function getBJScore(hand) {
-        let score = hand.reduce(
-            (a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r, 10)),
-            0
-        );
+        let score = hand.reduce((a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r, 10)), 0);
         let aces = hand.filter(c => c.r === 'A').length;
         while (score > 21 && aces > 0) { score -= 10; aces--; }
         return score;
@@ -158,11 +150,7 @@ module.exports = function(app, User, supabase) {
     // ══════════════════════════════════════════════════════════════
     app.get('/api/games/leaderboard', async (req, res) => {
         try {
-            const leaders = await User
-                .find({}, 'username nickname dscoin_balance avatarUrl')
-                .sort({ dscoin_balance: -1 })
-                .limit(5);
-
+            const leaders = await User.find({}, 'username nickname dscoin_balance avatarUrl').sort({ dscoin_balance: -1 }).limit(5);
             res.json({
                 success: true,
                 leaders: leaders.map(l => ({
@@ -184,7 +172,7 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
-        const now      = Date.now();
+        const now = Date.now();
         const cooldown = 6 * 60 * 60 * 1000;
 
         if (now - (user.lastDaily || 0) < cooldown) {
@@ -192,11 +180,7 @@ module.exports = function(app, User, supabase) {
             return res.status(400).json({ error: `Следующая поставка через ${hoursLeft} ч.` });
         }
 
-        await saveUser(user, {
-            dscoin_balance: Math.floor(safeBalance(user) + 100),
-            lastDaily: now
-        });
-        
+        await saveUser(user, { dscoin_balance: Math.floor(safeBalance(user) + 100), lastDaily: now });
         res.json({ success: true, reward: 100, newBalance: user.dscoin_balance, message: 'ПОСТАВКА ПОЛУЧЕНА' });
     });
 
@@ -206,17 +190,12 @@ module.exports = function(app, User, supabase) {
     app.post('/api/games/farm/activate', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        
         const balance = safeBalance(user);
         
         if (user.farm && user.farm.active) return res.status(400).json({ error: 'СИСТЕМА УЖЕ АКТИВИРОВАНА' });
         if (balance < 1000) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
-        await saveUser(user, {
-            dscoin_balance: Math.floor(balance - 1000),
-            farm: { active: true, timeLevel: 0, incomeLevel: 0, lastClaim: Date.now() }
-        });
-        
+        await saveUser(user, { dscoin_balance: Math.floor(balance - 1000), farm: { active: true, timeLevel: 0, incomeLevel: 0, lastClaim: Date.now() } });
         res.json({ success: true, newBalance: user.dscoin_balance, message: 'ФЕРМА АКТИВИРОВАНА' });
     });
 
@@ -229,11 +208,9 @@ module.exports = function(app, User, supabase) {
     app.post('/api/games/farm/upgrade', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        
         if (!user.farm || !user.farm.active) return res.status(400).json({ error: 'СНАЧАЛА АКТИВИРУЙТЕ СИСТЕМУ' });
 
-        const body = getBody(req);
-        const { type } = body;
+        const { type } = getBody(req);
         const balance = safeBalance(user);
         let cost;
 
@@ -243,9 +220,7 @@ module.exports = function(app, User, supabase) {
         } else if (type === 'income') {
             if (user.farm.incomeLevel >= FARM_INCOME_COSTS.length) return res.status(400).json({ error: 'МАКС. УРОВЕНЬ' });
             cost = FARM_INCOME_COSTS[user.farm.incomeLevel];
-        } else {
-            return res.status(400).json({ error: 'НЕВЕРНЫЙ ПАРАМЕТР' });
-        }
+        } else return res.status(400).json({ error: 'НЕВЕРНЫЙ ПАРАМЕТР' });
 
         if (balance < cost) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
@@ -253,11 +228,7 @@ module.exports = function(app, User, supabase) {
         if (type === 'time') newFarm.timeLevel += 1;
         else newFarm.incomeLevel += 1;
 
-        await saveUser(user, {
-            dscoin_balance: Math.floor(balance - cost),
-            farm: newFarm
-        });
-
+        await saveUser(user, { dscoin_balance: Math.floor(balance - cost), farm: newFarm });
         res.json({ success: true, newBalance: user.dscoin_balance });
     });
 
@@ -267,7 +238,6 @@ module.exports = function(app, User, supabase) {
     app.post('/api/games/reset', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-
         await saveUser(user, { current_game: null });
         res.json({ success: true, message: 'ИГРОВАЯ СЕССИЯ СБРОШЕНА' });
     });
@@ -279,8 +249,7 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
-        const body = getBody(req);
-        const bet = parseInt(body.bet, 10);
+        const bet = parseInt(getBody(req).bet, 10);
         const balance = safeBalance(user);
 
         if (isNaN(bet) || bet <= 0 || bet > balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
@@ -289,9 +258,7 @@ module.exports = function(app, User, supabase) {
         if (!allTracks || allTracks.length === 0) return res.status(500).json({ error: 'Каталог пуст' });
 
         let slotPool = allTracks.slice(0, 15);
-        allTracks.forEach(track => {
-            if (track.is_main && !slotPool.some(t => t.cover_url === track.cover_url)) slotPool.push(track);
-        });
+        allTracks.forEach(track => { if (track.is_main && !slotPool.some(t => t.cover_url === track.cover_url)) slotPool.push(track); });
 
         const isWin = Math.random() < 0.15;
         let resultTracks = [];
@@ -304,90 +271,22 @@ module.exports = function(app, User, supabase) {
             resultTracks = [winTrack, winTrack, winTrack];
         } else {
             resultTracks = [getRand(), getRand(), getRand()];
-            if (resultTracks[0].cover_url === resultTracks[1].cover_url &&
-                resultTracks[1].cover_url === resultTracks[2].cover_url) {
+            if (resultTracks[0].cover_url === resultTracks[1].cover_url && resultTracks[1].cover_url === resultTracks[2].cover_url) {
                 const diffTrack = slotPool.find(t => t.cover_url !== resultTracks[0].cover_url);
                 resultTracks[2] = diffTrack || { id: 999, title: 'Lose', cover_url: '/valuta.png', is_main: false };
             }
         }
 
         const winTotal = isWin ? bet * (resultTracks[0].is_main ? 10 : 5) : 0;
-        
-        await saveUser(user, {
-            dscoin_balance: Math.floor(balance - bet + winTotal)
-        });
+        await saveUser(user, { dscoin_balance: Math.floor(balance - bet + winTotal) });
 
         res.json({
-            success:   true,
-            items:     resultTracks.map(t => ({ id: t.id, title: t.title, cover_url: t.cover_url, mp3_url: t.mp3_url, is_main: t.is_main })),
-            win:       winTotal,
+            success: true,
+            items: resultTracks.map(t => ({ id: t.id, title: t.title, cover_url: t.cover_url, mp3_url: t.mp3_url, is_main: t.is_main })),
+            win: winTotal,
             newBalance: user.dscoin_balance,
             isJackpot: isWin && resultTracks[0].is_main
         });
-    });
-
-    // ══════════════════════════════════════════════════════════════
-    // МАГАЗИН
-    // ══════════════════════════════════════════════════════════════
-    app.post('/api/shop/buy', async (req, res) => {
-        const user = await authenticate(req, res);
-        if (!user) return;
-
-        const body = getBody(req);
-        const { itemId } = body;
-        const balance = safeBalance(user);
-
-        const SHOP_ITEMS = {
-            snippet_nightcity: { price: 500,  type: 'snippet', name: 'Night City Lights' },
-            frame_neon_green:  { price: 300,  type: 'frame',   name: 'Toxic Glow' },
-            frame_cyber_pulse: { price: 600,  type: 'frame',   name: 'Cyber Pulse (Anim)' },
-            title_netrunner:   { price: 1000, type: 'title',   name: 'Netrunner' },
-            title_legend:      { price: 5000, type: 'title',   name: 'Cyber Legend' }
-        };
-
-        const item = SHOP_ITEMS[itemId];
-        if (!item) return res.status(404).json({ error: 'Товар не найден' });
-        if (balance < item.price) return res.status(400).json({ error: 'Недостаточно коинов' });
-
-        const inventory = user.inventory || { frames: [], titles: [], snippets: [] };
-        const category = item.type + 's';
-        if (!inventory[category]) inventory[category] = [];
-        
-        if (inventory[category].includes(itemId)) return res.status(400).json({ error: 'Уже куплено' });
-
-        inventory[category].push(itemId);
-        
-        const updates = {
-            dscoin_balance: Math.floor(balance - item.price),
-            inventory
-        };
-        
-        if (item.type === 'frame') updates.activeFrame = itemId;
-        if (item.type === 'title') updates.activeTitle = item.name;
-
-        await saveUser(user, updates);
-        res.json({ success: true, newBalance: user.dscoin_balance, message: `Куплено: ${item.name}` });
-    });
-
-    app.post('/api/shop/boost', async (req, res) => {
-        const user = await authenticate(req, res);
-        if (!user) return;
-
-        const body = getBody(req);
-        const { trackId, amount } = body;
-        const burnAmount = parseInt(amount, 10);
-        const balance = safeBalance(user);
-
-        if (isNaN(burnAmount) || burnAmount <= 0) return res.status(400).json({ error: 'Укажите сумму буста' });
-        if (balance < burnAmount) return res.status(400).json({ error: 'Недостаточно средств' });
-
-        await saveUser(user, { dscoin_balance: Math.floor(balance - burnAmount) });
-
-        const { data: track, error } = await supabase.from('music').select('boosts').eq('id', trackId).single();
-        if (!error && track) {
-            await supabase.from('music').update({ boosts: (track.boosts || 0) + burnAmount }).eq('id', trackId);
-        }
-        res.json({ success: true, newBalance: user.dscoin_balance, message: `Трек забущен на ${burnAmount}!` });
     });
 
     // ══════════════════════════════════════════════════════════════
@@ -398,24 +297,21 @@ module.exports = function(app, User, supabase) {
         if (!user) return;
 
         const body = getBody(req);
-        const bet    = parseInt(body.bet,   10);
+        const bet = parseInt(body.bet, 10);
         const choice = parseInt(body.guess, 10);
         const balance = safeBalance(user);
 
-        if (![1,2,3,4].includes(choice) || isNaN(bet) || bet <= 0 || bet > balance) {
-            return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
-        }
+        if (![1,2,3,4].includes(choice) || isNaN(bet) || bet <= 0 || bet > balance) return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
 
         const roll = Math.floor(Math.random() * 100) + 1;
         let isWin = false, mult = 0;
 
-        if      (choice === 1 && roll <= 25)               { isWin = true; mult = 3; }
+        if      (choice === 1 && roll <= 25) { isWin = true; mult = 3; }
         else if (choice === 2 && roll >= 26 && roll <= 50) { isWin = true; mult = 2; }
         else if (choice === 3 && roll >= 51 && roll <= 75) { isWin = true; mult = 2; }
-        else if (choice === 4 && roll >= 76)               { isWin = true; mult = 3; }
+        else if (choice === 4 && roll >= 76) { isWin = true; mult = 3; }
 
         const winTotal = isWin ? bet * mult : 0;
-        
         await saveUser(user, { dscoin_balance: Math.floor(balance - bet + winTotal) });
         res.json({ success: true, roll, win: winTotal, newBalance: user.dscoin_balance });
     });
@@ -428,13 +324,11 @@ module.exports = function(app, User, supabase) {
         if (!user) return;
 
         const body = getBody(req);
-        const bet    = parseInt(body.bet, 10);
+        const bet = parseInt(body.bet, 10);
         const target = parseFloat(body.targetMultiplier);
         const balance = safeBalance(user);
 
-        if (isNaN(target) || target < 1.1 || isNaN(bet) || bet <= 0 || bet > balance) {
-            return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
-        }
+        if (isNaN(target) || target < 1.1 || isNaN(bet) || bet <= 0 || bet > balance) return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
 
         const e = 2 ** 32;
         const h = Math.floor(Math.random() * e);
@@ -442,7 +336,7 @@ module.exports = function(app, User, supabase) {
         if (crashPoint > 50) crashPoint = 50.00;
         crashPoint = parseFloat(crashPoint.toFixed(2));
 
-        const isWin    = target <= crashPoint;
+        const isWin = target <= crashPoint;
         const winTotal = isWin ? Math.floor(bet * target) : 0;
 
         await saveUser(user, { dscoin_balance: Math.floor(balance - bet + winTotal) });
@@ -457,17 +351,15 @@ module.exports = function(app, User, supabase) {
         if (!user) return;
 
         const body = getBody(req);
-        const bet   = parseInt(body.bet, 10);
+        const bet = parseInt(body.bet, 10);
         const color = body.color;
         const balance = safeBalance(user);
 
-        if (!['purple','cyan','gold'].includes(color) || isNaN(bet) || bet <= 0 || bet > balance) {
-            return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
-        }
+        if (!['purple','cyan','gold'].includes(color) || isNaN(bet) || bet <= 0 || bet > balance) return res.status(400).json({ error: 'ОШИБКА ДАННЫХ' });
 
         const roll = Math.random() * 100;
         const resultColor = roll < 5 ? 'gold' : roll < 52.5 ? 'cyan' : 'purple';
-        const isWin    = color === resultColor;
+        const isWin = color === resultColor;
         const winTotal = isWin ? bet * (resultColor === 'gold' ? 14 : 2) : 0;
 
         await saveUser(user, { dscoin_balance: Math.floor(balance - bet + winTotal) });
@@ -482,13 +374,11 @@ module.exports = function(app, User, supabase) {
         if (!user) return;
 
         const body = getBody(req);
-        const bet   = parseInt(body.bet,   10);
+        const bet   = parseInt(body.bet, 10);
         const count = parseInt(body.count, 10);
         const balance = safeBalance(user);
 
-        if (isNaN(bet) || bet <= 0 || isNaN(count) || count <= 0 || bet * count > balance) {
-            return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-        }
+        if (isNaN(bet) || bet <= 0 || isNaN(count) || count <= 0 || bet * count > balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
         if (count > 50) return res.status(400).json({ error: 'МАКСИМУМ 50 ШАРОВ' });
 
         let results  = [];
@@ -520,12 +410,12 @@ module.exports = function(app, User, supabase) {
         if (!user) return;
 
         const body = getBody(req);
-        const bet   = parseInt(body.bet,        10);
+        const bet   = parseInt(body.bet, 10);
         const mines = parseInt(body.minesCount, 10);
         const balance = safeBalance(user);
 
-        if (isNaN(bet)   || bet   <= 0  || bet   > balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-        if (isNaN(mines) || mines < 3   || mines > 20)      return res.status(400).json({ error: 'НЕВЕРНОЕ КОЛ-ВО МИН' });
+        if (isNaN(bet) || bet <= 0 || bet > balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+        if (isNaN(mines) || mines < 3 || mines > 20) return res.status(400).json({ error: 'НЕВЕРНОЕ КОЛ-ВО МИН' });
 
         const bombs = [];
         while (bombs.length < mines) {
@@ -545,15 +435,12 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
-        const body = getBody(req);
-        const cellIndex = parseInt(body.cellIndex, 10);
+        const cellIndex = parseInt(getBody(req).cellIndex, 10);
 
         if (!user.current_game || user.current_game.type !== 'mines' || !user.current_game.active) {
             return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В МИНАХ' });
         }
-        if (isNaN(cellIndex) || cellIndex < 0 || cellIndex > 24) {
-            return res.status(400).json({ error: 'НЕВЕРНАЯ ЯЧЕЙКА' });
-        }
+        if (isNaN(cellIndex) || cellIndex < 0 || cellIndex > 24) return res.status(400).json({ error: 'НЕВЕРНАЯ ЯЧЕЙКА' });
 
         const game = user.current_game;
 
@@ -567,10 +454,7 @@ module.exports = function(app, User, supabase) {
         if (!opened.includes(cellIndex)) opened.push(cellIndex);
         const currentMult = getMinesMult(game.mines, opened.length);
 
-        await saveUser(user, {
-            current_game: { ...game, opened }
-        });
-
+        await saveUser(user, { current_game: { ...game, opened } });
         res.json({ status: 'safe', multiplier: currentMult, openedCount: opened.length });
     });
 
@@ -583,12 +467,11 @@ module.exports = function(app, User, supabase) {
         }
 
         const game = user.current_game;
-        const balance = safeBalance(user);
         const mult = getMinesMult(game.mines, (game.opened || []).length);
         const win  = Math.floor(game.bet * mult);
 
         await saveUser(user, {
-            dscoin_balance: balance + win,
+            dscoin_balance: safeBalance(user) + win,
             current_game: null
         });
 
@@ -602,13 +485,10 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
-        const body = getBody(req);
-        const bet = parseInt(body.bet, 10);
+        const bet = parseInt(getBody(req).bet, 10);
         const balance = safeBalance(user);
 
-        if (isNaN(bet) || bet <= 0 || bet > balance) {
-            return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-        }
+        if (isNaN(bet) || bet <= 0 || bet > balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
 
         const deck = [];
         BJ_SUITS.forEach(s => BJ_RANKS.forEach(r => deck.push({ r, s })));
@@ -619,14 +499,7 @@ module.exports = function(app, User, supabase) {
 
         await saveUser(user, {
             dscoin_balance: balance - bet,
-            current_game: {
-                type:        'bj',
-                bet:         bet,
-                deck:        deck,
-                playerHand:  playerHand,
-                dealerHand:  dealerHand,
-                active:      true
-            }
+            current_game: { type: 'bj', bet: bet, deck: deck, playerHand: playerHand, dealerHand: dealerHand, active: true }
         });
 
         res.json({ success: true, playerHand, dealerCard: dealerHand[0], newBalance: user.dscoin_balance });
@@ -640,21 +513,18 @@ module.exports = function(app, User, supabase) {
             return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В БЛЭКДЖЕКЕ' });
         }
 
-        const game       = user.current_game;
-        const deck       = [...(game.deck || [])];
-        const card       = deck.pop();
+        const game = user.current_game;
+        const deck = [...(game.deck || [])];
+        const card = deck.pop();
         const playerHand = [...(game.playerHand || []), card];
-        const score      = getBJScore(playerHand);
+        const score = getBJScore(playerHand);
 
         if (score > 21) {
             await saveUser(user, { current_game: null });
             return res.json({ status: 'bust', card, score });
         }
 
-        await saveUser(user, {
-            current_game: { ...game, deck, playerHand }
-        });
-        
+        await saveUser(user, { current_game: { ...game, deck, playerHand } });
         res.json({ status: 'continue', card, score });
     });
 
@@ -666,11 +536,10 @@ module.exports = function(app, User, supabase) {
             return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В БЛЭКДЖЕКЕ' });
         }
 
-        const game       = user.current_game;
-        const balance    = safeBalance(user);
-        let   deck       = [...(game.deck || [])];
-        let   dealerHand = [...(game.dealerHand || [])];
-        let   dScore     = getBJScore(dealerHand);
+        const game = user.current_game;
+        let deck = [...(game.deck || [])];
+        let dealerHand = [...(game.dealerHand || [])];
+        let dScore = getBJScore(dealerHand);
 
         while (dScore < 17 && deck.length > 0) {
             dealerHand.push(deck.pop());
@@ -681,14 +550,10 @@ module.exports = function(app, User, supabase) {
         let win = 0;
 
         if      (pScore === 21 && (game.playerHand || []).length === 2 && dScore !== 21) win = Math.floor(game.bet * 2.5);
-        else if (dScore > 21 || pScore > dScore)                                         win = Math.floor(game.bet * 2);
-        else if (pScore === dScore)                                                      win = game.bet;
+        else if (dScore > 21 || pScore > dScore) win = Math.floor(game.bet * 2);
+        else if (pScore === dScore) win = game.bet;
 
-        await saveUser(user, {
-            dscoin_balance: balance + win,
-            current_game: null
-        });
-
+        await saveUser(user, { dscoin_balance: safeBalance(user) + win, current_game: null });
         res.json({ win, pScore, dScore, dealerHand, newBalance: user.dscoin_balance });
     });
 
@@ -703,12 +568,10 @@ module.exports = function(app, User, supabase) {
         const bet = parseInt(body.bet, 10);
         const balance = safeBalance(user);
 
-        if (isNaN(bet) || bet <= 0 || bet > balance) {
-            return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-        }
+        if (isNaN(bet) || bet <= 0 || bet > balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
 
-        const catalog      = await getMusicCatalog();
-        const validTracks  = catalog.filter(t => t.cover_url && t.title);
+        const catalog = await getMusicCatalog();
+        const validTracks = catalog.filter(t => t.cover_url && t.title);
         if (validTracks.length === 0) return res.status(500).json({ error: 'База пуста' });
 
         const correctTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
@@ -718,18 +581,11 @@ module.exports = function(app, User, supabase) {
         uniqueTitles.delete(correctTrack.title);
 
         const optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
-        const options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]]
-            .sort(() => 0.5 - Math.random());
+        const options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]].sort(() => 0.5 - Math.random());
 
         await saveUser(user, {
             dscoin_balance: balance - bet,
-            current_game: {
-                type:         'quiz',
-                bet:          bet,
-                correctTitle: correctTrack.title.trim(),
-                streak:       parseInt(body.streak, 10) || 0,
-                active:       true
-            }
+            current_game: { type: 'quiz', bet: bet, correctTitle: correctTrack.title.trim(), streak: parseInt(body.streak, 10) || 0, active: true }
         });
 
         res.json({ success: true, coverUrl: correctTrack.cover_url, options, newBalance: user.dscoin_balance });
@@ -743,37 +599,22 @@ module.exports = function(app, User, supabase) {
             return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В КВИЗЕ' });
         }
 
-        const body = getBody(req);
-        const { answer } = body;
+        const answer = getBody(req).answer;
         const game = user.current_game;
-        const balance = safeBalance(user);
-
-        const cleanAnswer  = String(answer || '').trim().toLowerCase();
+        const cleanAnswer = String(answer || '').trim().toLowerCase();
         const cleanCorrect = String(game.correctTitle || '').trim().toLowerCase();
-        const isCorrect    = cleanAnswer === cleanCorrect;
+        const isCorrect = cleanAnswer === cleanCorrect;
 
-        let win       = 0;
-        let newStreak = 0;
+        let win = 0, newStreak = 0;
 
         if (isCorrect) {
             newStreak = (game.streak || 0) + 1;
-            const mult = 1 + newStreak * 0.5;
-            win = Math.floor(game.bet * mult);
+            win = Math.floor(game.bet * (1 + newStreak * 0.5));
         }
 
-        await saveUser(user, {
-            dscoin_balance: balance + win,
-            current_game: null
-        });
+        await saveUser(user, { dscoin_balance: safeBalance(user) + win, current_game: null });
 
-        res.json({
-            success:      true,
-            isCorrect,
-            win,
-            newStreak,
-            newBalance:   user.dscoin_balance,
-            correctTitle: game.correctTitle
-        });
+        res.json({ success: true, isCorrect, win, newStreak, newBalance: user.dscoin_balance, correctTitle: game.correctTitle });
     });
 
     // ══════════════════════════════════════════════════════════════
@@ -783,24 +624,12 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
-        const body = getBody(req);
-        const bet = parseInt(body.bet, 10);
-        const balance = safeBalance(user);
-
-        if (isNaN(bet) || bet <= 0 || bet > balance) {
-            return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
-        }
+        const bet = parseInt(getBody(req).bet, 10);
+        if (isNaN(bet) || bet <= 0 || bet > safeBalance(user)) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
 
         await saveUser(user, {
-            dscoin_balance: balance - bet,
-            current_game: {
-                type:                'ptb',
-                bet:                 bet,
-                round:               0,
-                correctAnswers:      0,
-                active:              true,
-                currentCorrectTitle: null
-            }
+            dscoin_balance: safeBalance(user) - bet,
+            current_game: { type: 'ptb', bet: bet, round: 0, correctAnswers: 0, active: true, currentCorrectTitle: null }
         });
 
         res.json({ success: true, newBalance: user.dscoin_balance });
@@ -814,7 +643,7 @@ module.exports = function(app, User, supabase) {
             return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В БИТЕ' });
         }
 
-        const catalog    = await getMusicCatalog();
+        const catalog = await getMusicCatalog();
         const validAudio = catalog.filter(t => t.mp3_url && t.title);
         if (validAudio.length === 0) return res.status(500).json({ error: 'База пуста' });
 
@@ -825,17 +654,11 @@ module.exports = function(app, User, supabase) {
         uniqueTitles.delete(correctTrack.title);
 
         const optionsArray = Array.from(uniqueTitles).sort(() => 0.5 - Math.random());
-        const options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]]
-            .sort(() => 0.5 - Math.random());
-
+        const options = [correctTrack.title, optionsArray[0], optionsArray[1], optionsArray[2]].sort(() => 0.5 - Math.random());
         const newRound = (user.current_game.round || 0) + 1;
 
         await saveUser(user, {
-            current_game: {
-                ...user.current_game,
-                round:               newRound,
-                currentCorrectTitle: correctTrack.title.trim()
-            }
+            current_game: { ...user.current_game, round: newRound, currentCorrectTitle: correctTrack.title.trim() }
         });
 
         res.json({ success: true, mp3Url: correctTrack.mp3_url, options, round: newRound });
@@ -849,45 +672,26 @@ module.exports = function(app, User, supabase) {
             return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В БИТЕ' });
         }
 
-        const body = getBody(req);
-        const { answer } = body;
-        const game       = user.current_game;
-        const balance    = safeBalance(user);
-
-        const cleanAnswer  = String(answer || '').trim().toLowerCase();
-        const cleanCorrect = String(game.currentCorrectTitle  || '').trim().toLowerCase();
-        const isCorrect    = cleanAnswer === cleanCorrect;
+        const answer = getBody(req).answer;
+        const game = user.current_game;
+        const cleanAnswer = String(answer || '').trim().toLowerCase();
+        const cleanCorrect = String(game.currentCorrectTitle || '').trim().toLowerCase();
+        const isCorrect = cleanAnswer === cleanCorrect;
 
         const correctAnswers = (game.correctAnswers || 0) + (isCorrect ? 1 : 0);
-        const isFinished     = game.round >= 5;
+        const isFinished = game.round >= 5;
 
         let win = 0;
         if (isFinished) {
             const ratio = correctAnswers / 5;
-            const mult  = ratio >= 0.8 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.4 ? 1.5 : ratio >= 0.2 ? 1 : 0;
+            const mult = ratio >= 0.8 ? 3 : ratio >= 0.6 ? 2 : ratio >= 0.4 ? 1.5 : ratio >= 0.2 ? 1 : 0;
             win = Math.floor(game.bet * mult);
-            
-            await saveUser(user, {
-                dscoin_balance: balance + win,
-                current_game: null
-            });
+            await saveUser(user, { dscoin_balance: safeBalance(user) + win, current_game: null });
         } else {
-            await saveUser(user, {
-                current_game: {
-                    ...game,
-                    correctAnswers: correctAnswers
-                }
-            });
+            await saveUser(user, { current_game: { ...game, correctAnswers: correctAnswers } });
         }
 
-        res.json({
-            success:        true,
-            isCorrect,
-            isFinished,
-            correctAnswers,
-            win,
-            newBalance:     user.dscoin_balance
-        });
+        res.json({ success: true, isCorrect, isFinished, correctAnswers, win, newBalance: user.dscoin_balance });
     });
 
 };
