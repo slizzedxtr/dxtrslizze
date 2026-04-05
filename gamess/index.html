@@ -735,69 +735,31 @@
         });
             // === AMBIENT MUSIC TOGGLE ===
 const musicBtn = document.getElementById('musicBtn');
-const bgm1 = document.getElementById('bgm1');
-const bgm2 = document.getElementById('bgm2');
-const bgm3 = document.getElementById('bgm3');
-const bgm4 = document.getElementById('bgm4');
-const bgm5 = document.getElementById('bgm5');
-const bgm6 = document.getElementById('bgm6');
-const bgm7 = document.getElementById('bgm7');
-const bgm8 = document.getElementById('bgm8');
-const bgm9 = document.getElementById('bgm9');
-const bgm10 = document.getElementById('bgm10');
-        
+const bgmPlayer = document.getElementById('bgmPlayer'); // Один плеер вместо 10
 let isMusicPlaying = false;
 
-// Можно задать треки прямо здесь (или в HTML)
-bgm1.src = 'ambient1.mp3'; // замени на свои пути
-bgm2.src = 'ambient2.mp3';
-bgm3.src = 'ambient3.mp3';
-bgm4.src = 'ambient4.mp3';
-bgm5.src = 'ambient5.mp3';
-bgm6.src = 'ambient6.mp3';
-bgm7.src = 'ambient7.mp3';
-bgm8.src = 'ambient8.mp3';
-bgm9.src = 'ambient9.mp3';
-bgm10.src = 'ambient10.mp3';
-bgm1.loop = true;
-bgm2.loop = true;
-bgm3.loop = true;
-bgm4.loop = true;
-bgm5.loop = true;
-bgm6.loop = true;
-bgm7.loop = true;
-bgm8.loop = true;
-bgm9.loop = true;
-bgm10.loop = true;
+// Массив путей к трекам
+const ambientTracks = [
+    'ambient1.mp3', 'ambient2.mp3', 'ambient3.mp3', 'ambient4.mp3', 'ambient5.mp3',
+    'ambient6.mp3', 'ambient7.mp3', 'ambient8.mp3', 'ambient9.mp3', 'ambient10.mp3'
+];
 
 musicBtn.addEventListener('click', () => {
     isMusicPlaying = !isMusicPlaying;
 
     if (isMusicPlaying) {
-        bgm1.play().catch(() => {});
-        bgm2.play().catch(() => {});
-        bgm3.play().catch(() => {});
-        bgm4.play().catch(() => {});
-        bgm5.play().catch(() => {});
-        bgm6.play().catch(() => {});
-        bgm7.play().catch(() => {});
-        bgm8.play().catch(() => {});
-        bgm9.play().catch(() => {});
-        bgm10.play().catch(() => {});
-        // bgm2.play().catch(() => {}); // если хочешь миксовать
+        // Выбираем случайный трек, если плеер пустой или остановлен
+        if (!bgmPlayer.src || bgmPlayer.paused) {
+            const randomTrack = ambientTracks[Math.floor(Math.random() * ambientTracks.length)];
+            bgmPlayer.src = randomTrack;
+            bgmPlayer.loop = true;
+        }
+        
+        bgmPlayer.play().catch(e => console.warn("Автоплей заблокирован браузером", e));
         musicBtn.classList.add('playing');
         musicBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
     } else {
-        bgm1.pause();
-        bgm2.pause();
-        bgm3.pause();
-        bgm4.pause();
-        bgm5.pause();
-        bgm6.pause();
-        bgm7.pause();
-        bgm8.pause();
-        bgm9.pause();
-        bgm10.pause();
+        bgmPlayer.pause();
         musicBtn.classList.remove('playing');
         musicBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
     }
