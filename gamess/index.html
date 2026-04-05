@@ -706,6 +706,8 @@
     let bjGameActive = false, bjBet = 0;
     let crashInterval = null;
     let currentDice = null;
+    // ФИКС: флаг музыки вынесен в глобальную область
+    let isMusicPlaying = false;
 
     // ══ ТОКЕН ══
     function getToken() {
@@ -733,41 +735,10 @@
             const el = document.getElementById('onlineCount');
             if (el) el.textContent = 'ОФФЛАЙН';
         });
-            // === AMBIENT MUSIC TOGGLE ===
-const musicBtn = document.getElementById('musicBtn');
-const bgmPlayer = document.getElementById('bgmPlayer'); // Один плеер вместо 10
-let isMusicPlaying = false;
-
-// Массив путей к трекам
-const ambientTracks = [
-    'ambient1.mp3', 'ambient2.mp3', 'ambient3.mp3', 'ambient4.mp3', 'ambient5.mp3',
-    'ambient6.mp3', 'ambient7.mp3', 'ambient8.mp3', 'ambient9.mp3', 'ambient10.mp3'
-];
-
-musicBtn.addEventListener('click', () => {
-    isMusicPlaying = !isMusicPlaying;
-
-    if (isMusicPlaying) {
-        // Выбираем случайный трек, если плеер пустой или остановлен
-        if (!bgmPlayer.src || bgmPlayer.paused) {
-            const randomTrack = ambientTracks[Math.floor(Math.random() * ambientTracks.length)];
-            bgmPlayer.src = randomTrack;
-            bgmPlayer.loop = true;
-        }
-        
-        bgmPlayer.play().catch(e => console.warn("Автоплей заблокирован браузером", e));
-        musicBtn.classList.add('playing');
-        musicBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-    } else {
-        bgmPlayer.pause();
-        musicBtn.classList.remove('playing');
-        musicBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
-    }
-});
     }
 
     // ══════════════════════════════════════════
-    // ОБНОВЛЕННАЯ ЗАГРУЗКА ТРЕКОВ
+    // ЗАГРУЗКА ТРЕКОВ
     // ══════════════════════════════════════════
     async function loadTracksData() {
         try {
@@ -792,13 +763,11 @@ musicBtn.addEventListener('click', () => {
         slotCovers = supabaseTracks.filter(t => t.cover_url).map(t => t.cover_url);
         if (slotCovers.length === 0) slotCovers = ['/dslogo.png'];
 
-        // Разблокировка Квиза
         const btnQuiz = document.getElementById('btnQuiz');
         if (btnQuiz) btnQuiz.disabled = false;
         const hintQuiz = document.getElementById('quizHint');
         if (hintQuiz) hintQuiz.textContent = "Готово. Жми 'НОВЫЙ РАУНД'.";
 
-        // Разблокировка Бита
         const btnPtb = document.getElementById('btnPtb');
         if (btnPtb) {
             btnPtb.disabled = false;
@@ -808,103 +777,6 @@ musicBtn.addEventListener('click', () => {
         }
 
         initReels();
-    }
-
-    // ══════════════════════════════════════════
-    // ОБНОВЛЕННЫЙ СТАРТ КВИЗА
-    // ══════════════════════════════════════════
-    async function startQuiz() {
-        const bet = getBetValue('betQuiz');
-        if (bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
-        const btn = document.getElementById('btnQuiz'); if (btn) btn.disabled = true;
-        
-        const hint = document.getElementById('quizHint');
-        if (hint) hint.textContent = "Связь с базой...";
-
-        try {
-            const res = await fetch(`${API_URL}/games/quiz/start`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                body: JSON.stringify({ bet, streak: quizStreak })
-            });
-            const data = await res.json();
-            
-            if (!res.ok) { 
-                printMsg('quiz', data.error || 'Ошибка базы', 'err'); 
-                if (btn) btn.disabled = false; 
-                if (hint) hint.textContent = "Сбой соединения. Жми 'НОВЫЙ РАУНД'.";
-                return; 
-            }
-
-            updateBalance(data.newBalance);
-            quizActive = true;
-
-            const cover = document.getElementById('quizCover');
-            if (cover) {
-                cover.classList.add('no-transition');
-                cover.src = data.coverUrl || '/dslogo.png';
-                void cover.offsetWidth;
-                cover.classList.remove('no-transition');
-                cover.classList.add('blurred');
-            }
-
-            if (hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
-
-            const container = document.getElementById('quizOpts');
-            if (container) {
-                container.innerHTML = '';
-                data.options.forEach(optText => {
-                    const b = document.createElement('button');
-                    b.className = 'quiz-opt';
-                    b.dataset.answer = optText;
-                    b.textContent = optText;
-                    b.onclick = () => quizAnswer(b);
-                    container.appendChild(b);
-                });
-            }
-            printMsg('quiz', '', '');
-        } catch (e) {
-            printMsg('quiz', 'Сбой сети', 'err'); 
-            if (btn) btn.disabled = false;
-            if (hint) hint.textContent = "Сервер не отвечает. Жми 'НОВЫЙ РАУНД'.";
-        }
-    }
-
-    // ══════════════════════════════════════════
-    // ОБНОВЛЕННЫЙ СТАРТ БИТА (PTB)
-    // ══════════════════════════════════════════
-    async function startPtb() {
-        if(typeof isMusicPlaying !== 'undefined' && isMusicPlaying && typeof toggleMusic === 'function') toggleMusic();
-        
-        const bet = getBetValue('betPtb');
-        if (bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
-        const btn = document.getElementById('btnPtb'); if (btn) btn.disabled = true;
-        
-        const ptbPrompt = document.getElementById('ptbPrompt');
-        if (ptbPrompt) ptbPrompt.textContent = "Связь с базой...";
-
-        try {
-            const res = await fetch(`${API_URL}/games/ptb/start`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-                body: JSON.stringify({ bet })
-            });
-            const data = await res.json();
-            if (!res.ok) { 
-                printMsg('ptb', data.error || 'Ошибка запуска', 'err'); 
-                if (btn) btn.disabled = false; 
-                if (ptbPrompt) ptbPrompt.textContent = "Ошибка. Жми 'НАЧАТЬ'.";
-                return; 
-            }
-            
-            updateBalance(data.newBalance);
-            ptbActive = true;
-            ptbNextRound();
-        } catch (e) {
-            printMsg('ptb', 'Сбой сети', 'err'); 
-            if (btn) btn.disabled = false;
-            if (ptbPrompt) ptbPrompt.textContent = "Сервер не отвечает. Жми 'НАЧАТЬ'.";
-        }
     }
 
     // ══════════════════════════════════════════
@@ -951,6 +823,30 @@ musicBtn.addEventListener('click', () => {
         if (burgerBtn) burgerBtn.onclick = toggleMenu;
         if (closeSidebar) closeSidebar.onclick = toggleMenu;
         if (sidebarOverlay) sidebarOverlay.onclick = toggleMenu;
+
+        // ФИКС: музыкальная кнопка в одном месте, правильно
+        const musicBtn = document.getElementById('musicBtn');
+        const bgm1 = document.getElementById('bgm1');
+        if (musicBtn && bgm1) {
+            musicBtn.addEventListener('click', () => {
+                isMusicPlaying = !isMusicPlaying;
+                if (isMusicPlaying) {
+                    if (!bgm1.src || bgm1.paused) {
+                        bgm1.src = supabaseTracks.length > 0 && supabaseTracks[0].mp3_url
+                            ? supabaseTracks[0].mp3_url
+                            : 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3';
+                        bgm1.loop = true;
+                    }
+                    bgm1.play().catch(e => console.warn("Автоплей заблокирован", e));
+                    musicBtn.classList.add('playing');
+                    musicBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                } else {
+                    bgm1.pause();
+                    musicBtn.classList.remove('playing');
+                    musicBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+                }
+            });
+        }
 
         // Numpad drag
         const npModal = document.getElementById('numpad-modal');
@@ -1075,6 +971,7 @@ musicBtn.addEventListener('click', () => {
 
     // ══════════════════════════════════════════
     // INIT & AUTH
+    // ФИКС: сброс зависшей игры при старте
     // ══════════════════════════════════════════
     window.onload = async () => {
         initPlinko();
@@ -1105,6 +1002,12 @@ musicBtn.addEventListener('click', () => {
                         if (av) av.src = user.avatarUrl;
                     }
                     updateBalance(user.dscoin_balance || 0);
+
+                    // ФИКС: сбрасываем зависшую игру при каждой загрузке страницы
+                    fetch(`${API_URL}/games/reset`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).catch(() => {});
 
                     fetch(`${API_URL}/games/farm/status`, {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -1650,7 +1553,6 @@ musicBtn.addEventListener('click', () => {
 
     // ══════════════════════════════════════════
     // БЛЭКДЖЕК
-    // ФИКС: правильный расчёт очков для отображения
     // ══════════════════════════════════════════
     function calcBJScore(hand) {
         let score = hand.reduce((a, c) => a + (c.r === 'A' ? 11 : ['J','Q','K'].includes(c.r) ? 10 : parseInt(c.r, 10)), 0);
@@ -1690,7 +1592,6 @@ musicBtn.addEventListener('click', () => {
             const pc = document.getElementById('bjPlayerCards'); if (pc) pc.innerHTML = data.playerHand.map(c => bjCardHTML(c)).join('');
             const dc = document.getElementById('bjDealerCards'); if (dc) dc.innerHTML = bjCardHTML(data.dealerCard) + bjCardHTML(null, true);
 
-            // ФИКС: используем правильный calcBJScore
             const pScore = calcBJScore(data.playerHand);
             const ps = document.getElementById('bjPlayerScore'); if (ps) ps.textContent = pScore;
             const dVal = data.dealerCard.r === 'A' ? 11 : ['J','Q','K'].includes(data.dealerCard.r) ? 10 : parseInt(data.dealerCard.r);
@@ -1744,7 +1645,7 @@ musicBtn.addEventListener('click', () => {
             updateBalance(data.newBalance);
 
             let msg = 'ДИЛЕР ПОБЕДИЛ', type = 'lose';
-            if (data.win > bjBet)      { msg = `ПОБЕДА! +${data.win} NC`; type = 'win'; spawnFloat('+' + (data.win - bjBet), innerWidth / 2 - 30, innerHeight / 2); }
+            if (data.win > bjBet)        { msg = `ПОБЕДА! +${data.win} NC`; type = 'win'; spawnFloat('+' + (data.win - bjBet), innerWidth / 2 - 30, innerHeight / 2); }
             else if (data.win === bjBet) { msg = 'НИЧЬЯ — ВОЗВРАТ'; type = 'err'; }
             printMsg('bj', msg, type);
             setTimeout(() => { const bd = document.getElementById('bjDealBtn'); if (bd) bd.disabled = false; }, 1000);
@@ -1755,12 +1656,15 @@ musicBtn.addEventListener('click', () => {
 
     // ══════════════════════════════════════════
     // КВИЗ
-    // ФИКС: trim на стороне фронта перед отправкой
+    // ФИКС: единственная версия функции (дубль удалён)
     // ══════════════════════════════════════════
     async function startQuiz() {
         const bet = getBetValue('betQuiz');
         if (bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
         const btn = document.getElementById('btnQuiz'); if (btn) btn.disabled = true;
+        const hint = document.getElementById('quizHint');
+        if (hint) hint.textContent = "Связь с базой...";
+
         try {
             const res = await fetch(`${API_URL}/games/quiz/start`, {
                 method: 'POST',
@@ -1768,9 +1672,14 @@ musicBtn.addEventListener('click', () => {
                 body: JSON.stringify({ bet, streak: quizStreak })
             });
             const data = await res.json();
-            if (!res.ok) { printMsg('quiz', data.error, 'err'); if (btn) btn.disabled = false; return; }
+            if (!res.ok) {
+                printMsg('quiz', data.error || 'Ошибка базы', 'err');
+                if (btn) btn.disabled = false;
+                if (hint) hint.textContent = "Сбой соединения. Жми 'НОВЫЙ РАУНД'.";
+                return;
+            }
 
-            // ФИКС: обновляем баланс сразу из ответа сервера (не дублируем вычитание)
+            // ФИКС: баланс обновляем только из ответа сервера
             updateBalance(data.newBalance);
             quizActive = true;
 
@@ -1783,7 +1692,6 @@ musicBtn.addEventListener('click', () => {
                 cover.classList.add('blurred');
             }
 
-            const hint = document.getElementById('quizHint');
             if (hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
 
             const container = document.getElementById('quizOpts');
@@ -1792,7 +1700,7 @@ musicBtn.addEventListener('click', () => {
                 data.options.forEach(optText => {
                     const b = document.createElement('button');
                     b.className = 'quiz-opt';
-                    // ФИКС: сохраняем оригинальный текст в dataset для точного сравнения
+                    // ФИКС: храним точный текст в dataset для сравнения
                     b.dataset.answer = optText;
                     b.textContent = optText;
                     b.onclick = () => quizAnswer(b);
@@ -1801,14 +1709,16 @@ musicBtn.addEventListener('click', () => {
             }
             printMsg('quiz', '', '');
         } catch (e) {
-            printMsg('quiz', 'Сбой сети', 'err'); if (btn) btn.disabled = false;
+            printMsg('quiz', 'Сбой сети', 'err');
+            if (btn) btn.disabled = false;
+            if (hint) hint.textContent = "Сервер не отвечает. Жми 'НОВЫЙ РАУНД'.";
         }
     }
 
     async function quizAnswer(btn) {
         if (!quizActive) return;
         quizActive = false;
-        // ФИКС: передаём точный текст опции без лишних преобразований
+        // ФИКС: передаём точный текст из dataset без лишних преобразований
         const chosen = btn.dataset.answer;
         try {
             const res = await fetch(`${API_URL}/games/quiz/answer`, {
@@ -1824,7 +1734,7 @@ musicBtn.addEventListener('click', () => {
 
             document.querySelectorAll('.quiz-opt').forEach(b => {
                 b.disabled = true;
-                // ФИКС: подсвечиваем правильный ответ через сравнение с correctTitle от сервера
+                // ФИКС: подсвечиваем правильный ответ через correctTitle от сервера
                 if (b.dataset.answer.trim().toLowerCase() === (data.correctTitle || '').trim().toLowerCase()) {
                     b.classList.add('correct');
                 }
@@ -1981,7 +1891,7 @@ musicBtn.addEventListener('click', () => {
 
     // ══════════════════════════════════════════
     // PTB (УГАДАЙ ТРЕК)
-    // ФИКС: trim при отправке ответа
+    // ФИКС: единственная версия функции (дубль удалён)
     // ══════════════════════════════════════════
     function initPtbWave() {
         const canvas = document.getElementById('ptbCanvas'); if (!canvas) return;
@@ -2016,6 +1926,9 @@ musicBtn.addEventListener('click', () => {
         const bet = getBetValue('betPtb');
         if (bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
         const btn = document.getElementById('btnPtb'); if (btn) btn.disabled = true;
+        const ptbPrompt = document.getElementById('ptbPrompt');
+        if (ptbPrompt) ptbPrompt.textContent = "Связь с базой...";
+
         try {
             const res = await fetch(`${API_URL}/games/ptb/start`, {
                 method: 'POST',
@@ -2023,13 +1936,20 @@ musicBtn.addEventListener('click', () => {
                 body: JSON.stringify({ bet })
             });
             const data = await res.json();
-            if (!res.ok) { printMsg('ptb', data.error, 'err'); if (btn) btn.disabled = false; return; }
+            if (!res.ok) {
+                printMsg('ptb', data.error || 'Ошибка запуска', 'err');
+                if (btn) btn.disabled = false;
+                if (ptbPrompt) ptbPrompt.textContent = "Ошибка. Жми 'НАЧАТЬ'.";
+                return;
+            }
             // ФИКС: обновляем баланс из ответа сервера
             updateBalance(data.newBalance);
             ptbActive = true;
             ptbNextRound();
         } catch (e) {
-            printMsg('ptb', 'Сбой сети', 'err'); if (btn) btn.disabled = false;
+            printMsg('ptb', 'Сбой сети', 'err');
+            if (btn) btn.disabled = false;
+            if (ptbPrompt) ptbPrompt.textContent = "Сервер не отвечает. Жми 'НАЧАТЬ'.";
         }
     }
 
@@ -2070,6 +1990,7 @@ musicBtn.addEventListener('click', () => {
                 data.options.forEach(optText => {
                     const b = document.createElement('button');
                     b.className = 'ptb-opt';
+                    // ФИКС: храним точный текст в dataset для сравнения
                     b.dataset.answer = optText;
                     b.textContent = optText;
                     b.onclick = () => ptbAnswer(b);
