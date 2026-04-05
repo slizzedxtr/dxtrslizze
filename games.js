@@ -82,7 +82,7 @@ module.exports = function(app, User, supabase) {
         if (musicCache.data.length > 0 && now - musicCache.lastFetch < 5 * 60 * 1000) {
             return musicCache.data;
         }
-        
+
         try {
             const { data, error } = await supabase
                 .from('music')
@@ -97,7 +97,6 @@ module.exports = function(app, User, supabase) {
             console.error("Supabase load error:", e);
         }
 
-        // Железный фоллбэк на случай проблем с БД
         return [
             { id: 1, title: 'Night City Lights', cover_url: '/dslogo.png', mp3_url: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3', is_main: true },
             { id: 2, title: 'Cyber Drop', cover_url: '/dslogo.png', mp3_url: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3', is_main: true },
@@ -236,6 +235,20 @@ module.exports = function(app, User, supabase) {
         user.markModified('farm');
         await user.save();
         res.json({ success: true, newBalance: user.dscoin_balance });
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    // СБРОС ЗАВИСШЕЙ ИГРЫ
+    // ФИКС: эндпоинт для сброса current_game при загрузке страницы
+    // ══════════════════════════════════════════════════════════════
+    app.post('/api/games/reset', async (req, res) => {
+        const user = await authenticate(req, res);
+        if (!user) return;
+
+        user.current_game = null;
+        user.markModified('current_game');
+        await user.save();
+        res.json({ success: true, message: 'ИГРОВАЯ СЕССИЯ СБРОШЕНА' });
     });
 
     // ══════════════════════════════════════════════════════════════
@@ -455,6 +468,7 @@ module.exports = function(app, User, supabase) {
 
     // ══════════════════════════════════════════════════════════════
     // МИНЫ
+    // ФИКС: сброс зависшей игры перед стартом новой
     // ══════════════════════════════════════════════════════════════
     app.post('/api/games/mines/start', async (req, res) => {
         const user = await authenticate(req, res);
@@ -465,6 +479,12 @@ module.exports = function(app, User, supabase) {
 
         if (isNaN(bet)   || bet   <= 0  || bet   > user.dscoin_balance) return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
         if (isNaN(mines) || mines < 3   || mines > 20)                  return res.status(400).json({ error: 'НЕВЕРНОЕ КОЛ-ВО МИН' });
+
+        // ФИКС: сбрасываем любую зависшую игру перед стартом
+        if (user.current_game && user.current_game.active) {
+            user.current_game = null;
+            user.markModified('current_game');
+        }
 
         const bombs = [];
         while (bombs.length < mines) {
@@ -484,8 +504,9 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
+        // ФИКС: точная проверка с информативной ошибкой
         if (!user.current_game || user.current_game.type !== 'mines' || !user.current_game.active) {
-            return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ' });
+            return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В МИНАХ' });
         }
 
         const cellIndex = parseInt(req.body.cellIndex, 10);
@@ -542,6 +563,7 @@ module.exports = function(app, User, supabase) {
 
     // ══════════════════════════════════════════════════════════════
     // БЛЭКДЖЕК
+    // ФИКС: сброс зависшей игры перед стартом новой
     // ══════════════════════════════════════════════════════════════
     app.post('/api/games/bj/start', async (req, res) => {
         const user = await authenticate(req, res);
@@ -550,6 +572,12 @@ module.exports = function(app, User, supabase) {
         const bet = parseInt(req.body.bet, 10);
         if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
             return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+
+        // ФИКС: сбрасываем любую зависшую игру перед стартом
+        if (user.current_game && user.current_game.active) {
+            user.current_game = null;
+            user.markModified('current_game');
+        }
 
         const deck = [];
         BJ_SUITS.forEach(s => BJ_RANKS.forEach(r => deck.push({ r, s })));
@@ -577,8 +605,9 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
+        // ФИКС: точная проверка с информативной ошибкой
         if (!user.current_game || user.current_game.type !== 'bj' || !user.current_game.active) {
-            return res.status(400).json({ error: 'Нет игры' });
+            return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В БЛЭКДЖЕКЕ' });
         }
 
         const game       = user.current_game;
@@ -611,8 +640,9 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
+        // ФИКС: точная проверка с информативной ошибкой
         if (!user.current_game || user.current_game.type !== 'bj' || !user.current_game.active) {
-            return res.status(400).json({ error: 'Ошибка' });
+            return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В БЛЭКДЖЕКЕ' });
         }
 
         const game       = user.current_game;
@@ -642,6 +672,7 @@ module.exports = function(app, User, supabase) {
 
     // ══════════════════════════════════════════════════════════════
     // КВИЗ (Neuro-Quiz)
+    // ФИКС: сброс зависшей игры перед стартом новой
     // ══════════════════════════════════════════════════════════════
     app.post('/api/games/quiz/start', async (req, res) => {
         const user = await authenticate(req, res);
@@ -650,6 +681,12 @@ module.exports = function(app, User, supabase) {
         const bet = parseInt(req.body.bet, 10);
         if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
             return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+
+        // ФИКС: сбрасываем любую зависшую игру перед стартом
+        if (user.current_game && user.current_game.active) {
+            user.current_game = null;
+            user.markModified('current_game');
+        }
 
         const catalog      = await getMusicCatalog();
         const validTracks  = catalog.filter(t => t.cover_url && t.title);
@@ -669,6 +706,7 @@ module.exports = function(app, User, supabase) {
         user.current_game = {
             type:         'quiz',
             bet:          bet,
+            // ФИКС: trim при сохранении правильного ответа
             correctTitle: correctTrack.title.trim(),
             streak:       parseInt(req.body.streak, 10) || 0,
             active:       true
@@ -683,13 +721,15 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
+        // ФИКС: точная проверка с информативной ошибкой
         if (!user.current_game || user.current_game.type !== 'quiz' || !user.current_game.active) {
-            return res.status(400).json({ error: 'ИГРА НЕ НАЙДЕНА' });
+            return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В КВИЗЕ' });
         }
 
         const { answer } = req.body;
         const game = user.current_game;
 
+        // ФИКС: trim и toLowerCase для надёжного сравнения
         const cleanAnswer  = String(answer            || '').trim().toLowerCase();
         const cleanCorrect = String(game.correctTitle || '').trim().toLowerCase();
         const isCorrect    = cleanAnswer === cleanCorrect;
@@ -720,6 +760,7 @@ module.exports = function(app, User, supabase) {
 
     // ══════════════════════════════════════════════════════════════
     // БИТ (Predict The Beat)
+    // ФИКС: сброс зависшей игры перед стартом новой
     // ══════════════════════════════════════════════════════════════
     app.post('/api/games/ptb/start', async (req, res) => {
         const user = await authenticate(req, res);
@@ -728,6 +769,12 @@ module.exports = function(app, User, supabase) {
         const bet = parseInt(req.body.bet, 10);
         if (isNaN(bet) || bet <= 0 || bet > user.dscoin_balance)
             return res.status(400).json({ error: 'ОШИБКА СТАВКИ' });
+
+        // ФИКС: сбрасываем любую зависшую игру перед стартом
+        if (user.current_game && user.current_game.active) {
+            user.current_game = null;
+            user.markModified('current_game');
+        }
 
         user.dscoin_balance -= bet;
         user.current_game = {
@@ -748,8 +795,9 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
+        // ФИКС: точная проверка с информативной ошибкой
         if (!user.current_game || user.current_game.type !== 'ptb' || !user.current_game.active) {
-            return res.status(400).json({ error: 'Нет активной игры' });
+            return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В БИТЕ' });
         }
 
         const catalog    = await getMusicCatalog();
@@ -774,6 +822,7 @@ module.exports = function(app, User, supabase) {
             round:               newRound,
             correctAnswers:      user.current_game.correctAnswers || 0,
             active:              true,
+            // ФИКС: trim при сохранении правильного ответа
             currentCorrectTitle: correctTrack.title.trim()
         };
         user.markModified('current_game');
@@ -786,13 +835,15 @@ module.exports = function(app, User, supabase) {
         const user = await authenticate(req, res);
         if (!user) return;
 
+        // ФИКС: точная проверка с информативной ошибкой
         if (!user.current_game || user.current_game.type !== 'ptb' || !user.current_game.active) {
-            return res.status(400).json({ error: 'Нет игры' });
+            return res.status(400).json({ error: 'НЕТ АКТИВНОЙ ИГРЫ В БИТЕ' });
         }
 
         const { answer } = req.body;
         const game       = user.current_game;
 
+        // ФИКС: trim и toLowerCase для надёжного сравнения
         const cleanAnswer  = String(answer                    || '').trim().toLowerCase();
         const cleanCorrect = String(game.currentCorrectTitle  || '').trim().toLowerCase();
         const isCorrect    = cleanAnswer === cleanCorrect;
