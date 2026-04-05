@@ -1415,6 +1415,14 @@
                 strip.children[targetIndex].textContent = data.resultColor === 'gold' ? '14×' : '2×';
             }
 
+            // === ДОБАВИТЬ ЭТОТ БЛОК (ХВОСТ РУЛЕТКИ) ===
+            for (let i = 0; i < 10; i++) {
+                const color = generateRouletteColor();
+                rCells.push(color);
+                strip.appendChild(createRouletteCell(color));
+            }
+            // ==========================================
+
             currentRIndex = targetIndex;
             updateRoulettePosition(4);
 
@@ -1685,11 +1693,11 @@
 
             const cover = document.getElementById('quizCover');
             if (cover) {
-                cover.classList.add('no-transition');
-                cover.src = data.coverUrl || '/dslogo.png';
-                void cover.offsetWidth;
-                cover.classList.remove('no-transition');
-                cover.classList.add('blurred');
+                cover.classList.add('no-transition'); // Выключаем плавность
+                cover.classList.add('blurred');       // СРАЗУ накидываем мыло
+                cover.src = data.coverUrl || '/dslogo.png'; // Меняем картинку
+                void cover.offsetWidth;               // Форсируем перерисовку DOM
+                cover.classList.remove('no-transition'); // Возвращаем плавность для финала
             }
 
             if (hint) hint.textContent = "Нейросеть исказила обложку... Угадай трек.";
