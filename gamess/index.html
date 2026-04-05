@@ -831,10 +831,10 @@
             musicBtn.addEventListener('click', () => {
                 isMusicPlaying = !isMusicPlaying;
                 if (isMusicPlaying) {
-                    if (!bgm1.src || bgm1.paused) {
-                        bgm1.src = supabaseTracks.length > 0 && supabaseTracks[0].mp3_url
-                            ? supabaseTracks[0].mp3_url
-                            : 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3';
+                    // Берем случайное число от 1 до 10 и ставим эмбиент
+                if (!bgm1.getAttribute('src')) {
+                        const randomAmbient = Math.floor(Math.random() * 10) + 1;
+                        bgm1.src = `/ambient${randomAmbient}.mp3`;
                         bgm1.loop = true;
                     }
                     bgm1.play().catch(e => console.warn("Автоплей заблокирован", e));
