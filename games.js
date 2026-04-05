@@ -387,10 +387,10 @@ module.exports = function(app, User, supabase) {
         for (let i = 0; i < count; i++) {
             const r = Math.random();
             let bucket;
-            if      (r < 0.195) bucket = 4;
-            else if (r < 0.495) bucket = Math.random() < 0.5 ? 3 : 5;
-            else if (r < 0.745) bucket = Math.random() < 0.5 ? 2 : 6;
-            else if (r < 0.945) bucket = Math.random() < 0.5 ? 1 : 7;
+            if      (r < 0.350) bucket = 4;
+            else if (r < 0.750) bucket = Math.random() < 0.5 ? 3 : 5;
+            else if (r < 0.900) bucket = Math.random() < 0.5 ? 2 : 6;
+            else if (r < 0.995) bucket = Math.random() < 0.5 ? 1 : 7;
             else                bucket = Math.random() < 0.5 ? 0 : 8;
 
             const win = Math.floor(bet * PLINKO_MULTS[bucket]);
