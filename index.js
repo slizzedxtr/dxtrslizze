@@ -94,16 +94,15 @@ const PendingMsg = mongoose.model('PendingMsg', PendingMsgSchema);
 
 const EXPIRATION_TIME = 60 * 60 * 1000;
 
-// НОВОВВЕДЕНИЕ: Обновлена схема PromoSchema для поддержки валютных промокодов
 const PromoSchema = new mongoose.Schema({
     code: { type: String, required: true, unique: true },
     title: { type: String, required: true },
-    coverId: { type: mongoose.Schema.Types.ObjectId }, // Убрано required: true
-    trackId: { type: mongoose.Schema.Types.ObjectId }, // Убрано required: true
-    isCurrency: { type: Boolean, default: false },     // Валютный ли промокод?
-    amount: { type: Number, default: 0 },              // Сумма валюты
-    maxUses: { type: Number },                         // Макс. кол-во использований
-    usesLeft: { type: Number },                        // Остаток использований
+    coverId: { type: mongoose.Schema.Types.ObjectId }, 
+    trackId: { type: mongoose.Schema.Types.ObjectId }, 
+    isCurrency: { type: Boolean, default: false },     
+    amount: { type: Number, default: 0 },              
+    maxUses: { type: Number },                         
+    usesLeft: { type: Number },                        
     createdAt: { type: Date, default: Date.now }
 });
 const Promo = mongoose.model('Promo', PromoSchema);
@@ -118,7 +117,6 @@ const AdminBan = mongoose.model('AdminBan', AdminBanSchema);
 const upload = multer({ storage: multer.memoryStorage() });
 
 // ================= MIDDLEWARE АДМИНИСТРАТОРА =================
-// Проверяет JWT и разрешает доступ только clientId '1' или '777'
 async function requireAdmin(req, res, next) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
@@ -173,7 +171,7 @@ app.post('/api/auth/register', async (req, res) => {
 
         const lowerUser = String(username).toLowerCase();
         const existing = await User.findOne({ username: lowerUser });
-        if (existing) return res.status(400).json({ error: 'Этот никнейм уже занят' });
+        if (existing) return res.status(400).json({ error: 'Этот логин уже занят' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
         
@@ -193,8 +191,7 @@ app.post('/api/auth/register', async (req, res) => {
 
         const token = jwt.sign({ clientId: newUser.clientId, username: newUser.username }, JWT_SECRET, { expiresIn: '30d' });
         
-        // ИСПРАВЛЕНИЕ 2: Добавлен dscoin_balance в ответ
-        res.json({ success: true, token, user: { username: newUser.nickname, clientId: newUser.clientId, avatarUrl: newUser.avatarUrl, dscoin_balance: newUser.dscoin_balance } });
+        res.json({ success: true, token, user: { username: newUser.username, nickname: newUser.nickname, clientId: newUser.clientId, avatarUrl: newUser.avatarUrl, dscoin_balance: newUser.dscoin_balance } });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Ошибка сервера при регистрации' });
@@ -214,7 +211,6 @@ app.post('/api/auth/login', async (req, res) => {
 
         const token = jwt.sign({ clientId: user.clientId, username: user.username }, JWT_SECRET, { expiresIn: '30d' });
         
-        // ИСПРАВЛЕНИЕ 2: Добавлен dscoin_balance в ответ
         res.json({ success: true, token, user: { username: user.username, nickname: user.nickname, clientId: user.clientId, avatarUrl: user.avatarUrl, dscoin_balance: user.dscoin_balance } });
     } catch (err) {
         console.error(err);
@@ -231,7 +227,6 @@ app.get('/api/auth/me', async (req, res) => {
         const user = await User.findOne({ clientId: decoded.clientId });
         if (!user) return res.status(404).json({ error: 'Юзер не найден' });
 
-        // ИСПРАВЛЕНИЕ 2: Добавлен dscoin_balance в ответ
         res.json({ success: true, user: { username: user.username, nickname: user.nickname, clientId: user.clientId, avatarUrl: user.avatarUrl, dscoin_balance: user.dscoin_balance } });
     } catch (err) {
         res.status(401).json({ error: 'Неверный или просроченный токен' });
@@ -247,9 +242,20 @@ app.put('/api/auth/update', upload.single('avatar'), async (req, res) => {
         const user = await User.findOne({ clientId: decoded.clientId });
         if (!user) return res.status(404).json({ error: 'Юзер не найден' });
 
-        const { newNickname, oldPassword, newPassword } = req.body;
+        const { newNickname, newUsername, oldPassword, newPassword } = req.body;
 
-        if (newNickname) user.nickname = newNickname;
+        if (newNickname !== undefined) {
+            user.nickname = newNickname.trim() === '' ? null : newNickname;
+        }
+
+        if (newUsername) {
+            const lowerUser = newUsername.trim().toLowerCase();
+            if (lowerUser !== user.username) {
+                const existing = await User.findOne({ username: lowerUser });
+                if (existing) return res.status(400).json({ error: 'Этот логин уже занят' });
+                user.username = lowerUser;
+            }
+        }
 
         if (oldPassword && newPassword) {
             const isMatch = await bcrypt.compare(oldPassword, user.password);
@@ -289,7 +295,7 @@ app.put('/api/auth/update', upload.single('avatar'), async (req, res) => {
             }).catch(e => console.error("Ошибка отправки ТГ-уведомления об аватаре:", e.message));
         }
 
-        res.json({ success: true, message: 'Профиль обновлен', user: { nickname: user.nickname, avatarUrl: user.avatarUrl } });
+        res.json({ success: true, message: 'Профиль обновлен', user: { nickname: user.nickname, username: user.username, avatarUrl: user.avatarUrl } });
     } catch (err) { 
         console.error("Ошибка при обновлении профиля:", err);
         res.status(500).json({ error: 'Ошибка сервера' }); 
@@ -324,7 +330,6 @@ app.post('/api/music', requireAdmin, upload.fields([
     { name: 'wav', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        // НОВОВВЕДЕНИЕ: добавлено authors
         const { title, yt_link, is_18, is_main, platforms, authors } = req.body;
 
         const coverFile = req.files['cover'] ? req.files['cover'][0] : null;
@@ -347,7 +352,6 @@ app.post('/api/music', requireAdmin, upload.fields([
         let platformsData = {};
         try { if (platforms) platformsData = JSON.parse(platforms); } catch(e){}
 
-        // НОВОВВЕДЕНИЕ: Логика авторов
         const trackAuthors = (authors && authors.trim() !== '') ? authors.trim() : 'DXTR feat. SlizZe';
 
         const { data, error } = await supabase
@@ -356,7 +360,7 @@ app.post('/api/music', requireAdmin, upload.fields([
                 title, cover_url, mp3_url, wav_url, yt_link,
                 is_18: is_18 === 'true' || is_18 === true,
                 is_main: isMainRelease, platforms: platformsData,
-                authors: trackAuthors // Добавлено поле authors
+                authors: trackAuthors
             }]);
 
         if (error) throw error;
@@ -379,7 +383,6 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
     { name: 'wav', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        // НОВОВВЕДЕНИЕ: добавлено authors
         const { title, yt_link, is_18, is_main, platforms, authors } = req.body;
 
         const trackId = req.params.id;
@@ -400,15 +403,16 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
         let wav_url = existingTrack.wav_url;
         const filesToRemove = [];
 
-        if (req.files['cover']) {
+        // Защита от пустых req.files при редактировании
+        if (req.files && req.files['cover']) {
             if (existingTrack.cover_url) filesToRemove.push(existingTrack.cover_url.split('/music-content/')[1]);
             cover_url = await uploadToSupabase(req.files['cover'][0], 'covers');
         }
-        if (req.files['mp3']) {
+        if (req.files && req.files['mp3']) {
             if (existingTrack.mp3_url) filesToRemove.push(existingTrack.mp3_url.split('/music-content/')[1]);
             mp3_url = await uploadToSupabase(req.files['mp3'][0], 'tracks');
         }
-        if (req.files['wav']) {
+        if (req.files && req.files['wav']) {
             if (existingTrack.wav_url) filesToRemove.push(existingTrack.wav_url.split('/music-content/')[1]);
             wav_url = await uploadToSupabase(req.files['wav'][0], 'tracks');
         }
@@ -417,14 +421,13 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
             await supabase.storage.from('music-content').remove(filesToRemove);
         }
 
-        // НОВОВВЕДЕНИЕ: Обработка поля authors
         const trackAuthors = (authors && authors.trim() !== '') ? authors.trim() : 'DXTR feat. SlizZe';
 
         const { error: updateError } = await supabase.from('music').update({
             title, cover_url, mp3_url, wav_url, yt_link,
             is_18: is_18 === 'true' || is_18 === true,
             is_main: isMainRelease, platforms: platformsData,
-            authors: trackAuthors // Обновление поля authors
+            authors: trackAuthors
         }).eq('id', trackId);
 
         if (updateError) throw updateError;
@@ -473,7 +476,6 @@ app.delete('/api/user/:id', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/user/:id', requireAdmin, async (req, res) => {
-    // НОВОВВЕДЕНИЕ: добавлено newUsername
     const { newClientId, newNickname, newAvatarUrl, newBalance, newPassword, newUsername } = req.body;
     try {
         const user = await User.findById(req.params.id);
@@ -487,7 +489,6 @@ app.put('/api/user/:id', requireAdmin, async (req, res) => {
             await AdminBan.updateMany({ clientId: user.clientId }, { clientId: newClientId });
         }
 
-        // НОВОВВЕДЕНИЕ: Обновление username (логина)
         if (newUsername && newUsername.trim() !== '') {
             const lowerUser = newUsername.trim().toLowerCase();
             if (lowerUser !== user.username) {
@@ -512,7 +513,6 @@ app.put('/api/user/:id', requireAdmin, async (req, res) => {
 
 app.post('/api/promo', requireAdmin, upload.fields([{ name: 'cover', maxCount: 1 }, { name: 'track', maxCount: 1 }]), async (req, res) => {
     try {
-        // НОВОВВЕДЕНИЕ: новые поля (isCurrency, amount, maxUses)
         const { promo, title, isCurrency, amount, maxUses } = req.body;
         
         const existing = await Promo.findOne({ code: promo });
@@ -522,7 +522,6 @@ app.post('/api/promo', requireAdmin, upload.fields([{ name: 'cover', maxCount: 1
         let coverId = null;
         let trackId = null;
 
-        // Если это не валютный промокод, загружаем файлы
         if (!isCurrBool) {
             if (!req.files['cover'] || !req.files['track']) {
                 return res.status(400).json({ error: 'Файлы обложки и трека обязательны для не валютных промокодов' });
@@ -533,7 +532,6 @@ app.post('/api/promo', requireAdmin, upload.fields([{ name: 'cover', maxCount: 1
             trackId = await uploadToGridFS(trackFile);
         }
 
-        // НОВОВВЕДЕНИЕ: Запись нового типа промокода
         const newPromo = new Promo({ 
             code: promo, 
             title, 
@@ -562,7 +560,6 @@ app.delete('/api/promo/:code', requireAdmin, async (req, res) => {
     const promo = await Promo.findOne({ code: req.params.code });
     if (!promo) return res.status(404).json({ error: 'Не найдено' });
     
-    // НОВОВВЕДЕНИЕ: проверяем наличие файлов перед удалением (валютные промокоды могут их не иметь)
     if (promo.coverId) {
         try { await gfsBucket.delete(new ObjectId(promo.coverId)); } catch(e){}
     }
@@ -596,7 +593,6 @@ app.get('/api/check/:code', async (req, res) => {
     const promo = await Promo.findOne({ code: req.params.code });
     if (!promo) return res.status(404).json({ error: 'Неверный код' });
     
-    // НОВОВВЕДЕНИЕ: Отдача информации для валютных промокодов
     if (promo.isCurrency) {
         res.json({ 
             title: promo.title, 
