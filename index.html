@@ -128,11 +128,17 @@
 
         /* ГЛАВНЫЙ РЕЛИЗ (ДИНАМИЧЕСКИЙ) */
         .hero-release {
-            background: linear-gradient(135deg, rgba(20,20,35,0.8) 0%, rgba(5,5,15,0.9) 100%);
+            background: rgba(10, 10, 15, 0.65);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
             border: 2px solid var(--neon-cyan); border-radius: 30px; padding: 40px; display: flex; gap: 40px; align-items: center;
             box-shadow: 0 0 40px rgba(0, 198, 255, 0.25), inset 0 0 20px rgba(0, 198, 255, 0.1); position: relative; overflow: hidden;
             transition: opacity 0.5s ease;
+        }
+        .hero-bg-glow {
+            position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
+            background-size: cover; background-position: center;
+            filter: blur(70px) brightness(0.4); z-index: -1;
+            transition: background-image 0.8s ease; pointer-events: none;
         }
         .hero-release::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(0,198,255,0.15) 0%, transparent 60%); animation: rotate 15s linear infinite; pointer-events: none; z-index: 0; }
         .hero-cover-wrap { position: relative; flex-shrink: 0; width: 350px; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; }
@@ -340,6 +346,11 @@
             }
             .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
             .drag-handle { display: none; }
+            /* Новые стили для мобильного плеера */
+            .audio-player { flex-direction: column; align-items: stretch; gap: 15px; padding: 20px; }
+            .play-pause-btn { margin: 0 auto; width: 60px; height: 60px; font-size: 1.5rem; }
+            .progress-container { width: 100%; }
+            .time-display { width: 100%; text-align: center; margin-top: -5px; }
         }
         @media (max-height: 400px) {
             .secret-rift { display: none !important; }
@@ -480,6 +491,8 @@
         </div>
 
         <div class="hero-release fade-in" style="animation-delay: 0.2s;" id="heroReleaseContainer">
+            <div class="hero-bg-glow" id="heroBgGlow"></div>
+            
             <div class="hero-cover-wrap" id="heroCoverWrap">
                 <img src="dslogo.png" alt="Main Release Cover" class="hero-cover" id="heroCover">
             </div>
@@ -600,6 +613,7 @@
 
         function renderMainRelease(track) {
             document.getElementById('heroCover').src = track.cover_url;
+            document.getElementById('heroBgGlow').style.backgroundImage = `url('${track.cover_url}')`;
             document.getElementById('heroTitle').innerText = track.title;
             document.getElementById('localAudio').src = track.mp3_url;
             
