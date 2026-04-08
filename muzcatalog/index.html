@@ -763,7 +763,7 @@
 
                 const tempAudio = new Audio();
                 tempAudio.preload = 'metadata';
-                tempAudio.src = track.mp3_url;
+                tempAudio.src = track.wav_url;
                 tempAudio.onloadedmetadata = () => {
                     track.durationStr = formatTime(tempAudio.duration);
                     const timeEl = document.getElementById(`ci-time-${index}`);
@@ -801,7 +801,7 @@
                 if (currentTrackIndex !== -1) resetCardUI(currentTrackIndex);
                 currentTrackIndex = index;
                 
-                globalAudio.src = tracks[index].mp3_url;
+                globalAudio.src = tracks[index].wav_url;
                 document.getElementById('gpTitle').textContent = tracks[index].title;
                 document.getElementById('gpArtist').textContent = tracks[index].authors || 'DXTR feat. SlizZe';
                 document.getElementById('gpCover').src = tracks[index].cover_url;
