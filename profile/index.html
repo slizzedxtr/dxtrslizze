@@ -380,17 +380,18 @@
             <div class="modal-title">Настройки</div>
             <div id="setMsg" class="error-msg" style="color: var(--neon-cyan);"></div>
             
-            <div class="section-label">Никнейм</div>
+            <div class="section-label">Логин (Для входа)</div>
+            <div class="input-group"><input type="text" id="setLogin" placeholder="Новый логин"></div>
+
+            <div class="section-label">Отображаемый Никнейм</div>
             <div class="input-group"><input type="text" id="setNick" placeholder="Новый никнейм"></div>
             
             <div class="section-label">Аватар</div>
 
-            <!-- НОВЫЙ БЛОК ЗАГРУЗКИ АВАТАРА -->
             <div class="avatar-upload-group">
                 <input type="file" id="setAvatar" accept="image/*">
 
                 <div class="avatar-drop-zone" id="avatarDropZone" onclick="document.getElementById('setAvatar').click()">
-                    <!-- По умолчанию -->
                     <div class="avatar-drop-default">
                         <div class="avatar-drop-icon">
                             <i class="fa-solid fa-camera"></i>
@@ -399,7 +400,6 @@
                         <span class="avatar-drop-hint">JPG, PNG, GIF · до 2 МБ</span>
                     </div>
 
-                    <!-- После выбора файла -->
                     <div class="avatar-drop-preview" id="avatarPreview">
                         <img src="" alt="" class="avatar-preview-img" id="avatarPreviewImg">
                         <div class="avatar-preview-info">
@@ -414,8 +414,6 @@
 
                 <div class="avatar-upload-caption">Только изображения · макс. 2 МБ</div>
             </div>
-            <!-- КОНЕЦ НОВОГО БЛОКА -->
-
             <div class="section-label">Смена пароля</div>
             <div class="input-group"><input type="password" id="setOldPass" placeholder="Старый пароль"></div>
             <div class="input-group" style="margin-bottom: 25px;"><input type="password" id="setNewPass" placeholder="Новый пароль"></div>
@@ -431,7 +429,7 @@
 
                 <div id="authSection">
                     <h2 class="auth-title" id="authTitle">Авторизация</h2>
-                    <div class="input-group"><input type="text" id="username" placeholder="Никнейм" autocomplete="off"></div>
+                    <div class="input-group"><input type="text" id="username" placeholder="Логин" autocomplete="off"></div>
                     <div class="input-group"><input type="password" id="password" placeholder="Пароль"></div>
                     <button class="auth-btn" id="submitBtn" onclick="handleAuth()">Войти</button>
                     <div class="forgot-pass" id="forgotPassBtn" onclick="openRecoverModal()">Забыли пароль?</div>
@@ -578,7 +576,8 @@
         function showProfileUI(user) {
             document.getElementById('authSection').classList.add('hidden');
             document.getElementById('profileSection').classList.remove('hidden');
-            document.getElementById('uName').innerText = user.username;
+            // Отображаем никнейм, а если его нет - логин
+            document.getElementById('uName').innerText = user.nickname || user.username; 
             document.getElementById('uId').innerText = user.clientId;
             if(user.avatarUrl && user.avatarUrl !== 'dslogo.png') { document.getElementById('uAvatar').src = user.avatarUrl; }
         }
@@ -608,7 +607,9 @@
 
         function openSettingsModal() { 
             if(currentUserData) {
-                document.getElementById('setNick').value = currentUserData.username;
+                document.getElementById('setLogin').value = currentUserData.username;
+                document.getElementById('setNick').value = currentUserData.nickname || currentUserData.username;
+                
                 // Сбрасываем зону загрузки
                 setAvatarInput.value = '';
                 avatarDropZone.classList.remove('has-file');
@@ -619,6 +620,7 @@
 
         async function saveSettings() {
             hideError();
+            const newLogin = document.getElementById('setLogin').value.trim();
             const newNick = document.getElementById('setNick').value.trim();
             const avatarFile = setAvatarInput.files[0];
             const oldP = document.getElementById('setOldPass').value.trim();
@@ -627,7 +629,12 @@
             const formData = new FormData();
             let hasChanges = false;
 
-            if(newNick && newNick !== currentUserData.username) {
+            if(newLogin && newLogin !== currentUserData.username) {
+                formData.append('newUsername', newLogin);
+                hasChanges = true;
+            }
+
+            if(newNick !== currentUserData.nickname) {
                 formData.append('newNickname', newNick);
                 hasChanges = true;
             }
