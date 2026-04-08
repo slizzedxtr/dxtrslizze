@@ -680,12 +680,47 @@
 
             promoSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             promoError.classList.remove('visible');
+            promoError.style.color = 'var(--error-red)';
 
             try {
-                const res = await fetch(`${API_URL}/check/${encodeURIComponent(val)}`);
+                const token = localStorage.getItem('dxtr_token') || localStorage.getItem('token');
+                const headers = {};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch(`${API_URL}/check/${encodeURIComponent(val)}`, { headers });
+                const data = await res.json();
                 
                 if (res.ok) {
-                    const data = await res.json();
+                    // 1. ЛОГИКА ДЛЯ ДЕНЕЖНОГО ПРОМОКОДА
+                    if (data.type === 'money' || data.amount !== undefined) {
+                        promoSubmit.innerHTML = '<i class="fa-solid fa-check"></i>';
+                        promoError.style.color = 'var(--neon-green)'; 
+                        promoError.textContent = data.message || `УСПЕХ! Зачислено: ${data.amount} NC`;
+                        
+                        // --- Обновляем баланс в UI ---
+                        // Если сервер прислал обновленный итоговый баланс:
+                        if (data.dscoin_balance !== undefined) {
+                            updateBalance(data.dscoin_balance);
+                        }
+                        // -----------------------------
+
+                        promoError.classList.add('visible');
+                        
+                        const originalShadow = promoBox.style.boxShadow;
+                        promoBox.style.boxShadow = '0 0 50px var(--neon-green)';
+                        
+                        setTimeout(() => {
+                            promoError.classList.remove('visible');
+                            promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
+                            promoBox.style.boxShadow = originalShadow;
+                            promoInput.value = '';
+                            setTimeout(() => promoError.style.color = 'var(--error-red)', 300);
+                        }, 3000);
+                        
+                        return;
+                    }
+
+                    // 2. СТАРАЯ ЛОГИКА ДЛЯ СЕКРЕТНОГО ТРЕКА
                     const BASE_URL = "https://dxtrslizze.onrender.com";
                     
                     try {
@@ -719,13 +754,16 @@
                             lockBadge.innerHTML = '<i class="fa-solid fa-lock-open"></i> Доступ открыт';
                         }, 200);
                     }, 600);
+
                 } else {
                     promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
-                    promoError.textContent = "Данный промокод не существует";
+                    promoError.style.color = 'var(--error-red)';
+                    promoError.textContent = data.error || "Данный промокод не существует";
                     triggerErrorAnim();
                 }
             } catch (err) {
                 promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
+                promoError.style.color = 'var(--error-red)';
                 promoError.textContent = "Ошибка соединения с сервером";
                 triggerErrorAnim();
             }
