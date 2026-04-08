@@ -282,6 +282,11 @@
                 </div>
                 
                 <div class="form-group">
+                    <label class="form-label">1.1.2 Авторы трека</label>
+                    <input type="text" id="mAuthors" class="form-input" placeholder="Оставьте пустым для 'DXTR feat. SlizZe'">
+                </div>
+                
+                <div class="form-group">
                     <label class="form-label">1.1.8 YouTube Клип (ОБЯЗАТЕЛЬНО)</label>
                     <input type="url" id="mYt" class="form-input" placeholder="https://youtube.com/..." required>
                 </div>
@@ -356,6 +361,11 @@
                 <div style="color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 10px;">
                     <i class="fa-solid fa-ticket"></i> Новый промокод
                 </div>
+
+                <div style="display: flex; gap: 15px; color: #fff; font-weight: 700; margin-bottom: 15px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <label style="cursor: pointer; color: var(--theme-color);"><input type="checkbox" id="isCurrencyPromo"> 💰 Промокод на валюту</label>
+                </div>
+
                 <div class="form-group">
                     <input type="text" id="newCode" class="form-input" placeholder="Код: GUSTO2026 (Без #)" required>
                 </div>
@@ -363,7 +373,7 @@
                     <input type="text" id="newTitle" class="form-input" placeholder="Название: GUSTO (Snippet)" required>
                 </div>
                 
-                <div style="display: flex; gap: 10px;">
+                <div id="promoMediaFields" style="display: flex; gap: 10px;">
                     <label class="form-file" id="coverLabel">
                         <i class="fa-solid fa-image"></i> <span id="coverText">Обложка</span>
                         <input type="file" id="newCover" accept="image/*" required>
@@ -373,6 +383,16 @@
                         <input type="file" id="newTrack" accept="audio/mpeg" required>
                     </label>
                 </div>
+
+                <div id="promoCurrencyFields" style="display: none; gap: 10px; flex-direction: column;">
+                    <div class="form-group">
+                        <input type="number" id="newPromoAmount" class="form-input" placeholder="Сумма DS Coin (Например: 1500)">
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="newPromoUses" class="form-input" placeholder="Кол-во активаций (На всех)">
+                    </div>
+                </div>
+
                 <button type="submit" class="submit-btn" id="submitBtn">
                     <i class="fa-solid fa-plus"></i> Создать
                 </button>
@@ -422,7 +442,11 @@
                 <input type="text" id="editProfIdInput" class="form-input">
             </div>
             <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Никнейм [2.3.1]</label>
+                <label class="form-label">Логин (Username) [Для входа]</label>
+                <input type="text" id="editProfUsernameInput" class="form-input" placeholder="Логин">
+            </div>
+            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
+                <label class="form-label">Никнейм [Отображается]</label>
                 <input type="text" id="editProfNickInput" class="form-input" placeholder="Пусто = удалить ник">
             </div>
             <div class="form-group" style="text-align: left; margin-bottom: 15px;">
@@ -453,6 +477,11 @@
                 <input type="text" id="editMTitle" class="form-input">
             </div>
             
+            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
+                <label class="form-label">Авторы</label>
+                <input type="text" id="editMAuthors" class="form-input" placeholder="DXTR feat. SlizZe">
+            </div>
+
             <div class="form-group" style="text-align: left; margin-bottom: 15px;">
                 <label class="form-label">YouTube Клип</label>
                 <input type="url" id="editMYt" class="form-input">
@@ -505,11 +534,9 @@
         const API_URL = "https://dxtrslizze.onrender.com/api";
 
         // ========== СОСТОЯНИЕ СЕССИИ ==========
-        // jwtToken — используется везде: сокеты + admin API (Authorization: Bearer)
         let jwtToken = localStorage.getItem('adminToken') || '';
         let isAuthenticated = false;
 
-        // Хелпер: заголовок авторизации для fetch
         function authHeaders(extra) {
             return Object.assign({ 'Authorization': 'Bearer ' + jwtToken }, extra || {});
         }
@@ -561,6 +588,7 @@
         burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
 
         // ========== ЧАТ ТЕХПОДДЕРЖКИ ==========
+        // ... (Без изменений)
         const supportBtn = document.getElementById('supportBtn'), chatWindow = document.getElementById('chatWindow'), closeChat = document.getElementById('closeChat'), menuSupportBtn = document.getElementById('menuSupportBtn'), unreadBadge = document.getElementById('unreadBadge'), chatMessages = document.getElementById('chatMessages'), chatInput = document.getElementById('chatInput'), chatSend = document.getElementById('chatSend');
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory_dxtr') || '[]');
         let isSupportBanned = false;
@@ -738,7 +766,7 @@
                         const validNicks = ['DXTR', 'SlizZe'];
 
                         const receivedId = String(userData.user.clientId);
-                        const receivedNick = userData.user.username;
+                        const receivedNick = userData.user.username; // Note: server might still send login as username here
 
                         if (validIds.includes(receivedId) && validNicks.includes(receivedNick)) {
                             clearTimeout(redThemeTimeout);
@@ -746,7 +774,6 @@
                             failedAttempts = 0;
                             localStorage.removeItem('adminFailedAttempts');
 
-                            // Сохраняем только JWT — больше ничего не нужно
                             jwtToken = userData.token;
                             localStorage.setItem('adminToken', jwtToken);
 
@@ -819,6 +846,12 @@
             
             const formData = new FormData();
             formData.append('title', document.getElementById('mTitle').value);
+            
+            // НОВОЕ: Обработка авторов
+            let authors = document.getElementById('mAuthors').value.trim();
+            if (!authors) authors = 'DXTR feat. SlizZe';
+            formData.append('authors', authors);
+
             formData.append('yt_link', document.getElementById('mYt').value);
             formData.append('platforms', platformsJson);
             formData.append('is_18', document.getElementById('m18').checked);
@@ -869,11 +902,16 @@
                         let badges = '';
                         if(t.is_main) badges += '<div class="card-badge">Главный релиз</div> ';
                         if(t.is_18) badges += '<div class="card-badge badge-red">18+</div> ';
+                        
+                        // НОВОЕ: Отображение авторов
+                        const trackAuthors = t.authors || 'DXTR feat. SlizZe';
+
                         list.innerHTML += `
                             <div class="data-card">
                                 <img src="${t.cover_url}" class="card-cover">
                                 <div class="card-info">
                                     <div class="card-title">${t.title}</div>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 800;">${trackAuthors}</div>
                                     <div style="margin-bottom: 5px;">${badges}</div>
                                     <div class="card-actions">
                                         <button class="action-icon" title="Редактировать" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button>
@@ -895,6 +933,9 @@
             if(!track) return;
             currentEditMusicId = id;
             document.getElementById('editMTitle').value = track.title;
+            // НОВОЕ: Подгрузка авторов в редактирование
+            document.getElementById('editMAuthors').value = track.authors || 'DXTR feat. SlizZe';
+
             document.getElementById('editMYt').value = track.yt_link || '';
             document.getElementById('editM18').checked = track.is_18;
             document.getElementById('editMMain').checked = track.is_main;
@@ -932,6 +973,12 @@
         document.getElementById('confirmEditMusicBtn').onclick = function() {
             const formData = new FormData();
             formData.append('title', document.getElementById('editMTitle').value);
+
+            // НОВОЕ: Отправка авторов
+            let editAuthors = document.getElementById('editMAuthors').value.trim();
+            if (!editAuthors) editAuthors = 'DXTR feat. SlizZe';
+            formData.append('authors', editAuthors);
+
             formData.append('yt_link', document.getElementById('editMYt').value);
             formData.append('is_18', document.getElementById('editM18').checked);
             formData.append('is_main', document.getElementById('editMMain').checked);
@@ -986,6 +1033,8 @@
                         const avatarHtml = u.avatarUrl 
                             ? `<img src="${u.avatarUrl}" class="profile-avatar">` 
                             : `<div class="profile-avatar-placeholder"><i class="fa-solid fa-user"></i></div>`;
+                        
+                        // НОВОЕ: Передаем u.username в openEditProfile и выводим логин в карточке
                         list.innerHTML += `
                             <div class="profile-card">
                                 <div style="display: flex; gap: 15px; align-items: center;">
@@ -993,12 +1042,13 @@
                                     <div class="prof-info">
                                         <h4>${u.nickname || 'Без ника'}</h4>
                                         <p>ID: ${u.clientId}</p>
+                                        <div style="font-size:0.85rem; color: #aaa;">Логин: ${u.username || 'Нет данных'}</div>
                                         <div style="font-size:0.85rem; color: #fff; margin-top: 5px;">Баланс: <span style="color: var(--theme-color); font-weight: bold;">${u.dscoin_balance || 0}</span></div>
                                         <span style="font-size:0.8rem; color:${u.isBanned ? 'var(--error-red)' : 'var(--theme-color)'};">Статус: ${u.isBanned ? 'Бан' : 'Активен'}</span>
                                     </div>
                                 </div>
                                 <div class="card-actions">
-                                    <button class="action-icon" title="Редактировать" onclick="openEditProfile('${u._id}', '${u.clientId}', '${u.nickname || ''}', '${u.avatarUrl || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="action-icon" title="Редактировать" onclick="openEditProfile('${u._id}', '${u.clientId}', '${u.username || ''}', '${u.nickname || ''}', '${u.avatarUrl || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button>
                                     <button class="action-icon delete" title="Удалить" onclick="confirmDelete('profile', '${u._id}', '${u.clientId}')"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
@@ -1009,9 +1059,11 @@
         }
 
         let editProfDbId = '';
-        function openEditProfile(dbId, cId, nick, avatar, balance) { 
+        // НОВОЕ: принимаем username
+        function openEditProfile(dbId, cId, username, nick, avatar, balance) { 
             editProfDbId = dbId; 
             document.getElementById('editProfIdInput').value = cId; 
+            document.getElementById('editProfUsernameInput').value = username; 
             document.getElementById('editProfNickInput').value = nick; 
             document.getElementById('editProfAvatarInput').value = avatar; 
             document.getElementById('editProfBalanceInput').value = balance; 
@@ -1023,6 +1075,7 @@
         
         document.getElementById('confirmEditProfileBtn').onclick = async () => {
             const newId = document.getElementById('editProfIdInput').value.trim();
+            const newUsername = document.getElementById('editProfUsernameInput').value.trim();
             const newNick = document.getElementById('editProfNickInput').value.trim();
             const newAvatar = document.getElementById('editProfAvatarInput').value.trim();
             const newBalance = Number(document.getElementById('editProfBalanceInput').value.trim()) || 0;
@@ -1030,7 +1083,8 @@
             
             if(!newId) return alert('ID не может быть пустым');
             
-            const payload = { newClientId: newId, newNickname: newNick, newAvatarUrl: newAvatar, newBalance: newBalance };
+            // НОВОЕ: отправляем newUsername
+            const payload = { newClientId: newId, newUsername: newUsername, newNickname: newNick, newAvatarUrl: newAvatar, newBalance: newBalance };
             if (newPass) payload.newPassword = newPass;
 
             try {
@@ -1079,13 +1133,46 @@
         };
 
         // ========== 3. ПРОМОКОДЫ ==========
+
+        // НОВОЕ: Переключение полей для промокодов
+        document.getElementById('isCurrencyPromo').addEventListener('change', function() {
+            const mediaFields = document.getElementById('promoMediaFields');
+            const currFields = document.getElementById('promoCurrencyFields');
+            const coverInput = document.getElementById('newCover');
+            const trackInput = document.getElementById('newTrack');
+            
+            if(this.checked) {
+                mediaFields.style.display = 'none';
+                currFields.style.display = 'flex';
+                coverInput.required = false;
+                trackInput.required = false;
+            } else {
+                mediaFields.style.display = 'flex';
+                currFields.style.display = 'none';
+                coverInput.required = true;
+                trackInput.required = true;
+            }
+        });
+
         document.getElementById('promoAddForm').onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData();
             formData.append('promo', document.getElementById('newCode').value);
             formData.append('title', document.getElementById('newTitle').value);
-            formData.append('cover', document.getElementById('newCover').files[0]);
-            formData.append('track', document.getElementById('newTrack').files[0]);
+            
+            const isCurrency = document.getElementById('isCurrencyPromo').checked;
+            formData.append('isCurrency', isCurrency);
+
+            if (isCurrency) {
+                // Если валютный
+                formData.append('amount', document.getElementById('newPromoAmount').value);
+                formData.append('maxUses', document.getElementById('newPromoUses').value);
+            } else {
+                // Если музыкальный
+                formData.append('cover', document.getElementById('newCover').files[0]);
+                formData.append('track', document.getElementById('newTrack').files[0]);
+            }
+
             const btn = document.getElementById('submitBtn'); btn.disabled = true;
             try {
                 const res = await fetch(`${API_URL}/promo`, {
@@ -1112,12 +1199,25 @@
                     list.innerHTML = '';
                     if(promos.length === 0) { list.innerHTML = '<div class="empty-neon">Промокодов нет</div>'; return; }
                     promos.forEach(p => {
+                        // НОВОЕ: логика рендера для валютных и обычных промокодов
+                        let coverHtml = '';
+                        let infoHtml = '';
+
+                        if (p.isCurrency) {
+                            coverHtml = `<div style="width: 100px; height: 100px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-color); display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: var(--theme-color);"><i class="fa-solid fa-coins"></i></div>`;
+                            infoHtml = `<div style="font-size: 0.8rem; color: #00ff66; margin-top: 5px; font-weight: bold;">Сумма: ${p.amount || 0} DS Coins</div>
+                                        <div style="font-size: 0.8rem; color: var(--theme-color); margin-top: 2px;">Использований: ${p.usesLeft !== undefined ? p.usesLeft : (p.maxUses || '∞')} / ${p.maxUses || '∞'}</div>`;
+                        } else {
+                            coverHtml = `<img src="${API_URL}/media/${p.coverId}" class="card-cover" onerror="this.style.display='none'">`;
+                        }
+
                         list.innerHTML += `
                             <div class="data-card">
-                                <img src="${API_URL}/media/${p.coverId}" class="card-cover">
+                                ${coverHtml}
                                 <div class="card-info">
                                     <div class="card-badge">#${p.code}</div>
                                     <div class="card-title">${p.title}</div>
+                                    ${infoHtml}
                                     <div class="card-actions">
                                         <button class="action-icon delete" title="Удалить" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button>
                                     </div>
