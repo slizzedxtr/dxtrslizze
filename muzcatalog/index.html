@@ -630,7 +630,7 @@
                         <div class="gp-title" id="gpTitle">Загрузка...</div>
                         <span class="badge-18" id="gpBadge18" style="display: none;">18+</span>
                     </div>
-                    <div class="gp-artist" id="gpArtist">DXTR | SlizZe</div>
+                    <div class="gp-artist" id="gpArtist">DXTR feat. SlizZe</div>
                 </div>
             </div>
 
@@ -744,7 +744,7 @@
                                 ${explicitBadge}
                                 ${mainBadge}
                             </div>
-                            <div class="ci-artist">${track.authors || 'DXTR | SlizZe'}</div>
+                            <div class="ci-artist">${track.authors || 'DXTR feat. SlizZe'}</div>
                             <div class="ci-player-controls">
                                 <div class="progress-container" data-index="${index}" onclick="event.stopPropagation()">
                                     <div class="progress-bar" id="cardBar-${index}"></div>
@@ -803,7 +803,7 @@
                 
                 globalAudio.src = tracks[index].mp3_url;
                 document.getElementById('gpTitle').textContent = tracks[index].title;
-                document.getElementById('gpArtist').textContent = tracks[index].authors || 'DXTR | SlizZe';
+                document.getElementById('gpArtist').textContent = tracks[index].authors || 'DXTR feat. SlizZe';
                 document.getElementById('gpCover').src = tracks[index].cover_url;
                 
                 gpBgGlow.style.backgroundImage = `url('${tracks[index].cover_url}')`;
