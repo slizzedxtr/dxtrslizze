@@ -1087,7 +1087,7 @@
     <div id="numpad-modal">
         <div class="np-header" id="np-header">
             <span>ВВОД СУММЫ</span>
-            <i class="fa-solid fa-xmark np-close" onclick="closeNumpad()"></i>
+            <i class="fa-solid fa-xmark np-close" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="closeNumpad();"></i>
         </div>
         <div class="np-grid">
             <button class="np-btn" onclick="npPress('1')">1</button>
@@ -1336,17 +1336,11 @@
         activeInputId = targetId;
         isDecimalAllowed = allowDecimal;
         
-        // 1. Жестко возвращаем в центр экрана (и убираем старые конфликты)
-        npModal.style.left = '50%';
-        npModal.style.top = '50%';
-        npModal.style.transform = 'translate(-50%, -50%) scale(1)'; 
+        // Делаем блок физически видимым
+        npModal.style.display = 'flex'; // Если съедет дизайн, поменяй на 'block'
         
-        // 2. Принудительно включаем его присутствие на странице
-        npModal.style.display = 'flex'; // или 'block', если дизайн поедет
-        
-        // 3. Плавно проявляем
+        // Запускаем CSS-анимацию плавного появления
         setTimeout(() => {
-            npModal.style.opacity = '1';
             npModal.classList.add('active');
         }, 10);
     }
@@ -1354,14 +1348,16 @@
     function closeNumpad() {
         const npModal = document.getElementById('numpad-modal');
         if (npModal) {
-            // 1. Делаем окно прозрачным прямо там, где оно стоит
-            npModal.style.opacity = '0';
+            // Запускаем CSS-анимацию плавного исчезновения
             npModal.classList.remove('active');
             
-            // 2. ЖЕСТКО ВЫРУБАЕМ его через 0.2 секунды, чтобы оно 100% исчезло
+            // Ждем 300мс (пока идет анимация), затем скрываем полностью и сбрасываем координаты перетаскивания!
             setTimeout(() => {
                 npModal.style.display = 'none';
-            }, 200);
+                npModal.style.left = '';
+                npModal.style.top = '';
+                npModal.style.transform = '';
+            }, 300);
         }
         activeInputId = null;
     }
