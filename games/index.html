@@ -1335,15 +1335,35 @@
         if (!npModal) return;
         activeInputId = targetId;
         isDecimalAllowed = allowDecimal;
+        
+        // 1. Жестко сбрасываем стили перед открытием, чтобы избежать съезжаний
+        npModal.style.transition = 'none';
+        npModal.style.animation = 'none';
         npModal.style.transform = 'translate(-50%, -50%)';
         npModal.style.left = '50%';
         npModal.style.top = '50%';
+        
+        // 2. Принудительный рефлоу (заставляет браузер применить координаты мгновенно)
+        void npModal.offsetWidth; 
+        
+        // 3. Возвращаем анимацию и показываем окно
+        npModal.style.animation = ''; 
         npModal.classList.add('active');
     }
 
     function closeNumpad() {
         const npModal = document.getElementById('numpad-modal');
-        if (npModal) npModal.classList.remove('active');
+        if (npModal) {
+            // 1. Мгновенно убиваем любые анимации и сдвиги
+            npModal.style.transition = 'none';
+            npModal.style.animation = 'none';
+            npModal.classList.remove('active');
+            
+            // 2. Без анимации возвращаем окно ровно в центр (когда оно уже невидимо)
+            npModal.style.transform = 'translate(-50%, -50%)';
+            npModal.style.left = '50%';
+            npModal.style.top = '50%';
+        }
         activeInputId = null;
     }
 
