@@ -1336,33 +1336,32 @@
         activeInputId = targetId;
         isDecimalAllowed = allowDecimal;
         
-        // 1. Жестко сбрасываем стили перед открытием, чтобы избежать съезжаний
-        npModal.style.transition = 'none';
-        npModal.style.animation = 'none';
-        npModal.style.transform = 'translate(-50%, -50%)';
+        // 1. Жестко возвращаем в центр экрана (и убираем старые конфликты)
         npModal.style.left = '50%';
         npModal.style.top = '50%';
+        npModal.style.transform = 'translate(-50%, -50%) scale(1)'; 
         
-        // 2. Принудительный рефлоу (заставляет браузер применить координаты мгновенно)
-        void npModal.offsetWidth; 
+        // 2. Принудительно включаем его присутствие на странице
+        npModal.style.display = 'flex'; // или 'block', если дизайн поедет
         
-        // 3. Возвращаем анимацию и показываем окно
-        npModal.style.animation = ''; 
-        npModal.classList.add('active');
+        // 3. Плавно проявляем
+        setTimeout(() => {
+            npModal.style.opacity = '1';
+            npModal.classList.add('active');
+        }, 10);
     }
 
     function closeNumpad() {
         const npModal = document.getElementById('numpad-modal');
         if (npModal) {
-            // 1. Мгновенно убиваем любые анимации и сдвиги
-            npModal.style.transition = 'none';
-            npModal.style.animation = 'none';
+            // 1. Делаем окно прозрачным прямо там, где оно стоит
+            npModal.style.opacity = '0';
             npModal.classList.remove('active');
             
-            // 2. Без анимации возвращаем окно ровно в центр (когда оно уже невидимо)
-            npModal.style.transform = 'translate(-50%, -50%)';
-            npModal.style.left = '50%';
-            npModal.style.top = '50%';
+            // 2. ЖЕСТКО ВЫРУБАЕМ его через 0.2 секунды, чтобы оно 100% исчезло
+            setTimeout(() => {
+                npModal.style.display = 'none';
+            }, 200);
         }
         activeInputId = null;
     }
