@@ -163,7 +163,7 @@
         .global-player {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(200px);
             width: 95%; max-width: 1100px; height: 95px;
-            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            background: rgba(10, 10, 15, 0.4); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             border: 1px solid rgba(255,255,255,0.05); border-radius: 24px;
             z-index: 9000; display: flex; align-items: center; padding: 0 30px; gap: 20px;
             transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -173,7 +173,16 @@
         .global-player::before { content: ''; position: absolute; top: 0; left: 10%; width: 80%; height: 1px; background: linear-gradient(90deg, transparent, var(--neon-purple), transparent); opacity: 0.5; }
         .global-player.active { transform: translateX(-50%) translateY(0); }
         
-        .gp-bg-glow { display: none; }
+        .gp-bg-glow {
+            display: block;
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-size: cover; background-position: center;
+            filter: blur(60px) brightness(0.45) saturate(1.5);
+            z-index: -1;
+            opacity: 1;
+            transition: background-image 0.8s ease;
+            pointer-events: none;
+        }
         
         .gp-header-mobile { display: none; }
         .gp-content { display: flex; align-items: center; width: 100%; justify-content: space-between; gap: 20px; position: relative; z-index: 2; }
@@ -426,22 +435,13 @@
             .global-player {
                 position: fixed; width: 100vw; height: 100vh; top: 0; left: 0;
                 transform: translateY(100%); border-radius: 0; flex-direction: column;
-                padding: 20px; background: rgba(5, 5, 8, 0.75) !important; z-index: 10000;
+                padding: 20px; background: rgba(5, 5, 8, 0.35) !important; 
+                backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px); z-index: 10000;
                 justify-content: flex-start; align-items: stretch; border: none; box-shadow: none;
                 overflow: hidden;
             }
             .global-player.active { transform: translateY(0); }
             .global-player::before { display: none; }
-            
-            .gp-bg-glow {
-                display: block;
-                position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
-                background-size: cover; background-position: center;
-                filter: blur(80px) brightness(0.45); z-index: -1; opacity: 0;
-                transition: background-image 0.8s ease, opacity 0.5s;
-                pointer-events: none;
-            }
-            body.player-fullscreen .gp-bg-glow { opacity: 1; }
             
             body.player-fullscreen .fixed-up-btn,
             body.player-fullscreen .burger-btn,
@@ -1049,9 +1049,10 @@
                 updateProgressBarUI(p, globalAudio.currentTime);
             }
 
-            // Синхронизация текста
+            // Синхронизация текста (с ОПЕРЕЖЕНИЕМ для мобилок)
             if (currentLyrics.length > 0 && (isLyricsWindowOpen || isLyricsFullscreen)) {
-                const ct = globalAudio.currentTime;
+                // Добавляем 0.25с, чтобы компенсировать медленный timeupdate на телефонах
+                const ct = globalAudio.currentTime + 0.25; 
                 let newIndex = -1;
                 for (let i = 0; i < currentLyrics.length; i++) {
                     if (ct >= currentLyrics[i].t) newIndex = i;
