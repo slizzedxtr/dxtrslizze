@@ -843,6 +843,40 @@
                 return `[${min}:${sec}.${ms}] ${item.s}`;
             }).join('\n');
         }
+        
+        // --- НОВАЯ УМНАЯ ФУНКЦИЯ ПАРСИНГА ---
+        function smartParseLyrics(rawInput) {
+            if (!rawInput || !rawInput.trim()) return [];
+
+            // Проверяем, вставил ли ты огромный JSON от API
+            if (rawInput.trim().startsWith('[')) {
+                try {
+                    const apiResponse = JSON.parse(rawInput);
+                    // Ищем зашитый текст (в массиве или объекте)
+                    let subtitleString = null;
+                    if (Array.isArray(apiResponse) && apiResponse[0]?.message?.body?.subtitle?.subtitle_body) {
+                        subtitleString = apiResponse[0].message.body.subtitle.subtitle_body;
+                    }
+
+                    if (subtitleString) {
+                        // Парсим строку с текстом (юникод раскодируется сам)
+                        const rawLyrics = JSON.parse(subtitleString);
+                        // Выдаем идеальный массив для БД
+                        return rawLyrics
+                            .map(item => ({
+                                t: item.time.total,
+                                s: item.text
+                            }))
+                            .filter(item => item.s.trim() !== "");
+                    }
+                } catch (err) {
+                    console.warn("Не JSON от API, парсим как обычный LRC...", err);
+                }
+            }
+
+            // Если это не API-ответ, пропускаем через твой старый парсер LRC
+            return parseLRC(rawInput);
+        }
         // ------------------------------------
 
         const mCoverInput = document.getElementById('mCover');
@@ -887,9 +921,9 @@
             formData.append('is_18', document.getElementById('m18').checked);
             formData.append('is_main', mMainCheckbox.checked);
 
-            // НОВОЕ: Обработка LRC перед отправкой
+            // НОВОЕ: Обработка текста перед отправкой
             const rawLyrics = document.getElementById('mLyrics').value;
-            const parsedLyrics = parseLRC(rawLyrics);
+            const parsedLyrics = smartParseLyrics(rawLyrics); // Умный парсер
             formData.append('lyrics', JSON.stringify(parsedLyrics));
 
             formData.append('cover', mCoverInput.files[0]);
@@ -1023,9 +1057,9 @@
             }
             formData.append('platforms', platformsJson);
 
-            // НОВОЕ: Обрабатываем измененный LRC перед отправкой на сервер
+            // НОВОЕ: Обрабатываем измененный текст перед отправкой
             const editRawLyrics = document.getElementById('editMLyrics').value;
-            const editParsedLyrics = parseLRC(editRawLyrics);
+            const editParsedLyrics = smartParseLyrics(editRawLyrics); // Умный парсер
             formData.append('lyrics', JSON.stringify(editParsedLyrics));
 
             const coverFile = document.getElementById('editMCover').files[0];
