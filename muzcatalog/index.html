@@ -179,7 +179,32 @@
         .gp-content { display: flex; align-items: center; width: 100%; justify-content: space-between; gap: 20px; position: relative; z-index: 2; }
         
         .gp-left { display: flex; align-items: center; gap: 15px; width: 280px; flex-shrink: 0; }
-        .gp-cover { width: 65px; height: 65px; border-radius: 14px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Враппер для обложки и текстов (мобилка) */
+        .gp-cover-wrapper { width: 65px; height: 65px; flex-shrink: 0; position: relative; border-radius: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
+        .gp-cover { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+        
+        /* Окно текстов (вместо обложки) */
+        .gp-lyrics-window {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 10, 15, 0.95); border-radius: inherit;
+            display: none; flex-direction: column; overflow-y: auto;
+            padding: 10px; cursor: pointer;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+            scrollbar-width: none;
+        }
+        .gp-lyrics-window::-webkit-scrollbar { display: none; }
+        .gp-lyrics-window.active { display: flex; }
+
+        .lyric-line {
+            font-size: 1rem; color: rgba(255,255,255,0.4); text-align: center;
+            margin-bottom: 12px; transition: 0.3s; padding: 0 5px; cursor: pointer;
+            font-weight: 700; line-height: 1.3;
+        }
+        .lyric-line:hover { color: rgba(255,255,255,0.7); }
+        .lyric-line.active { color: #fff; transform: scale(1.1); text-shadow: 0 0 15px rgba(255,255,255,0.6); }
+
         .gp-info { display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
         .gp-title-wrap { display: flex; align-items: center; gap: 10px; width: 100%; }
         .gp-title { font-weight: 800; color: #fff; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
@@ -190,7 +215,6 @@
         .gp-btn { background: none; border: none; color: var(--text-muted); font-size: 1.3rem; cursor: pointer; transition: 0.3s; }
         .gp-btn:hover { color: #fff; transform: scale(1.15); text-shadow: 0 0 10px #fff; }
         
-        /* ЖЁСТКИЙ ФИКСАТОР ДЛЯ КНОПКИ ПЛЕЙ/ПАУЗА */
         #gpPlay { 
             width: 52px; height: 52px; background: var(--neon-purple); color: white; border: none; border-radius: 50%; 
             font-size: 1.3rem; cursor: pointer; transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
@@ -206,9 +230,8 @@
             display: inline-flex; justify-content: center; align-items: center; 
             backface-visibility: hidden; transform: translateZ(0); 
         }
-        #gpPlay i.fa-play { transform: translateX(2px) translateZ(0); } /* Визуальный центр для Play */
+        #gpPlay i.fa-play { transform: translateX(2px) translateZ(0); }
         #gpPlay i.fa-pause { transform: translateX(0) translateZ(0); }
-        /* ======================================== */
         
         .gp-progress-area { display: flex; align-items: center; gap: 15px; width: 100%; max-width: 500px; }
         .gp-progress-area .progress-container { flex: 1; height: 20px; }
@@ -233,132 +256,45 @@
         .gp-action-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(2px); }
         .gp-min-btn:hover { border-color: var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 15px rgba(112,0,255,0.4); }
         .gp-close-btn:hover { border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 15px rgba(255,0,127,0.4); }
+        
+        /* Кнопка текстов */
+        .gp-lyrics-btn.disabled { opacity: 0.3; pointer-events: none; }
+        .gp-lyrics-btn.active { color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.3); }
 
         /* ========================================= */
         /* --- СВЕРНУТЫЙ ПЛЕЕР (MINI ORB) --- */
         /* ========================================= */
         .mini-player-orb {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9500;
-            cursor: grab;
-            user-select: none;
-            touch-action: none;
+            position: fixed; bottom: 30px; right: 30px; width: 72px; height: 72px;
+            border-radius: 50%; display: none; justify-content: center; align-items: center;
+            z-index: 9500; cursor: grab; user-select: none; touch-action: none;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
         }
-
         .mini-player-orb::before {
-            content: '';
-            position: absolute;
-            inset: -3px;
-            border-radius: 50%;
-            background: conic-gradient(
-                from 0deg,
-                var(--neon-purple),
-                var(--neon-pink),
-                var(--neon-cyan),
-                var(--neon-purple)
-            );
-            animation: orbRotate 3s linear infinite;
-            z-index: -1;
+            content: ''; position: absolute; inset: -3px; border-radius: 50%;
+            background: conic-gradient(from 0deg, var(--neon-purple), var(--neon-pink), var(--neon-cyan), var(--neon-purple));
+            animation: orbRotate 3s linear infinite; z-index: -1;
         }
-
         .mini-player-orb::after {
-            content: '';
-            position: absolute;
-            inset: 3px;
-            border-radius: 50%;
-            background: rgba(8, 8, 14, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 0;
+            content: ''; position: absolute; inset: 3px; border-radius: 50%;
+            background: rgba(8, 8, 14, 0.95); backdrop-filter: blur(10px); z-index: 0;
         }
-
-        @keyframes orbRotate {
-            0%   { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .mini-player-orb:hover {
-            transform: scale(1.12);
-            box-shadow: 0 0 30px rgba(112, 0, 255, 0.7), 0 0 60px rgba(255, 0, 127, 0.3);
-        }
-
-        .mini-player-orb:active {
-            cursor: grabbing;
-            transform: scale(0.93);
-            transition: transform 0s;
-        }
-
-        .orb-content {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 2px;
-        }
-
-        .orb-icon {
-            font-size: 1.6rem;
-            background: linear-gradient(135deg, #fff, var(--neon-cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            transition: transform 0.3s;
-            line-height: 1;
-        }
-
-        .orb-waves {
-            display: flex;
-            align-items: flex-end;
-            gap: 2px;
-            height: 10px;
-            opacity: 0.5;
-        }
-
-        .orb-wave-bar {
-            width: 3px;
-            background: var(--neon-cyan);
-            border-radius: 2px;
-            height: 3px;
-            transition: background 0.3s;
-        }
-
+        @keyframes orbRotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .mini-player-orb:hover { transform: scale(1.12); box-shadow: 0 0 30px rgba(112, 0, 255, 0.7), 0 0 60px rgba(255, 0, 127, 0.3); }
+        .mini-player-orb:active { cursor: grabbing; transform: scale(0.93); transition: transform 0s; }
+        .orb-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .orb-icon { font-size: 1.6rem; background: linear-gradient(135deg, #fff, var(--neon-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; transition: transform 0.3s; line-height: 1; }
+        .orb-waves { display: flex; align-items: flex-end; gap: 2px; height: 10px; opacity: 0.5; }
+        .orb-wave-bar { width: 3px; background: var(--neon-cyan); border-radius: 2px; height: 3px; transition: background 0.3s; }
         .mini-player-orb.playing .orb-wave-bar:nth-child(1) { animation: wave1 0.8s ease-in-out infinite; }
         .mini-player-orb.playing .orb-wave-bar:nth-child(2) { animation: wave1 0.8s ease-in-out infinite 0.15s; }
         .mini-player-orb.playing .orb-wave-bar:nth-child(3) { animation: wave1 0.8s ease-in-out infinite 0.30s; }
         .mini-player-orb.playing .orb-wave-bar:nth-child(4) { animation: wave1 0.8s ease-in-out infinite 0.10s; }
         .mini-player-orb.playing .orb-wave-bar:nth-child(5) { animation: wave1 0.8s ease-in-out infinite 0.45s; }
-
-        @keyframes wave1 {
-            0%, 100% { height: 3px; background: var(--neon-cyan); }
-            50% { height: 10px; background: var(--neon-pink); }
-        }
-
-        .mini-player-orb.playing::before {
-            animation: orbRotate 1.5s linear infinite;
-        }
-
-        .orb-ring-pulse {
-            position: absolute;
-            inset: -3px;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            z-index: -2;
-            animation: ringPulse 2s ease-out infinite;
-        }
-
-        @keyframes ringPulse {
-            0% { box-shadow: 0 0 0 0 rgba(112, 0, 255, 0.6); opacity: 1; }
-            100% { box-shadow: 0 0 0 20px rgba(112, 0, 255, 0); opacity: 0; }
-        }
+        @keyframes wave1 { 0%, 100% { height: 3px; background: var(--neon-cyan); } 50% { height: 10px; background: var(--neon-pink); } }
+        .mini-player-orb.playing::before { animation: orbRotate 1.5s linear infinite; }
+        .orb-ring-pulse { position: absolute; inset: -3px; border-radius: 50%; border: 2px solid transparent; z-index: -2; animation: ringPulse 2s ease-out infinite; }
+        @keyframes ringPulse { 0% { box-shadow: 0 0 0 0 rgba(112, 0, 255, 0.6); opacity: 1; } 100% { box-shadow: 0 0 0 20px rgba(112, 0, 255, 0); opacity: 0; } }
 
         /* МОДАЛКИ */
         footer { padding: 40px 20px; text-align: center; border-top: 1px solid rgba(255,255,255,0.05); }
@@ -434,6 +370,37 @@
         .chat-resolved-icon { font-size: 2.5rem; color: var(--neon-green); margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(0,255,102,0.5)); }
         .chat-resolved-title { color: var(--neon-green); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
+        /* ОВЕРЛЕЙ ДЛЯ ТЕКСТА НА ВЕСЬ ЭКРАН */
+        .fs-lyrics-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 5, 8, 0.95); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            z-index: 10005; display: none; flex-direction: column;
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+        .fs-lyrics-overlay.active { display: flex; opacity: 1; }
+        .fs-lyrics-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 25px 30px; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .fs-lyrics-title { font-size: 1.2rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+        .fs-close-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; width: 45px; height: 45px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 1.2rem;
+            cursor: pointer; transition: 0.3s;
+        }
+        .fs-close-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.4); }
+        
+        .fs-lyrics-content {
+            flex: 1; overflow-y: auto; padding: 20px 10vw 50vh 10vw;
+            display: flex; flex-direction: column; align-items: center;
+            scrollbar-width: none;
+            mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+        }
+        .fs-lyrics-content::-webkit-scrollbar { display: none; }
+        .fs-lyrics-content .lyric-line { font-size: clamp(1.2rem, 4vw, 2rem); margin-bottom: 25px; }
+
         /* ИДЕАЛЬНАЯ АДАПТАЦИЯ (МОБИЛКИ - FULLSCREEN ПЛЕЕР) */
         @media (max-width: 800px) {
             .controls-bar { flex-direction: column; gap: 15px; text-align: center; }
@@ -441,7 +408,7 @@
             .catalog-item { flex-wrap: wrap; padding: 15px; gap: 15px; border-radius: 20px; }
             .ci-left { width: 100%; justify-content: flex-start; gap: 15px; }
             .ci-number { display: none; } 
-            .ci-cover-wrapper { width: 65px; height: 65px; }
+            .ci-cover-wrapper { width: 65px; height: 65px; box-shadow: 0 8px 20px rgba(0,0,0,0.6); }
             .ci-play-btn { width: 45px; height: 45px; font-size: 1.1rem; pointer-events: auto; opacity: 1; }
             .ci-center { width: 100%; align-items: flex-start; text-align: left; padding-right: 0; }
             .ci-player-controls { flex-direction: column; gap: 10px; align-items: stretch; margin-top: 10px; }
@@ -482,13 +449,20 @@
 
             .window-actions { display: none; } 
             .gp-header-mobile { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; width: 100%; }
-            .gp-action-btn-m { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+            .gp-action-btn-m { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 45px; height: 45px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
+            .gp-action-btn-m.active { color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.3); }
+            .gp-action-btn-m.disabled { opacity: 0.3; pointer-events: none; }
 
             .gp-content { flex-direction: column; align-items: center; gap: 0; height: 100%; justify-content: space-evenly; }
             
             .gp-left { flex-direction: column; width: 100%; align-items: center; text-align: center; gap: 20px; margin-bottom: 20px;}
-            .gp-cover { width: 85vw; height: 85vw; max-width: 400px; max-height: 400px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
             
+            /* Адаптация обложки и окна текстов */
+            .gp-cover-wrapper { width: 85vw; height: 85vw; max-width: 400px; max-height: 400px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+            .gp-cover { width: 100%; height: 100%; box-shadow: none; border-radius: inherit; }
+            .gp-lyrics-window { padding: 30px 15px; }
+            .gp-lyrics-window .lyric-line { font-size: 1.15rem; margin-bottom: 16px; }
+
             .gp-info { align-items: flex-start; width: 100%; max-width: 400px; text-align: left; }
             .gp-title-wrap { margin-bottom: 5px; }
             .gp-title { font-size: 1.5rem; }
@@ -624,14 +598,20 @@
     <div class="global-player" id="globalPlayer">
         <div class="gp-bg-glow" id="gpBgGlow"></div>
         <div class="gp-header-mobile">
-            <button class="gp-action-btn-m" onclick="minimizePlayer()"><i class="fa-solid fa-chevron-down"></i></button>
+            <button class="gp-action-btn-m gp-lyrics-btn disabled" id="btnLyricsMobile" onclick="toggleLyricsMode()" title="Текст песни"><i class="fa-solid fa-align-left"></i></button>
             <div style="font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-muted);">Сейчас играет</div>
-            <button class="gp-action-btn-m" onclick="closePlayer()"><i class="fa-solid fa-xmark"></i></button>
+            <div style="display: flex; gap: 10px;">
+                <button class="gp-action-btn-m" onclick="minimizePlayer()"><i class="fa-solid fa-chevron-down"></i></button>
+                <button class="gp-action-btn-m" onclick="closePlayer()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
         </div>
 
         <div class="gp-content">
             <div class="gp-left">
-                <img id="gpCover" class="gp-cover" src="../dslogo.png" alt="Cover">
+                <div class="gp-cover-wrapper" id="gpCoverWrapper">
+                    <img id="gpCover" class="gp-cover" src="../dslogo.png" alt="Cover">
+                    <div class="gp-lyrics-window" id="gpLyricsWindow" onclick="openFullscreenFromWindow()"></div>
+                </div>
                 <div class="gp-info">
                     <div class="gp-title-wrap">
                         <div class="gp-title" id="gpTitle">Загрузка...</div>
@@ -668,6 +648,7 @@
                     </div>
                 </div>
                 <div class="window-actions">
+                    <button class="gp-action-btn gp-lyrics-btn disabled" id="btnLyricsDesktop" onclick="toggleLyricsMode()" title="Текст песни"><i class="fa-solid fa-align-left"></i></button>
                     <button class="gp-action-btn gp-min-btn" onclick="minimizePlayer()" title="Свернуть плеер"><i class="fa-solid fa-chevron-down"></i></button>
                     <button class="gp-action-btn gp-close-btn" onclick="closePlayer()" title="Закрыть плеер"><i class="fa-solid fa-xmark"></i></button>
                 </div>
@@ -687,6 +668,14 @@
                 <div class="orb-wave-bar"></div>
             </div>
         </div>
+    </div>
+
+    <div class="fs-lyrics-overlay" id="fsLyricsOverlay">
+        <div class="fs-lyrics-header">
+            <div class="fs-lyrics-title" id="fsLyricsTitle">Текст песни</div>
+            <div class="fs-close-btn" onclick="closeFullscreenLyrics()"><i class="fa-solid fa-compress"></i></div>
+        </div>
+        <div class="fs-lyrics-content" id="fsLyricsContent"></div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
@@ -784,12 +773,10 @@
         // ФУНКЦИЯ ЗАГРУЗКИ С АНИМАЦИЕЙ
         function handleDownload(btn, title, artist, mp3Url) {
             if (!btn.classList.contains('confirm-state')) {
-                // Первый клик: показываем подтверждение
                 btn.classList.add('confirm-state');
                 const originalHtml = btn.innerHTML;
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Загрузить MP3';
                 
-                // Сбрасываем обратно через 3 секунды, если пользователь не кликнул
                 btn.dataset.timeoutId = setTimeout(() => {
                     if (btn.classList.contains('confirm-state')) {
                         btn.classList.remove('confirm-state');
@@ -797,7 +784,6 @@
                     }
                 }, 3000);
             } else {
-                // Второй клик: инициируем загрузку
                 clearTimeout(btn.dataset.timeoutId);
                 btn.classList.remove('confirm-state');
                 btn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать';
@@ -818,6 +804,12 @@
         let currentTrackIndex = -1, isMinimized = false, hasPlayed = false;
         window.justScrubbed = false;
 
+        // ПЕРЕМЕННЫЕ И ЛОГИКА ТЕКСТОВ ПЕСЕН
+        let currentLyrics = [];
+        let activeLyricIndex = -1;
+        let isLyricsWindowOpen = false;
+        let isLyricsFullscreen = false;
+
         function formatTime(sec) {
             if (!sec || isNaN(sec)) return "00:00";
             let m = Math.floor(sec / 60), s = Math.floor(sec % 60);
@@ -829,6 +821,11 @@
         const miniOrb = document.getElementById('miniOrb');
         const gpBadge18 = document.getElementById('gpBadge18');
         const gpBgGlow = document.getElementById('gpBgGlow');
+        const gpLyricsWindow = document.getElementById('gpLyricsWindow');
+        const fsLyricsOverlay = document.getElementById('fsLyricsOverlay');
+        const fsLyricsContent = document.getElementById('fsLyricsContent');
+        const btnLyricsDesktop = document.getElementById('btnLyricsDesktop');
+        const btnLyricsMobile = document.getElementById('btnLyricsMobile');
 
         function playTrack(index) {
             if (window.justScrubbed) return; 
@@ -841,6 +838,33 @@
                 if (currentTrackIndex !== -1) resetCardUI(currentTrackIndex);
                 currentTrackIndex = index;
                 
+                // Сброс и загрузка текстов
+                isLyricsWindowOpen = false;
+                isLyricsFullscreen = false;
+                gpLyricsWindow.classList.remove('active');
+                fsLyricsOverlay.classList.remove('active');
+                document.getElementById('gpCover').style.display = 'block';
+                btnLyricsDesktop.classList.remove('active');
+                btnLyricsMobile.classList.remove('active');
+
+                currentLyrics = tracks[index].lyrics || [];
+                if (typeof currentLyrics === 'string') {
+                    try { currentLyrics = JSON.parse(currentLyrics); } catch(e) { currentLyrics = []; }
+                }
+
+                document.getElementById('fsLyricsTitle').textContent = tracks[index].title;
+
+                if (currentLyrics.length > 0) {
+                    btnLyricsDesktop.classList.remove('disabled');
+                    btnLyricsMobile.classList.remove('disabled');
+                    renderLyricsHTML(currentLyrics);
+                } else {
+                    btnLyricsDesktop.classList.add('disabled');
+                    btnLyricsMobile.classList.add('disabled');
+                    gpLyricsWindow.innerHTML = '';
+                    fsLyricsContent.innerHTML = '';
+                }
+
                 globalAudio.src = tracks[index].mp3_url;
                 document.getElementById('gpTitle').textContent = tracks[index].title;
                 document.getElementById('gpArtist').textContent = tracks[index].authors || 'DXTR feat. SlizZe';
@@ -885,6 +909,7 @@
             document.getElementById('gpTime').textContent = '00:00';
             document.getElementById('gpProgBar').style.width = '0%';
             gpPlayIcon.className = 'fa-solid fa-play';
+            fsLyricsOverlay.classList.remove('active');
         }
 
         function minimizePlayer() {
@@ -908,6 +933,99 @@
             }
         }
 
+        // ====================== ЛОГИКА ТЕКСТА ======================
+        function renderLyricsHTML(lyrics) {
+            gpLyricsWindow.innerHTML = '';
+            fsLyricsContent.innerHTML = '';
+
+            lyrics.forEach((line, idx) => {
+                const wLine = document.createElement('div');
+                wLine.className = 'lyric-line';
+                wLine.textContent = line.s;
+                wLine.onclick = (e) => { e.stopPropagation(); globalAudio.currentTime = line.t; };
+                gpLyricsWindow.appendChild(wLine);
+
+                const fLine = document.createElement('div');
+                fLine.className = 'lyric-line';
+                fLine.textContent = line.s;
+                fLine.onclick = (e) => { e.stopPropagation(); globalAudio.currentTime = line.t; };
+                fsLyricsContent.appendChild(fLine);
+            });
+        }
+
+        function scrollToActiveLyric(container, element) {
+            if (!container || !element) return;
+            const targetScroll = element.offsetTop - (container.clientHeight / 2) + (element.clientHeight / 2);
+            container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        }
+
+        function updateActiveLyric(index) {
+            const wLines = document.querySelectorAll('#gpLyricsWindow .lyric-line');
+            wLines.forEach((el, i) => {
+                if (i === index) {
+                    el.classList.add('active');
+                    if(isLyricsWindowOpen) scrollToActiveLyric(gpLyricsWindow, el);
+                } else el.classList.remove('active');
+            });
+
+            const fLines = document.querySelectorAll('#fsLyricsContent .lyric-line');
+            fLines.forEach((el, i) => {
+                if (i === index) {
+                    el.classList.add('active');
+                    if(isLyricsFullscreen) scrollToActiveLyric(fsLyricsContent, el);
+                } else el.classList.remove('active');
+            });
+        }
+
+        function toggleLyricsMode() {
+            if (currentLyrics.length === 0) return;
+            const isMobile = window.innerWidth <= 800;
+
+            if (isLyricsWindowOpen || isLyricsFullscreen) {
+                // Выключаем текст
+                isLyricsWindowOpen = false;
+                isLyricsFullscreen = false;
+                gpLyricsWindow.classList.remove('active');
+                document.getElementById('gpCover').style.display = 'block';
+                fsLyricsOverlay.classList.remove('active');
+                btnLyricsMobile.classList.remove('active');
+                btnLyricsDesktop.classList.remove('active');
+            } else {
+                // Включаем текст
+                if (isMobile) {
+                    isLyricsWindowOpen = true;
+                    gpLyricsWindow.classList.add('active');
+                    document.getElementById('gpCover').style.display = 'none';
+                    btnLyricsMobile.classList.add('active');
+                    if (activeLyricIndex !== -1) updateActiveLyric(activeLyricIndex);
+                } else {
+                    isLyricsFullscreen = true;
+                    fsLyricsOverlay.classList.add('active');
+                    btnLyricsDesktop.classList.add('active');
+                    if (activeLyricIndex !== -1) updateActiveLyric(activeLyricIndex);
+                }
+            }
+        }
+
+        function openFullscreenFromWindow() {
+            if (!isLyricsWindowOpen) return;
+            isLyricsFullscreen = true;
+            fsLyricsOverlay.classList.add('active');
+            if (activeLyricIndex !== -1) updateActiveLyric(activeLyricIndex);
+        }
+
+        function closeFullscreenLyrics() {
+            isLyricsFullscreen = false;
+            fsLyricsOverlay.classList.remove('active');
+            // Если мы на телефоне, то окно вместо обложки остается открытым (Яндекс.Музыка стайл)
+            if (window.innerWidth > 800) {
+                toggleLyricsMode(); // На пк выключаем полностью
+            } else {
+                if (activeLyricIndex !== -1) updateActiveLyric(activeLyricIndex);
+            }
+        }
+        // ===========================================================
+
         const handlePlayClick = () => { if(currentTrackIndex !== -1) playTrack(currentTrackIndex); };
         const handleNextClick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex + 1) % tracks.length); };
         const handlePrevClick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex - 1 + tracks.length) % tracks.length); };
@@ -929,6 +1047,20 @@
             if (globalAudio.duration && !isDraggingProgress) {
                 const p = (globalAudio.currentTime / globalAudio.duration) * 100;
                 updateProgressBarUI(p, globalAudio.currentTime);
+            }
+
+            // Синхронизация текста
+            if (currentLyrics.length > 0 && (isLyricsWindowOpen || isLyricsFullscreen)) {
+                const ct = globalAudio.currentTime;
+                let newIndex = -1;
+                for (let i = 0; i < currentLyrics.length; i++) {
+                    if (ct >= currentLyrics[i].t) newIndex = i;
+                    else break;
+                }
+                if (newIndex !== activeLyricIndex && newIndex !== -1) {
+                    activeLyricIndex = newIndex;
+                    updateActiveLyric(activeLyricIndex);
+                }
             }
         });
 
