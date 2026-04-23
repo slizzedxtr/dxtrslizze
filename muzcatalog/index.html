@@ -101,7 +101,7 @@
         .catalog-item { background: linear-gradient(135deg, rgba(30,30,40,0.7) 0%, rgba(10,10,15,0.8) 100%); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px 25px; display: flex; align-items: center; gap: 20px; transition: all 0.3s; box-shadow: 0 15px 35px rgba(0,0,0,0.5); position: relative; overflow: hidden; margin-bottom: 12px; }
         .catalog-item::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); transition: 0.6s ease-in-out; }
         .catalog-item:hover::before { left: 150%; }
-        .catalog-item:hover { border-color: rgba(112, 0, 255, 0.5); box-shadow: 0 15px 40px rgba(112, 0, 255, 0.25), inset 0 0 20px rgba(112, 0, 255, 0.1); transform: translateY(-4px); cursor: pointer; }
+        .catalog-item:hover { border-color: rgba(112, 0, 255, 0.5); box-shadow: 0 15px 40px rgba(112, 0, 255, 0.25), inset 0 0 20px rgba(112, 0, 255, 0.1); transform: translateY(-4px); }
         .catalog-item.playing { border-color: var(--neon-purple); box-shadow: 0 0 30px rgba(112, 0, 255, 0.4), inset 0 0 20px rgba(112, 0, 255, 0.1); transform: scale(1.01); background: linear-gradient(135deg, rgba(40,40,60,0.8) 0%, rgba(15,15,25,0.9) 100%); margin-top: 5px; margin-bottom: 17px; }
         
         .ci-left { display: flex; align-items: center; gap: 15px; flex-shrink: 0; pointer-events: none; }
@@ -141,8 +141,12 @@
 
         .ci-right { flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; width: 160px; pointer-events: auto; }
         .action-btn-sm { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 15px; border-radius: 12px; font-size: 0.8rem; font-weight: 800; cursor: pointer; transition: 0.3s; text-decoration: none; border: 1px solid transparent; color: #fff; text-transform: uppercase; z-index: 2; white-space: nowrap; }
+        
         .dl-btn { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.15); }
         .dl-btn:hover { border-color: var(--neon-cyan); background: rgba(0,198,255,0.1); box-shadow: 0 0 15px rgba(0,198,255,0.4); transform: translateY(-2px); }
+        .dl-btn.confirm-state { background: rgba(0, 255, 102, 0.15); border-color: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 102, 0.4); transform: scale(1.05); }
+        .dl-btn.confirm-state:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 20px rgba(0, 255, 102, 0.6); }
+
         .yt-btn { background: rgba(255, 0, 0, 0.05); border-color: rgba(255, 0, 0, 0.2); color: #ff4d4d; }
         .yt-btn:hover { background: rgba(255, 0, 0, 0.15); border-color: #ff0000; box-shadow: 0 0 15px rgba(255,0,0,0.4); color: #fff; transform: translateY(-2px); }
         .plt-btn { background: rgba(112, 0, 255, 0.08); border-color: rgba(112, 0, 255, 0.3); color: #c280ff; }
@@ -366,9 +370,7 @@
         .close-btn { position: absolute; top: 15px; right: 25px; color: var(--text-muted); font-size: 2.5rem; cursor: pointer; transition: 0.3s; line-height: 1; z-index: 10; }
         .close-btn:hover { color: var(--neon-pink); transform: rotate(90deg); }
         .modal-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 30px; text-transform: uppercase; color: #fff; }
-        .format-btn { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 800; color: white; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; transition: 0.3s; background: rgba(255,255,255,0.03); }
-        .format-btn.mp3:hover { border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 198, 255, 0.4); background: rgba(0,198,255,0.1); transform: scale(1.05); }
-        .format-btn.wav:hover { border-color: var(--neon-pink); box-shadow: 0 0 20px rgba(255, 0, 127, 0.4); background: rgba(255,0,127,0.1); transform: scale(1.05); }
+        
         .plat-btn { display: flex; align-items: center; gap: 15px; padding: 15px 20px; border-radius: 12px; text-decoration: none; font-weight: 800; color: white; margin-bottom: 12px; transition: 0.3s; border: 1px solid transparent; font-size: 1.1rem; }
         .plat-btn i { font-size: 1.4rem; }
         .btn-yam { background: rgba(255, 204, 0, 0.1); border-color: rgba(255, 204, 0, 0.3); } .btn-yam:hover { background: rgba(255, 204, 0, 0.9); color: #000; box-shadow: 0 0 20px rgba(255, 204, 0, 0.6); transform: scale(1.05); }
@@ -543,17 +545,6 @@
         <a href="https://dxtrslizze.xyz/about" class="nav-link">О нас</a>
         <a href="https://dxtrslizze.xyz/shop" class="nav-link">Магазин</a>
     </nav>
-
-    <div class="modal" id="downloadModal">
-        <div class="modal-content-wrap">
-            <div class="modal-inner">
-                <div class="close-btn" onclick="closeModal('downloadModal')">×</div>
-                <div class="modal-title" id="modalTitle">Название трека</div>
-                <a href="#" class="format-btn mp3" id="linkMp3" download><i class="fa-solid fa-file-audio"></i> MP3 (320 kbps)</a>
-                <a href="#" class="format-btn wav" id="linkWav" download><i class="fa-solid fa-compact-disc"></i> WAV (Lossless)</a>
-            </div>
-        </div>
-    </div>
 
     <div class="modal" id="platformsModal">
         <div class="modal-inner" style="border: 2px solid var(--neon-purple); box-shadow: 0 0 50px rgba(112,0,255,0.3);">
@@ -730,7 +721,7 @@
                 const mainBadge = track.is_main ? `<span class="badge-main" style="margin-left: 5px;">Главный релиз</span>` : '';
                 
                 const trackHTML = `
-                    <div class="catalog-item fade-in" id="card-${index}" style="animation-delay: ${index * 0.03}s" onclick="playTrack(${index})">
+                    <div class="catalog-item fade-in" id="card-${index}" style="animation-delay: ${index * 0.03}s">
                         <div class="ci-left">
                             <div class="ci-number">${num}</div>
                             <div class="ci-cover-wrapper" onclick="event.stopPropagation(); playTrack(${index});">
@@ -755,7 +746,7 @@
                         <div class="ci-right">
                             <a href="${track.yt_link}" target="_blank" class="action-btn-sm yt-btn" onclick="event.stopPropagation();"><i class="fa-brands fa-youtube"></i> Клип</a>
                             ${pltBtn}
-                            <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); openDownloadModal('${track.title}', '${track.mp3_url}', '${track.mp3_url}')"><i class="fa-solid fa-download"></i> Скачать</button>
+                            <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); handleDownload(this, '${track.title.replace(/'/g, "\\'")}', '${track.mp3_url}')"><i class="fa-solid fa-download"></i> Скачать</button>
                         </div>
                     </div>
                 `;
@@ -773,6 +764,40 @@
         }
 
         fetchTracks();
+
+        // ФУНКЦИЯ ЗАГРУЗКИ С АНИМАЦИЕЙ
+        function handleDownload(btn, title, mp3Url) {
+            if (!btn.classList.contains('confirm-state')) {
+                // Первый клик: показываем подтверждение
+                btn.classList.add('confirm-state');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Загрузить MP3';
+                
+                // Сбрасываем обратно через 3 секунды, если пользователь не кликнул
+                btn.dataset.timeoutId = setTimeout(() => {
+                    if (btn.classList.contains('confirm-state')) {
+                        btn.classList.remove('confirm-state');
+                        btn.innerHTML = originalHtml;
+                    }
+                }, 3000);
+            } else {
+                // Второй клик: инициируем загрузку
+                clearTimeout(btn.dataset.timeoutId);
+                btn.classList.remove('confirm-state');
+                btn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать';
+                
+                const safeTitle = title.replace(/\s+/g, '_');
+                const mp3FileName = encodeURIComponent(`DXTR_SlizZe_-_${safeTitle}.mp3`);
+                const dlLink = mp3Url.includes('?') ? `${mp3Url}&download=${mp3FileName}` : `${mp3Url}?download=${mp3FileName}`;
+                
+                const a = document.createElement('a');
+                a.href = dlLink;
+                a.download = '';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
 
         const globalAudio = document.getElementById('globalAudio');
         let currentTrackIndex = -1, isMinimized = false, hasPlayed = false;
@@ -1069,22 +1094,7 @@
             if(count === 0) { emptyState.classList.add('show'); } else { emptyState.classList.remove('show'); }
         });
 
-        const dM = document.getElementById('downloadModal'), pM = document.getElementById('platformsModal');
-        
-        function openDownloadModal(t, mp3, wav) { 
-            document.getElementById('modalTitle').textContent = t; 
-            const safeTitle = t.replace(/\s+/g, '_');
-            const mp3FileName = encodeURIComponent(`DXTR_SlizZe_-_${safeTitle}.mp3`);
-            const wavFileName = encodeURIComponent(`DXTR_SlizZe_-_${safeTitle}.wav`);
-            const linkMp3 = document.getElementById('linkMp3');
-            const linkWav = document.getElementById('linkWav');
-            linkMp3.href = mp3.includes('?') ? `${mp3}&download=${mp3FileName}` : `${mp3}?download=${mp3FileName}`; 
-            linkWav.href = wav.includes('?') ? `${wav}&download=${wavFileName}` : `${wav}?download=${wavFileName}`; 
-            linkMp3.onclick = () => closeModal('downloadModal');
-            linkWav.onclick = () => closeModal('downloadModal');
-            dM.style.display = 'flex'; 
-            document.body.style.overflow = 'hidden'; 
-        }
+        const pM = document.getElementById('platformsModal');
         
         function openPlatformsModal(pStr) { 
             const p = JSON.parse(decodeURIComponent(pStr));
@@ -1097,7 +1107,7 @@
         }
         
         function closeModal(m) { document.getElementById(m).style.display = 'none'; document.body.style.overflow = 'auto'; }
-        window.onclick = e => { if(e.target === dM) closeModal('downloadModal'); if(e.target === pM) closeModal('platformsModal'); }
+        window.onclick = e => { if(e.target === pM) closeModal('platformsModal'); }
 
         const token = localStorage.getItem('dxtr_token');
         const socket = io("https://dxtrslizze.onrender.com/");
