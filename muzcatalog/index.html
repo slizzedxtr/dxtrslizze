@@ -397,7 +397,7 @@
         /* ОВЕРЛЕЙ ДЛЯ ТЕКСТА НА ВЕСЬ ЭКРАН */
         .fs-lyrics-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 5, 8, 0.85); /* Чуть прозрачнее, чтобы стекло работало лучше */
+            background: rgba(5, 5, 8, 0.85);
             z-index: 10005; /* Под плеером на ПК */
             display: flex; flex-direction: column;
             opacity: 0; visibility: hidden; pointer-events: none; transition: all 0.4s ease;
@@ -804,7 +804,6 @@
 
         fetchTracks();
 
-        // ФУНКЦИЯ ЗАГРУЗКИ С АНИМАЦИЕЙ
         function handleDownload(btn, title, artist, mp3Url) {
             if (!btn.classList.contains('confirm-state')) {
                 btn.classList.add('confirm-state');
@@ -838,7 +837,6 @@
         let currentTrackIndex = -1, isMinimized = false, hasPlayed = false;
         window.justScrubbed = false;
 
-        // ПЕРЕМЕННЫЕ И ЛОГИКА ТЕКСТОВ ПЕСЕН
         let currentLyrics = [];
         let activeLyricIndex = -1;
         let isLyricsWindowOpen = false;
@@ -873,7 +871,6 @@
                 if (currentTrackIndex !== -1) resetCardUI(currentTrackIndex);
                 currentTrackIndex = index;
                 
-                // Сброс и загрузка текстов
                 isLyricsWindowOpen = false;
                 isLyricsFullscreen = false;
                 gpLyricsWindow.classList.remove('active');
@@ -904,7 +901,6 @@
                 document.getElementById('gpArtist').textContent = tracks[index].authors || 'DXTR feat. SlizZe';
                 document.getElementById('gpCover').src = tracks[index].cover_url;
                 
-                // Устанавливаем динамический фон плеера и текста
                 gpBgGlow.style.backgroundImage = `url('${tracks[index].cover_url}')`;
                 fsBgGlow.style.backgroundImage = `url('${tracks[index].cover_url}')`;
                 
@@ -969,7 +965,6 @@
             }
         }
 
-        // ====================== ЛОГИКА ТЕКСТА ======================
         function renderLyricsHTML(lyrics) {
             gpLyricsWindow.innerHTML = '';
             fsLyricsContent.innerHTML = '';
@@ -1018,7 +1013,6 @@
             const isMobile = window.innerWidth <= 800;
 
             if (isLyricsWindowOpen || isLyricsFullscreen) {
-                // Выключаем текст
                 isLyricsWindowOpen = false;
                 isLyricsFullscreen = false;
                 gpLyricsWindow.classList.remove('active');
@@ -1026,7 +1020,6 @@
                 btnLyricsMobile.classList.remove('active');
                 btnLyricsDesktop.classList.remove('active');
             } else {
-                // Включаем текст
                 if (isMobile) {
                     isLyricsWindowOpen = true;
                     gpLyricsWindow.classList.add('active');
@@ -1051,16 +1044,13 @@
 
         function closeFullscreenLyrics() {
             if (window.innerWidth > 800) {
-                // На ПК кнопка закрывает весь интерфейс текста
                 toggleLyricsMode(); 
             } else {
-                // На телефоне закрывает только фуллскрин, оставляя окошко вместо обложки
                 isLyricsFullscreen = false;
                 fsLyricsOverlay.classList.remove('active');
                 if (activeLyricIndex !== -1) updateActiveLyric(activeLyricIndex);
             }
         }
-        // ===========================================================
 
         const handlePlayClick = () => { if(currentTrackIndex !== -1) playTrack(currentTrackIndex); };
         const handleNextClick = () => { if(currentTrackIndex !== -1) playTrack((currentTrackIndex + 1) % tracks.length); };
@@ -1084,11 +1074,13 @@
                 const p = (globalAudio.currentTime / globalAudio.duration) * 100;
                 updateProgressBarUI(p, globalAudio.currentTime);
             }
+        });
 
-            // Синхронизация текста (с ОПЕРЕЖЕНИЕМ для мобилок)
-            if (currentLyrics.length > 0 && (isLyricsWindowOpen || isLyricsFullscreen)) {
-                // Добавляем 0.25с, чтобы компенсировать медленный timeupdate на телефонах
-                const ct = globalAudio.currentTime + 0.25; 
+        // Идеально плавная синхронизация текста (60 кадров в секунду)
+        function syncLyricsLoop() {
+            if (!globalAudio.paused && currentLyrics.length > 0 && (isLyricsWindowOpen || isLyricsFullscreen)) {
+                // Добавляем +0.15с чисто чтобы визуальная CSS-анимация увеличения слова (transition: 0.3s) успевала срабатывать вовремя
+                const ct = globalAudio.currentTime + 0.15; 
                 let newIndex = -1;
                 for (let i = 0; i < currentLyrics.length; i++) {
                     if (ct >= currentLyrics[i].t) newIndex = i;
@@ -1099,7 +1091,11 @@
                     updateActiveLyric(activeLyricIndex);
                 }
             }
-        });
+            requestAnimationFrame(syncLyricsLoop);
+        }
+        
+        // Запускаем постоянную проверку времени трека
+        requestAnimationFrame(syncLyricsLoop);
 
         function updateProgressBarUI(p, timeVal) {
             gpBarFill.style.width = `${p}%`;
