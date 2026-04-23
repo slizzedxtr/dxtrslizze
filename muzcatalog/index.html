@@ -197,30 +197,29 @@
         /* Окно текстов (вместо обложки) */
         .gp-lyrics-window {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 10, 15, 0.95); border-radius: inherit;
+            background: rgba(10, 10, 15, 0.75); backdrop-filter: blur(15px); border-radius: inherit;
             display: flex; flex-direction: column; overflow-y: auto;
             padding: 10px; cursor: pointer;
             mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
             scrollbar-width: none;
-            /* Плавное появление */
             opacity: 0; visibility: hidden; pointer-events: none;
             transition: all 0.4s ease;
         }
         .gp-lyrics-window::-webkit-scrollbar { display: none; }
         .gp-lyrics-window.active { opacity: 1; visibility: visible; pointer-events: auto; }
 
-        /* Кнопка открытия на весь экран (Мобилка) */
+        /* Явная кнопка на весь экран для мобилок */
         .expand-lyrics-btn {
-            position: absolute; top: 8px; right: 8px;
-            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; width: 32px; height: 32px; border-radius: 8px;
-            display: flex; justify-content: center; align-items: center;
-            cursor: pointer; z-index: 10;
-            opacity: 0; visibility: hidden; transition: 0.3s;
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; width: 40px; height: 40px; border-radius: 12px;
+            display: none; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 50; font-size: 1.2rem;
+            backdrop-filter: blur(5px); transition: 0.3s;
         }
-        .gp-lyrics-window.active ~ .expand-lyrics-btn { opacity: 1; visibility: visible; }
-        .expand-lyrics-btn:hover { background: var(--neon-cyan); color: #000; border-color: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
+        .gp-lyrics-window.active ~ .expand-lyrics-btn { display: flex; animation: fadeIn 0.4s; }
+        .expand-lyrics-btn:hover { background: var(--neon-cyan); color: #000; border-color: var(--neon-cyan); box-shadow: 0 0 15px var(--neon-cyan); transform: scale(1.1); }
 
         .lyric-line {
             font-size: 1rem; color: rgba(255,255,255,0.4); text-align: center;
@@ -398,15 +397,26 @@
         /* ОВЕРЛЕЙ ДЛЯ ТЕКСТА НА ВЕСЬ ЭКРАН */
         .fs-lyrics-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(5, 5, 8, 0.95); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            background: rgba(5, 5, 8, 0.85); /* Чуть прозрачнее, чтобы стекло работало лучше */
             z-index: 10005; /* Под плеером на ПК */
             display: flex; flex-direction: column;
             opacity: 0; visibility: hidden; pointer-events: none; transition: all 0.4s ease;
+            overflow: hidden;
         }
+        
+        /* ДИНАМИЧЕСКИЙ ФОН ТЕКСТА ПЕСНИ */
+        .fs-bg-glow {
+            display: block; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-size: cover; background-position: center;
+            filter: blur(80px) brightness(0.3) saturate(1.5);
+            z-index: -1; pointer-events: none; transition: background-image 0.8s ease;
+        }
+
         .fs-lyrics-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
         .fs-lyrics-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 25px 30px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            z-index: 2;
         }
         .fs-lyrics-title { font-size: 1.2rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
         .fs-close-btn {
@@ -420,7 +430,7 @@
         .fs-lyrics-content {
             flex: 1; overflow-y: auto; 
             padding: 20px 10vw 180px 10vw; /* Большой отступ снизу на ПК, чтобы плеер не мешал */
-            display: flex; flex-direction: column; align-items: center;
+            display: flex; flex-direction: column; align-items: center; z-index: 2;
             scrollbar-width: none;
             mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -483,7 +493,7 @@
             
             /* Мобильный полноэкранный текст должен быть выше плеера */
             .fs-lyrics-overlay { z-index: 10020; }
-            .fs-lyrics-content { padding: 20px 5vw 100px 5vw; } /* На мобилке такой большой отступ снизу не нужен */
+            .fs-lyrics-content { padding: 20px 5vw 100px 5vw; }
 
             .gp-info { align-items: flex-start; width: 100%; max-width: 400px; text-align: left; }
             .gp-title-wrap { margin-bottom: 5px; }
@@ -694,6 +704,7 @@
     </div>
 
     <div class="fs-lyrics-overlay" id="fsLyricsOverlay">
+        <div class="fs-bg-glow" id="fsBgGlow"></div>
         <div class="fs-lyrics-header">
             <div class="fs-lyrics-title" id="fsLyricsTitle">Текст песни</div>
             <div class="fs-close-btn" onclick="closeFullscreenLyrics()"><i class="fa-solid fa-compress"></i></div>
@@ -844,6 +855,7 @@
         const miniOrb = document.getElementById('miniOrb');
         const gpBadge18 = document.getElementById('gpBadge18');
         const gpBgGlow = document.getElementById('gpBgGlow');
+        const fsBgGlow = document.getElementById('fsBgGlow');
         const gpLyricsWindow = document.getElementById('gpLyricsWindow');
         const fsLyricsOverlay = document.getElementById('fsLyricsOverlay');
         const fsLyricsContent = document.getElementById('fsLyricsContent');
@@ -892,7 +904,9 @@
                 document.getElementById('gpArtist').textContent = tracks[index].authors || 'DXTR feat. SlizZe';
                 document.getElementById('gpCover').src = tracks[index].cover_url;
                 
+                // Устанавливаем динамический фон плеера и текста
                 gpBgGlow.style.backgroundImage = `url('${tracks[index].cover_url}')`;
+                fsBgGlow.style.backgroundImage = `url('${tracks[index].cover_url}')`;
                 
                 if(tracks[index].is_18) { gpBadge18.style.display = 'inline-flex'; }
                 else { gpBadge18.style.display = 'none'; }
