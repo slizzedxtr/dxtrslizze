@@ -290,6 +290,11 @@
                     <label class="form-label">1.1.8 YouTube Клип (ОБЯЗАТЕЛЬНО)</label>
                     <input type="url" id="mYt" class="form-input" placeholder="https://youtube.com/..." required>
                 </div>
+
+                <div class="form-group">
+                    <label class="form-label">1.1.9 Синхронизированный текст (LRC)</label>
+                    <textarea id="mLyrics" class="form-input" style="min-height: 120px; resize: vertical; font-family: monospace; font-size: 0.9rem;" placeholder="[00:12.34] Ваш текст...&#10;Оставьте пустым, если текста нет"></textarea>
+                </div>
                 
                 <div style="display: flex; gap: 20px; color: var(--text-main); font-weight: 700; flex-wrap: wrap; margin-top: 10px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
                     <label style="cursor: pointer;"><input type="checkbox" id="m18"> 18+ (Explicit) [1.1.3]</label>
@@ -482,6 +487,11 @@
                 <input type="url" id="editMYt" class="form-input">
             </div>
 
+            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
+                <label class="form-label">Текст (LRC)</label>
+                <textarea id="editMLyrics" class="form-input" style="min-height: 120px; resize: vertical; font-family: monospace; font-size: 0.9rem;" placeholder="[00:12.34] Ваш текст..."></textarea>
+            </div>
+
             <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; text-align: left;">
                 <label style="cursor: pointer; color: #fff; font-size: 0.9rem;"><input type="checkbox" id="editM18"> 18+</label>
                 <label style="cursor: pointer; color: #fff; font-size: 0.9rem;"><input type="checkbox" id="editMMain"> Главный</label>
@@ -579,7 +589,6 @@
         burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
 
         // ========== ЧАТ ТЕХПОДДЕРЖКИ ==========
-        // ... (Без изменений)
         const supportBtn = document.getElementById('supportBtn'), chatWindow = document.getElementById('chatWindow'), closeChat = document.getElementById('closeChat'), menuSupportBtn = document.getElementById('menuSupportBtn'), unreadBadge = document.getElementById('unreadBadge'), chatMessages = document.getElementById('chatMessages'), chatInput = document.getElementById('chatInput'), chatSend = document.getElementById('chatSend');
         let chatHistory = JSON.parse(localStorage.getItem('chatHistory_dxtr') || '[]');
         let isSupportBanned = false;
@@ -757,7 +766,7 @@
                         const validNicks = ['DXTR', 'SlizZe'];
 
                         const receivedId = String(userData.user.clientId);
-                        const receivedNick = userData.user.username; // Note: server might still send login as username here
+                        const receivedNick = userData.user.username;
 
                         if (validIds.includes(receivedId) && validNicks.includes(receivedNick)) {
                             clearTimeout(redThemeTimeout);
@@ -803,6 +812,39 @@
         };
 
         // ========== 1. МУЗЫКАЛЬНЫЙ КАТАЛОГ ==========
+        
+        // --- ПАРСЕРЫ ТЕКСТА LRC <-> JSON ---
+        function parseLRC(lrcText) {
+            if (!lrcText || !lrcText.trim()) return [];
+            const lines = lrcText.split('\n');
+            const result = [];
+            const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+
+            lines.forEach(line => {
+                const match = timeReg.exec(line);
+                if (match) {
+                    const minutes = parseInt(match[1]);
+                    const seconds = parseInt(match[2]);
+                    const ms = parseInt(match[3]);
+                    const time = minutes * 60 + seconds + (ms > 99 ? ms / 1000 : ms / 100);
+                    const text = line.replace(timeReg, '').trim();
+                    if (text || text === "") result.push({ t: time, s: text });
+                }
+            });
+            return result;
+        }
+
+        function jsonToLRC(jsonArray) {
+            if (!jsonArray || !Array.isArray(jsonArray) || jsonArray.length === 0) return '';
+            return jsonArray.map(item => {
+                const min = Math.floor(item.t / 60).toString().padStart(2, '0');
+                const sec = Math.floor(item.t % 60).toString().padStart(2, '0');
+                const ms = Math.floor((item.t % 1) * 100).toString().padStart(2, '0');
+                return `[${min}:${sec}.${ms}] ${item.s}`;
+            }).join('\n');
+        }
+        // ------------------------------------
+
         const mCoverInput = document.getElementById('mCover');
         const mMp3Input = document.getElementById('mMp3');
         const mMainCheckbox = document.getElementById('mMain');
@@ -836,7 +878,6 @@
             const formData = new FormData();
             formData.append('title', document.getElementById('mTitle').value);
             
-            // НОВОЕ: Обработка авторов
             let authors = document.getElementById('mAuthors').value.trim();
             if (!authors) authors = 'DXTR feat. SlizZe';
             formData.append('authors', authors);
@@ -845,6 +886,12 @@
             formData.append('platforms', platformsJson);
             formData.append('is_18', document.getElementById('m18').checked);
             formData.append('is_main', mMainCheckbox.checked);
+
+            // НОВОЕ: Обработка LRC перед отправкой
+            const rawLyrics = document.getElementById('mLyrics').value;
+            const parsedLyrics = parseLRC(rawLyrics);
+            formData.append('lyrics', JSON.stringify(parsedLyrics));
+
             formData.append('cover', mCoverInput.files[0]);
             formData.append('mp3', mMp3Input.files[0]);
 
@@ -891,7 +938,6 @@
                         if(t.is_main) badges += '<div class="card-badge">Главный релиз</div> ';
                         if(t.is_18) badges += '<div class="card-badge badge-red">18+</div> ';
                         
-                        // НОВОЕ: Отображение авторов
                         const trackAuthors = t.authors || 'DXTR feat. SlizZe';
 
                         list.innerHTML += `
@@ -921,10 +967,12 @@
             if(!track) return;
             currentEditMusicId = id;
             document.getElementById('editMTitle').value = track.title;
-            // НОВОЕ: Подгрузка авторов в редактирование
             document.getElementById('editMAuthors').value = track.authors || 'DXTR feat. SlizZe';
-
             document.getElementById('editMYt').value = track.yt_link || '';
+            
+            // НОВОЕ: Загружаем текст из БД и конвертируем обратно в LRC для редактора
+            document.getElementById('editMLyrics').value = track.lyrics ? jsonToLRC(track.lyrics) : '';
+
             document.getElementById('editM18').checked = track.is_18;
             document.getElementById('editMMain').checked = track.is_main;
             const hasPlat = track.platforms && Object.keys(track.platforms).length > 0;
@@ -961,7 +1009,6 @@
             const formData = new FormData();
             formData.append('title', document.getElementById('editMTitle').value);
 
-            // НОВОЕ: Отправка авторов
             let editAuthors = document.getElementById('editMAuthors').value.trim();
             if (!editAuthors) editAuthors = 'DXTR feat. SlizZe';
             formData.append('authors', editAuthors);
@@ -975,6 +1022,11 @@
                 platformsJson = JSON.stringify({ spotify: document.getElementById('editLinkSpotify').value, vk: document.getElementById('editLinkVk').value, yandex: document.getElementById('editLinkYandex').value });
             }
             formData.append('platforms', platformsJson);
+
+            // НОВОЕ: Обрабатываем измененный LRC перед отправкой на сервер
+            const editRawLyrics = document.getElementById('editMLyrics').value;
+            const editParsedLyrics = parseLRC(editRawLyrics);
+            formData.append('lyrics', JSON.stringify(editParsedLyrics));
 
             const coverFile = document.getElementById('editMCover').files[0];
             const mp3File = document.getElementById('editMMp3').files[0];
@@ -1019,7 +1071,6 @@
                             ? `<img src="${u.avatarUrl}" class="profile-avatar">` 
                             : `<div class="profile-avatar-placeholder"><i class="fa-solid fa-user"></i></div>`;
                         
-                        // НОВОЕ: Передаем u.username в openEditProfile и выводим логин в карточке
                         list.innerHTML += `
                             <div class="profile-card">
                                 <div style="display: flex; gap: 15px; align-items: center;">
@@ -1044,7 +1095,6 @@
         }
 
         let editProfDbId = '';
-        // НОВОЕ: принимаем username
         function openEditProfile(dbId, cId, username, nick, avatar, balance) { 
             editProfDbId = dbId; 
             document.getElementById('editProfIdInput').value = cId; 
@@ -1068,7 +1118,6 @@
             
             if(!newId) return alert('ID не может быть пустым');
             
-            // НОВОЕ: отправляем newUsername
             const payload = { newClientId: newId, newUsername: newUsername, newNickname: newNick, newAvatarUrl: newAvatar, newBalance: newBalance };
             if (newPass) payload.newPassword = newPass;
 
@@ -1118,8 +1167,6 @@
         };
 
         // ========== 3. ПРОМОКОДЫ ==========
-
-        // НОВОЕ: Переключение полей для промокодов
         document.getElementById('isCurrencyPromo').addEventListener('change', function() {
             const mediaFields = document.getElementById('promoMediaFields');
             const currFields = document.getElementById('promoCurrencyFields');
@@ -1149,11 +1196,9 @@
             formData.append('isCurrency', isCurrency);
 
             if (isCurrency) {
-                // Если валютный
                 formData.append('amount', document.getElementById('newPromoAmount').value);
                 formData.append('maxUses', document.getElementById('newPromoUses').value);
             } else {
-                // Если музыкальный
                 formData.append('cover', document.getElementById('newCover').files[0]);
                 formData.append('track', document.getElementById('newTrack').files[0]);
             }
@@ -1162,7 +1207,7 @@
             try {
                 const res = await fetch(`${API_URL}/promo`, {
                     method: 'POST',
-                    headers: authHeaders(),  // только Authorization, без Content-Type (FormData сам ставит)
+                    headers: authHeaders(), 
                     body: formData
                 });
                 if (res.ok) { document.getElementById('promoAddForm').reset(); loadPromosFromServer(); }
@@ -1184,7 +1229,6 @@
                     list.innerHTML = '';
                     if(promos.length === 0) { list.innerHTML = '<div class="empty-neon">Промокодов нет</div>'; return; }
                     promos.forEach(p => {
-                        // НОВОЕ: логика рендера для валютных и обычных промокодов
                         let coverHtml = '';
                         let infoHtml = '';
 
