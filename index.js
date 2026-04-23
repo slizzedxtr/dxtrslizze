@@ -330,7 +330,8 @@ app.post('/api/music', requireAdmin, upload.fields([
     { name: 'wav', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { title, yt_link, is_18, is_main, platforms, authors } = req.body;
+        // НОВОЕ: Добавили извлечение поля lyrics из req.body
+        const { title, yt_link, is_18, is_main, platforms, authors, lyrics } = req.body;
 
         const coverFile = req.files['cover'] ? req.files['cover'][0] : null;
         const mp3File = req.files['mp3'] ? req.files['mp3'][0] : null;
@@ -352,6 +353,10 @@ app.post('/api/music', requireAdmin, upload.fields([
         let platformsData = {};
         try { if (platforms) platformsData = JSON.parse(platforms); } catch(e){}
 
+        // НОВОЕ: Безопасный парсинг текстов трека в JSON объект
+        let parsedLyrics = null;
+        try { if (lyrics) parsedLyrics = JSON.parse(lyrics); } catch(e){}
+
         const trackAuthors = (authors && authors.trim() !== '') ? authors.trim() : 'DXTR feat. SlizZe';
 
         const { data, error } = await supabase
@@ -360,7 +365,8 @@ app.post('/api/music', requireAdmin, upload.fields([
                 title, cover_url, mp3_url, wav_url, yt_link,
                 is_18: is_18 === 'true' || is_18 === true,
                 is_main: isMainRelease, platforms: platformsData,
-                authors: trackAuthors
+                authors: trackAuthors,
+                lyrics: parsedLyrics // НОВОЕ: Передаем тексты в БД
             }]);
 
         if (error) throw error;
@@ -383,7 +389,8 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
     { name: 'wav', maxCount: 1 }
 ]), async (req, res) => {
     try {
-        const { title, yt_link, is_18, is_main, platforms, authors } = req.body;
+        // НОВОЕ: Добавили извлечение поля lyrics из req.body
+        const { title, yt_link, is_18, is_main, platforms, authors, lyrics } = req.body;
 
         const trackId = req.params.id;
         const { data: existingTrack, error: fetchError } = await supabase.from('music').select('*').eq('id', trackId).single();
@@ -397,6 +404,10 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
 
         let platformsData = {};
         try { if (platforms) platformsData = JSON.parse(platforms); } catch(e){}
+
+        // НОВОЕ: Парсинг отредактированных текстов
+        let parsedLyrics = null;
+        try { if (lyrics) parsedLyrics = JSON.parse(lyrics); } catch(e){}
 
         let cover_url = existingTrack.cover_url;
         let mp3_url = existingTrack.mp3_url;
@@ -427,7 +438,8 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
             title, cover_url, mp3_url, wav_url, yt_link,
             is_18: is_18 === 'true' || is_18 === true,
             is_main: isMainRelease, platforms: platformsData,
-            authors: trackAuthors
+            authors: trackAuthors,
+            lyrics: parsedLyrics // НОВОЕ: Обновляем тексты в БД
         }).eq('id', trackId);
 
         if (updateError) throw updateError;
