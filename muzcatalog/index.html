@@ -165,7 +165,8 @@
             width: 95%; max-width: 1100px; height: 95px;
             background: rgba(10, 10, 15, 0.4); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
             border: 1px solid rgba(255,255,255,0.05); border-radius: 24px;
-            z-index: 9000; display: flex; align-items: center; padding: 0 30px; gap: 20px;
+            z-index: 10010; /* Плеер всегда поверх текста на ПК */
+            display: flex; align-items: center; padding: 0 30px; gap: 20px;
             transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
             box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(112, 0, 255, 0.15), 0 0 30px rgba(112,0,255,0.2);
             overflow: hidden;
@@ -191,20 +192,35 @@
         
         /* Враппер для обложки и текстов (мобилка) */
         .gp-cover-wrapper { width: 65px; height: 65px; flex-shrink: 0; position: relative; border-radius: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
-        .gp-cover { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+        .gp-cover { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; transition: opacity 0.4s ease; }
         
         /* Окно текстов (вместо обложки) */
         .gp-lyrics-window {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(10, 10, 15, 0.95); border-radius: inherit;
-            display: none; flex-direction: column; overflow-y: auto;
+            display: flex; flex-direction: column; overflow-y: auto;
             padding: 10px; cursor: pointer;
             mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
             scrollbar-width: none;
+            /* Плавное появление */
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: all 0.4s ease;
         }
         .gp-lyrics-window::-webkit-scrollbar { display: none; }
-        .gp-lyrics-window.active { display: flex; }
+        .gp-lyrics-window.active { opacity: 1; visibility: visible; pointer-events: auto; }
+
+        /* Кнопка открытия на весь экран (Мобилка) */
+        .expand-lyrics-btn {
+            position: absolute; top: 8px; right: 8px;
+            background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; width: 32px; height: 32px; border-radius: 8px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; z-index: 10;
+            opacity: 0; visibility: hidden; transition: 0.3s;
+        }
+        .gp-lyrics-window.active ~ .expand-lyrics-btn { opacity: 1; visibility: visible; }
+        .expand-lyrics-btn:hover { background: var(--neon-cyan); color: #000; border-color: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
 
         .lyric-line {
             font-size: 1rem; color: rgba(255,255,255,0.4); text-align: center;
@@ -276,7 +292,7 @@
         .mini-player-orb {
             position: fixed; bottom: 30px; right: 30px; width: 72px; height: 72px;
             border-radius: 50%; display: none; justify-content: center; align-items: center;
-            z-index: 9500; cursor: grab; user-select: none; touch-action: none;
+            z-index: 10015; cursor: grab; user-select: none; touch-action: none;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
         }
         .mini-player-orb::before {
@@ -383,10 +399,11 @@
         .fs-lyrics-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(5, 5, 8, 0.95); backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            z-index: 10005; display: none; flex-direction: column;
-            opacity: 0; transition: opacity 0.4s ease;
+            z-index: 10005; /* Под плеером на ПК */
+            display: flex; flex-direction: column;
+            opacity: 0; visibility: hidden; pointer-events: none; transition: all 0.4s ease;
         }
-        .fs-lyrics-overlay.active { display: flex; opacity: 1; }
+        .fs-lyrics-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
         .fs-lyrics-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 25px 30px; border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -401,7 +418,8 @@
         .fs-close-btn:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); color: var(--neon-cyan); border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0,198,255,0.4); }
         
         .fs-lyrics-content {
-            flex: 1; overflow-y: auto; padding: 20px 10vw 50vh 10vw;
+            flex: 1; overflow-y: auto; 
+            padding: 20px 10vw 180px 10vw; /* Большой отступ снизу на ПК, чтобы плеер не мешал */
             display: flex; flex-direction: column; align-items: center;
             scrollbar-width: none;
             mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
@@ -462,6 +480,10 @@
             .gp-cover { width: 100%; height: 100%; box-shadow: none; border-radius: inherit; }
             .gp-lyrics-window { padding: 30px 15px; }
             .gp-lyrics-window .lyric-line { font-size: 1.15rem; margin-bottom: 16px; }
+            
+            /* Мобильный полноэкранный текст должен быть выше плеера */
+            .fs-lyrics-overlay { z-index: 10020; }
+            .fs-lyrics-content { padding: 20px 5vw 100px 5vw; } /* На мобилке такой большой отступ снизу не нужен */
 
             .gp-info { align-items: flex-start; width: 100%; max-width: 400px; text-align: left; }
             .gp-title-wrap { margin-bottom: 5px; }
@@ -610,7 +632,8 @@
             <div class="gp-left">
                 <div class="gp-cover-wrapper" id="gpCoverWrapper">
                     <img id="gpCover" class="gp-cover" src="../dslogo.png" alt="Cover">
-                    <div class="gp-lyrics-window" id="gpLyricsWindow" onclick="openFullscreenFromWindow()"></div>
+                    <div class="gp-lyrics-window" id="gpLyricsWindow"></div>
+                    <button class="expand-lyrics-btn" id="expandLyricsBtn" onclick="openFullscreenFromWindow(event)" title="На весь экран"><i class="fa-solid fa-expand"></i></button>
                 </div>
                 <div class="gp-info">
                     <div class="gp-title-wrap">
@@ -843,7 +866,6 @@
                 isLyricsFullscreen = false;
                 gpLyricsWindow.classList.remove('active');
                 fsLyricsOverlay.classList.remove('active');
-                document.getElementById('gpCover').style.display = 'block';
                 btnLyricsDesktop.classList.remove('active');
                 btnLyricsMobile.classList.remove('active');
 
@@ -986,7 +1008,6 @@
                 isLyricsWindowOpen = false;
                 isLyricsFullscreen = false;
                 gpLyricsWindow.classList.remove('active');
-                document.getElementById('gpCover').style.display = 'block';
                 fsLyricsOverlay.classList.remove('active');
                 btnLyricsMobile.classList.remove('active');
                 btnLyricsDesktop.classList.remove('active');
@@ -995,7 +1016,6 @@
                 if (isMobile) {
                     isLyricsWindowOpen = true;
                     gpLyricsWindow.classList.add('active');
-                    document.getElementById('gpCover').style.display = 'none';
                     btnLyricsMobile.classList.add('active');
                     if (activeLyricIndex !== -1) updateActiveLyric(activeLyricIndex);
                 } else {
@@ -1007,7 +1027,8 @@
             }
         }
 
-        function openFullscreenFromWindow() {
+        function openFullscreenFromWindow(e) {
+            if (e) e.stopPropagation();
             if (!isLyricsWindowOpen) return;
             isLyricsFullscreen = true;
             fsLyricsOverlay.classList.add('active');
@@ -1015,12 +1036,13 @@
         }
 
         function closeFullscreenLyrics() {
-            isLyricsFullscreen = false;
-            fsLyricsOverlay.classList.remove('active');
-            // Если мы на телефоне, то окно вместо обложки остается открытым (Яндекс.Музыка стайл)
             if (window.innerWidth > 800) {
-                toggleLyricsMode(); // На пк выключаем полностью
+                // На ПК кнопка закрывает весь интерфейс текста
+                toggleLyricsMode(); 
             } else {
+                // На телефоне закрывает только фуллскрин, оставляя окошко вместо обложки
+                isLyricsFullscreen = false;
+                fsLyricsOverlay.classList.remove('active');
                 if (activeLyricIndex !== -1) updateActiveLyric(activeLyricIndex);
             }
         }
