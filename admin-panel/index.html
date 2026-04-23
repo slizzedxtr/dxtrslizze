@@ -315,11 +315,6 @@
                         <span id="mMp3Text">Трек (MP3 - ОБЯЗАТЕЛЬНО)</span>
                         <input type="file" id="mMp3" accept=".mp3" required>
                     </label>
-                    <label class="form-file" id="mWavLabel" style="flex:1; min-width: 250px; border-color: var(--theme-color);">
-                        <i class="fa-solid fa-file-waveform" style="font-size: 1.5rem; margin-bottom: 10px; color: var(--theme-color);"></i><br>
-                        <span id="mWavText" style="color: #fff;">Трек (WAV - ОБЯЗАТЕЛЬНО)</span>
-                        <input type="file" id="mWav" accept=".wav" required>
-                    </label>
                 </div>
 
                 <div id="mProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px;">
@@ -511,10 +506,6 @@
                 <label class="form-file" style="padding: 10px; font-size: 0.8rem; flex: 1;">
                     <span id="editMMp3Text">Новый MP3</span>
                     <input type="file" id="editMMp3" accept=".mp3">
-                </label>
-                <label class="form-file" style="padding: 10px; font-size: 0.8rem; flex: 1;">
-                    <span id="editMWavText">Новый WAV</span>
-                    <input type="file" id="editMWav" accept=".wav">
                 </label>
             </div>
 
@@ -814,7 +805,6 @@
         // ========== 1. МУЗЫКАЛЬНЫЙ КАТАЛОГ ==========
         const mCoverInput = document.getElementById('mCover');
         const mMp3Input = document.getElementById('mMp3');
-        const mWavInput = document.getElementById('mWav');
         const mMainCheckbox = document.getElementById('mMain');
         const mHasPlatforms = document.getElementById('mHasPlatforms');
         const platformsContainer = document.getElementById('platformsContainer');
@@ -827,7 +817,6 @@
 
         mCoverInput.onchange = () => document.getElementById('mCoverText').textContent = mCoverInput.files[0] ? mCoverInput.files[0].name : 'Обложка (JPG/PNG)';
         mMp3Input.onchange = () => document.getElementById('mMp3Text').textContent = mMp3Input.files[0] ? mMp3Input.files[0].name : 'Трек (MP3)';
-        mWavInput.onchange = () => document.getElementById('mWavText').textContent = mWavInput.files[0] ? mWavInput.files[0].name : 'Трек (WAV)';
 
         mMainCheckbox.addEventListener('change', (e) => {
             if(e.target.checked) { mHasPlatforms.checked = true; mHasPlatforms.disabled = true; mHasPlatforms.dispatchEvent(new Event('change')); } 
@@ -858,7 +847,6 @@
             formData.append('is_main', mMainCheckbox.checked);
             formData.append('cover', mCoverInput.files[0]);
             formData.append('mp3', mMp3Input.files[0]);
-            formData.append('wav', mWavInput.files[0]);
 
             const xhr = new XMLHttpRequest();
             document.getElementById('mSubmitBtn').disabled = true;
@@ -951,8 +939,8 @@
                 document.getElementById('editLinkVk').value = '';
                 document.getElementById('editLinkYandex').value = '';
             }
-            document.getElementById('editMCover').value = ''; document.getElementById('editMMp3').value = ''; document.getElementById('editMWav').value = '';
-            document.getElementById('editMCoverText').textContent = 'Новая обложка'; document.getElementById('editMMp3Text').textContent = 'Новый MP3'; document.getElementById('editMWavText').textContent = 'Новый WAV';
+            document.getElementById('editMCover').value = ''; document.getElementById('editMMp3').value = '';
+            document.getElementById('editMCoverText').textContent = 'Новая обложка'; document.getElementById('editMMp3Text').textContent = 'Новый MP3';
             document.getElementById('editMusicModal').classList.add('active');
         }
 
@@ -960,7 +948,6 @@
 
         document.getElementById('editMCover').onchange = (e) => document.getElementById('editMCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Новая обложка';
         document.getElementById('editMMp3').onchange = (e) => document.getElementById('editMMp3Text').textContent = e.target.files[0] ? 'Выбрано' : 'Новый MP3';
-        document.getElementById('editMWav').onchange = (e) => document.getElementById('editMWavText').textContent = e.target.files[0] ? 'Выбрано' : 'Новый WAV';
 
         document.getElementById('editMMain').addEventListener('change', (e) => {
             if(e.target.checked) { document.getElementById('editMHasPlatforms').checked = true; document.getElementById('editMHasPlatforms').disabled = true; document.getElementById('editPlatformsContainer').style.display = 'flex'; } 
@@ -991,10 +978,8 @@
 
             const coverFile = document.getElementById('editMCover').files[0];
             const mp3File = document.getElementById('editMMp3').files[0];
-            const wavFile = document.getElementById('editMWav').files[0];
             if (coverFile) formData.append('cover', coverFile);
             if (mp3File) formData.append('mp3', mp3File);
-            if (wavFile) formData.append('wav', wavFile);
 
             const xhr = new XMLHttpRequest();
             document.getElementById('confirmEditMusicBtn').disabled = true;
