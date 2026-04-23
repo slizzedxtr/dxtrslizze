@@ -746,7 +746,7 @@
                         <div class="ci-right">
                             <a href="${track.yt_link}" target="_blank" class="action-btn-sm yt-btn" onclick="event.stopPropagation();"><i class="fa-brands fa-youtube"></i> Клип</a>
                             ${pltBtn}
-                            <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); handleDownload(this, '${track.title.replace(/'/g, "\\'")}', '${track.mp3_url}')"><i class="fa-solid fa-download"></i> Скачать</button>
+                            <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); handleDownload(this, '${track.title.replace(/'/g, "\\'")}', '${(track.authors || 'DXTR feat. SlizZe').replace(/'/g, "\\'")}', '${track.mp3_url}')"><i class="fa-solid fa-download"></i> Скачать</button>
                         </div>
                     </div>
                 `;
@@ -766,7 +766,7 @@
         fetchTracks();
 
         // ФУНКЦИЯ ЗАГРУЗКИ С АНИМАЦИЕЙ
-        function handleDownload(btn, title, mp3Url) {
+        function handleDownload(btn, title, artist, mp3Url) {
             if (!btn.classList.contains('confirm-state')) {
                 // Первый клик: показываем подтверждение
                 btn.classList.add('confirm-state');
@@ -786,8 +786,7 @@
                 btn.classList.remove('confirm-state');
                 btn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать';
                 
-                const safeTitle = title.replace(/\s+/g, '_');
-                const mp3FileName = encodeURIComponent(`DXTR feat. SlizZe — ${safeTitle}.mp3`);
+                const mp3FileName = encodeURIComponent(`${artist} — ${title}.mp3`);
                 const dlLink = mp3Url.includes('?') ? `${mp3Url}&download=${mp3FileName}` : `${mp3Url}?download=${mp3FileName}`;
                 
                 const a = document.createElement('a');
