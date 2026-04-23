@@ -787,7 +787,7 @@
                 btn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать';
                 
                 const safeTitle = title.replace(/\s+/g, '_');
-                const mp3FileName = encodeURIComponent(`DXTR_SlizZe_-_${safeTitle}.mp3`);
+                const mp3FileName = encodeURIComponent(`DXTR feat. SlizZe — ${safeTitle}.mp3`);
                 const dlLink = mp3Url.includes('?') ? `${mp3Url}&download=${mp3FileName}` : `${mp3Url}?download=${mp3FileName}`;
                 
                 const a = document.createElement('a');
