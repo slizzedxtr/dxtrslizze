@@ -768,6 +768,9 @@
                         const receivedId = String(userData.user.clientId);
                         const receivedNick = userData.user.username;
 
+                        // === ДОБАВЬ ВОТ ЭТУ СТРОКУ ДЛЯ ТЕСТА ===
+                        console.log("ЧТО ПРИЛЕТЕЛО С БЭКА:", { receivedId, receivedNick, fullUser: userData.user });
+
                         if (validIds.includes(receivedId) && validNicks.includes(receivedNick)) {
                             clearTimeout(redThemeTimeout);
                             document.body.className = 'theme-green';
