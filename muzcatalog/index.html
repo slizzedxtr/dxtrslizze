@@ -878,10 +878,41 @@
                 btnLyricsDesktop.classList.remove('active');
                 btnLyricsMobile.classList.remove('active');
 
-                currentLyrics = tracks[index].lyrics || [];
-                if (typeof currentLyrics === 'string') {
-                    try { currentLyrics = JSON.parse(currentLyrics); } catch(e) { currentLyrics = []; }
-                }
+                let dbLyrics = tracks[index].lyrics;
+currentLyrics = [];
+
+if (dbLyrics) {
+    // 1. Если прилетел сырой JSON от Musixmatch (Supabase выдает его как объект)
+    if (dbLyrics.message && dbLyrics.message.body && dbLyrics.message.body.lyrics) {
+        let text = dbLyrics.message.body.lyrics.lyrics_body;
+        // Срезаем рекламную плашку
+        text = text.replace(/\n\n\n\n\*\*\*\*\*\*\* This Lyrics is NOT for Commercial use \*\*\*\*\*\*\*/g, '').replace(/\(1409619664150\)/g, '');
+        // Разбиваем на строки (без таймингов, t = 0)
+        currentLyrics = text.split('\n').filter(l => l.trim()).map(line => ({ t: 0, s: line.trim() }));
+    } 
+    // 2. Если это уже правильный массив [{s: "Текст", t: тайминг}]
+    else if (Array.isArray(dbLyrics)) {
+        currentLyrics = dbLyrics;
+    } 
+    // 3. Если это строка (LRC текст со скобками или обычный текст)
+    else if (typeof dbLyrics === 'string') {
+        const lines = dbLyrics.split('\n');
+        lines.forEach(line => {
+            const match = line.match(/\[(\d+):(\d+)(?:\.(\d+))?\](.*)/);
+            if (match) {
+                const mins = parseInt(match[1]);
+                const secs = parseInt(match[2]);
+                const ms = match[3] ? parseInt(match[3]) : 0;
+                const time = mins * 60 + secs + (ms / 1000);
+                const text = match[4].trim();
+                if (text) currentLyrics.push({ t: time, s: text });
+            } else {
+                const cleanLine = line.trim();
+                if (cleanLine && !cleanLine.startsWith('{')) currentLyrics.push({ t: 0, s: cleanLine });
+            }
+        });
+    }
+}
 
                 document.getElementById('fsLyricsTitle').textContent = tracks[index].title;
 
