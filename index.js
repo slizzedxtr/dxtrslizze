@@ -353,7 +353,13 @@ app.post('/api/music', requireAdmin, upload.fields([
         // НОВОЕ: Безопасный парсинг текстов трека в JSON объект
         // --- Находим этот кусок кода в app.post('/api/music') ---
         let parsedLyrics = null;
-        try { if (lyrics) parsedLyrics = JSON.parse(lyrics); } catch(e){}
+if (lyrics) {
+    try { 
+        parsedLyrics = JSON.parse(lyrics); 
+    } catch(e) { 
+        parsedLyrics = lyrics; // Сохраняем как обычный текст (LRC), если это не JSON
+    }
+}
 
         const trackAuthors = (authors && authors.trim() !== '') ? authors.trim() : 'DXTR feat. SlizZe';
 
@@ -404,7 +410,13 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
 
         // НОВОЕ: Парсинг отредактированных текстов
         let parsedLyrics = null;
-        try { if (lyrics) parsedLyrics = JSON.parse(lyrics); } catch(e){}
+if (lyrics) {
+    try { 
+        parsedLyrics = JSON.parse(lyrics); 
+    } catch(e) { 
+        parsedLyrics = lyrics; // Сохраняем как обычный текст (LRC), если это не JSON
+    }
+}
 
         let cover_url = existingTrack.cover_url;
         let mp3_url = existingTrack.mp3_url;
