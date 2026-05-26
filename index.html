@@ -90,15 +90,15 @@
         .promo-banner {
             background: linear-gradient(135deg, rgba(20,20,30,0.8) 0%, rgba(5,5,10,0.9) 100%);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-            border: 2px solid var(--neon-red);
+            border: 2px solid var(--neon-red); /* Поменяли border-color */
             border-radius: 30px; padding: 30px 40px; margin-bottom: 50px;
             display: flex; gap: 40px; align-items: center;
-            box-shadow: 0 0 40px rgba(255, 204, 0, 0.2), inset 0 0 20px rgba(255, 204, 0, 0.05);
+            box-shadow: 0 0 40px rgba(255, 0, 51, 0.2), inset 0 0 20px rgba(255, 0, 51, 0.05); /* Поменяли box-shadow */
             position: relative; overflow: hidden;
         }
         .promo-banner::after {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle at center, rgba(255,204,0,0.1) 0%, transparent 60%);
+            background: radial-gradient(circle at center, rgba(255,0,51,0.1) 0%, transparent 60%); /* Поменяли цвет radial-gradient */
             animation: rotate 15s linear infinite; pointer-events: none; z-index: 0;
         }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
