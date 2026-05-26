@@ -86,7 +86,7 @@
         .section-title { margin: 60px 0 30px; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; display: flex; align-items: center; gap: 20px; }
         .section-title::before, .section-title::after { content: ''; height: 2px; flex: 1; background: linear-gradient(90deg, transparent, var(--neon-purple), transparent); opacity: 0.5; }
 
-        /* БЛОК GUSTO */
+        /* БЛОК HW */
         .promo-banner {
             background: linear-gradient(135deg, rgba(20,20,30,0.8) 0%, rgba(5,5,10,0.9) 100%);
             backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
@@ -472,12 +472,12 @@
     <main>
         <div class="promo-banner fade-in" style="animation-delay: 0.1s;">
             <div class="promo-cover-wrap">
-                <img src="logo_GUSTO.jpeg" alt="Gusto Album Cover" onerror="this.src='dslogo.png'">
+                <img src="logo_HW.jpeg" alt="HW Album Cover" onerror="this.src='dslogo.png'">
             </div>
             <div class="promo-info">
                 <div class="promo-badge">Скоро дроп</div>
-                <h2>GUSTO</h2>
-                <p>Новый альбом • 01.05.2026</p>
+                <h2>Heavy Weight</h2>
+                <p>Новый альбом • 01.08.2026</p>
                 <div class="countdown" id="countdown">
                     <div class="cd-box"><span class="cd-num" id="days">00</span><span class="cd-label">Дней</span></div>
                     <div class="cd-colon">:</div>
@@ -551,8 +551,8 @@
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 
     <script>
-        // === ЛОГИКА ТАЙМЕРА GUSTO ===
-        const countDownDate = new Date("May 1, 2026 00:00:00").getTime();
+        // === ЛОГИКА ТАЙМЕРА HW ===
+        const countDownDate = new Date("August 1, 2026 00:00:00").getTime();
         const countdownTimer = setInterval(function() {
             const now = new Date().getTime();
             const distance = countDownDate - now;
