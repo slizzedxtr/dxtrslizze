@@ -326,8 +326,7 @@ app.post('/api/auth/recover', async (req, res) => {
 
 app.post('/api/music', requireAdmin, upload.fields([
     { name: 'cover', maxCount: 1 }, 
-    { name: 'mp3', maxCount: 1 }, 
-    { name: 'wav', maxCount: 1 }
+    { name: 'mp3', maxCount: 1 } 
 ]), async (req, res) => {
     try {
         // НОВОЕ: Добавили извлечение поля lyrics из req.body
@@ -335,15 +334,13 @@ app.post('/api/music', requireAdmin, upload.fields([
 
         const coverFile = req.files['cover'] ? req.files['cover'][0] : null;
         const mp3File = req.files['mp3'] ? req.files['mp3'][0] : null;
-        const wavFile = req.files['wav'] ? req.files['wav'][0] : null;
 
-        if (!coverFile || !mp3File || !wavFile) {
-            return res.status(400).json({ error: 'Обложка, MP3 и WAV файлы обязательны для загрузки.' });
+        if (!coverFile || !mp3File) {
+            return res.status(400).json({ error: 'Обложка и MP3 файлы обязательны для загрузки.' });
         }
 
         const cover_url = await uploadToSupabase(coverFile, 'covers');
         const mp3_url = await uploadToSupabase(mp3File, 'tracks');
-        const wav_url = await uploadToSupabase(wavFile, 'tracks');
 
         const isMainRelease = is_main === 'true' || is_main === true;
         if (isMainRelease) {
@@ -371,7 +368,7 @@ if (lyrics && lyrics.trim() !== '' && lyrics !== 'undefined' && lyrics !== 'null
         const { data, error } = await supabase
             .from('music')
             .insert([{
-                title, cover_url, mp3_url, wav_url, yt_link,
+                title, cover_url, mp3_url, yt_link,
                 is_18: is_18 === 'true' || is_18 === true,
                 is_main: isMainRelease, platforms: platformsData,
                 authors: trackAuthors,
@@ -394,8 +391,7 @@ app.get('/api/music-list', requireAdmin, async (req, res) => {
 
 app.put('/api/music/:id', requireAdmin, upload.fields([
     { name: 'cover', maxCount: 1 }, 
-    { name: 'mp3', maxCount: 1 }, 
-    { name: 'wav', maxCount: 1 }
+    { name: 'mp3', maxCount: 1 }
 ]), async (req, res) => {
     try {
         // НОВОЕ: Добавили извлечение поля lyrics из req.body
@@ -420,7 +416,6 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
 
         let cover_url = existingTrack.cover_url;
         let mp3_url = existingTrack.mp3_url;
-        let wav_url = existingTrack.wav_url;
         const filesToRemove = [];
 
         // Защита от пустых req.files при редактировании
@@ -432,10 +427,6 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
             if (existingTrack.mp3_url) filesToRemove.push(existingTrack.mp3_url.split('/music-content/')[1]);
             mp3_url = await uploadToSupabase(req.files['mp3'][0], 'tracks');
         }
-        if (req.files && req.files['wav']) {
-            if (existingTrack.wav_url) filesToRemove.push(existingTrack.wav_url.split('/music-content/')[1]);
-            wav_url = await uploadToSupabase(req.files['wav'][0], 'tracks');
-        }
 
         if (filesToRemove.length > 0) {
             await supabase.storage.from('music-content').remove(filesToRemove);
@@ -444,7 +435,7 @@ app.put('/api/music/:id', requireAdmin, upload.fields([
         const trackAuthors = (authors && authors.trim() !== '') ? authors.trim() : 'DXTR feat. SlizZe';
 
         const { error: updateError } = await supabase.from('music').update({
-            title, cover_url, mp3_url, wav_url, yt_link,
+            title, cover_url, mp3_url, yt_link,
             is_18: is_18 === 'true' || is_18 === true,
             is_main: isMainRelease, platforms: platformsData,
             authors: trackAuthors,
@@ -466,7 +457,6 @@ app.delete('/api/music/:id', requireAdmin, async (req, res) => {
             const filesToRemove = [];
             if (track.cover_url) filesToRemove.push(track.cover_url.split('/music-content/')[1]);
             if (track.mp3_url) filesToRemove.push(track.mp3_url.split('/music-content/')[1]);
-            if (track.wav_url) filesToRemove.push(track.wav_url.split('/music-content/')[1]);
             if (filesToRemove.length > 0) await supabase.storage.from('music-content').remove(filesToRemove);
         }
 
