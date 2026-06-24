@@ -11,11 +11,11 @@
             margin: 0;
             padding: 0;
             font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
-            user-select: none; /* Защита от случайного выделения текста, чтобы ощущалось как приложение */
+            user-select: none;
         }
 
         body {
-            background-color: #E6E6E6; /* Серый фон воркспейса */
+            background-color: #E6E6E6;
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -24,7 +24,7 @@
 
         /* Синяя шапка (Title Bar) */
         .title-bar {
-            background-color: #2B579A; /* Фирменный синий Word */
+            background-color: #2B579A;
             color: white;
             height: 30px;
             display: flex;
@@ -101,10 +101,10 @@
         .document-page {
             background-color: white;
             width: 800px;
-            min-height: 1000px; /* Имитация длинного листа */
+            min-height: 1000px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             padding: 60px 80px;
-            cursor: text; /* Курсор для текста, как в ворде */
+            cursor: text;
             user-select: text;
         }
 
@@ -190,6 +190,7 @@
         }
 
         .submit-btn:hover { background-color: #1A3A68; }
+        .submit-btn:disabled { background-color: #A6A6A6; cursor: not-allowed; }
 
         /* Статус бар внизу */
         .status-bar {
@@ -206,7 +207,6 @@
 </head>
 <body>
 
-    <!-- Синяя шапка -->
     <div class="title-bar">
         <div class="title-bar-left">
             <span>💾</span>
@@ -221,7 +221,6 @@
         </div>
     </div>
 
-    <!-- Лента (Ribbon) -->
     <div class="ribbon-container">
         <div class="tabs">
             <span class="tab">Файл</span>
@@ -239,14 +238,13 @@
                 <span class="tool-icon">B <i>I</i> <u>U</u></span>
                 <span class="tool-text">Шрифт</span>
             </div>
-            <div class="tool-group" style="border:none;" onclick="alert('База пока не подключена')">
+            <div class="tool-group" style="border:none;">
                 <span class="tool-icon" style="color: #2B579A;">☁️</span>
-                <span class="tool-text">Синхронизация БД</span>
+                <span class="tool-text">БД Активна</span>
             </div>
         </div>
     </div>
 
-    <!-- Рабочая зона -->
     <div class="workspace">
         <div class="document-page">
             <h1 class="doc-title">Спецификация и материалы к билету</h1>
@@ -270,17 +268,15 @@
         </div>
     </div>
 
-    <!-- Статус бар -->
     <div class="status-bar">
         <span>Страница 1 из 1 | Число слов: 0 | Русский</span>
         <span>100% ◚ ◛</span>
     </div>
 
-    <!-- Скрипт для визуала (Drag & Drop и выбор файлов) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
-        // Инициализация Supabase (Твои данные)
+        // Инициализация Supabase
         const SUPABASE_URL = 'https://lchcayvociobmqpdbonps.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -339,7 +335,7 @@
 
             try {
                 for (const file of selectedFiles) {
-                    // 1. Генерируем уникальное имя файла, чтобы избежать конфликтов
+                    // 1. Генерируем уникальное имя файла
                     const fileExt = file.name.split('.').pop();
                     const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
                     
