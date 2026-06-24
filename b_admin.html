@@ -277,19 +277,24 @@
     </div>
 
     <!-- Скрипт для визуала (Drag & Drop и выбор файлов) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script>
+        // Инициализация Supabase (Твои данные)
+        const SUPABASE_URL = 'https://lchcayvociobmqpdbonps.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const dropArea = document.getElementById('dropArea');
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
+        const uploadBtn = document.getElementById('uploadBtn');
         let selectedFiles = [];
 
-        // Клик по зоне открывает окно выбора файлов
+        // Визуальные эффекты Drag & Drop
         dropArea.addEventListener('click', () => fileInput.click());
-
-        // Изменение инпута (выбор файлов)
         fileInput.addEventListener('change', handleFiles);
 
-        // Drag and Drop
         dropArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropArea.classList.add('dragover');
@@ -302,21 +307,17 @@
         dropArea.addEventListener('drop', (e) => {
             e.preventDefault();
             dropArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length) {
-                fileInput.files = files; // Передаем файлы в инпут
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
                 handleFiles({ target: fileInput });
             }
         });
 
         function handleFiles(e) {
-            const files = e.target.files;
-            selectedFiles = Array.from(files);
+            selectedFiles = Array.from(e.target.files);
+            fileList.innerHTML = '';
+            if (!selectedFiles.length) return;
             
-            fileList.innerHTML = ''; // Очищаем список
-            
-            if (selectedFiles.length === 0) return;
-
             selectedFiles.forEach(file => {
                 const div = document.createElement('div');
                 div.className = 'file-item';
@@ -325,21 +326,71 @@
             });
         }
 
-        // Заглушка для кнопки отправки
-        document.getElementById('uploadBtn').addEventListener('click', () => {
-            const ticket = document.getElementById('ticketId').value;
-            if (!ticket) {
-                alert('Укажите номер билета!');
-                return;
-            }
-            if (selectedFiles.length === 0) {
-                alert('Прикрепите хотя бы один файл!');
-                return;
-            }
+        // Логика отгрузки в БД
+        uploadBtn.addEventListener('click', async () => {
+            const ticketId = document.getElementById('ticketId').value;
             
-            // Здесь позже будет логика Supabase
-            console.log(`Готово к отправке! Билет: ${ticket}, Файлов: ${selectedFiles.length}`);
-            alert('Фронтенд готов. Следующий шаг — подключение к БД!');
+            if (!ticketId) return alert('Укажите номер билета!');
+            if (selectedFiles.length === 0) return alert('Прикрепите хотя бы один файл!');
+
+            // Блокируем кнопку на время загрузки
+            uploadBtn.textContent = 'Отправка в облако...';
+            uploadBtn.disabled = true;
+
+            try {
+                for (const file of selectedFiles) {
+                    // 1. Генерируем уникальное имя файла, чтобы избежать конфликтов
+                    const fileExt = file.name.split('.').pop();
+                    const uniqueName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                    
+                    // Раскладываем по папкам с номерами билетов внутри бакета
+                    const filePath = `ticket_${ticketId}/${uniqueName}`; 
+
+                    // 2. Отгружаем файл в Storage (бакет "ticket-files")
+                    const { data: uploadData, error: uploadError } = await supabase.storage
+                        .from('ticket-files')
+                        .upload(filePath, file);
+
+                    if (uploadError) throw uploadError;
+
+                    // 3. Получаем публичную ссылку на загруженный файл
+                    const { data: publicUrlData } = supabase.storage
+                        .from('ticket-files')
+                        .getPublicUrl(filePath);
+                    
+                    const fileUrl = publicUrlData.publicUrl;
+
+                    // 4. Пишем информацию в таблицу
+                    const { error: dbError } = await supabase
+                        .from('ticket_attachments')
+                        .insert([
+                            {
+                                ticket_id: parseInt(ticketId),
+                                file_name: file.name, // Сохраняем оригинальное имя для скачивания
+                                file_url: fileUrl,
+                                file_type: file.type || 'application/octet-stream' // Сохраняем MIME-тип
+                            }
+                        ]);
+
+                    if (dbError) throw dbError;
+                }
+
+                alert('Успех! Файлы привязаны к билету №' + ticketId);
+                
+                // Очищаем форму для следующей загрузки
+                document.getElementById('ticketId').value = '';
+                selectedFiles = [];
+                fileList.innerHTML = '';
+                fileInput.value = '';
+
+            } catch (error) {
+                console.error(error);
+                alert('Ошибка при загрузке: ' + error.message);
+            } finally {
+                // Возвращаем кнопку в исходное состояние
+                uploadBtn.textContent = 'Сохранить в реестр (Supabase)';
+                uploadBtn.disabled = false;
+            }
         });
     </script>
 </body>
