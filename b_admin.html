@@ -255,14 +255,14 @@
             </div>
 
             <div class="form-group">
-                <label>Приложения (Фото / Документы):</label>
-                <div class="file-drop-area" id="dropArea">
-                    <span style="font-size: 24px;">📁</span>
-                    <p>Перетащите файлы сюда или кликните для выбора</p>
-                    <input type="file" id="fileInput" multiple hidden>
-                </div>
-                <div id="fileList"></div>
-            </div>
+    <label>Приложения (Фото / Документы):</label>
+    <label class="file-drop-area" id="dropArea" for="fileInput" style="display: block;">
+        <span style="font-size: 24px;">📁</span>
+        <p>Перетащите файлы сюда или кликните для выбора</p>
+        <input type="file" id="fileInput" multiple style="display: none;">
+    </label>
+    <div id="fileList"></div>
+</div>
 
             <button class="submit-btn" id="uploadBtn">Сохранить в реестр (Supabase)</button>
         </div>
