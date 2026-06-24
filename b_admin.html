@@ -309,6 +309,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <script>
+        // Инициализация Supabase (1 раз, снаружи событий)
+        const SUPABASE_URL = 'https://lcbcsyvcciobmqdbonps.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const dropArea = document.getElementById('dropArea');
         const fileInput = document.getElementById('fileInput');
         const fileList = document.getElementById('fileList');
@@ -347,7 +352,6 @@
                 card.className = 'file-card';
                 card.title = file.name;
 
-                // Если картинка — показываем превью, если документ — иконку
                 if (file.type.startsWith('image/')) {
                     const img = document.createElement('img');
                     img.className = 'file-preview';
@@ -375,16 +379,6 @@
 
         // Логика отгрузки в БД
         uploadBtn.addEventListener('click', async () => {
-            
-            // Инициализация Supabase перенесена сюда для обхода возможных блокировщиков
-            if (typeof supabase === 'undefined') {
-                return alert('Ошибка: Не удалось загрузить скрипт БД. Проверьте интернет или блокировщики рекламы.');
-            }
-            
-            const SUPABASE_URL = 'https://lchcayvociobmqpdbonps.supabase.co'; 
-            const SUPABASE_KEY = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h';
-            const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
             const ticketId = document.getElementById('ticketId').value;
             
             if (!ticketId) return alert('Укажите номер билета!');
@@ -403,7 +397,7 @@
                     // Раскладываем по папкам с номерами билетов внутри бакета
                     const filePath = `ticket_${ticketId}/${uniqueName}`; 
 
-                    // 2. Отгружаем файл в Storage (бакет "ticket-files")
+                    // 2. Отгружаем файл в Storage
                     const { data: uploadData, error: uploadError } = await supabaseClient.storage
                         .from('ticket-files')
                         .upload(filePath, file);
