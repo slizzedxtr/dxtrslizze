@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Документ 1 - Word</title>
+    <style>
+        /* Общие стили и шрифты MS Office */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+            user-select: none; /* Защита от случайного выделения текста, чтобы ощущалось как приложение */
+        }
+
+        body {
+            background-color: #E6E6E6; /* Серый фон воркспейса */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Синяя шапка (Title Bar) */
+        .title-bar {
+            background-color: #2B579A; /* Фирменный синий Word */
+            color: white;
+            height: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            padding-left: 10px;
+        }
+
+        .title-bar-left { display: flex; align-items: center; gap: 15px; }
+        .window-controls { display: flex; }
+        .win-btn { padding: 5px 15px; cursor: pointer; }
+        .win-btn:hover { background-color: rgba(255,255,255,0.1); }
+        .win-btn.close:hover { background-color: #E81123; }
+
+        /* Лента инструментов (Ribbon) */
+        .ribbon-container {
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #D2D2D2;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #E1E1E1;
+        }
+
+        .tab {
+            padding: 5px 15px;
+            font-size: 13px;
+            color: #444;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .tab.active {
+            color: #2B579A;
+            border-bottom: 2px solid #2B579A;
+            background-color: #F3F2F1;
+        }
+
+        .toolbar {
+            display: flex;
+            padding: 10px;
+            gap: 15px;
+            background-color: #F3F2F1;
+            height: 70px;
+            align-items: center;
+        }
+
+        .tool-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid #D2D2D2;
+            padding-right: 15px;
+            gap: 5px;
+            cursor: pointer;
+            color: #444;
+        }
+
+        .tool-group:hover { color: #2B579A; }
+        .tool-icon { font-size: 20px; }
+        .tool-text { font-size: 11px; }
+
+        /* Рабочая зона (Лист А4) */
+        .workspace {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .document-page {
+            background-color: white;
+            width: 800px;
+            min-height: 1000px; /* Имитация длинного листа */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            padding: 60px 80px;
+            cursor: text; /* Курсор для текста, как в ворде */
+            user-select: text;
+        }
+
+        /* Стили самой формы внутри "листа" */
+        .doc-title {
+            font-size: 24px;
+            font-weight: normal;
+            color: #2B579A;
+            border-bottom: 1px solid #2B579A;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input[type="number"] {
+            width: 150px;
+            padding: 8px;
+            border: 1px solid #A6A6A6;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input[type="number"]:focus { border-color: #2B579A; }
+
+        /* Зона загрузки файлов */
+        .file-drop-area {
+            border: 2px dashed #A6A6A6;
+            padding: 40px 20px;
+            text-align: center;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #F9F9F9;
+        }
+
+        .file-drop-area:hover, .file-drop-area.dragover {
+            border-color: #2B579A;
+            background-color: #F0F4F9;
+            color: #2B579A;
+        }
+
+        .file-drop-area p { margin-top: 10px; font-size: 14px; }
+        
+        #fileList {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #444;
+        }
+
+        .file-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+        }
+
+        .file-item::before {
+            content: '📎';
+            margin-right: 8px;
+        }
+
+        /* Кнопка отправки */
+        .submit-btn {
+            background-color: #2B579A;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .submit-btn:hover { background-color: #1A3A68; }
+
+        /* Статус бар внизу */
+        .status-bar {
+            height: 22px;
+            background-color: #2B579A;
+            color: white;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Синяя шапка -->
+    <div class="title-bar">
+        <div class="title-bar-left">
+            <span>💾</span>
+            <span>↩</span>
+            <span>↪</span>
+            <span>Документ 1 - Word</span>
+        </div>
+        <div class="window-controls">
+            <div class="win-btn">─</div>
+            <div class="win-btn">▢</div>
+            <div class="win-btn close">✕</div>
+        </div>
+    </div>
+
+    <!-- Лента (Ribbon) -->
+    <div class="ribbon-container">
+        <div class="tabs">
+            <span class="tab">Файл</span>
+            <span class="tab active">Главная</span>
+            <span class="tab">Вставка</span>
+            <span class="tab">Конструктор</span>
+            <span class="tab">Макет</span>
+        </div>
+        <div class="toolbar">
+            <div class="tool-group">
+                <span class="tool-icon">📋</span>
+                <span class="tool-text">Вставить</span>
+            </div>
+            <div class="tool-group">
+                <span class="tool-icon">B <i>I</i> <u>U</u></span>
+                <span class="tool-text">Шрифт</span>
+            </div>
+            <div class="tool-group" style="border:none;" onclick="alert('База пока не подключена')">
+                <span class="tool-icon" style="color: #2B579A;">☁️</span>
+                <span class="tool-text">Синхронизация БД</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Рабочая зона -->
+    <div class="workspace">
+        <div class="document-page">
+            <h1 class="doc-title">Спецификация и материалы к билету</h1>
+            
+            <div class="form-group">
+                <label for="ticketId">Номер билета (Идентификатор):</label>
+                <input type="number" id="ticketId" placeholder="№ билета..." min="1">
+            </div>
+
+            <div class="form-group">
+                <label>Приложения (Фото / Документы):</label>
+                <div class="file-drop-area" id="dropArea">
+                    <span style="font-size: 24px;">📁</span>
+                    <p>Перетащите файлы сюда или кликните для выбора</p>
+                    <input type="file" id="fileInput" multiple hidden>
+                </div>
+                <div id="fileList"></div>
+            </div>
+
+            <button class="submit-btn" id="uploadBtn">Сохранить в реестр (Supabase)</button>
+        </div>
+    </div>
+
+    <!-- Статус бар -->
+    <div class="status-bar">
+        <span>Страница 1 из 1 | Число слов: 0 | Русский</span>
+        <span>100% ◚ ◛</span>
+    </div>
+
+    <!-- Скрипт для визуала (Drag & Drop и выбор файлов) -->
+    <script>
+        const dropArea = document.getElementById('dropArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        let selectedFiles = [];
+
+        // Клик по зоне открывает окно выбора файлов
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        // Изменение инпута (выбор файлов)
+        fileInput.addEventListener('change', handleFiles);
+
+        // Drag and Drop
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.classList.add('dragover');
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.classList.remove('dragover');
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                fileInput.files = files; // Передаем файлы в инпут
+                handleFiles({ target: fileInput });
+            }
+        });
+
+        function handleFiles(e) {
+            const files = e.target.files;
+            selectedFiles = Array.from(files);
+            
+            fileList.innerHTML = ''; // Очищаем список
+            
+            if (selectedFiles.length === 0) return;
+
+            selectedFiles.forEach(file => {
+                const div = document.createElement('div');
+                div.className = 'file-item';
+                div.textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                fileList.appendChild(div);
+            });
+        }
+
+        // Заглушка для кнопки отправки
+        document.getElementById('uploadBtn').addEventListener('click', () => {
+            const ticket = document.getElementById('ticketId').value;
+            if (!ticket) {
+                alert('Укажите номер билета!');
+                return;
+            }
+            if (selectedFiles.length === 0) {
+                alert('Прикрепите хотя бы один файл!');
+                return;
+            }
+            
+            // Здесь позже будет логика Supabase
+            console.log(`Готово к отправке! Билет: ${ticket}, Файлов: ${selectedFiles.length}`);
+            alert('Фронтенд готов. Следующий шаг — подключение к БД!');
+        });
+    </script>
+</body>
+</html>
