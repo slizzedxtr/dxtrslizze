@@ -1009,23 +1009,31 @@
             }
         }
 
-        async function saveUserToDB(user) {
-            const email = user.email;
-            const nickname = user.user_metadata.full_name || user.user_metadata.name || email.split('@')[0];
-            const avatarUrl = user.user_metadata.avatar_url || 'dslogo.png';
-
-            const { error } = await supabaseClient
+        async function getUserDataSafe(user) {
+            // Сначала проверяем, есть ли уже этот пользователь в нашей базе
+            const { data, error } = await supabaseClient
                 .from('g_users')
-                .upsert({ 
+                .select('*')
+                .eq('id', user.id)
+                .single();
+
+            if (data) {
+                // Если юзер уже есть в базе — возвращаем ЕГО кастомные настройки, ничего не перезаписывая!
+                return { nickname: data.nickname, avatarUrl: data.avatar_url };
+            } else {
+                // Если юзера в базе нет (самый первый вход), берем данные из Гугла и сохраняем
+                const email = user.email;
+                const nickname = user.user_metadata.full_name || user.user_metadata.name || email.split('@')[0];
+                const avatarUrl = user.user_metadata.avatar_url || 'dslogo.png';
+
+                await supabaseClient.from('g_users').insert({ 
                     id: user.id, 
                     email: email, 
                     nickname: nickname, 
-                    avatar_url: avatarUrl,
-                    last_seen: new Date()
-                }, { onConflict: 'id' });
-                
-            if (error) console.error("Ошибка сохранения в БД:", error);
-            return { nickname, avatarUrl };
+                    avatar_url: avatarUrl
+                });
+                return { nickname, avatarUrl };
+            }
         }
 
         async function checkSession() {
