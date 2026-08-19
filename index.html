@@ -19,7 +19,6 @@
     
     <style>
         :root {
-            /* Премиальная палитра в стиле whunx */
             --bg-body: #08090d;
             --accent-purple: #8b5cf6;
             --accent-purple-glow: rgba(139, 92, 246, 0.4);
@@ -43,16 +42,14 @@
             -ms-overflow-style: none;
         }
         
-        html::-webkit-scrollbar, body::-webkit-scrollbar {
-            display: none;
-        }
+        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
         body {
             background-color: var(--bg-body); color: var(--text-main);
             display: flex; flex-direction: column; min-height: 100vh; position: relative;
         }
 
-        /* АНИМИРОВАННЫЙ ФОН + ХАЙТЕК СЕТКА (Смягченный глассморфизм) */
+        /* АНИМИРОВАННЫЙ ФОН */
         .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -2; overflow: hidden; background: var(--bg-body); }
         .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.3; animation: float 20s infinite alternate ease-in-out; }
         .blob-1 { width: 600px; height: 600px; background: var(--accent-purple); top: -10%; left: -10%; }
@@ -71,7 +68,7 @@
         .fade-in { animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* ВЕРХНЯЯ НАВИГАЦИЯ (Новый дизайн - Glass Pill) */
+        /* ВЕРХНЯЯ НАВИГАЦИЯ */
         .top-nav { 
             display: flex; justify-content: center; align-items: center; gap: 5px; 
             padding: 8px 10px; margin: 25px auto 0; 
@@ -86,12 +83,8 @@
             border-radius: 40px; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
         }
         .nav-link:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
-        .nav-link.active { 
-            color: #fff; background: var(--accent-purple); 
-            box-shadow: 0 0 15px var(--accent-purple-glow); 
-        }
+        .nav-link.active { color: #fff; background: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
 
-        /* ШАПКА */
         header { text-align: center; padding: 6vh 20px 4vh; position: relative; z-index: 10; }
         header h1 { font-size: clamp(3rem, 7vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--accent-purple), var(--accent-gold), #fff); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: gradient-shift 6s linear infinite; margin-bottom: 10px; filter: drop-shadow(0 0 20px var(--accent-purple-glow)); }
         @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
@@ -104,7 +97,7 @@
 
         /* TOAST УВЕДОМЛЕНИЯ */
         .toast-container { position: fixed; top: 25px; right: 25px; z-index: 10005; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
-        .toast { background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-left: 4px solid var(--accent-purple); color: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 15px; animation: slideInRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: auto; }
+        .toast { background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-left: 4px solid var(--accent-purple); color: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 15px; animation: slideInRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: auto; }
         .toast.toast-error { border-left-color: var(--error); }
         .toast.toast-success { border-left-color: var(--success); }
         .toast i { font-size: 1.3rem; }
@@ -117,38 +110,18 @@
         /* БЛОК HW */
         .promo-banner {
             background: linear-gradient(135deg, rgba(20,20,30,0.4) 0%, rgba(5,5,10,0.6) 100%);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 30px; padding: 30px 40px; margin-bottom: 50px;
-            display: flex; gap: 40px; align-items: center;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(139, 92, 246, 0.05);
-            position: relative; overflow: hidden;
+            backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 30px 40px; margin-bottom: 50px; display: flex; gap: 40px; align-items: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(139, 92, 246, 0.05); position: relative; overflow: hidden;
         }
-        .promo-banner::after {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle at center, rgba(139,92,246,0.1) 0%, transparent 60%);
-            animation: rotate 20s linear infinite; pointer-events: none; z-index: 0;
-        }
+        .promo-banner::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(139,92,246,0.1) 0%, transparent 60%); animation: rotate 20s linear infinite; pointer-events: none; z-index: 0; }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
         @keyframes float-cover { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } 100% { transform: translateY(0px) rotate(0deg); } }
-        .promo-cover-wrap { 
-            position: relative; flex-shrink: 0; width: 250px; height: 250px; z-index: 1; 
-            border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
-            border: 1px solid rgba(255,255,255,0.05);
-            animation: float-cover 6s ease-in-out infinite; 
-        }
+        .promo-cover-wrap { position: relative; flex-shrink: 0; width: 250px; height: 250px; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.05); animation: float-cover 6s ease-in-out infinite; }
         .promo-cover-wrap img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .promo-banner:hover .promo-cover-wrap img { transform: scale(1.05); }
         .promo-info { flex: 1; z-index: 1; display: flex; flex-direction: column; gap: 15px; }
-        .promo-badge { 
-            display: inline-block; 
-            background: rgba(139, 92, 246, 0.1); 
-            color: var(--accent-purple); 
-            padding: 6px 18px; 
-            border-radius: 50px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; 
-            border: 1px solid var(--accent-purple); align-self: flex-start; 
-            box-shadow: 0 0 15px var(--accent-purple-glow); 
-        }
+        .promo-badge { display: inline-block; background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); padding: 6px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--accent-purple); align-self: flex-start; box-shadow: 0 0 15px var(--accent-purple-glow); }
         .promo-info h2 { font-size: 3.5rem; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.2); letter-spacing: 2px; }
         .promo-info p { color: var(--text-muted); font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
@@ -160,28 +133,19 @@
 
         /* ГЛАВНЫЙ РЕЛИЗ */
         .hero-release {
-            background: rgba(10, 10, 15, 0.4);
-            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            background: rgba(10, 10, 15, 0.4); backdrop-filter: blur(25px);
             border: 1px solid var(--glass-border); border-radius: 30px; padding: 40px; display: flex; gap: 40px; align-items: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(244, 199, 69, 0.05); position: relative; overflow: hidden;
-            transition: opacity 0.5s ease;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(244, 199, 69, 0.05); position: relative; overflow: hidden; transition: opacity 0.5s ease;
         }
-        .hero-bg-glow {
-            position: absolute; top: -20%; left: -20%; width: 140%; height: 140%;
-            background-size: cover; background-position: center;
-            filter: blur(80px) brightness(0.3); z-index: -1;
-            transition: background-image 0.8s ease; pointer-events: none;
-        }
+        .hero-bg-glow { position: absolute; top: -20%; left: -20%; width: 140%; height: 140%; background-size: cover; background-position: center; filter: blur(80px) brightness(0.3); z-index: -1; transition: background-image 0.8s ease; pointer-events: none; }
         .hero-release::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(244,199,69,0.1) 0%, transparent 60%); animation: rotate 20s linear infinite reverse; pointer-events: none; z-index: 0; }
         .hero-cover-wrap { position: relative; flex-shrink: 0; width: 350px; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
         .hero-cover { width: 100%; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: block; }
         .hero-cover-wrap:hover .hero-cover { transform: scale(1.05); }
-
         .hero-info { flex: 1; z-index: 1; display: flex; flex-direction: column; gap: 20px; }
         
         #heroBadgeContainer { display: flex; flex-direction: row; align-items: center; gap: 15px; align-self: flex-start; }
         .hero-badge { display: inline-block; background: rgba(244, 199, 69, 0.1); color: var(--accent-gold); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--accent-gold); box-shadow: 0 0 15px var(--accent-gold-glow); }
-        
         .hero-info h2 { font-size: 3.5rem; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.2); letter-spacing: 1px; }
 
         .audio-player { background: rgba(0,0,0,0.3); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 0 20px rgba(0,0,0,0.3); }
@@ -197,25 +161,14 @@
         .download-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.05); color: white; padding: 14px 25px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: 0.3s; border: 1px solid var(--glass-border); width: fit-content; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;}
         .download-btn:hover { background: var(--accent-purple); border-color: var(--accent-purple); color: #fff; box-shadow: 0 0 20px var(--accent-purple-glow); transform: translateY(-2px); }
         
-        /* Состояние подтверждения скачивания */
-        .download-btn.confirm-state {
-            background: rgba(16, 185, 129, 0.05) !important;
-            border-color: var(--success) !important;
-            color: var(--success) !important;
-            box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.1), 0 0 20px rgba(16, 185, 129, 0.2) !important;
-        }
-        .download-btn.confirm-state:hover {
-            background: rgba(16, 185, 129, 0.15) !important;
-            box-shadow: inset 0 0 15px rgba(16, 185, 129, 0.2), 0 0 25px rgba(16, 185, 129, 0.4) !important;
-        }
+        .download-btn.confirm-state { background: rgba(16, 185, 129, 0.05) !important; border-color: var(--success) !important; color: var(--success) !important; box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.1), 0 0 20px rgba(16, 185, 129, 0.2) !important; }
+        .download-btn.confirm-state:hover { background: rgba(16, 185, 129, 0.15) !important; box-shadow: inset 0 0 15px rgba(16, 185, 129, 0.2), 0 0 25px rgba(16, 185, 129, 0.4) !important; }
 
         .platform-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
         .platform-link { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; color: white; font-weight: 700; font-size: 0.95rem; transition: all 0.3s ease; position: relative; overflow: hidden; z-index: 1; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); }
-        
         .platform-link.disabled-link { color: rgba(255,255,255,0.2) !important; cursor: not-allowed !important; transform: none !important; background: rgba(255,255,255,0.01) !important; border-color: transparent !important; }
         .platform-link.disabled-link:hover { box-shadow: none !important; }
 
-        /* Мутные стеклянные цвета для платформ */
         .platform-link.yt { border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.04); }
         .platform-link.yt:hover { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.1); transform: translateY(-3px); }
         .platform-link.yt i { color: rgba(239, 68, 68, 0.7); }
@@ -255,7 +208,6 @@
         .footer-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 900px; margin: 0 auto; }
         .action-btn { display: flex; align-items: center; gap: 10px; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 800; color: white; transition: 0.3s; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
         
-        /* Цвета для кнопок в подвале (мутноватое стекло) */
         .action-btn.coop-btn { border-color: rgba(139, 92, 246, 0.15); background: rgba(139, 92, 246, 0.05); }
         .action-btn.coop-btn:hover { border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.1); box-shadow: 0 5px 20px rgba(139, 92, 246, 0.15); transform: scale(1.05) translateY(-3px); }
         .action-btn.coop-btn i { color: rgba(139, 92, 246, 0.8); }
@@ -278,7 +230,7 @@
             width: 100%; padding: 15px; border-radius: 14px;
             background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border);
             color: #fff; font-weight: 800; font-size: 1rem; cursor: pointer;
-            transition: 0.3s; backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 1px; margin-top: 15px;
+            transition: 0.3s; backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 1px;
         }
         .google-login-btn:hover {
             background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2);
@@ -291,12 +243,11 @@
         .close-btn { position: absolute; top: 25px; right: 40px; color: white; font-size: 3rem; cursor: pointer; z-index: 10000; transition: 0.3s; line-height: 1; opacity: 0.7; }
         .close-btn:hover { color: var(--accent-purple); transform: rotate(90deg); opacity: 1; }
 
-        /* ВИДЕО МОДАЛКА */
         .modal-content { width: 90%; max-width: 1000px; aspect-ratio: 16/9; background: #000; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.8); position: relative; border: 1px solid var(--glass-border); }
         .modal-fallback { margin-top: 20px; color: var(--text-muted); font-size: 0.9rem; }
         .modal-fallback a { color: var(--accent-purple); font-weight: bold; text-decoration: none; } .modal-fallback a:hover { text-decoration: underline; }
 
-        .install-box { background: var(--bg-body); border: 1px solid var(--accent-purple); border-radius: 24px; padding: 40px; max-width: 450px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative; }
+        .install-box { background: var(--bg-body); border: 1px solid var(--accent-purple); border-radius: 24px; padding: 40px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative; }
         .install-box i.fa-mobile-screen, .install-box i.fa-user-astronaut { font-size: 3rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--accent-purple-glow)); }
         .install-box h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; }
         .install-box p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
@@ -389,11 +340,7 @@
         @media (max-width: 600px) {
             .platform-grid { grid-template-columns: 1fr; }
             header h1 { font-size: 2.2rem; }
-            .top-nav { 
-                justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; 
-                border-radius: 20px; padding: 10px; margin: 20px 15px 0; 
-                max-width: calc(100% - 30px); scrollbar-width: none; 
-            }
+            .top-nav { justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; border-radius: 20px; padding: 10px; margin: 20px 15px 0; max-width: calc(100% - 30px); scrollbar-width: none; }
             .top-nav::-webkit-scrollbar { display: none; }
             .nav-link { flex-shrink: 0; padding: 10px 16px; font-size: 0.85rem; }
             .promo-banner { padding: 25px 15px; } 
@@ -408,11 +355,7 @@
             .online-counter { padding: 8px 15px; }
             .profile-btn { width: 40px; height: 40px; }
             .footer-buttons { flex-direction: column; }
-            #chat-window { 
-                width: 100% !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
-                border-radius: 24px 24px 0 0 !important; border-bottom: none;
-                animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-            }
+            #chat-window { width: 100% !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
             .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
             .drag-handle { display: none; }
             .audio-player { flex-direction: column; align-items: stretch; gap: 15px; padding: 20px; }
@@ -420,25 +363,20 @@
             .progress-container { width: 100%; }
             .time-display { width: 100%; text-align: center; margin-top: -5px; }
         }
-        @media (max-height: 400px) {
-            .secret-rift { display: none !important; }
-        }
+        @media (max-height: 400px) { .secret-rift { display: none !important; } }
         @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
         /* СЕКРЕТНЫЙ РАЗЛОМ */
-        .secret-rift {
-            position: absolute; z-index: 500;
-            width: clamp(120px, 20vw, 180px); height: clamp(40px, 8vw, 70px);
-            cursor: pointer; opacity: 0; transform: scale(0.1);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-in;
-            pointer-events: none; display: flex; justify-content: center; align-items: center;
-        }
+        .secret-rift { position: absolute; z-index: 500; width: clamp(120px, 20vw, 180px); height: clamp(40px, 8vw, 70px); cursor: pointer; opacity: 0; transform: scale(0.1); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-in; pointer-events: none; display: flex; justify-content: center; align-items: center; }
         .secret-rift.active { opacity: 1; transform: scale(1); pointer-events: auto; }
         .rift-svg { width: 100%; height: 100%; transform: rotate(var(--rot)); filter: drop-shadow(0 0 10px var(--accent-purple)); transition: transform 0.4s ease; }
         .rift-svg path { fill: #000; stroke: var(--accent-purple); stroke-width: 2; vector-effect: non-scaling-stroke; }
         .rift-particle { position: absolute; color: var(--accent-purple); font-family: monospace; font-size: 1.1rem; font-weight: 900; pointer-events: none; text-shadow: 0 0 10px var(--accent-purple); top: 50%; left: 50%; animation: dropFade 0.7s ease-out forwards; }
         @keyframes dropFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); opacity: 0; } }
     </style>
+
+    <!-- ПОДКЛЮЧЕНИЕ GOOGLE IDENTITY SERVICES -->
+    <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
 </head>
 <body>
 
@@ -450,17 +388,23 @@
     
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- МОДАЛКА ВХОДА (ПОЯВЛЯЕТСЯ ПРИ КЛИКЕ НА АВАТАРКУ, ЕСЛИ НЕ АВТОРИЗОВАН) -->
+    <!-- МОДАЛКА ВХОДА С ХИТРОЙ КНОПКОЙ -->
     <div class="modal" id="loginModal">
         <div class="install-box">
             <i class="fa-solid fa-xmark install-close" onclick="document.getElementById('loginModal').style.display='none'"></i>
             <i class="fa-solid fa-user-astronaut"></i>
             <h3>Вход в аккаунт</h3>
             <p>Авторизуйтесь, чтобы получить доступ к профилю и тех. поддержке.</p>
-            <button class="google-login-btn" id="googleLoginBtn">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
-                Войти через Google
-            </button>
+            
+            <div style="position: relative; width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 14px; margin-top: 15px;">
+                <!-- Наша стеклянная кнопка (визуальная часть) -->
+                <button class="google-login-btn" style="margin-top: 0;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                    Войти через Google
+                </button>
+                <!-- Невидимый контейнер для гугловской кнопки -->
+                <div id="google-btn-wrapper" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.01; z-index: 10; cursor: pointer;"></div>
+            </div>
         </div>
     </div>
 
@@ -496,7 +440,6 @@
             <div class="pulse-dot"></div>
             <div class="online-text"><span class="online-num" id="onlineCount">1</span><span class="online-word"> онлайн</span></div>
         </div>
-        <!-- Кнопка профиля: JS будет решать открывать модалку или переводить на страницу -->
         <a href="https://dxtrslizze.xyz/profile" class="profile-btn" title="Профиль" id="profileBtnLink">
             <img src="dslogo.png" alt="Profile" id="userAvatar">
         </a>
@@ -599,8 +542,7 @@
 
         <div class="section-title fade-in" style="animation-delay: 0.4s;">Другие клипы</div>
         
-        <div class="tracks-grid fade-in" id="randomTracksGrid" style="animation-delay: 0.5s;">
-            </div>
+        <div class="tracks-grid fade-in" id="randomTracksGrid" style="animation-delay: 0.5s;"></div>
         
     </main>
 
@@ -1019,7 +961,7 @@
         });
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        // === SUPABASE + GOOGLE AUTH + SOCKETS ===
+        // === SUPABASE + GOOGLE AUTH NATIVE (GIS) ===
         let isAuthUser = false; 
         let currentSessionToken = null;
         let socket = null;
@@ -1029,131 +971,154 @@
         const chatSendBtn = document.getElementById('chat-send');
         const profileBtnLink = document.getElementById('profileBtnLink');
         const loginModal = document.getElementById('loginModal');
-        const googleLoginBtn = document.getElementById('googleLoginBtn');
 
-        try {
-            // Подключаем Supabase с настоящим публичным ключом
-            const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
-            const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'; 
-            
-            if (window.supabase) {
-                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
+        const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'; 
+        let supabaseClient;
+        
+        if (window.supabase) {
+            supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+        }
 
-                function lockChatForGuests() {
-                    if(chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо авторизоваться (иконка профиля).</b>";
-                    if(chatInput) {
-                        chatInput.disabled = true;
-                        chatInput.placeholder = "Необходима авторизация";
-                        chatInput.style.borderColor = "var(--glass-border)";
-                    }
-                    if(chatSendBtn) {
-                        chatSendBtn.disabled = true;
-                        chatSendBtn.style.background = 'rgba(255,255,255,0.1)';
-                        chatSendBtn.style.color = '#555';
-                    }
-                }
-
-                function unlockChatForUser(nickname) {
-                    window.userNickname = nickname;
-                    if(chatGreeting) chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${nickname}</b>!`; 
-                    if(chatInput) {
-                        chatInput.disabled = false;
-                        chatInput.placeholder = "Опишите проблему...";
-                        chatInput.style.borderColor = "var(--glass-border)";
-                    }
-                    if(chatSendBtn) {
-                        chatSendBtn.disabled = false;
-                        chatSendBtn.style.background = 'var(--accent-purple)';
-                        chatSendBtn.style.color = '#fff';
-                    }
-                }
-
-                async function saveUserToDB(user) {
-                    const email = user.email;
-                    const nickname = user.user_metadata.full_name || user.user_metadata.name || email.split('@')[0];
-                    const avatarUrl = user.user_metadata.avatar_url || 'dslogo.png';
-
-                    const { error } = await supabase
-                        .from('g_users')
-                        .upsert({ 
-                            id: user.id, 
-                            email: email, 
-                            nickname: nickname, 
-                            avatar_url: avatarUrl,
-                            last_seen: new Date()
-                        }, { onConflict: 'id' });
-                        
-                    if (error) console.error("Ошибка сохранения в БД:", error);
-                    return { nickname, avatarUrl };
-                }
-
-                async function checkSession() {
-                    const { data: { session }, error } = await supabase.auth.getSession();
-                    
-                    if (session) {
-                        isAuthUser = true;
-                        currentSessionToken = session.access_token;
-                        const user = session.user;
-                        
-                        const { nickname, avatarUrl } = await saveUserToDB(user);
-
-                        const avatarImg = document.getElementById('userAvatar');
-                        if (avatarImg) avatarImg.src = avatarUrl;
-
-                        unlockChatForUser(nickname);
-
-                        if (socket && socket.connected) {
-                            socket.emit('register_client', { token: currentSessionToken });
-                        }
-                    } else {
-                        isAuthUser = false;
-                        currentSessionToken = null;
-                        lockChatForGuests();
-                        const avatarImg = document.getElementById('userAvatar');
-                        if (avatarImg) avatarImg.src = 'dslogo.png';
-                    }
-                }
-
-                // Логика клика на профиль
-                if (profileBtnLink) {
-                    profileBtnLink.onclick = (e) => {
-                        if (!isAuthUser) {
-                            e.preventDefault(); // Останавливаем переход
-                            if (loginModal) loginModal.style.display = 'flex'; // Открываем модалку входа
-                        }
-                        // Если авторизован - просто пойдет по ссылке /profile
-                    };
-                }
-
-                // Логика кнопки логина через Google
-                if (googleLoginBtn) {
-                    googleLoginBtn.onclick = async () => {
-                        const { error } = await supabase.auth.signInWithOAuth({
-                            provider: 'google',
-                            options: { redirectTo: 'https://dxtrslizze.xyz/profile' }
-                        });
-                        if (error) showToast('Ошибка при входе через Google', 'error');
-                    };
-                }
-
-                supabase.auth.onAuthStateChange((event, session) => {
-                    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
-                        checkSession();
-                    } else if (event === 'SIGNED_OUT') {
-                        isAuthUser = false;
-                        currentSessionToken = null;
-                        lockChatForGuests();
-                        const avatarImg = document.getElementById('userAvatar');
-                        if (avatarImg) avatarImg.src = 'dslogo.png';
-                    }
-                });
-
-                window.addEventListener('load', () => checkSession());
-            } else {
-                console.error("Supabase не загружен.");
+        function lockChatForGuests() {
+            if(chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо авторизоваться (иконка профиля).</b>";
+            if(chatInput) {
+                chatInput.disabled = true;
+                chatInput.placeholder = "Необходима авторизация";
+                chatInput.style.borderColor = "var(--glass-border)";
             }
-        } catch(err) {
-            console.error("Ошибка при инициализации Supabase:", err);
+            if(chatSendBtn) {
+                chatSendBtn.disabled = true;
+                chatSendBtn.style.background = 'rgba(255,255,255,0.1)';
+                chatSendBtn.style.color = '#555';
+            }
+        }
+
+        function unlockChatForUser(nickname) {
+            window.userNickname = nickname;
+            if(chatGreeting) chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${nickname}</b>!`; 
+            if(chatInput) {
+                chatInput.disabled = false;
+                chatInput.placeholder = "Опишите проблему...";
+                chatInput.style.borderColor = "var(--glass-border)";
+            }
+            if(chatSendBtn) {
+                chatSendBtn.disabled = false;
+                chatSendBtn.style.background = 'var(--accent-purple)';
+                chatSendBtn.style.color = '#fff';
+            }
+        }
+
+        async function saveUserToDB(user) {
+            const email = user.email;
+            const nickname = user.user_metadata.full_name || user.user_metadata.name || email.split('@')[0];
+            const avatarUrl = user.user_metadata.avatar_url || 'dslogo.png';
+
+            const { error } = await supabaseClient
+                .from('g_users')
+                .upsert({ 
+                    id: user.id, 
+                    email: email, 
+                    nickname: nickname, 
+                    avatar_url: avatarUrl,
+                    last_seen: new Date()
+                }, { onConflict: 'id' });
+                
+            if (error) console.error("Ошибка сохранения в БД:", error);
+            return { nickname, avatarUrl };
+        }
+
+        async function checkSession() {
+            if(!supabaseClient) return;
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            if (session) {
+                isAuthUser = true;
+                currentSessionToken = session.access_token;
+                const user = session.user;
+                
+                const { nickname, avatarUrl } = await saveUserToDB(user);
+
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg) avatarImg.src = avatarUrl;
+
+                unlockChatForUser(nickname);
+
+                if (socket && socket.connected) {
+                    socket.emit('register_client', { token: currentSessionToken });
+                }
+            } else {
+                isAuthUser = false;
+                currentSessionToken = null;
+                lockChatForGuests();
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg) avatarImg.src = 'dslogo.png';
+            }
+        }
+
+        // Вызывается, когда Гугл возвращает токен (после нативного попапа)
+        async function handleGoogleCredential(response) {
+            if(loginModal) loginModal.style.display = 'none';
+            showToast('Синхронизация...', 'info');
+
+            const idToken = response.credential;
+            const { data, error } = await supabaseClient.auth.signInWithIdToken({
+                provider: 'google',
+                token: idToken,
+            });
+
+            if (error) {
+                showToast('Ошибка авторизации', 'error');
+                console.error(error);
+            } else {
+                showToast('Успешный вход!', 'success');
+                // checkSession() вызовется автоматически через onAuthStateChange
+            }
+        }
+
+        // Инициализация кнопки GIS
+        function initGoogleAuth() {
+            if(window.google) {
+                google.accounts.id.initialize({
+                    client_id: '538822205607-83ip6fjfah8pjphus91d3ru2tfeb018b.apps.googleusercontent.com',
+                    callback: handleGoogleCredential
+                });
+                
+                const wrapper = document.getElementById("google-btn-wrapper");
+                if (wrapper) {
+                    google.accounts.id.renderButton(wrapper, {
+                        type: "standard",
+                        theme: "outline",
+                        size: "large",
+                        width: 400 // Кнопка подстроится под размер, но не больше 400px
+                    });
+                }
+            }
+        }
+
+        if (profileBtnLink) {
+            profileBtnLink.onclick = (e) => {
+                if (!isAuthUser) {
+                    e.preventDefault(); 
+                    if (loginModal) loginModal.style.display = 'flex'; 
+                }
+            };
+        }
+
+        if(supabaseClient) {
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+                    checkSession();
+                } else if (event === 'SIGNED_OUT') {
+                    isAuthUser = false;
+                    currentSessionToken = null;
+                    lockChatForGuests();
+                    const avatarImg = document.getElementById('userAvatar');
+                    if (avatarImg) avatarImg.src = 'dslogo.png';
+                }
+            });
+
+            window.addEventListener('load', () => checkSession());
         }
 
         // === ИНИЦИАЛИЗАЦИЯ СОКЕТОВ ===
