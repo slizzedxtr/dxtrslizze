@@ -71,10 +71,25 @@
         .fade-in { animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
         @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
 
-        /* ВЕРХНЯЯ НАВИГАЦИЯ */
-        .top-nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 30px; padding: 25px 20px 0; position: relative; z-index: 20; max-width: 1000px; margin: 0 auto;}
-        .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; padding-bottom: 5px; border-bottom: 2px solid transparent; transition: 0.3s; }
-        .nav-link:hover, .nav-link.active { color: #fff; border-bottom: 2px solid var(--accent-purple); text-shadow: 0 0 15px var(--accent-purple-glow); }
+        /* ВЕРХНЯЯ НАВИГАЦИЯ (Новый дизайн - Glass Pill) */
+        .top-nav { 
+            display: flex; justify-content: center; align-items: center; gap: 5px; 
+            padding: 8px 10px; margin: 25px auto 0; 
+            position: relative; z-index: 20; max-width: fit-content; 
+            background: rgba(20, 20, 25, 0.5); border: 1px solid var(--glass-border); 
+            border-radius: 50px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); 
+        }
+        .nav-link { 
+            color: var(--text-muted); text-decoration: none; font-weight: 700; font-size: 0.9rem; 
+            text-transform: uppercase; letter-spacing: 1px; padding: 10px 20px; 
+            border-radius: 40px; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+        }
+        .nav-link:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
+        .nav-link.active { 
+            color: #fff; background: var(--accent-purple); 
+            box-shadow: 0 0 15px var(--accent-purple-glow); 
+        }
 
         /* ШАПКА */
         header { text-align: center; padding: 6vh 20px 4vh; position: relative; z-index: 10; }
@@ -181,6 +196,18 @@
 
         .download-btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.05); color: white; padding: 14px 25px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: 0.3s; border: 1px solid var(--glass-border); width: fit-content; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;}
         .download-btn:hover { background: var(--accent-purple); border-color: var(--accent-purple); color: #fff; box-shadow: 0 0 20px var(--accent-purple-glow); transform: translateY(-2px); }
+        
+        /* Состояние подтверждения скачивания */
+        .download-btn.confirm-state {
+            background: rgba(16, 185, 129, 0.05) !important;
+            border-color: var(--success) !important;
+            color: var(--success) !important;
+            box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.1), 0 0 20px rgba(16, 185, 129, 0.2) !important;
+        }
+        .download-btn.confirm-state:hover {
+            background: rgba(16, 185, 129, 0.15) !important;
+            box-shadow: inset 0 0 15px rgba(16, 185, 129, 0.2), 0 0 25px rgba(16, 185, 129, 0.4) !important;
+        }
 
         .platform-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
         .platform-link { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; color: white; font-weight: 700; font-size: 0.95rem; transition: all 0.3s ease; position: relative; overflow: hidden; z-index: 1; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); }
@@ -372,7 +399,13 @@
         @media (max-width: 600px) {
             .platform-grid { grid-template-columns: 1fr; }
             header h1 { font-size: 2.2rem; }
-            .top-nav { flex-direction: column; gap: 15px; align-items: center; padding-top: 15px; }
+            .top-nav { 
+                justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; 
+                border-radius: 20px; padding: 10px; margin: 20px 15px 0; 
+                max-width: calc(100% - 30px); scrollbar-width: none; 
+            }
+            .top-nav::-webkit-scrollbar { display: none; }
+            .nav-link { flex-shrink: 0; padding: 10px 16px; font-size: 0.85rem; }
             .promo-banner { padding: 25px 15px; } 
             .countdown { gap: 5px; width: 100%; justify-content: center; }
             .cd-box { min-width: 0; flex: 1; padding: 8px 2px; } 
@@ -714,9 +747,47 @@
             }
 
             const dlBtn = document.getElementById('heroDlBtn');
+            let isDlConfirm = false;
+            let dlTimeout;
+
             dlBtn.onclick = (e) => {
                 e.preventDefault();
-                openDownloadModal(track.title, track.mp3_url, track.wav_url);
+                
+                if (!isDlConfirm) {
+                    // Первое нажатие - меняем вид на подтверждение
+                    isDlConfirm = true;
+                    dlBtn.classList.add('confirm-state');
+                    dlBtn.innerHTML = '<i class="fa-solid fa-check"></i> ЗАГРУЗИТЬ MP3';
+                    
+                    // Если не нажали за 3 секунды - возвращаем обратно
+                    dlTimeout = setTimeout(() => {
+                        isDlConfirm = false;
+                        dlBtn.classList.remove('confirm-state');
+                        dlBtn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать';
+                    }, 3000);
+                } else {
+                    // Второе нажатие - начинаем загрузку
+                    clearTimeout(dlTimeout);
+                    isDlConfirm = false;
+                    dlBtn.classList.remove('confirm-state');
+                    dlBtn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать';
+                    
+                    // Формируем прямую ссылку на скачивание MP3
+                    const safeTitle = track.title.replace(/\s+/g, '_');
+                    const mp3FileName = encodeURIComponent(`DXTR_SlizZe_-_${safeTitle}.mp3`);
+                    const mp3DlUrl = track.mp3_url.includes('?') ? `${track.mp3_url}&download=${mp3FileName}` : `${track.mp3_url}?download=${mp3FileName}`;
+                    
+                    // Эмулируем клик для загрузки без открытия модального окна
+                    const a = document.createElement('a');
+                    a.href = mp3DlUrl;
+                    a.download = mp3FileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    
+                    // Вызываем твой тоаст из предыдущего шага
+                    showToast('Скачивание MP3 началось', 'success');
+                }
             };
         }
 
