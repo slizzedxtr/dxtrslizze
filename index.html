@@ -52,7 +52,7 @@
             display: flex; flex-direction: column; min-height: 100vh; position: relative;
         }
 
-        /* АНИМИРОВАННЫЙ ФОН + ХАЙТЕК СЕТКА (Смягченный глассморфизм) */
+        /* АНИМИРОВАННЫЙ ФОН + ХАЙТЕК СЕТКА */
         .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -2; overflow: hidden; background: var(--bg-body); }
         .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.3; animation: float 20s infinite alternate ease-in-out; }
         .blob-1 { width: 600px; height: 600px; background: var(--accent-purple); top: -10%; left: -10%; }
@@ -211,34 +211,27 @@
 
         .platform-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 10px; }
         .platform-link { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 12px; text-decoration: none; color: white; font-weight: 700; font-size: 0.95rem; transition: all 0.3s ease; position: relative; overflow: hidden; z-index: 1; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.03); }
-        .platform-link:hover { transform: translateY(-3px); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); }
         
         .platform-link.disabled-link { color: rgba(255,255,255,0.2) !important; cursor: not-allowed !important; transform: none !important; background: rgba(255,255,255,0.01) !important; border-color: transparent !important; }
-        
+        .platform-link.disabled-link:hover { box-shadow: none !important; }
+
         /* Мутные стеклянные цвета для платформ */
-        
-        /* YouTube (Мягкий красный) */
         .platform-link.yt { border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.04); }
-        .platform-link.yt:hover { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.1); }
+        .platform-link.yt:hover { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.1); transform: translateY(-3px); }
         .platform-link.yt i { color: rgba(239, 68, 68, 0.7); }
 
-        /* Yandex Music (Мягкий желто-оранжевый) */
         .platform-link.yam { border-color: rgba(245, 158, 11, 0.15); background: rgba(245, 158, 11, 0.04); }
-        .platform-link.yam:hover { border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.1); }
+        .platform-link.yam:hover { border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.1); transform: translateY(-3px); }
         .platform-link.yam i { color: rgba(245, 158, 11, 0.7); }
 
-        /* Spotify (Мягкий зеленый) */
         .platform-link.spot { border-color: rgba(16, 185, 129, 0.15); background: rgba(16, 185, 129, 0.04); }
-        .platform-link.spot:hover { border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1); }
+        .platform-link.spot:hover { border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1); transform: translateY(-3px); }
         .platform-link.spot i { color: rgba(16, 185, 129, 0.7); }
 
-        /* VK Music (Мягкий синий) */
         .platform-link.vkm { border-color: rgba(59, 130, 246, 0.15); background: rgba(59, 130, 246, 0.04); }
-        .platform-link.vkm:hover { border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.08); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.1); }
+        .platform-link.vkm:hover { border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.08); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.1); transform: translateY(-3px); }
         .platform-link.vkm i { color: rgba(59, 130, 246, 0.7); }
-        
-        /* Защита от свечения на выключенных (disabled) кнопках */
-        .platform-link.disabled-link:hover { box-shadow: none !important; }
+
         /* СЕТКА КЛИПОВ */
         .tracks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
         .track-card { background: rgba(20, 20, 30, 0.4); border: 1px solid var(--glass-border); border-radius: 20px; padding: 15px; display: flex; align-items: center; gap: 15px; transition: 0.3s; backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
@@ -263,23 +256,18 @@
         .action-btn { display: flex; align-items: center; gap: 10px; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 800; color: white; transition: 0.3s; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
         
         /* Цвета для кнопок в подвале (мутноватое стекло) */
-        
-        /* Сотрудничество (Фиолетовый акцент) */
         .action-btn.coop-btn { border-color: rgba(139, 92, 246, 0.15); background: rgba(139, 92, 246, 0.05); }
         .action-btn.coop-btn:hover { border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.1); box-shadow: 0 5px 20px rgba(139, 92, 246, 0.15); transform: scale(1.05) translateY(-3px); }
         .action-btn.coop-btn i { color: rgba(139, 92, 246, 0.8); }
 
-        /* Наш Telegram (Голубой) */
         .action-btn.contact-btn { border-color: rgba(0, 136, 204, 0.15); background: rgba(0, 136, 204, 0.05); }
         .action-btn.contact-btn:hover { border-color: rgba(0, 136, 204, 0.3); background: rgba(0, 136, 204, 0.1); box-shadow: 0 5px 20px rgba(0, 136, 204, 0.15); transform: scale(1.05) translateY(-3px); }
         .action-btn.contact-btn i { color: rgba(0, 136, 204, 0.8); }
 
-        /* YouTube (Мягкий красный) */
         .action-btn.yt-footer-btn { border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.05); }
         .action-btn.yt-footer-btn:hover { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); box-shadow: 0 5px 20px rgba(239, 68, 68, 0.15); transform: scale(1.05) translateY(-3px); }
         .action-btn.yt-footer-btn i { color: rgba(239, 68, 68, 0.8); }
 
-        /* TikTok (Бело-серое стекло) */
         .action-btn.tt-footer-btn { border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); }
         .action-btn.tt-footer-btn:hover { border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.08); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transform: scale(1.05) translateY(-3px); }
         .action-btn.tt-footer-btn i { color: rgba(255, 255, 255, 0.7); }
@@ -294,13 +282,12 @@
         .modal-fallback { margin-top: 20px; color: var(--text-muted); font-size: 0.9rem; }
         .modal-fallback a { color: var(--accent-purple); font-weight: bold; text-decoration: none; } .modal-fallback a:hover { text-decoration: underline; }
 
-        /* МОДАЛКА СКАЧИВАНИЯ */
+        /* МОДАЛКА СКАЧИВАНИЯ (Оставил на случай если нужна где-то еще, хоть на главном релизе теперь прямая кнопка) */
         .modal-content-wrap { position: relative; padding: 1px; border-radius: 24px; overflow: hidden; max-width: 400px; width: 90%; background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold)); }
         .modal-inner { background: var(--bg-body); border-radius: 23px; padding: 40px; text-align: center; position: relative; width: 100%; }
         .modal-inner .close-btn-dl { position: absolute; top: 15px; right: 25px; color: var(--text-muted); font-size: 2.5rem; cursor: pointer; transition: 0.3s; line-height: 1; z-index: 10; }
         .modal-inner .close-btn-dl:hover { color: var(--accent-purple); transform: rotate(90deg); }
         .modal-title { font-size: 1.3rem; font-weight: 900; margin-bottom: 30px; text-transform: uppercase; color: #fff; }
-        
         .format-btn { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 15px; border-radius: 12px; text-decoration: none; font-weight: 800; color: white; border: 1px solid var(--glass-border); margin-bottom: 15px; transition: 0.3s; background: rgba(255,255,255,0.03); }
         .format-btn:hover { border-color: var(--accent-purple); box-shadow: 0 0 20px var(--accent-purple-glow); background: rgba(139, 92, 246, 0.1); transform: scale(1.03); }
 
@@ -313,7 +300,7 @@
         .install-close { position: absolute; top: 15px; right: 20px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
         .install-close:hover { color: var(--error); }
 
-        /* ЧАТ ПОДДЕРЖКИ И МЕНЮ... */
+        /* ЧАТ ПОДДЕРЖКИ И МЕНЮ */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: var(--glass-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(25px); border-right: 1px solid var(--glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
@@ -387,10 +374,8 @@
             .hero-release, .promo-banner { flex-direction: column; text-align: center; padding: 30px 20px; }
             .hero-cover-wrap { width: 100%; max-width: 300px; }
             .promo-cover-wrap { width: 200px; height: 200px; }
-            
             #heroBadgeContainer { align-self: center; flex-direction: column; gap: 10px; }
             .promo-badge { align-self: center; }
-            
             .hero-info h2, .promo-info h2 { font-size: 2.8rem; }
             .platform-grid { grid-template-columns: 1fr 1fr; }
             .download-btn { width: 100%; }
@@ -435,7 +420,7 @@
         }
         @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* === СЕКРЕТНЫЙ РАЗЛОМ (ГОРИЗОНТАЛЬНЫЙ) === */
+        /* СЕКРЕТНЫЙ РАЗЛОМ (ГОРИЗОНТАЛЬНЫЙ) */
         .secret-rift {
             position: absolute; z-index: 500;
             width: clamp(120px, 20vw, 180px); height: clamp(40px, 8vw, 70px);
@@ -458,7 +443,6 @@
         <div class="blob blob-3"></div>
     </div>
     
-    <!-- Контейнер для кастомных Toast-уведомлений -->
     <div id="toast-container" class="toast-container"></div>
 
     <div class="modal" id="installModal">
@@ -630,6 +614,7 @@
     </footer>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
         // === ЛОГИКА TOAST-УВЕДОМЛЕНИЙ ===
@@ -754,30 +739,27 @@
                 e.preventDefault();
                 
                 if (!isDlConfirm) {
-                    // Первое нажатие - меняем вид на подтверждение
+                    // Первое нажатие
                     isDlConfirm = true;
                     dlBtn.classList.add('confirm-state');
                     dlBtn.innerHTML = '<i class="fa-solid fa-check"></i> ЗАГРУЗИТЬ MP3';
                     
-                    // Если не нажали за 3 секунды - возвращаем обратно
                     dlTimeout = setTimeout(() => {
                         isDlConfirm = false;
                         dlBtn.classList.remove('confirm-state');
                         dlBtn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать';
                     }, 3000);
                 } else {
-                    // Второе нажатие - начинаем загрузку
+                    // Второе нажатие
                     clearTimeout(dlTimeout);
                     isDlConfirm = false;
                     dlBtn.classList.remove('confirm-state');
                     dlBtn.innerHTML = '<i class="fa-solid fa-download"></i> Скачать';
                     
-                    // Формируем прямую ссылку на скачивание MP3
                     const safeTitle = track.title.replace(/\s+/g, '_');
                     const mp3FileName = encodeURIComponent(`DXTR_SlizZe_-_${safeTitle}.mp3`);
                     const mp3DlUrl = track.mp3_url.includes('?') ? `${track.mp3_url}&download=${mp3FileName}` : `${track.mp3_url}?download=${mp3FileName}`;
                     
-                    // Эмулируем клик для загрузки без открытия модального окна
                     const a = document.createElement('a');
                     a.href = mp3DlUrl;
                     a.download = mp3FileName;
@@ -785,7 +767,6 @@
                     a.click();
                     document.body.removeChild(a);
                     
-                    // Вызываем твой тоаст из предыдущего шага
                     showToast('Скачивание MP3 началось', 'success');
                 }
             };
@@ -879,7 +860,7 @@
         closeBtn.onclick = closeModal;
         modal.onclick = function(e) { if (e.target === modal) { closeModal(); } }
 
-        // === МОДАЛКА СКАЧИВАНИЯ ===
+        // === МОДАЛКА СКАЧИВАНИЯ (Оставлена про запас) ===
         const dM = document.getElementById('downloadModal');
         
         function openDownloadModal(t, mp3, wav) { 
@@ -1048,13 +1029,18 @@
         });
         document.addEventListener('mouseup', () => { isDraggingChat = false; });
 
-        // === АВТОРИЗАЦИЯ И СОКЕТЫ ===
-        const token = localStorage.getItem('dxtr_token');
+        // === АВТОРИЗАЦИЯ И СОКЕТЫ (SUPABASE) ===
+        // ВАЖНО: ЗАМЕНИ 'ТВОЙ_ANON_KEY' на свой anon key из настроек Supabase -> API
+        const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjYmNzeXZjY2lvYm1xZGJvbnBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NjMyNDMsImV4cCI6MjA5MDAzOTI0M30.W46YpmSzMRU7vetDD4JeF3gkSLQsQDiQVJuf_YX_-g0'; 
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         const socket = io("https://dxtrslizze.onrender.com/");
         const chatGreeting = document.getElementById('chatGreeting');
         const chatInput = document.getElementById('chat-input');
         const chatSendBtn = document.getElementById('chat-send');
-        let isAuthUser = !!token; 
+        let isAuthUser = false; 
+        let currentSessionToken = null;
 
         function lockChatForGuests() {
             if(chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо войти в аккаунт на странице <a href='https://dxtrslizze.xyz/profile' style='color:var(--accent-purple);'>Профиля</a>.</b>";
@@ -1070,31 +1056,86 @@
             }
         }
 
-        window.onload = async () => {
-            if (token) {
-                try {
-                    const res = await fetch("https://dxtrslizze.onrender.com/api/auth/me", { headers: { 'Authorization': `Bearer ${token}` } });
-                    const data = await res.json();
-                    if (data.success) {
-                        isAuthUser = true;
-                        const avatarImg = document.getElementById('userAvatar');
-                        if (avatarImg && data.user.avatarUrl && data.user.avatarUrl !== 'dslogo.png') {
-                            avatarImg.src = data.user.avatarUrl;
-                        }
-                    } else {
-                        isAuthUser = false;
-                        localStorage.removeItem('dxtr_token');
-                        lockChatForGuests();
-                    }
-                } catch(e) { console.error(e); }
-            } else {
-                lockChatForGuests();
+        function unlockChatForUser(nickname) {
+            window.userNickname = nickname;
+            if(chatGreeting) chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${nickname}</b>!`; 
+            if(chatInput) {
+                chatInput.disabled = false;
+                chatInput.placeholder = "Опишите проблему...";
+                chatInput.style.borderColor = "var(--glass-border)";
             }
+            if(chatSendBtn) {
+                chatSendBtn.disabled = false;
+                chatSendBtn.style.background = 'var(--accent-purple)';
+                chatSendBtn.style.color = '#fff';
+            }
+        }
+
+        async function saveUserToDB(user) {
+            const email = user.email;
+            const nickname = user.user_metadata.full_name || user.user_metadata.name || email.split('@')[0];
+            const avatarUrl = user.user_metadata.avatar_url || 'dslogo.png';
+
+            const { error } = await supabase
+                .from('g_users')
+                .upsert({ 
+                    id: user.id, 
+                    email: email, 
+                    nickname: nickname, 
+                    avatar_url: avatarUrl,
+                    last_seen: new Date()
+                }, { onConflict: 'id' });
+                
+            if (error) console.error("Ошибка сохранения в БД:", error);
+            return { nickname, avatarUrl };
+        }
+
+        async function checkSession() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (session) {
+                isAuthUser = true;
+                currentSessionToken = session.access_token;
+                const user = session.user;
+                
+                const { nickname, avatarUrl } = await saveUserToDB(user);
+
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg) avatarImg.src = avatarUrl;
+
+                unlockChatForUser(nickname);
+
+                if (socket.connected) {
+                    socket.emit('register_client', { token: currentSessionToken });
+                }
+            } else {
+                isAuthUser = false;
+                currentSessionToken = null;
+                lockChatForGuests();
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg) avatarImg.src = 'dslogo.png';
+            }
+        }
+
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+                checkSession();
+            } else if (event === 'SIGNED_OUT') {
+                isAuthUser = false;
+                currentSessionToken = null;
+                lockChatForGuests();
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg) avatarImg.src = 'dslogo.png';
+            }
+        });
+
+        window.onload = () => {
+            checkSession();
         };
 
         socket.on('connect', () => { 
-            if (token) {
-                socket.emit('register_client', { token: token }); 
+            if (isAuthUser && currentSessionToken) {
+                socket.emit('register_client', { token: currentSessionToken }); 
             }
         });
 
@@ -1104,22 +1145,6 @@
         const menuBanLock = document.getElementById('menuBanLock');
         const chatBanNotice = document.getElementById('chatBanNotice');
 
-        socket.on('user_data', d => { 
-            if (d.nickname) { 
-                window.userNickname = d.nickname; 
-                chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${d.nickname}</b>!`; 
-                chatInput.disabled = false;
-                chatInput.placeholder = "Опишите проблему...";
-                chatSendBtn.disabled = false;
-                chatSendBtn.style.background = 'var(--accent-purple)';
-                chatSendBtn.style.color = '#fff';
-            } 
-            if (d.avatarUrl) {
-                const avatarImg = document.getElementById('userAvatar');
-                if (avatarImg && d.avatarUrl !== 'dslogo.png') avatarImg.src = d.avatarUrl;
-            }
-        });
-        
         socket.on('ban_status', d => { 
             if (d.isBanned) { 
                 if(menuBanLock) menuBanLock.style.display = 'inline-block'; 
@@ -1169,7 +1194,7 @@
         function sendMessageToBot() { 
             const t = chatInput.value.trim(); 
             if (!t || chatInput.disabled || !isAuthUser) return; 
-            socket.emit('send_message', { text: t, token: token }); 
+            socket.emit('send_message', { text: t, token: currentSessionToken }); 
             addChatMessage('Вы', t, 'flex-end', true, false, false); 
             chatInput.value = ''; 
         }
@@ -1231,7 +1256,7 @@
 
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
 
-        // === СЕКРЕТНЫЙ РАЗЛОМ (ГОРИЗОНТАЛЬНЫЙ) ===
+        /* СЕКРЕТНЫЙ РАЗЛОМ (ГОРИЗОНТАЛЬНЫЙ) */
         (function() {
             const rift = document.createElement('div');
             rift.id = 'secretRift';
