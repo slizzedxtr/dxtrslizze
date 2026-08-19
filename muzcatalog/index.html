@@ -524,13 +524,24 @@
         <a href="https://dxtrslizze.xyz/shop" class="nav-link">Магазин</a>
     </nav>
 
+    <!-- ОБНОВЛЕННАЯ МОДАЛКА ПЛОЩАДОК -->
     <div class="modal" id="platformsModal">
-        <div class="modal-inner" style="border: 1px solid var(--accent-purple); box-shadow: 0 0 50px rgba(139,92,246,0.2);">
-            <div class="close-btn" onclick="closeModal('platformsModal')">×</div>
-            <div class="modal-title">Слушать на площадках</div>
-            <a href="#" target="_blank" class="plat-btn btn-yam" id="platYam"><i class="fa-brands fa-yandex"></i> Яндекс Музыка</a>
-            <a href="#" target="_blank" class="plat-btn btn-spo" id="platSpo"><i class="fa-brands fa-spotify"></i> Spotify</a>
-            <a href="#" target="_blank" class="plat-btn btn-vk" id="platVk"><i class="fa-brands fa-vk"></i> VK Music</a>
+        <div class="modal-content-wrap" style="max-width: 400px; width: 90%;">
+            <div class="modal-inner" style="width: 100%; border: none;">
+                <div class="close-btn" onclick="closeModal('platformsModal')">×</div>
+                <div class="modal-title">Слушать на площадках</div>
+                <div class="platforms-list">
+                    <a href="#" target="_blank" class="plat-btn btn-yam" id="platYam">
+                        <i class="fa-brands fa-yandex"></i> <span>Яндекс Музыка</span>
+                    </a>
+                    <a href="#" target="_blank" class="plat-btn btn-spo" id="platSpo">
+                        <i class="fa-brands fa-spotify"></i> <span>Spotify</span>
+                    </a>
+                    <a href="#" target="_blank" class="plat-btn btn-vk" id="platVk">
+                        <i class="fa-brands fa-vk"></i> <span>VK Music</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 
