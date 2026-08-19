@@ -586,14 +586,16 @@
                     avatarUrl = publicUrlData.publicUrl;
                 }
 
-                // Обновление таблицы g_users
+                // Обновление таблицы g_users (используем upsert для создания записи, если её нет)
                 const { error } = await supabaseClient
                     .from('g_users')
-                    .update({ 
+                    .upsert({ 
+                        id: currentUserData.id,
+                        email: currentUserData.email,
                         nickname: newNick || currentUserData.nickname,
-                        avatar_url: avatarUrl
-                    })
-                    .eq('id', currentUserData.id);
+                        avatar_url: avatarUrl,
+                        last_seen: new Date()
+                    }, { onConflict: 'id' });
 
                 if(error) throw error;
                 
