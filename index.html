@@ -1045,7 +1045,7 @@
                 currentSessionToken = session.access_token;
                 const user = session.user;
                 
-                const { nickname, avatarUrl } = await saveUserToDB(user);
+                const { nickname, avatarUrl } = await getUserDataSafe(user);
 
                 const avatarImg = document.getElementById('userAvatar');
                 if (avatarImg) avatarImg.src = avatarUrl;
