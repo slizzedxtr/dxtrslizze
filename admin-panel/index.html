@@ -11,6 +11,7 @@
 
     <style>
         :root {
+            /* Премиальная палитра */
             --bg-body: #08090d;
             --accent-purple: #8b5cf6;
             --accent-purple-glow: rgba(139, 92, 246, 0.4);
@@ -97,7 +98,7 @@
             box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 100;
         }
         .admin-logo { text-align: center; margin-bottom: 40px; }
-        .admin-logo h2 { font-size: 1.5rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 15px var(--accent-purple-glow); }
+        .admin-logo h2 { font-size: 1.5rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px var(--accent-purple-glow); }
         .admin-logo span { color: var(--accent-purple); }
 
         .nav-item {
@@ -144,16 +145,19 @@
         .table-header h3 { font-size: 1.2rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
         
         .action-btn { background: var(--accent-purple); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; }
-        .action-btn:hover { filter: brightness(1.15); box-shadow: 0 5px 15px var(--accent-purple-glow); }
+        .action-btn:hover { filter: brightness(1.15); box-shadow: 0 5px 15px var(--accent-purple-glow); transform: translateY(-2px); }
 
         table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); }
-        td { padding: 15px; color: #fff; font-size: 0.95rem; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.02); vertical-align: middle; }
-        tr:hover td { background: rgba(255,255,255,0.03); }
+        th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); white-space: nowrap; }
+        td { padding: 15px; color: #fff; font-size: 0.95rem; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.02); vertical-align: middle; background: transparent; }
+        
+        /* ИСПРАВЛЕНИЕ: Фон при наведении на строку */
+        tbody tr { transition: background 0.2s ease; }
+        tbody tr:hover { background-color: rgba(255,255,255,0.05); }
         
         .td-user { display: flex; align-items: center; gap: 12px; }
         .td-user img { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; border: 1px solid var(--glass-border); }
-        .td-actions { display: flex; gap: 8px; }
+        .td-actions { display: flex; gap: 8px; } /* Теперь внутри td, а не сам td */
         
         .btn-sm { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; width: 35px; height: 35px; }
         .btn-sm:hover { background: rgba(255,255,255,0.15); }
@@ -186,9 +190,9 @@
         .m-btn-cancel { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); }
         .m-btn-cancel:hover { background: rgba(255,255,255,0.1); }
         .m-btn-confirm { background: var(--accent-purple); color: #fff; box-shadow: 0 5px 15px var(--accent-purple-glow); }
-        .m-btn-confirm:hover:not(:disabled) { filter: brightness(1.15); }
+        .m-btn-confirm:hover:not(:disabled) { filter: brightness(1.15); transform: translateY(-2px); }
         .m-btn-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--error); color: var(--error); }
-        .m-btn-danger:hover:not(:disabled) { background: var(--error); color: #fff; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+        .m-btn-danger:hover:not(:disabled) { background: var(--error); color: #fff; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); transform: translateY(-2px); }
         .m-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .empty-neon { text-align: center; color: var(--text-muted); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 30px; }
@@ -206,7 +210,7 @@
         .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); color: #fff; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 1px; margin: 0 auto; position: relative; }
         .google-login-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
         
-        /* Адаптив */
+        /* Адаптив админки */
         @media (max-width: 900px) {
             .admin-sidebar { position: fixed; left: -300px; }
             .admin-sidebar.active { left: 0; }
@@ -221,6 +225,7 @@
         }
     </style>
     
+    <!-- Скрипты Google Auth и Supabase -->
     <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -278,7 +283,7 @@
         </div>
     </div>
 
-    <!-- БОКОВОЕ МЕНЮ -->
+    <!-- БОКОВОЕ МЕНЮ (АДМИН) -->
     <aside class="admin-sidebar">
         <div class="admin-logo">
             <h2>WHUBERAL <span>|</span> CC</h2>
@@ -488,7 +493,7 @@
         </div>
     </div>
 
-    <!-- Добавление/Редактирование Промокода -->
+    <!-- Добавление Промокода -->
     <div class="modal-overlay" id="promoModal">
         <div class="modal-box">
             <h3 id="promoModalTitle">Новый промокод</h3>
@@ -662,11 +667,14 @@
 
         async function loadDashboardData() {
             try {
-                const { data: users, error: errU } = await supabaseClient.from('g_users').select('*').order('created_at', { ascending: false });
+                // Без сортировки по created_at, чтобы избежать 400 Bad Request
+                const { data: users, error: errU } = await supabaseClient.from('g_users').select('*');
                 if (!errU && users) {
                     document.getElementById('statUsers').innerText = users.length;
-                    document.getElementById('statCoins').innerText = users.reduce((sum, u) => sum + (Number(u.dscoin_balance) || 0), 0);
-                    const recentHtml = users.slice(0, 5).map(u => `<tr><td class="td-user"><img src="${u.avatar_url || '/dslogo.png'}"><b>${u.nickname || 'Аноним'}</b></td><td style="color:var(--text-muted); font-size: 0.8rem;">${u.id.substring(0,8)}...</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td></tr>`).join('');
+                    document.getElementById('statCoins').innerText = users.reduce((sum, u) => sum + (Number(u.dscoin_balance) || Number(u.balance) || 0), 0);
+                    
+                    const sortedRecent = [...users].reverse().slice(0, 5); // Последние 5 
+                    const recentHtml = sortedRecent.map(u => `<tr><td class="td-user"><img src="${u.avatar_url || '/dslogo.png'}"><b>${u.nickname || 'Аноним'}</b></td><td style="color:var(--text-muted); font-size: 0.8rem;">${u.id.substring(0,8)}...</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td></tr>`).join('');
                     document.getElementById('recentUsersTable').innerHTML = recentHtml || '<tr><td colspan="3">Пусто</td></tr>';
                 }
                 const { data: tracks, error: errT } = await supabaseClient.from('music').select('id');
@@ -677,16 +685,20 @@
         // --- ПОЛЬЗОВАТЕЛИ ---
         async function loadUsers() {
             const list = document.getElementById('allUsersTable'); list.innerHTML = '<tr><td colspan="6" class="empty-neon">Загрузка...</td></tr>';
-            const { data, error } = await supabaseClient.from('g_users').select('*').order('created_at', { ascending: false });
+            // Без сортировки по created_at
+            const { data, error } = await supabaseClient.from('g_users').select('*');
             if (!error && data) {
-                loadedUsers = data;
+                loadedUsers = data.reverse();
                 if(data.length === 0) list.innerHTML = '<tr><td colspan="6" class="empty-neon">Пусто</td></tr>';
-                else renderUsersTable(data);
+                else renderUsersTable(loadedUsers);
             } else { list.innerHTML = '<tr><td colspan="6" class="empty-neon">Ошибка БД</td></tr>'; }
         }
 
         function renderUsersTable(users) {
-            document.getElementById('allUsersTable').innerHTML = users.map(u => `<tr><td class="td-user"><img src="${u.avatar_url || '/dslogo.png'}"><b>${u.nickname || 'Аноним'}</b></td><td style="color:var(--text-muted); font-size:0.8rem;">${u.id.substring(0,8)}...</td><td style="color:var(--text-muted);">${u.email || 'Скрыто'}</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td><td style="color:${u.isBanned ? 'var(--error)' : 'var(--text-muted)'};">${u.isBanned ? 'Бан' : 'Нет'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditProfile('${u.id}', '${u.nickname || ''}', '${u.avatar_url || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('profile', '${u.id}', '${u.nickname || 'Аноним'}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+            document.getElementById('allUsersTable').innerHTML = users.map(u => {
+                const isBanned = u.isBanned || u.is_banned;
+                return `<tr><td class="td-user"><img src="${u.avatar_url || '/dslogo.png'}"><b>${u.nickname || 'Аноним'}</b></td><td style="color:var(--text-muted); font-size:0.8rem;">${u.id.substring(0,8)}...</td><td style="color:var(--text-muted);">${u.email || 'Скрыто'}</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td><td style="color:${isBanned ? 'var(--error)' : 'var(--text-muted)'};">${isBanned ? 'Бан' : 'Нет'}</td><td><div class="td-actions"><button class="btn-sm edit" onclick="openEditProfile('${u.id}', '${u.nickname || ''}', '${u.avatar_url || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('profile', '${u.id}', '${u.nickname || 'Аноним'}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`;
+            }).join('');
         }
 
         document.getElementById('userSearchInput').addEventListener('input', (e) => {
@@ -697,11 +709,11 @@
         // --- МУЗЫКА ---
         async function loadMusic() {
             const list = document.getElementById('musicTable'); list.innerHTML = '<tr><td colspan="4" class="empty-neon">Загрузка...</td></tr>';
-            const { data, error } = await supabaseClient.from('music').select('*').order('created_at', { ascending: false });
+            const { data, error } = await supabaseClient.from('music').select('*').order('id', { ascending: false });
             if (!error && data) {
                 loadedTracks = data;
                 if(data.length === 0) list.innerHTML = '<tr><td colspan="4" class="empty-neon">Каталог пуст</td></tr>';
-                else list.innerHTML = data.map(t => `<tr><td class="td-user"><img src="${t.cover_url}"><div><b>${t.title}</b><div style="font-size:0.8rem;color:var(--text-muted);">${t.authors || 'DXTR feat. SlizZe'}</div></div></td><td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_main ? 'Да' : 'Нет'}</td><td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_18 ? 'Да' : 'Нет'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+                else list.innerHTML = data.map(t => `<tr><td class="td-user"><img src="${t.cover_url}"><div><b>${t.title}</b><div style="font-size:0.8rem;color:var(--text-muted);">${t.authors || 'DXTR feat. SlizZe'}</div></div></td><td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_main ? 'Да' : 'Нет'}</td><td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_18 ? 'Да' : 'Нет'}</td><td><div class="td-actions"><button class="btn-sm edit" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`).join('');
             }
         }
 
@@ -712,7 +724,7 @@
             if (!error && data) {
                 loadedPromos = data;
                 if(data.length === 0) list.innerHTML = '<tr><td colspan="4" class="empty-neon">Нет активных кодов</td></tr>';
-                else list.innerHTML = data.map(p => `<tr><td><b>#${p.code}</b><br><span style="font-size:0.8rem;color:var(--text-muted);">${p.title}</span></td><td style="color:${p.is_currency ? 'var(--success)' : 'var(--accent-purple)'}; font-weight:bold;">${p.is_currency ? p.amount+' NC' : 'Медиа'}</td><td style="color:var(--text-muted);">${p.uses_left !== null ? p.uses_left : '∞'} / ${p.max_uses || '∞'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditPromo('${p.code}', '${p.title}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+                else list.innerHTML = data.map(p => `<tr><td><b>#${p.code}</b><br><span style="font-size:0.8rem;color:var(--text-muted);">${p.title}</span></td><td style="color:${p.is_currency ? 'var(--success)' : 'var(--accent-purple)'}; font-weight:bold;">${p.is_currency ? p.amount+' NC' : 'Медиа'}</td><td style="color:var(--text-muted);">${p.uses_left !== null ? p.uses_left : '∞'} / ${p.max_uses || '∞'}</td><td><div class="td-actions"><button class="btn-sm edit" onclick="openEditPromo('${p.code}', '${p.title}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`).join('');
             }
         }
 
@@ -980,7 +992,7 @@
         };
 
         // Запуск сессии при старте
-        window.onload = () => { setTimeout(checkSession, 1000); };
+        window.onload = () => { setTimeout(checkSession, 500); };
     </script>
 </body>
 </html>
