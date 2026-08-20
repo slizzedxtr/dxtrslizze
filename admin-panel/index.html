@@ -3,529 +3,459 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN PANEL | DXTR | SlizZe</title>
+    <title>COMMAND CENTER | DXTR | SlizZe</title>
+    <link rel="icon" type="image.png" href="/dslogo.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
-        /* БАЗОВЫЕ ПЕРЕМЕННЫЕ И ТЕМЫ */
         :root {
-            --bg-dark: #020602; --glass-bg: rgba(5, 15, 5, 0.7); --text-main: #ffffff;
-            --theme-color: #00c6ff; --theme-glow: rgba(0, 198, 255, 0.4);
-            --theme-glass-border: rgba(0, 198, 255, 0.2); --text-muted: #8a9ba8; --error-red: #cc4444; 
+            /* Премиальная палитра */
+            --bg-body: #08090d;
+            --accent-purple: #8b5cf6;
+            --accent-purple-glow: rgba(139, 92, 246, 0.4);
+            --accent-gold: #f4c745;
+            --accent-gold-glow: rgba(244, 199, 69, 0.4);
+            
+            --glass-bg: rgba(15, 15, 20, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #a3a8b5;
+            --error: #ef4444;
+            --success: #10b981;
         }
-        body.theme-blue { --theme-color: #00c6ff; --theme-glow: rgba(0, 198, 255, 0.4); --theme-glass-border: rgba(0, 198, 255, 0.3); --text-muted: #8a9ba8; }
-        body.theme-red { --theme-color: #ff0033; --theme-glow: rgba(255, 0, 51, 0.4); --theme-glass-border: rgba(255, 0, 51, 0.3); --text-muted: #a88a8a; }
-        body.theme-green { --theme-color: #00ff66; --theme-glow: rgba(0, 255, 102, 0.4); --theme-glass-border: rgba(0, 255, 102, 0.3); --text-muted: #8aa88a; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; transition: color 0.5s, border-color 0.5s, box-shadow 0.5s, background-color 0.5s; }
-        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { scrollbar-width: none; -ms-overflow-style: none; overflow-x: hidden; }
+        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
-        /* МАТРИЦА ФОН */
-        #matrixCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; opacity: 0.6; }
-        body::after { content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none; background: transparent; transition: background 0.3s ease; }
-        body.theme-red::after { background: rgba(255, 0, 51, 0.1); }
-        body.theme-green::after { background: rgba(0, 255, 102, 0.08); }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            width: 100%; min-height: 100vh; background-color: var(--bg-body);
+            color: var(--text-main); display: flex;
+        }
 
-        /* МЕНЮ И ПРОФИЛЬ (ВЕРХНИЕ КНОПКИ) */
-        .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 15px; }
-        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--theme-color); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-dark); transition: 0.3s; box-shadow: 0 0 10px var(--theme-glow); text-decoration: none; cursor: pointer; }
-        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--theme-color); border-color: #fff; }
-        .profile-btn.locked { opacity: 0.4; cursor: not-allowed; border-color: var(--text-muted); box-shadow: none; }
-        .profile-btn.locked:hover { transform: none; box-shadow: none; border-color: var(--text-muted); }
+        /* ── ФОН ── */
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: var(--bg-body); pointer-events: none;}
+        .blob { position: absolute; border-radius: 50%; filter: blur(150px); opacity: 0.25; animation: float 20s infinite alternate ease-in-out; }
+        .blob-1 { width: 700px; height: 700px; background: var(--accent-purple); top: -20%; left: -10%; }
+        .blob-2 { width: 600px; height: 600px; background: var(--accent-gold); bottom: -20%; right: -10%; animation-delay: -5s; opacity: 0.15; }
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 40px) scale(1.1); } }
 
-        .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; backdrop-filter: blur(10px); }
-        .burger-btn:hover { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-color); border-color: var(--theme-color); }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
+            background: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 50px 50px; mask-image: radial-gradient(ellipse at center, black 50%, transparent 100%);
+        }
+
+        /* ── TOAST УВЕДОМЛЕНИЯ ── */
+        .toast-container { position: fixed; top: 25px; right: 25px; z-index: 100000; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
+        .toast { background: rgba(15, 15, 20, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-left: 4px solid var(--accent-purple); color: #fff; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 15px; animation: slideInRight 0.4s ease forwards; pointer-events: auto; }
+        .toast.toast-error { border-left-color: var(--error); }
+        .toast.toast-success { border-left-color: var(--success); }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* ── ЭКРАН АВТОРИЗАЦИИ ── */
+        .auth-overlay {
+            position: fixed; inset: 0; background: var(--bg-body); z-index: 99999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 40px; backdrop-filter: blur(25px); transition: opacity 0.5s ease;
+        }
+        .auth-overlay.hidden { opacity: 0; pointer-events: none; }
+        .auth-box {
+            background: rgba(15, 15, 20, 0.6); border: 1px solid var(--glass-border);
+            border-radius: 24px; padding: 50px; max-width: 500px; width: 100%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(139, 92, 246, 0.05);
+            position: relative; overflow: hidden;
+        }
+        .auth-box::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at center, rgba(139,92,246,0.1) 0%, transparent 50%);
+            animation: spinBg 10s linear infinite; pointer-events: none;
+        }
+        @keyframes spinBg { 100% { transform: rotate(360deg); } }
+        .auth-icon { font-size: 4rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); }
+        .auth-title { font-size: 1.5rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
         
-        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(2, 6, 2, 0.95); backdrop-filter: blur(25px); border-right: 1px solid var(--theme-glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
-        .sidebar.active { left: 0; }
-        .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
-        .sidebar-link i { color: var(--theme-color); font-size: 1.4rem; }
-        .sidebar-link:hover { color: var(--theme-color); padding-left: 10px; border-bottom-color: var(--theme-glow); }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s; }
-        .sidebar-overlay.active { display: block; opacity: 1; }
+        .auth-form { display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 2; margin-top: 20px; }
+        .auth-input { background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; padding: 15px; border-radius: 12px; outline: none; font-family: 'Montserrat'; transition: 0.3s; text-align: center; font-size: 1.1rem; }
+        .auth-input:focus { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
+        .auth-submit-btn { background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold)); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
+        .auth-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px var(--accent-purple-glow); }
+        .auth-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .sys-msg { color: var(--accent-purple); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-top: 15px; }
 
-        header { text-align: center; padding: 8vh 20px 2vh; position: relative; z-index: 10; }
-        header h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 900; text-transform: uppercase; letter-spacing: 10px; color: var(--theme-color); text-shadow: 0 0 25px var(--theme-glow); margin-bottom: 10px; }
-
-        main { flex: 1; width: 100%; max-width: 900px; margin: 0 auto; padding: 0 20px 40px; z-index: 10; display: flex; flex-direction: column; align-items: center; position: relative; }
-
-        .view-section { width: 100%; display: none; flex-direction: column; align-items: center; animation: fadeIn 0.4s ease forwards; }
-        .view-section.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ВХОД (АВТОРИЗАЦИЯ) */
-        .auth-box { width: 100%; max-width: 450px; display: flex; flex-direction: column; gap: 15px; margin-top: 10vh; }
-        .input-wrapper { display: flex; width: 100%; align-items: center; transition: transform 0.3s; }
-        .admin-input { flex: 1; height: 70px; background: var(--glass-bg); border: 2px solid var(--theme-color); border-right: none; border-radius: 20px 0 0 20px; outline: none; padding: 0 20px; color: #fff; font-size: 1.2rem; font-weight: 700; text-align: center; letter-spacing: 2px; box-shadow: inset 0 0 15px rgba(255,255,255,0.05); backdrop-filter: blur(15px); transition: all 0.3s ease; }
-        .admin-input::placeholder { color: var(--text-muted); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
-        .auth-submit-btn { width: 70px; height: 70px; background: rgba(0,0,0,0.6); border: 2px solid var(--theme-color); border-radius: 0 20px 20px 0; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; box-shadow: inset 0 0 15px rgba(255,255,255,0.05); backdrop-filter: blur(15px); }
-        .auth-submit-btn:hover, .auth-submit-btn:active { background: var(--theme-color); color: var(--bg-dark); box-shadow: 0 0 20px var(--theme-glow); }
-        #passWrapper { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #passWrapper.show { max-height: 100px; opacity: 1; margin-top: 5px; overflow: visible; }
-        .sys-msg { color: var(--theme-color); font-size: 0.95rem; font-weight: 800; text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; height: 20px; text-shadow: 0 0 10px var(--theme-glow); }
+        #passWrapper { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.5s ease; display: flex; flex-direction: column; gap: 15px;}
+        #passWrapper.show { max-height: 200px; opacity: 1; margin-top: 5px; overflow: visible; }
 
         /* БАН ЭКРАН */
-        #banScreen { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 10vh; }
+        #banScreen { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 2;}
         #banScreen.active { display: flex; }
-        .ban-icon { font-size: 5rem; color: var(--error-red); margin-bottom: 20px; text-shadow: 0 0 30px rgba(204, 68, 68, 0.6); display: inline-block; }
+        .ban-icon { font-size: 5rem; color: var(--error); margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.5)); }
         .ban-icon.pulsing { animation: pulseBan 2s infinite; }
         @keyframes pulseBan { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        .ban-text { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase; transition: color 0.3s; }
-        .ban-timer { font-size: 3rem; font-weight: 900; color: var(--error-red); margin-top: 10px; font-variant-numeric: tabular-nums; }
+        .ban-text { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase; }
+        .ban-timer { font-size: 3rem; font-weight: 900; color: var(--error); margin-top: 10px; font-variant-numeric: tabular-nums; }
 
-        /* ГЛАВНОЕ МЕНЮ */
-        .menu-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 500px; margin-top: 30px; }
-        .menu-btn { background: var(--glass-bg); border: 1px solid var(--theme-glass-border); padding: 25px; border-radius: 20px; color: #fff; font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
-        .menu-btn i { font-size: 1.8rem; color: var(--theme-color); transition: 0.3s; }
-        .menu-btn:hover { border-color: var(--theme-color); box-shadow: 0 0 25px var(--theme-glow); transform: translateY(-5px); background: rgba(0, 198, 255, 0.1); }
-        .menu-btn:hover i { transform: scale(1.2); text-shadow: 0 0 15px var(--theme-color); }
+        /* ── БОКОВОЕ МЕНЮ (АДМИН) ── */
+        .admin-sidebar {
+            width: 280px; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(25px);
+            border-right: 1px solid var(--glass-border); height: 100vh;
+            display: flex; flex-direction: column; padding: 30px 20px;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 100;
+        }
+        .admin-logo { text-align: center; margin-bottom: 40px; }
+        .admin-logo h2 { font-size: 1.5rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px var(--accent-purple-glow); }
+        .admin-logo span { color: var(--accent-purple); }
 
-        /* ШАПКА РАЗДЕЛОВ */
-        .section-header { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--theme-glass-border); }
-        .back-btn { background: rgba(0,0,0,0.5); border: 1px solid var(--text-muted); padding: 10px 20px; border-radius: 12px; color: var(--text-main); font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
-        .back-btn:hover { background: var(--theme-color); color: #000; border-color: var(--theme-color); box-shadow: 0 0 15px var(--theme-glow); }
-        .section-title { font-size: 1.5rem; font-weight: 900; color: var(--theme-color); text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px var(--theme-glow); }
+        .nav-item {
+            display: flex; align-items: center; gap: 15px; padding: 16px 20px;
+            color: var(--text-muted); font-weight: 700; font-size: 0.9rem; text-transform: uppercase;
+            letter-spacing: 1px; border-radius: 14px; cursor: pointer; transition: 0.3s; margin-bottom: 8px;
+        }
+        .nav-item i { font-size: 1.2rem; width: 25px; text-align: center; transition: 0.3s; }
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: #fff; }
+        .nav-item.active { background: var(--accent-purple); color: #fff; box-shadow: 0 5px 15px var(--accent-purple-glow); }
 
-        /* ФОРМЫ */
-        .create-form { background: var(--glass-bg); border: 1px solid var(--theme-glass-border); padding: 30px; border-radius: 20px; width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(15px); }
-        .form-group { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-        .form-label { font-size: 0.8rem; font-weight: 800; color: var(--theme-color); text-transform: uppercase; letter-spacing: 1px; }
-        .form-input { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; color: #fff; font-family: 'Montserrat'; outline: none; transition: 0.3s; width: 100%; }
-        .form-input:focus { border-color: var(--theme-color); box-shadow: inset 0 0 10px var(--theme-glow); }
-        .form-file { background: rgba(0,0,0,0.6); border: 1px dashed var(--theme-color); padding: 15px; border-radius: 12px; color: var(--text-muted); cursor: pointer; text-align: center; transition: 0.3s; width: 100%; }
-        .form-file:hover { background: rgba(0,255,102,0.1); color: #fff; }
-        .form-file input { display: none; }
+        .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--glass-border); }
+        .logout-btn { display: flex; align-items: center; gap: 15px; padding: 15px 20px; color: var(--error); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 14px; text-decoration: none; }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.1); }
+
+        /* ── ОСНОВНАЯ ПАНЕЛЬ ── */
+        .admin-main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; padding: 40px; position: relative; }
         
-        .submit-btn { background: var(--theme-color); color: #000; border: none; padding: 18px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; width: 100%; }
-        .submit-btn:hover { box-shadow: 0 0 25px var(--theme-glow); transform: translateY(-2px); background: #fff; }
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: var(--theme-color); color: #000; }
-
-        /* КАРТОЧКИ */
-        .data-list { width: 100%; display: flex; flex-direction: column; gap: 20px; max-width: 800px; }
-        .data-card { background: linear-gradient(135deg, rgba(5,20,10,0.8), rgba(2,10,5,0.9)); border: 1px solid var(--theme-glass-border); border-radius: 20px; padding: 20px; display: flex; gap: 20px; align-items: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
-        .card-cover { width: 100px; height: 100px; border-radius: 12px; object-fit: cover; flex-shrink: 0; box-shadow: 0 5px 15px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); }
-        .card-info { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-        .card-badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 5px; background: var(--theme-color); color: #000; font-weight: 900; text-transform: uppercase; display: inline-block; width: fit-content; }
-        .badge-red { background: var(--error-red); color: white; }
-        .card-title { font-size: 1.2rem; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .header-title h1 { font-size: 2rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+        .header-title p { color: var(--text-muted); font-size: 0.9rem; }
         
-        .card-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px; }
-        .action-icon { background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); padding: 8px 12px; border-radius: 8px; display: flex; justify-content: center; align-items: center; gap: 5px; color: var(--text-muted); cursor: pointer; transition: 0.3s; font-size: 0.9rem; font-weight: 700; }
-        .action-icon:hover { color: #fff; border-color: var(--theme-color); background: var(--theme-color); box-shadow: 0 0 10px var(--theme-glow); }
-        .action-icon.delete:hover { color: #fff; border-color: var(--error-red); background: var(--error-red); box-shadow: 0 0 10px rgba(204,68,68,0.4); }
+        .admin-profile { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s; text-decoration: none; }
+        .admin-profile:hover { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
+        .admin-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent-purple); object-fit: cover; }
+        .admin-name { font-weight: 800; color: #fff; font-size: 0.95rem; }
 
-        .empty-neon { text-align: center; color: var(--theme-color); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin: 40px 0; text-shadow: 0 0 15px var(--theme-glow); opacity: 0.7; }
+        /* ── ТАБЫ (Секции) ── */
+        .admin-section { display: none; animation: fadeIn 0.4s ease forwards; }
+        .admin-section.active { display: block; }
 
-        /* ПРОФИЛИ */
-        .profile-card { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-        .prof-info h4 { color: #fff; font-size: 1.2rem; margin-bottom: 5px; }
-        .prof-info p { color: var(--text-muted); font-family: monospace; }
-        .profile-avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--theme-color); box-shadow: 0 0 10px var(--theme-glow); }
-        .profile-avatar-placeholder { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--theme-color); display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); font-size: 1.5rem; color: var(--theme-color); }
+        /* ── ТАБЛИЦЫ ── */
+        .table-container { background: rgba(15, 15, 20, 0.6); border: 1px solid var(--glass-border); border-radius: 24px; padding: 25px; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow-x: auto; margin-bottom: 30px; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;}
+        .table-header h3 { font-size: 1.2rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .action-btn { background: var(--accent-purple); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; }
+        .action-btn:hover { filter: brightness(1.15); box-shadow: 0 5px 15px var(--accent-purple-glow); transform: translateY(-2px); }
 
-        /* МОДАЛКИ */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 10005; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
+        th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); }
+        td { padding: 15px; color: #fff; font-size: 0.95rem; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.02); vertical-align: middle; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        
+        .td-user { display: flex; align-items: center; gap: 12px; }
+        .td-user img { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; border: 1px solid var(--glass-border); }
+        .td-actions { display: flex; gap: 8px; }
+        
+        .btn-sm { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; width: 35px; height: 35px; }
+        .btn-sm:hover { background: rgba(255,255,255,0.1); }
+        .btn-sm.edit:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+        .btn-sm.ban:hover { border-color: var(--error); color: var(--error); }
+
+        /* ── ФОРМЫ (Модалки создания/редактирования) ── */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 10005; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-box { background: rgba(20, 0, 0, 0.9); border: 2px solid var(--theme-color); border-radius: 20px; padding: 40px; text-align: center; max-width: 400px; width: 90%; transform: scale(0.9); transition: transform 0.3s; box-shadow: 0 0 50px var(--theme-glow); }
+        .modal-box { background: rgba(15, 15, 20, 0.95); border: 1px solid var(--accent-purple); border-radius: 24px; padding: 30px; max-width: 500px; width: 90%; transform: scale(0.95); transition: 0.3s; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;}
         .modal-overlay.active .modal-box { transform: scale(1); }
-        .modal-box.danger { border-color: var(--error-red); box-shadow: 0 0 50px rgba(204,68,68,0.2); }
-        .modal-box h3 { color: var(--theme-color); font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; }
-        .modal-box.danger h3 { color: var(--error-red); }
-        .modal-btns { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
-        .m-btn { padding: 12px 25px; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; border: none; transition: 0.3s; flex: 1; }
-        .m-btn-cancel { background: rgba(255,255,255,0.1); color: white; }
-        .m-btn-cancel:hover { background: rgba(255,255,255,0.2); }
-        .m-btn-confirm { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-glow); }
-        .m-btn-confirm:hover { background: #fff; box-shadow: 0 0 25px rgba(255,255,255,0.8); transform: scale(1.05); }
-        .m-btn-danger { background: var(--error-red); color: white; box-shadow: 0 0 15px rgba(204,68,68,0.5); }
-        .m-btn-danger:hover { background: #ff0000; box-shadow: 0 0 25px rgba(255,0,0,0.8); transform: scale(1.05); }
+        .modal-box.danger { border-color: var(--error); }
+        .modal-box h3 { color: #fff; font-size: 1.3rem; margin-bottom: 20px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;}
+        .modal-box.danger h3 { color: var(--error); }
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-bottom: 15px; text-align: left; }
+        .form-label { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .form-input { background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); padding: 14px; border-radius: 12px; color: #fff; font-family: 'Montserrat', sans-serif; outline: none; transition: 0.3s; width: 100%; }
+        .form-input:focus { border-color: var(--accent-purple); box-shadow: inset 0 0 10px var(--accent-purple-glow); }
+        
+        .form-file { background: rgba(0,0,0,0.5); border: 1px dashed var(--accent-purple); padding: 15px; border-radius: 12px; color: var(--text-muted); cursor: pointer; text-align: center; transition: 0.3s; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.85rem;}
+        .form-file:hover { background: rgba(139, 92, 246, 0.1); color: #fff; }
+        .form-file input { display: none; }
 
-        /* ЧАТ ТЕХПОДДЕРЖКИ */
-        .support-btn { position: fixed; bottom: 25px; right: 25px; z-index: 9000; background: var(--glass-bg); border: 1px solid var(--theme-glass-border); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); transition: 0.3s; }
-        .support-btn:hover { background: var(--theme-color); color: #000; transform: scale(1.1); box-shadow: 0 0 25px var(--theme-glow); }
-        .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--error-red); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: bold; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--error-red); }
-        .chat-window { position: fixed; bottom: 100px; right: 25px; width: 350px; height: 450px; background: rgba(5, 10, 5, 0.95); border: 1px solid var(--theme-glass-border); border-radius: 20px; z-index: 9000; display: none; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(20px); overflow: hidden; transform: translateY(20px); opacity: 0; transition: all 0.3s ease; }
-        .chat-window.active { display: flex; transform: translateY(0); opacity: 1; }
-        .chat-header { background: rgba(0,0,0,0.5); padding: 15px 20px; border-bottom: 1px solid var(--theme-glass-border); display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: var(--theme-color); letter-spacing: 1px; text-transform: uppercase; }
-        .close-chat { cursor: pointer; font-size: 1.2rem; color: #fff; transition: 0.3s; }
-        .close-chat:hover { color: var(--error-red); }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 85%; padding: 10px 15px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
-        .msg-user { align-self: flex-end; background: rgba(0, 198, 255, 0.1); border: 1px solid var(--theme-color); color: #fff; border-bottom-right-radius: 2px; }
-        .msg-admin { align-self: flex-start; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-bottom-left-radius: 2px; }
-        .msg-warning { align-self: flex-start; background: rgba(204, 68, 68, 0.2); border: 1px solid var(--error-red); color: #fff; }
-        .msg-success { align-self: flex-start; background: rgba(0, 255, 102, 0.2); border: 1px solid #00ff66; color: #fff; }
-        .chat-input { display: flex; padding: 15px; background: rgba(0,0,0,0.5); border-top: 1px solid var(--theme-glass-border); gap: 10px; }
-        .chat-input input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 10px; color: #fff; outline: none; font-family: 'Montserrat'; transition: 0.3s; }
-        .chat-input input:focus { border-color: var(--theme-color); }
-        .chat-input button { background: var(--theme-color); color: #000; border: none; width: 45px; height: 45px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; transition: 0.3s; display: flex; justify-content: center; align-items: center; }
-        .chat-input button:hover { box-shadow: 0 0 15px var(--theme-glow); transform: scale(1.05); background: #fff; }
-        .chat-input button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: #333; color: #888; }
+        .checkbox-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .checkbox-label { cursor: pointer; color: #fff; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px;}
 
-        @media (max-width: 600px) {
-            header h1 { font-size: 2.2rem; letter-spacing: 5px; }
-            .auth-box { margin-top: 5vh; }
-            .admin-input { height: 60px; font-size: 1rem; }
-            .auth-submit-btn { width: 60px; height: 60px; font-size: 1.3rem; }
-            .menu-btn { padding: 20px; font-size: 1rem; }
-            .chat-window { width: calc(100vw - 40px); right: 20px; bottom: 90px; height: 60vh; }
+        .modal-btns { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+        .m-btn { padding: 14px 25px; border-radius: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; border: none; transition: 0.3s; flex: 1; font-family: 'Montserrat', sans-serif;}
+        .m-btn-cancel { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); }
+        .m-btn-cancel:hover { background: rgba(255,255,255,0.1); }
+        .m-btn-confirm { background: var(--accent-purple); color: #fff; box-shadow: 0 5px 15px var(--accent-purple-glow); }
+        .m-btn-confirm:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .m-btn-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--error); color: var(--error); }
+        .m-btn-danger:hover { background: var(--error); color: #fff; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); transform: translateY(-2px); }
+
+        .empty-neon { text-align: center; color: var(--text-muted); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 30px; }
+
+        /* Прогресс бар загрузки */
+        #mProgressContainer { width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px; display: none; }
+        #mProgressBar { height:100%; width:0%; background:var(--accent-purple); box-shadow:0 0 10px var(--accent-purple-glow); transition:width 0.2s; }
+
+        /* Адаптив админки */
+        @media (max-width: 900px) {
+            .admin-sidebar { position: fixed; left: -300px; }
+            .admin-sidebar.active { left: 0; }
+            .admin-main { padding: 20px; margin-top: 60px; }
+            .header-top { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .admin-profile { align-self: flex-start; }
+            .burger-btn { display: flex; } /* Вернуть бургер для мобилок админки, если нужен. Но тут мы его скрыли, добавим кнопку */
+            .mobile-menu-toggle { display: block; position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 10px 15px; border-radius: 10px; color: #fff; cursor: pointer; }
+        }
+        @media (min-width: 901px) {
+            .mobile-menu-toggle { display: none; }
+            .admin-main { margin-left: 280px; } /* Сдвигаем контент вправо от сайдбара */
         }
     </style>
 </head>
-<body class="theme-blue">
+<body>
 
-    <canvas id="matrixCanvas"></canvas>
-
-    <div class="top-controls">
-        <div class="profile-btn locked" id="profileBtn" title="Профиль Администратора" onclick="handleProfileClick()">
-            <img src="../dslogo.png" alt="Profile" id="userAvatar">
-        </div>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
     </div>
 
-    <div class="burger-btn" id="burgerBtn"><i class="fa-solid fa-bars"></i></div>
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
-    <div class="sidebar" id="sidebar">
-        <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
-            МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.5rem; cursor: pointer; color: white; transition: 0.3s;"></i>
-        </div>
-        <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home"></i> Главная</a>
-        <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
-        <a class="sidebar-link" id="menuSupportBtn"><i class="fa-solid fa-headset"></i> Поддержка</a>
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- КНОПКА МЕНЮ ДЛЯ МОБИЛОК -->
+    <div class="mobile-menu-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');">
+        <i class="fa-solid fa-bars"></i> МЕНЮ
     </div>
 
-    <div class="support-btn" id="supportBtn">
-        <i class="fa-solid fa-headset"></i>
-        <div class="unread-badge" id="unreadBadge">!</div>
-    </div>
-
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-            <div><i class="fa-solid fa-headset"></i> ТЕХ. ПОДДЕРЖКА</div>
-            <i class="fa-solid fa-xmark close-chat" id="closeChat"></i>
-        </div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Введите сообщение..." autocomplete="off">
-            <button id="chatSend"><i class="fa-solid fa-paper-plane"></i></button>
-        </div>
-    </div>
-
-    <header>
-        <h1>ADMIN PANEL</h1>
-    </header>
-
-    <main>
-        <div class="view-section active" id="authSection">
-            <form id="authForm" class="auth-box">
+    <!-- ЭКРАН АВТОРИЗАЦИИ -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-box" id="authBoxContent">
+            <form id="authForm" class="auth-form">
+                <i class="fa-solid fa-shield-halved auth-icon" id="shieldIcon"></i>
+                <h2 class="auth-title">СИСТЕМА УПРАВЛЕНИЯ</h2>
                 <div class="input-wrapper" id="loginWrapper">
-                    <input type="text" id="adminLogin" class="admin-input" placeholder="ЛОГИН АККАУНТА" autocomplete="off" spellcheck="false" required>
-                    <button type="submit" class="auth-submit-btn"><i class="fa-solid fa-terminal"></i></button>
+                    <input type="text" id="adminLogin" class="auth-input" placeholder="ЛОГИН" autocomplete="off" spellcheck="false" required>
                 </div>
-                <div class="input-wrapper" id="passWrapper">
-                    <input type="password" id="adminPass" class="admin-input" placeholder="ПАРОЛЬ АККАУНТА">
-                    <button type="submit" class="auth-submit-btn"><i class="fa-solid fa-terminal"></i></button>
+                <div id="passWrapper">
+                    <input type="password" id="adminPass" class="auth-input" placeholder="ПАРОЛЬ">
+                    <button type="submit" class="auth-submit-btn" id="authSubmitBtn">ПРОДОЛЖИТЬ</button>
                 </div>
-            </form>
-            <div class="sys-msg" id="sysMsg">Ожидание ввода...</div>
-        </div>
-
-        <div id="banScreen">
-            <i class="fa-solid fa-shield-halved ban-icon pulsing" id="shieldIcon"></i>
-            <div class="ban-text" id="banTextEl">Доступ заблокирован</div>
-            <div class="ban-timer" id="banTimer">60:00</div>
-            <div id="banDescEl" style="color: var(--text-muted); margin-top: 15px; max-width: 400px; line-height: 1.5;">
-                Превышено количество попыток. Запрос отправлен на сервер. Ваш IP и Fingerprint занесены во временный черный список.
-            </div>
-        </div>
-
-        <div class="view-section" id="mainMenuSection">
-            <div class="section-title" style="margin-bottom: 10px;">СИСТЕМА УПРАВЛЕНИЯ</div>
-            <div style="color: var(--text-muted); text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px;">Выберите нужный отдел</div>
-            
-            <div class="menu-grid">
-                <div class="menu-btn" onclick="openSection('musicSection')">
-                    <i class="fa-solid fa-compact-disc"></i> <span>Муз. Каталог</span>
-                </div>
-                <div class="menu-btn" onclick="openSection('profileSection')">
-                    <i class="fa-solid fa-users"></i> <span>Профили</span>
-                </div>
-                <div class="menu-btn" onclick="openSection('promoSection')">
-                    <i class="fa-solid fa-ticket"></i> <span>Промокоды</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="view-section" id="musicSection">
-            <div class="section-header">
-                <button class="back-btn" onclick="openSection('mainMenuSection')"><i class="fa-solid fa-arrow-left"></i> Назад</button>
-                <div class="section-title">МУЗЫКА</div>
-            </div>
-
-            <div id="musicListContainer" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
-                <button class="submit-btn" style="max-width: 400px; margin-bottom: 30px;" onclick="showAddMusicForm()">
-                    <i class="fa-solid fa-plus"></i> ДОБАВИТЬ ТРЕК
-                </button>
-                <div class="data-list" id="musicList"></div>
-            </div>
-
-            <form class="create-form" id="musicAddForm" style="display: none;">
-                <div style="color: var(--theme-color); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 10px;">
-                    <i class="fa-solid fa-database"></i> Загрузка в Supabase
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">1.1.1 Название трека</label>
-                    <input type="text" id="mTitle" class="form-input" placeholder="Напр: Night City Lights" required>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">1.1.2 Авторы трека</label>
-                    <input type="text" id="mAuthors" class="form-input" placeholder="Оставьте пустым для 'DXTR feat. SlizZe'">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">1.1.8 YouTube Клип (ОБЯЗАТЕЛЬНО)</label>
-                    <input type="url" id="mYt" class="form-input" placeholder="https://youtube.com/..." required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">1.1.9 Синхронизированный текст (LRC)</label>
-                    <textarea id="mLyrics" class="form-input" style="min-height: 120px; resize: vertical; font-family: monospace; font-size: 0.9rem;" placeholder="[00:12.34] Ваш текст...&#10;Оставьте пустым, если текста нет"></textarea>
-                </div>
-                
-                <div style="display: flex; gap: 20px; color: var(--text-main); font-weight: 700; flex-wrap: wrap; margin-top: 10px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                    <label style="cursor: pointer;"><input type="checkbox" id="m18"> 18+ (Explicit) [1.1.3]</label>
-                    <label style="cursor: pointer;"><input type="checkbox" id="mMain"> Главный релиз [1.1.4]</label>
-                    <label style="cursor: pointer; color: var(--theme-color);"><input type="checkbox" id="mHasPlatforms"> Кнопка "Площадки" [1.1.6]</label>
-                </div>
-
-                <div id="platformsContainer" style="display: none; flex-direction: column; gap: 8px; margin-top: 5px; padding: 15px; background: rgba(0, 198, 255, 0.05); border: 1px dashed var(--theme-color); border-radius: 12px;">
-                    <div style="font-size: 0.8rem; font-weight: 800; color: var(--theme-color); text-transform: uppercase; margin-bottom: 5px;">Ссылки на площадки (Обязательно)</div>
-                    <input type="url" id="linkSpotify" class="form-input" placeholder="Ссылка Spotify">
-                    <input type="url" id="linkVk" class="form-input" placeholder="Ссылка VK Музыка">
-                    <input type="url" id="linkYandex" class="form-input" placeholder="Ссылка Яндекс Музыка">
-                </div>
-
-                <label class="form-file" id="mCoverLabel" style="margin-top: 10px;">
-                    <i class="fa-solid fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i><br>
-                    <span id="mCoverText">Обложка (JPG/PNG - ОБЯЗАТЕЛЬНО)</span>
-                    <input type="file" id="mCover" accept="image/*" required>
-                </label>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <label class="form-file" id="mMp3Label" style="flex:1; min-width: 250px;">
-                        <i class="fa-solid fa-file-audio" style="font-size: 1.5rem; margin-bottom: 10px;"></i><br>
-                        <span id="mMp3Text">Трек (MP3 - ОБЯЗАТЕЛЬНО)</span>
-                        <input type="file" id="mMp3" accept=".mp3" required>
-                    </label>
-                </div>
-
-                <div id="mProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px;">
-                    <div id="mProgressBar" style="height:100%; width:0%; background:var(--theme-color); box-shadow:0 0 10px var(--theme-glow); transition:width 0.2s;"></div>
-                </div>
-                <div id="mStatusText" style="text-align:center; font-size:0.8rem; color:var(--theme-color); font-weight:bold; margin-top:5px;"></div>
-
-                <div style="display: flex; gap: 15px; margin-top: 10px;">
-                    <button type="button" class="m-btn m-btn-cancel" onclick="hideAddMusicForm()">Отмена</button>
-                    <button type="submit" class="submit-btn" id="mSubmitBtn" style="margin-top: 0; flex: 2;">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Загрузить
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <div class="view-section" id="profileSection">
-            <div class="section-header">
-                <button class="back-btn" onclick="openSection('mainMenuSection')"><i class="fa-solid fa-arrow-left"></i> Назад</button>
-                <div class="section-title">ПРОФИЛИ</div>
-            </div>
-            
-            <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; text-align: center;">
-                Управление базой пользователей (MongoDB)
-            </div>
-
-            <div class="data-list" id="profilesList">
-                <div class="empty-neon">Загрузка профилей...</div>
-            </div>
-        </div>
-
-        <div class="view-section" id="promoSection">
-            <div class="section-header">
-                <button class="back-btn" onclick="openSection('mainMenuSection')"><i class="fa-solid fa-arrow-left"></i> Назад</button>
-                <div class="section-title">ПРОМОКОДЫ</div>
-            </div>
-
-            <form class="create-form" id="promoAddForm" style="margin-bottom: 30px;">
-                <div style="color: var(--text-muted); text-transform: uppercase; font-weight: 800; letter-spacing: 2px; text-align: center; margin-bottom: 10px;">
-                    <i class="fa-solid fa-ticket"></i> Новый промокод
-                </div>
-
-                <div style="display: flex; gap: 15px; color: #fff; font-weight: 700; margin-bottom: 15px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                    <label style="cursor: pointer; color: var(--theme-color);"><input type="checkbox" id="isCurrencyPromo"> 💰 Промокод на валюту</label>
-                </div>
-
-                <div class="form-group">
-                    <input type="text" id="newCode" class="form-input" placeholder="Код: GUSTO2026 (Без #)" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" id="newTitle" class="form-input" placeholder="Название: GUSTO (Snippet)" required>
-                </div>
-                
-                <div id="promoMediaFields" style="display: flex; gap: 10px;">
-                    <label class="form-file" id="coverLabel">
-                        <i class="fa-solid fa-image"></i> <span id="coverText">Обложка</span>
-                        <input type="file" id="newCover" accept="image/*" required>
-                    </label>
-                    <label class="form-file" id="trackLabel">
-                        <i class="fa-solid fa-file-audio"></i> <span id="trackText">Трек MP3</span>
-                        <input type="file" id="newTrack" accept="audio/mpeg" required>
-                    </label>
-                </div>
-
-                <div id="promoCurrencyFields" style="display: none; gap: 10px; flex-direction: column;">
-                    <div class="form-group">
-                        <input type="number" id="newPromoAmount" class="form-input" placeholder="Сумма DS Coin (Например: 1500)">
-                    </div>
-                    <div class="form-group">
-                        <input type="number" id="newPromoUses" class="form-input" placeholder="Кол-во активаций (На всех)">
-                    </div>
-                </div>
-
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    <i class="fa-solid fa-plus"></i> Создать
-                </button>
+                <div class="sys-msg" id="sysMsg">Ожидание ввода...</div>
             </form>
 
-            <div class="section-title" style="font-size: 1.2rem; margin-bottom: 15px;">АКТИВНЫЕ ПРОМОКОДЫ</div>
-            <div class="data-list" id="promoList"></div>
-        </div>
-
-        <div class="view-section" id="adminProfileSection">
-            <div class="section-header">
-                <button class="back-btn" onclick="goBackFromProfile()"><i class="fa-solid fa-arrow-left"></i> Назад</button>
-                <div class="section-title">АДМИНИСТРАТОР</div>
+            <div id="banScreen">
+                <i class="fa-solid fa-ban ban-icon pulsing"></i>
+                <div class="ban-text">Доступ заблокирован</div>
+                <div class="ban-timer" id="banTimer">60:00</div>
+                <div style="color: var(--text-muted); margin-top: 15px; font-size: 0.9rem;">Превышено количество попыток. Запрос отправлен на сервер.</div>
             </div>
-            <div class="create-form" style="align-items: center; text-align: center;">
-                <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--theme-color); margin-bottom: 15px; overflow: hidden; box-shadow: 0 0 20px var(--theme-glow);">
-                    <img src="../dslogo.png" alt="Avatar" id="adminProfileAvatar" onerror="this.src='https://via.placeholder.com/100/000000/00c6ff?text=D%26S'" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+    </div>
+
+    <!-- БОКОВОЕ МЕНЮ (АДМИН) -->
+    <aside class="admin-sidebar">
+        <div class="admin-logo">
+            <h2>DXTR <span>|</span> CC</h2>
+        </div>
+        <nav>
+            <div class="nav-item active" onclick="switchSection('dashboard', this)"><i class="fa-solid fa-chart-pie"></i> Дашборд</div>
+            <div class="nav-item" onclick="switchSection('users', this)"><i class="fa-solid fa-users"></i> Пользователи</div>
+            <div class="nav-item" onclick="switchSection('music', this)"><i class="fa-solid fa-music"></i> Муз. Каталог</div>
+            <div class="nav-item" onclick="switchSection('promos', this)"><i class="fa-solid fa-ticket"></i> Промокоды</div>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="https://dxtrslizze.xyz/" class="logout-btn"><i class="fa-solid fa-door-open"></i> Вернуться на сайт</a>
+            <div class="logout-btn" style="color: var(--text-muted); margin-top: 10px;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Сменить аккаунт</div>
+        </div>
+    </aside>
+
+    <!-- ОСНОВНАЯ ПАНЕЛЬ -->
+    <main class="admin-main">
+        <header class="header-top">
+            <div class="header-title">
+                <h1 id="pageTitle">Дашборд</h1>
+                <p>Сводка данных платформы</p>
+            </div>
+            <a href="#" class="admin-profile" onclick="switchSection('profile', document.querySelector('.nav-item'))">
+                <img src="/dslogo.png" alt="Admin" class="admin-avatar" id="adminAvatar">
+                <div class="admin-name" id="adminName">Admin</div>
+            </a>
+        </header>
+
+        <!-- СЕКЦИЯ: ПРОФИЛЬ АДМИНА -->
+        <section id="sec-profile" class="admin-section">
+            <div class="table-container" style="text-align: center; max-width: 400px; margin: 0 auto;">
+                <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-purple); margin: 0 auto 20px; overflow: hidden; box-shadow: 0 0 20px var(--accent-purple-glow);">
+                    <img src="/dslogo.png" alt="Avatar" id="profAvatarBig" onerror="this.src='/dslogo.png'" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
-                <h2 id="profNick" style="font-size: 1.8rem; margin-bottom: 5px;">DXTR | SlizZe</h2>
-                <div style="color: var(--theme-color); font-weight: 800; letter-spacing: 1px; margin-bottom: 20px; text-transform: uppercase; font-size: 0.8rem;">Системный администратор</div>
+                <h2 id="profNickBig" style="font-size: 1.8rem; margin-bottom: 5px; color: #fff;">DXTR | SlizZe</h2>
+                <div style="color: var(--accent-gold); font-weight: 800; letter-spacing: 1px; margin-bottom: 25px; text-transform: uppercase; font-size: 0.85rem;">Системный администратор</div>
                 
-                <a href="https://dxtrslizze.xyz/profile" class="m-btn m-btn-confirm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; margin-bottom: 15px; box-sizing: border-box; color: #000; font-size: 1.1rem; height: 50px;">
-                    <i class="fa-solid fa-user"></i> ПЕРЕЙТИ В ПРОФИЛЬ
+                <a href="https://dxtrslizze.xyz/profile" class="m-btn m-btn-confirm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; margin-bottom: 15px; color: #fff;">
+                    <i class="fa-solid fa-user"></i> Настройки профиля
                 </a>
-
-                <button class="m-btn m-btn-danger" style="width: 100%; height: 50px;" onclick="logout()">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+                <button class="m-btn m-btn-danger" style="width: 100%;" onclick="logout()">ВЫЙТИ ИЗ СИСТЕМЫ</button>
             </div>
-        </div>
+        </section>
+
+        <!-- СЕКЦИЯ: ПОЛЬЗОВАТЕЛИ -->
+        <section id="sec-users" class="admin-section">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Управление пользователями</h3>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="userSearchInput" placeholder="Поиск по нику..." style="background:rgba(0,0,0,0.5); border:1px solid var(--glass-border); padding:10px 15px; border-radius:12px; color:#fff; outline:none; font-family: 'Montserrat';">
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead><tr><th>Пользователь</th><th>ID</th><th>Логин</th><th>Баланс</th><th>Статус</th><th>Действия</th></tr></thead>
+                        <tbody id="allUsersTable"><tr><td colspan="6" class="empty-neon">Загрузка...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ: МУЗЫКА -->
+        <section id="sec-music" class="admin-section">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Каталог треков</h3>
+                    <button class="action-btn" onclick="openMusicModal()"><i class="fa-solid fa-plus"></i> Добавить релиз</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead><tr><th>Обложка / Название</th><th>Главный</th><th>18+</th><th>Действия</th></tr></thead>
+                        <tbody id="musicTable"><tr><td colspan="4" class="empty-neon">Загрузка...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ: ПРОМОКОДЫ -->
+        <section id="sec-promos" class="admin-section">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Активные промокоды</h3>
+                    <button class="action-btn" onclick="openPromoModal()"><i class="fa-solid fa-plus"></i> Создать код</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead><tr><th>Код / Название</th><th>Тип / Награда</th><th>Использования</th><th>Действия</th></tr></thead>
+                        <tbody id="promosTable"><tr><td colspan="4" class="empty-neon">Загрузка...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </main>
 
+    <!-- МОДАЛКИ (Формы) -->
+    
+    <!-- Подтверждение удаления -->
     <div class="modal-overlay" id="deleteModal">
         <div class="modal-box danger">
             <h3>Подтверждение</h3>
-            <p id="deleteModalText">Удалить элемент <span class="modal-code" id="modalCodeName">#XXX</span> навсегда?</p>
+            <p id="deleteModalText" style="color: var(--text-muted); margin-bottom: 25px;">Удалить элемент <span style="color:#fff; font-weight:bold;" id="modalCodeName">#XXX</span> навсегда?</p>
             <div class="modal-btns">
-                <button class="m-btn m-btn-cancel" onclick="closeDeleteModal()">Отмена</button>
+                <button class="m-btn m-btn-cancel" onclick="closeModal('deleteModal')">Отмена</button>
                 <button class="m-btn m-btn-danger" id="confirmDeleteBtn">Удалить</button>
             </div>
         </div>
     </div>
 
+    <!-- Редактирование пользователя -->
     <div class="modal-overlay" id="editProfileModal">
-        <div class="modal-box" style="max-width: 500px; padding: 30px;">
+        <div class="modal-box">
             <h3>Изменить профиль</h3>
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Цифровой ID [2.3.2]</label>
-                <input type="text" id="editProfIdInput" class="form-input">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Логин (Username) [Для входа]</label>
-                <input type="text" id="editProfUsernameInput" class="form-input" placeholder="Логин">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Никнейм [Отображается]</label>
-                <input type="text" id="editProfNickInput" class="form-input" placeholder="Пусто = удалить ник">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Аватарка (URL-ссылка)</label>
-                <input type="url" id="editProfAvatarInput" class="form-input" placeholder="https://...">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Баланс профиля</label>
-                <input type="number" id="editProfBalanceInput" class="form-input" placeholder="0">
-            </div>
-            <div class="form-group" style="text-align: left; margin-bottom: 25px;">
-                <label class="form-label">Новый пароль аккаунта</label>
-                <input type="text" id="editProfPassInput" class="form-input" placeholder="Оставьте пустым, чтобы не менять">
-            </div>
+            <div class="form-group"><label class="form-label">Цифровой ID</label><input type="text" id="editProfIdInput" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Логин (Username)</label><input type="text" id="editProfUsernameInput" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Никнейм</label><input type="text" id="editProfNickInput" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Аватарка (URL)</label><input type="url" id="editProfAvatarInput" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Баланс (NC)</label><input type="number" id="editProfBalanceInput" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Новый пароль</label><input type="text" id="editProfPassInput" class="form-input" placeholder="Оставить пустым для сохранения старого"></div>
             <div class="modal-btns">
-                <button class="m-btn m-btn-cancel" onclick="closeEditProfileModal()">Отмена</button>
+                <button class="m-btn m-btn-cancel" onclick="closeModal('editProfileModal')">Отмена</button>
                 <button class="m-btn m-btn-confirm" id="confirmEditProfileBtn">Сохранить</button>
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="editMusicModal">
-        <div class="modal-box" style="max-width: 500px; padding: 30px;">
-            <h3>Редактировать трек</h3>
-            
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Название</label>
-                <input type="text" id="editMTitle" class="form-input">
-            </div>
-            
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Авторы</label>
-                <input type="text" id="editMAuthors" class="form-input" placeholder="DXTR feat. SlizZe">
-            </div>
+    <!-- Добавление/Редактирование Музыки -->
+    <div class="modal-overlay" id="musicModal">
+        <div class="modal-box" style="max-width: 600px;">
+            <h3 id="musicModalTitle">Добавить трек</h3>
+            <form id="musicForm">
+                <div class="form-group"><label class="form-label">Название</label><input type="text" id="mTitle" class="form-input" required></div>
+                <div class="form-group"><label class="form-label">Авторы</label><input type="text" id="mAuthors" class="form-input" placeholder="DXTR feat. SlizZe"></div>
+                <div class="form-group"><label class="form-label">YouTube Клип (URL)</label><input type="url" id="mYt" class="form-input"></div>
+                <div class="form-group"><label class="form-label">Текст (LRC)</label><textarea id="mLyrics" class="form-input" style="min-height: 100px; resize: vertical;" placeholder="[00:12.34] Текст..."></textarea></div>
+                
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="m18"> 18+</label>
+                    <label class="checkbox-label"><input type="checkbox" id="mMain"> Главный релиз</label>
+                    <label class="checkbox-label" style="color:var(--accent-purple);"><input type="checkbox" id="mHasPlatforms"> Есть площадки</label>
+                </div>
 
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">YouTube Клип</label>
-                <input type="url" id="editMYt" class="form-input">
-            </div>
+                <div id="platformsContainer" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+                    <input type="url" id="linkSpotify" class="form-input" placeholder="Spotify URL">
+                    <input type="url" id="linkVk" class="form-input" placeholder="VK URL">
+                    <input type="url" id="linkYandex" class="form-input" placeholder="Yandex URL">
+                </div>
 
-            <div class="form-group" style="text-align: left; margin-bottom: 15px;">
-                <label class="form-label">Текст (LRC)</label>
-                <textarea id="editMLyrics" class="form-input" style="min-height: 120px; resize: vertical; font-family: monospace; font-size: 0.9rem;" placeholder="[00:12.34] Ваш текст..."></textarea>
-            </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; text-align: left;" id="musicFileHint">При создании файлы обязательны. При ред. - по желанию.</div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <label class="form-file" style="flex: 1;"><i class="fa-solid fa-image"></i><span id="mCoverText">Обложка</span><input type="file" id="mCover" accept="image/*"></label>
+                    <label class="form-file" style="flex: 1;"><i class="fa-solid fa-file-audio"></i><span id="mMp3Text">Трек MP3</span><input type="file" id="mMp3" accept=".mp3"></label>
+                </div>
 
-            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; text-align: left;">
-                <label style="cursor: pointer; color: #fff; font-size: 0.9rem;"><input type="checkbox" id="editM18"> 18+</label>
-                <label style="cursor: pointer; color: #fff; font-size: 0.9rem;"><input type="checkbox" id="editMMain"> Главный</label>
-                <label style="cursor: pointer; color: var(--theme-color); font-size: 0.9rem;"><input type="checkbox" id="editMHasPlatforms"> Площадки</label>
-            </div>
+                <div id="mProgressContainer"><div id="mProgressBar"></div></div>
 
-            <div id="editPlatformsContainer" style="display: none; flex-direction: column; gap: 8px; margin-bottom: 15px; text-align: left;">
-                <input type="url" id="editLinkSpotify" class="form-input" placeholder="Spotify">
-                <input type="url" id="editLinkVk" class="form-input" placeholder="VK Музыка">
-                <input type="url" id="editLinkYandex" class="form-input" placeholder="Яндекс Музыка">
-            </div>
+                <div class="modal-btns">
+                    <button type="button" class="m-btn m-btn-cancel" onclick="closeModal('musicModal')">Отмена</button>
+                    <button type="submit" class="m-btn m-btn-confirm" id="mSubmitBtn">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; text-align: left;">
-                * Оставьте поля файлов пустыми, если не хотите их менять.
-            </div>
-            
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-                <label class="form-file" style="padding: 10px; font-size: 0.8rem; flex: 1;">
-                    <span id="editMCoverText">Новая обложка</span>
-                    <input type="file" id="editMCover" accept="image/*">
-                </label>
-                <label class="form-file" style="padding: 10px; font-size: 0.8rem; flex: 1;">
-                    <span id="editMMp3Text">Новый MP3</span>
-                    <input type="file" id="editMMp3" accept=".mp3">
-                </label>
-            </div>
+    <!-- Добавление/Редактирование Промокода -->
+    <div class="modal-overlay" id="promoModal">
+        <div class="modal-box">
+            <h3 id="promoModalTitle">Новый промокод</h3>
+            <form id="promoForm">
+                <div class="checkbox-group" style="justify-content: center;">
+                    <label class="checkbox-label" style="color:var(--accent-gold);"><input type="checkbox" id="pIsCurrency"> 💰 Валютный промокод</label>
+                </div>
+                <div class="form-group"><label class="form-label">Код</label><input type="text" id="pCode" class="form-input" placeholder="GUSTO26" required></div>
+                <div class="form-group"><label class="form-label">Название / Описание</label><input type="text" id="pTitle" class="form-input" required></div>
+                
+                <div id="promoMediaFields" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <label class="form-file" style="flex: 1;"><i class="fa-solid fa-image"></i><span id="pCoverText">Секретная Обложка</span><input type="file" id="pCover" accept="image/*"></label>
+                    <label class="form-file" style="flex: 1;"><i class="fa-solid fa-file-audio"></i><span id="pTrackText">Секретный Трек</span><input type="file" id="pTrack" accept=".mp3"></label>
+                </div>
 
-            <div id="editMProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; margin-bottom:15px;">
-                <div id="editMProgressBar" style="height:100%; width:0%; background:var(--theme-color);"></div>
-            </div>
+                <div id="promoCurrencyFields" style="display: none; flex-direction: column; gap: 15px; margin-bottom: 15px;">
+                    <div class="form-group"><label class="form-label">Сумма (NC)</label><input type="number" id="pAmount" class="form-input" placeholder="1000"></div>
+                    <div class="form-group"><label class="form-label">Кол-во активаций</label><input type="number" id="pUses" class="form-input" placeholder="100"></div>
+                </div>
 
-            <div class="modal-btns" style="margin-top: 0;">
-                <button class="m-btn m-btn-cancel" onclick="closeEditMusicModal()">Отмена</button>
-                <button class="m-btn m-btn-confirm" id="confirmEditMusicBtn">Сохранить</button>
+                <div class="modal-btns">
+                    <button type="button" class="m-btn m-btn-cancel" onclick="closeModal('promoModal')">Отмена</button>
+                    <button type="submit" class="m-btn m-btn-confirm" id="pSubmitBtn">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Редактирование Промокода (Только текст) -->
+    <div class="modal-overlay" id="editPromoModal">
+        <div class="modal-box">
+            <h3>Редактировать код</h3>
+            <div class="form-group"><label class="form-label">Код</label><input type="text" id="editPCode" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Название</label><input type="text" id="editPTitle" class="form-input"></div>
+            <div class="modal-btns">
+                <button class="m-btn m-btn-cancel" onclick="closeModal('editPromoModal')">Отмена</button>
+                <button class="m-btn m-btn-confirm" id="confirmEditPromoBtn">Сохранить</button>
             </div>
         </div>
     </div>
@@ -534,167 +464,25 @@
     <script>
         const API_URL = "https://dxtrslizze.onrender.com/api";
 
-        // ========== СОСТОЯНИЕ СЕССИИ ==========
+        // ========== СОСТОЯНИЕ СЕССИИ И АВТОРИЗАЦИЯ ==========
         let jwtToken = localStorage.getItem('adminToken') || '';
         let isAuthenticated = false;
-
-        function authHeaders(extra) {
-            return Object.assign({ 'Authorization': 'Bearer ' + jwtToken }, extra || {});
-        }
-
-        // ========== НАВИГАЦИЯ ==========
-        function openSection(sectionId) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            if (sectionId === 'musicSection') loadMusicFromServer();
-            if (sectionId === 'profileSection') loadProfilesFromServer();
-            if (sectionId === 'promoSection') loadPromosFromServer();
-        }
-
-        function handleProfileClick() {
-            if (isAuthenticated) openSection('adminProfileSection');
-        }
-
-        function goBackFromProfile() {
-            if (isAuthenticated) openSection('mainMenuSection');
-            else openSection('authSection');
-        }
-
-        function logout() {
-            localStorage.removeItem('adminToken');
-            isAuthenticated = false;
-            location.reload();
-        }
-
-        // ========== МАТРИЦА И МЕНЮ ==========
-        const canvas = document.getElementById('matrixCanvas'); const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const FONT_SIZE = 16; let columns = Math.floor(canvas.width / FONT_SIZE); let drops = [];
-        for (let i = 0; i < columns; i++) drops[i] = Math.random() * -60;
-        function drawMatrix() {
-            const isRed = document.body.classList.contains('theme-red'); const isGreen = document.body.classList.contains('theme-green');
-            ctx.fillStyle = isRed ? 'rgba(5, 1, 1, 0.08)' : (isGreen ? 'rgba(2, 6, 2, 0.08)' : 'rgba(1, 4, 8, 0.08)');
-            ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.font = FONT_SIZE + 'px monospace';
-            for (let i = 0; i < drops.length; i++) {
-                const char = Math.random() > 0.5 ? '1' : '0';
-                if (isRed) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#ff5555' : '#cc0000'; else if (isGreen) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#afffbf' : '#00ff66'; else ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#aadeff' : '#00c6ff';
-                ctx.fillText(char, i * FONT_SIZE, drops[i] * FONT_SIZE);
-                if (drops[i] * FONT_SIZE > canvas.height && Math.random() > 0.975) drops[i] = 0; drops[i]++;
-            }
-        }
-        setInterval(drawMatrix, 50);
-
-        const burgerBtn = document.getElementById('burgerBtn'), sidebar = document.getElementById('sidebar'), sidebarOverlay = document.getElementById('sidebarOverlay'), closeSidebar = document.getElementById('closeSidebar');
-        function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
-        burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
-
-        // ========== ЧАТ ТЕХПОДДЕРЖКИ ==========
-        const supportBtn = document.getElementById('supportBtn'), chatWindow = document.getElementById('chatWindow'), closeChat = document.getElementById('closeChat'), menuSupportBtn = document.getElementById('menuSupportBtn'), unreadBadge = document.getElementById('unreadBadge'), chatMessages = document.getElementById('chatMessages'), chatInput = document.getElementById('chatInput'), chatSend = document.getElementById('chatSend');
-        let chatHistory = JSON.parse(localStorage.getItem('chatHistory_dxtr') || '[]');
-        let isSupportBanned = false;
-        
-        function toggleChat() {
-            if (chatWindow.style.display === 'flex') {
-                chatWindow.classList.remove('active'); setTimeout(() => chatWindow.style.display = 'none', 300);
-            } else {
-                chatWindow.style.display = 'flex'; setTimeout(() => chatWindow.classList.add('active'), 10);
-                unreadBadge.style.display = 'none'; scrollToBottom();
-            }
-        }
-        supportBtn.onclick = toggleChat; closeChat.onclick = toggleChat; menuSupportBtn.onclick = (e) => { e.preventDefault(); toggleMenu(); toggleChat(); };
-        
-        function renderHistory() { chatMessages.innerHTML = ''; chatHistory.forEach(m => addMessageToUI(m.text, m.type)); scrollToBottom(); }
-        renderHistory();
-        function addMessageToUI(text, type) { const div = document.createElement('div'); div.className = `msg msg-${type}`; div.innerHTML = text; chatMessages.appendChild(div); scrollToBottom(); }
-        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
-        function saveMessage(text, type) { chatHistory.push({ text, type }); if (chatHistory.length > 50) chatHistory.shift(); localStorage.setItem('chatHistory_dxtr', JSON.stringify(chatHistory)); }
-        
-        chatSend.onclick = () => {
-            if (isSupportBanned || !chatInput.value.trim()) return;
-            const text = chatInput.value.trim();
-            addMessageToUI(text, 'user'); saveMessage(text, 'user');
-            if (typeof socket !== 'undefined' && socket) {
-                socket.emit('send_message', { token: jwtToken, text });
-            }
-            chatInput.value = '';
-        };
-        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') chatSend.click(); });
-
-        // ========== СИСТЕМА БАНОВ, ID И СОКЕТЫ ==========
-        function setCookie(name, value, days) { let expires = ""; if (days) { let date = new Date(); date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000)); expires = "; expires=" + date.toUTCString(); } document.cookie = name + "=" + (value || "") + expires + "; path=/"; }
-        function getCookie(name) { let nameEQ = name + "="; let ca = document.cookie.split(';'); for(let i=0;i < ca.length;i++) { let c = ca[i].trim(); if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length); } return null; }
-
-        let lsId = localStorage.getItem('dxtrNumericId'); let cookieId = getCookie('dxtrNumericId'); let clientId = lsId || cookieId || null;
-        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
-        if (clientId) { localStorage.setItem('dxtrNumericId', clientId); setCookie('dxtrNumericId', clientId, 365); }
-
-        let socket; let fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FP => FP.load()); let fingerprintHash = '';
-
-        try {
-            socket = io("https://dxtrslizze.onrender.com/");
-            socket.on('connect', () => {
-                fpPromise.then(fp => fp.get()).then(r => {
-                    fingerprintHash = r.visitorId;
-                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    socket.emit('register_client', { token: jwtToken, fpHash: fingerprintHash });
-                }).catch(() => {
-                    fingerprintHash = 'blocked';
-                    socket.emit('check_admin_ban', { clientId, fpHash: fingerprintHash });
-                    socket.emit('register_client', { token: jwtToken, fpHash: fingerprintHash });
-                });
-            });
-
-            socket.on('assign_id', (data) => { if (data && data.newId) { clientId = data.newId; localStorage.setItem('dxtrNumericId', clientId); setCookie('dxtrNumericId', clientId, 365); } });
-
-            socket.on('user_data', d => {
-                if (d.nickname) { window.userNickname = d.nickname; localStorage.setItem('dxtrUserNickname', d.nickname); }
-                if (d.avatarUrl) { const avatarImg = document.getElementById('userAvatar'); if (avatarImg) avatarImg.src = d.avatarUrl; }
-            });
-
-            socket.on('admin_ban_status', data => { if (data.isBanned) activateBanUI(data.timeRemaining); });
-
-            socket.on('admin_unbanned', () => {
-                localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; clearInterval(banTimerInterval);
-                document.body.className = 'theme-green';
-                const shield = document.getElementById('shieldIcon'); const textEl = document.getElementById('banTextEl'); const timerEl = document.getElementById('banTimer'); const descEl = document.getElementById('banDescEl');
-                shield.classList.remove('pulsing'); shield.style.transition = 'transform 0.6s, color 0.3s'; shield.style.transform = 'rotate(360deg) scale(1.2)'; shield.style.color = 'var(--theme-color)'; shield.style.textShadow = '0 0 30px rgba(0, 255, 102, 0.8)';
-                setTimeout(() => { shield.classList.remove('fa-shield-halved'); shield.classList.add('fa-check'); shield.style.transform = 'rotate(720deg) scale(1)'; }, 300);
-                textEl.textContent = 'ДОСТУП ВОССТАНОВЛЕН'; textEl.style.color = 'var(--theme-color)'; timerEl.style.display = 'none';
-                descEl.innerHTML = 'Доступ открыт преждевременно.<br><br>Инициализация...'; descEl.style.color = '#fff';
-                setTimeout(() => { location.reload(); }, 3000);
-            });
-
-            socket.on('receive_message', (data) => {
-                const type = data.isWarning ? 'warning' : (data.isSuccess ? 'success' : 'admin');
-                addMessageToUI(data.text, type); saveMessage(data.text, type);
-                if (chatWindow.style.display !== 'flex') unreadBadge.style.display = 'flex';
-            });
-
-            socket.on('ban_status', (data) => {
-                isSupportBanned = data.isBanned;
-                if (isSupportBanned) { chatInput.disabled = true; chatSend.disabled = true; chatInput.placeholder = "Доступ ограничен"; }
-                else { chatInput.disabled = false; chatSend.disabled = false; chatInput.placeholder = "Введите сообщение..."; }
-            });
-
-            socket.on('auth_required', () => {
-                if (!isAuthenticated) {
-                    chatInput.disabled = true;
-                    chatSend.disabled = true;
-                    chatInput.placeholder = "Войдите для доступа к чату";
-                }
-            });
-
-        } catch(e) {}
-
         let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
         let banEndTime = parseInt(localStorage.getItem('adminBanEndTime') || '0');
         let banTimerInterval;
 
-        function checkLocalBan() { const now = Date.now(); if (banEndTime > now) activateBanUI(Math.floor((banEndTime - now) / 1000)); else { localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; } }
-        checkLocalBan();
+        function authHeaders(extra) { return Object.assign({ 'Authorization': 'Bearer ' + jwtToken }, extra || {}); }
+
+        function checkLocalBan() { 
+            const now = Date.now(); 
+            if (banEndTime > now) activateBanUI(Math.floor((banEndTime - now) / 1000)); 
+            else { localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; } 
+        }
 
         function activateBanUI(secondsLeft) {
-            document.getElementById('authSection').classList.remove('active'); document.getElementById('banScreen').classList.add('active'); document.body.className = 'theme-red'; 
+            document.getElementById('authForm').style.display = 'none'; 
+            document.getElementById('banScreen').classList.add('active'); 
+            document.getElementById('authBoxContent').classList.add('danger');
             clearInterval(banTimerInterval); updateBanTimerDisplay(secondsLeft);
             banTimerInterval = setInterval(() => {
                 secondsLeft--; if (secondsLeft <= 0) { clearInterval(banTimerInterval); location.reload(); } else updateBanTimerDisplay(secondsLeft);
@@ -704,433 +492,210 @@
 
         function triggerBan() {
             const banTime = 3600; localStorage.setItem('adminBanEndTime', Date.now() + banTime * 1000);
-            if(socket) socket.emit('trigger_admin_ban', { clientId, fpHash: fingerprintHash, duration: banTime });
+            if(window.socket) window.socket.emit('trigger_admin_ban', { clientId: window.clientId, fpHash: 'blocked', duration: banTime });
             activateBanUI(banTime);
         }
 
-        // ========== ВОССТАНОВЛЕНИЕ СЕССИИ ==========
-        if (jwtToken) {
-            isAuthenticated = true;
-            document.getElementById('profileBtn').classList.remove('locked');
-            document.getElementById('authSection').classList.remove('active');
-            document.body.className = 'theme-green';
-            openSection('mainMenuSection');
-        }
-
-        // ========== АВТОРИЗАЦИЯ ==========
-        const authForm = document.getElementById('authForm'), loginInput = document.getElementById('adminLogin'), passInput = document.getElementById('adminPass'), loginWrapper = document.getElementById('loginWrapper'), passWrapper = document.getElementById('passWrapper'), sysMsg = document.getElementById('sysMsg');
-        let isLoginVerified = false; let redThemeTimeout;
+        const loginInput = document.getElementById('adminLogin');
+        const passInput = document.getElementById('adminPass');
+        const loginWrapper = document.getElementById('loginWrapper');
+        const passWrapper = document.getElementById('passWrapper');
+        const sysMsg = document.getElementById('sysMsg');
+        let isLoginVerified = false;
 
         function triggerError() {
             failedAttempts++; localStorage.setItem('adminFailedAttempts', failedAttempts);
             if (failedAttempts >= 3) { triggerBan(); return; } 
-            sysMsg.textContent = `ОШИБКА ДОСТУПА. ПОПЫТОК: ${3 - failedAttempts}`; sysMsg.style.color = 'var(--error-red)'; document.body.className = 'theme-red';
-            clearTimeout(redThemeTimeout); redThemeTimeout = setTimeout(() => { if(!document.body.classList.contains('theme-green')) { document.body.className = 'theme-blue'; sysMsg.textContent = 'Ожидание ввода...'; sysMsg.style.color = 'var(--theme-color)'; } }, 5000);
+            sysMsg.textContent = `ОШИБКА ДОСТУПА. ПОПЫТОК: ${3 - failedAttempts}`; sysMsg.style.color = 'var(--error)';
+            setTimeout(() => { sysMsg.textContent = 'Ожидание ввода...'; sysMsg.style.color = 'var(--accent-purple)'; }, 3000);
             const activeWrapper = isLoginVerified ? passWrapper : loginWrapper;
             activeWrapper.style.transform = 'translateX(-10px)'; setTimeout(() => activeWrapper.style.transform = 'translateX(10px)', 100); setTimeout(() => activeWrapper.style.transform = 'translateX(-10px)', 200); setTimeout(() => activeWrapper.style.transform = 'translateX(0)', 300);
             passInput.value = '';
         }
 
-        authForm.onsubmit = async (e) => {
+        document.getElementById('authForm').onsubmit = async (e) => {
             e.preventDefault(); 
             if (!isLoginVerified) {
                 if (loginInput.value.trim() !== '') {
-                    isLoginVerified = true;
-                    passWrapper.classList.add('show');
-                    passInput.setAttribute('required', 'true');
-                    sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.';
-                    loginInput.disabled = true;
-                    loginWrapper.querySelector('.auth-submit-btn').style.display = 'none';
-                    loginInput.style.borderRight = '2px solid var(--theme-color)';
-                    loginInput.style.borderRadius = '20px';
-                    passInput.focus();
-                } else {
-                    triggerError();
-                }
+                    isLoginVerified = true; passWrapper.classList.add('show'); passInput.setAttribute('required', 'true');
+                    sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.'; loginInput.disabled = true; passInput.focus();
+                } else { triggerError(); }
             } else {
-                sysMsg.textContent = 'АВТОРИЗАЦИЯ...';
-                sysMsg.style.color = 'var(--theme-color)';
+                sysMsg.textContent = 'АВТОРИЗАЦИЯ...'; sysMsg.style.color = '#fff';
                 try {
                     const res = await fetch(`${API_URL}/auth/login`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: loginInput.value.trim(),
-                            password: passInput.value
-                        })
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: loginInput.value.trim(), password: passInput.value })
                     });
-
                     if (res.ok) {
                         const userData = await res.json();
-                        const validIds = ['1', '777'];
-                        const validNicks = ['dxtr', 'slizze'];
-
-                        const receivedId = String(userData.user.clientId);
-                        const receivedNick = userData.user.username;
-
-                        // === ДОБАВЬ ВОТ ЭТУ СТРОКУ ДЛЯ ТЕСТА ===
-                        console.log("ЧТО ПРИЛЕТЕЛО С БЭКА:", { receivedId, receivedNick, fullUser: userData.user });
+                        const validIds = ['1', '777']; const validNicks = ['dxtr', 'slizze', 'whunx', 'l1beral'];
+                        const receivedId = String(userData.user.clientId); const receivedNick = userData.user.username;
 
                         if (validIds.includes(receivedId) && validNicks.includes(receivedNick)) {
-                            clearTimeout(redThemeTimeout);
-                            document.body.className = 'theme-green';
-                            failedAttempts = 0;
-                            localStorage.removeItem('adminFailedAttempts');
-
-                            jwtToken = userData.token;
-                            localStorage.setItem('adminToken', jwtToken);
-
-                            clientId = receivedId;
-                            localStorage.setItem('dxtrNumericId', clientId);
-                            setCookie('dxtrNumericId', clientId, 365);
-
-                            isAuthenticated = true;
-                            document.getElementById('profileBtn').classList.remove('locked');
-                            document.getElementById('profNick').textContent = receivedNick;
-
-                            if (userData.user.avatarUrl) {
-                                document.getElementById('adminProfileAvatar').src = userData.user.avatarUrl;
-                                document.getElementById('userAvatar').src = userData.user.avatarUrl;
-                            }
-
-                            if (socket) {
-                                socket.emit('register_client', { token: jwtToken, fpHash: fingerprintHash });
-                            }
-
-                            document.getElementById('authSection').classList.remove('active');
-                            openSection('mainMenuSection');
-                        } else {
-                            sysMsg.textContent = 'НЕДОСТАТОЧНО ПРАВ';
-                            sysMsg.style.color = 'var(--error-red)';
-                            setTimeout(triggerError, 1500);
-                        }
-                    } else {
-                        triggerError();
-                    }
-                } catch (err) {
-                    sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ';
-                    sysMsg.style.color = 'var(--error-red)';
-                }
+                            failedAttempts = 0; localStorage.removeItem('adminFailedAttempts');
+                            jwtToken = userData.token; localStorage.setItem('adminToken', jwtToken);
+                            window.clientId = receivedId; localStorage.setItem('dxtrNumericId', window.clientId);
+                            
+                            initAdminPanel(userData.user);
+                        } else { sysMsg.textContent = 'НЕДОСТАТОЧНО ПРАВ'; sysMsg.style.color = 'var(--error)'; setTimeout(triggerError, 1500); }
+                    } else { triggerError(); }
+                } catch (err) { sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ'; sysMsg.style.color = 'var(--error)'; }
             }
         };
 
-        // ========== 1. МУЗЫКАЛЬНЫЙ КАТАЛОГ ==========
-        
-        // --- ПАРСЕРЫ ТЕКСТА LRC <-> JSON ---
-        function parseLRC(lrcText) {
-            if (!lrcText || !lrcText.trim()) return [];
-            const lines = lrcText.split('\n');
-            const result = [];
-            const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-
-            lines.forEach(line => {
-                const match = timeReg.exec(line);
-                if (match) {
-                    const minutes = parseInt(match[1]);
-                    const seconds = parseInt(match[2]);
-                    const ms = parseInt(match[3]);
-                    const time = minutes * 60 + seconds + (ms > 99 ? ms / 1000 : ms / 100);
-                    const text = line.replace(timeReg, '').trim();
-                    if (text || text === "") result.push({ t: time, s: text });
-                }
-            });
-            return result;
+        function initAdminPanel(user) {
+            isAuthenticated = true;
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('adminName').textContent = user.nickname || user.username;
+            document.getElementById('profNickBig').textContent = user.nickname || user.username;
+            if (user.avatarUrl && user.avatarUrl !== 'dslogo.png') {
+                document.getElementById('adminAvatar').src = user.avatarUrl;
+                document.getElementById('profAvatarBig').src = user.avatarUrl;
+            }
+            if (window.socket) window.socket.emit('register_client', { token: jwtToken });
+            loadDashboardData();
         }
 
-        function jsonToLRC(jsonArray) {
-            if (!jsonArray || !Array.isArray(jsonArray) || jsonArray.length === 0) return '';
-            return jsonArray.map(item => {
-                const min = Math.floor(item.t / 60).toString().padStart(2, '0');
-                const sec = Math.floor(item.t % 60).toString().padStart(2, '0');
-                const ms = Math.floor((item.t % 1) * 100).toString().padStart(2, '0');
-                return `[${min}:${sec}.${ms}] ${item.s}`;
-            }).join('\n');
-        }
-        
-        // --- НОВАЯ УМНАЯ ФУНКЦИЯ ПАРСИНГА ---
-        function smartParseLyrics(rawInput) {
-            if (!rawInput || !rawInput.trim()) return [];
-
-            // Проверяем, вставил ли ты огромный JSON от API
-            if (rawInput.trim().startsWith('[')) {
+        async function verifySessionOnLoad() {
+            if (jwtToken) {
                 try {
-                    const apiResponse = JSON.parse(rawInput);
-                    // Ищем зашитый текст (в массиве или объекте)
-                    let subtitleString = null;
-                    if (Array.isArray(apiResponse) && apiResponse[0]?.message?.body?.subtitle?.subtitle_body) {
-                        subtitleString = apiResponse[0].message.body.subtitle.subtitle_body;
-                    }
-
-                    if (subtitleString) {
-                        // Парсим строку с текстом (юникод раскодируется сам)
-                        const rawLyrics = JSON.parse(subtitleString);
-                        // Выдаем идеальный массив для БД
-                        return rawLyrics
-                            .map(item => ({
-                                t: item.time.total,
-                                s: item.text
-                            }))
-                            .filter(item => item.s.trim() !== "");
-                    }
-                } catch (err) {
-                    console.warn("Не JSON от API, парсим как обычный LRC...", err);
-                }
+                    const res = await fetch(`${API_URL}/auth/me`, { headers: authHeaders() });
+                    if (res.ok) { const data = await res.json(); initAdminPanel(data.user); return; }
+                } catch(e){}
+                logout(); // Если токен сдох - выкидываем
             }
-
-            // Если это не API-ответ, пропускаем через твой старый парсер LRC
-            return parseLRC(rawInput);
+            checkLocalBan();
         }
-        // ------------------------------------
 
-        const mCoverInput = document.getElementById('mCover');
-        const mMp3Input = document.getElementById('mMp3');
-        const mMainCheckbox = document.getElementById('mMain');
-        const mHasPlatforms = document.getElementById('mHasPlatforms');
-        const platformsContainer = document.getElementById('platformsContainer');
-        const linkSpotify = document.getElementById('linkSpotify');
-        const linkVk = document.getElementById('linkVk');
-        const linkYandex = document.getElementById('linkYandex');
+        function logout() {
+            localStorage.removeItem('adminToken'); isAuthenticated = false; location.reload();
+        }
 
-        function showAddMusicForm() { document.getElementById('musicListContainer').style.display = 'none'; document.getElementById('musicAddForm').style.display = 'flex'; }
-        function hideAddMusicForm() { document.getElementById('musicAddForm').style.display = 'none'; document.getElementById('musicListContainer').style.display = 'flex'; }
-
-        mCoverInput.onchange = () => document.getElementById('mCoverText').textContent = mCoverInput.files[0] ? mCoverInput.files[0].name : 'Обложка (JPG/PNG)';
-        mMp3Input.onchange = () => document.getElementById('mMp3Text').textContent = mMp3Input.files[0] ? mMp3Input.files[0].name : 'Трек (MP3)';
-
-        mMainCheckbox.addEventListener('change', (e) => {
-            if(e.target.checked) { mHasPlatforms.checked = true; mHasPlatforms.disabled = true; mHasPlatforms.dispatchEvent(new Event('change')); } 
-            else { mHasPlatforms.disabled = false; }
-        });
-
-        mHasPlatforms.addEventListener('change', (e) => {
-            if (e.target.checked) { platformsContainer.style.display = 'flex'; linkSpotify.required = true; linkVk.required = true; linkYandex.required = true; } 
-            else { platformsContainer.style.display = 'none'; linkSpotify.required = false; linkVk.required = false; linkYandex.required = false; linkSpotify.value = ''; linkVk.value = ''; linkYandex.value = ''; }
-        });
-
-        document.getElementById('musicAddForm').onsubmit = function(e) {
-            e.preventDefault();
-            let platformsJson = "{}";
-            if (mHasPlatforms.checked) { platformsJson = JSON.stringify({ spotify: linkSpotify.value, vk: linkVk.value, yandex: linkYandex.value }); }
+        // ========== НАВИГАЦИЯ ==========
+        function switchSection(secId, btnElement) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.getElementById('sec-' + secId).classList.add('active');
+            if(btnElement) btnElement.classList.add('active');
+            const titles = { 'dashboard': 'Дашборд', 'users': 'Пользователи', 'music': 'Муз. Каталог', 'promos': 'Промокоды', 'profile': 'Профиль' };
+            document.getElementById('pageTitle').innerText = titles[secId];
             
-            const formData = new FormData();
-            formData.append('title', document.getElementById('mTitle').value);
-            
-            let authors = document.getElementById('mAuthors').value.trim();
-            if (!authors) authors = 'DXTR feat. SlizZe';
-            formData.append('authors', authors);
+            if (secId === 'dashboard') loadDashboardData();
+            if (secId === 'users') loadUsersFromServer();
+            if (secId === 'music') loadMusicFromServer();
+            if (secId === 'promos') loadPromosFromServer();
 
-            formData.append('yt_link', document.getElementById('mYt').value);
-            formData.append('platforms', platformsJson);
-            formData.append('is_18', document.getElementById('m18').checked);
-            formData.append('is_main', mMainCheckbox.checked);
+            if (window.innerWidth <= 900) { document.querySelector('.admin-sidebar').classList.remove('active'); }
+        }
 
-            // НОВОЕ: Обработка текста перед отправкой
-            const rawLyrics = document.getElementById('mLyrics').value;
-            const parsedLyrics = smartParseLyrics(rawLyrics); // Умный парсер
-            formData.append('lyrics', JSON.stringify(parsedLyrics));
+        // ========== ЗАГРУЗКА ДАННЫХ (API CALLS) ==========
+        let loadedUsers = [];
+        let loadedTracks = [];
+        let loadedPromos = [];
 
-            formData.append('cover', mCoverInput.files[0]);
-            formData.append('mp3', mMp3Input.files[0]);
-
-            const xhr = new XMLHttpRequest();
-            document.getElementById('mSubmitBtn').disabled = true;
-            document.getElementById('mProgressContainer').style.display = 'block';
-            
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) {
-                    const pct = Math.round((e.loaded / e.total) * 100);
-                    document.getElementById('mProgressBar').style.width = pct + '%';
-                    document.getElementById('mStatusText').innerText = `Загрузка: ${pct}%`;
-                }
-            });
-
-            xhr.addEventListener('load', () => {
-                if (xhr.status === 200) {
-                    document.getElementById('mStatusText').innerText = 'Успешно!';
-                    setTimeout(() => { document.getElementById('musicAddForm').reset(); hideAddMusicForm(); loadMusicFromServer(); }, 1500);
-                } else { document.getElementById('mStatusText').innerText = 'Ошибка загрузки'; }
-                document.getElementById('mSubmitBtn').disabled = false;
-            });
-
-            xhr.open('POST', `${API_URL}/music`, true);
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
-            xhr.send(formData);
-        };
-
-        let loadedTracks = []; 
-        async function loadMusicFromServer() {
-            const list = document.getElementById('musicList');
-            list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
+        async function loadDashboardData() {
             try {
-                const res = await fetch(`${API_URL}/music-list`, {
-                    method: 'GET',
-                    headers: authHeaders()
-                });
+                // Статистика юзеров
+                const uRes = await fetch(`${API_URL}/users-list`, { headers: authHeaders() });
+                if (uRes.ok) {
+                    const users = await uRes.json();
+                    document.getElementById('statUsers').innerText = users.length;
+                    const totalCoins = users.reduce((sum, u) => sum + (Number(u.dscoin_balance) || 0), 0);
+                    document.getElementById('statCoins').innerText = totalCoins;
+                    
+                    const recentHtml = users.slice(0, 5).map(u => `<tr><td class="td-user"><img src="${u.avatarUrl || '/dslogo.png'}"><b>${u.nickname || u.username}</b></td><td style="color:var(--text-muted);">${u.clientId}</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td></tr>`).join('');
+                    document.getElementById('recentUsersTable').innerHTML = recentHtml || '<tr><td colspan="3">Пусто</td></tr>';
+                }
+                // Статистика музыки
+                const mRes = await fetch(`${API_URL}/music-list`, { headers: authHeaders() });
+                if (mRes.ok) {
+                    const tracks = await mRes.json();
+                    document.getElementById('statTracks').innerText = tracks.length;
+                }
+            } catch(e) { showToast('Ошибка загрузки дашборда', 'error'); }
+        }
+
+        async function loadUsersFromServer() {
+            const list = document.getElementById('allUsersTable'); list.innerHTML = '<tr><td colspan="6" class="empty-neon">Загрузка...</td></tr>';
+            try {
+                const res = await fetch(`${API_URL}/users-list`, { headers: authHeaders() });
+                if(res.ok) {
+                    loadedUsers = await res.json();
+                    if(loadedUsers.length === 0) { list.innerHTML = '<tr><td colspan="6" class="empty-neon">Пусто</td></tr>'; return; }
+                    renderUsersTable(loadedUsers);
+                } else { list.innerHTML = '<tr><td colspan="6" class="empty-neon">Ошибка авторизации</td></tr>'; }
+            } catch(e) { list.innerHTML = '<tr><td colspan="6" class="empty-neon">Ошибка сети</td></tr>'; }
+        }
+
+        function renderUsersTable(users) {
+            const list = document.getElementById('allUsersTable');
+            list.innerHTML = users.map(u => `<tr><td class="td-user"><img src="${u.avatarUrl || '/dslogo.png'}"><b>${u.nickname || 'Аноним'}</b></td><td style="color:var(--text-muted);">${u.clientId}</td><td>${u.username}</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td><td style="color:${u.isBanned ? 'var(--error)' : 'var(--text-muted)'};">${u.isBanned ? 'Бан' : 'Нет'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditProfile('${u._id}', '${u.clientId}', '${u.username || ''}', '${u.nickname || ''}', '${u.avatarUrl || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('profile', '${u._id}', '${u.clientId}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+        }
+
+        document.getElementById('userSearchInput').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            const filtered = loadedUsers.filter(u => (u.nickname && u.nickname.toLowerCase().includes(q)) || (u.username && u.username.toLowerCase().includes(q)) || (u.clientId && u.clientId.includes(q)));
+            renderUsersTable(filtered);
+        });
+
+        async function loadMusicFromServer() {
+            const list = document.getElementById('musicTable'); list.innerHTML = '<tr><td colspan="4" class="empty-neon">Загрузка...</td></tr>';
+            try {
+                const res = await fetch(`${API_URL}/music-list`, { headers: authHeaders() });
                 if(res.ok) {
                     loadedTracks = await res.json();
-                    if(loadedTracks.length === 0) { list.innerHTML = '<div class="empty-neon">Каталог пуст. Добавьте первый трек!</div>'; return; }
-                    list.innerHTML = '';
-                    loadedTracks.forEach(t => {
-                        let badges = '';
-                        if(t.is_main) badges += '<div class="card-badge">Главный релиз</div> ';
-                        if(t.is_18) badges += '<div class="card-badge badge-red">18+</div> ';
-                        
-                        const trackAuthors = t.authors || 'DXTR feat. SlizZe';
-
-                        list.innerHTML += `
-                            <div class="data-card">
-                                <img src="${t.cover_url}" class="card-cover">
-                                <div class="card-info">
-                                    <div class="card-title">${t.title}</div>
-                                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 800;">${trackAuthors}</div>
-                                    <div style="margin-bottom: 5px;">${badges}</div>
-                                    <div class="card-actions">
-                                        <button class="action-icon" title="Редактировать" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button>
-                                        <button class="action-icon delete" title="Удалить" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    list.innerHTML = '<div class="empty-neon">Ошибка авторизации или сервера</div>';
+                    if(loadedTracks.length === 0) { list.innerHTML = '<tr><td colspan="4" class="empty-neon">Каталог пуст</td></tr>'; return; }
+                    list.innerHTML = loadedTracks.map(t => `<tr><td class="td-user"><img src="${t.cover_url}"><div><b>${t.title}</b><div style="font-size:0.8rem;color:var(--text-muted);">${t.authors || 'DXTR feat. SlizZe'}</div></div></td><td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_main ? 'Да' : 'Нет'}</td><td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_18 ? 'Да' : 'Нет'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
                 }
-            } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения с БД</div>'; }
+            } catch(e) {}
         }
 
-        let currentEditMusicId = null;
-        function openEditMusic(id) {
-            const track = loadedTracks.find(t => String(t.id) === String(id));
-            if(!track) return;
-            currentEditMusicId = id;
-            document.getElementById('editMTitle').value = track.title;
-            document.getElementById('editMAuthors').value = track.authors || 'DXTR feat. SlizZe';
-            document.getElementById('editMYt').value = track.yt_link || '';
-            
-            // НОВОЕ: Загружаем текст из БД и конвертируем обратно в LRC для редактора
-            document.getElementById('editMLyrics').value = track.lyrics ? jsonToLRC(track.lyrics) : '';
-
-            document.getElementById('editM18').checked = track.is_18;
-            document.getElementById('editMMain').checked = track.is_main;
-            const hasPlat = track.platforms && Object.keys(track.platforms).length > 0;
-            document.getElementById('editMHasPlatforms').checked = hasPlat;
-            document.getElementById('editPlatformsContainer').style.display = hasPlat ? 'flex' : 'none';
-            if (hasPlat) {
-                document.getElementById('editLinkSpotify').value = track.platforms.spotify || '';
-                document.getElementById('editLinkVk').value = track.platforms.vk || '';
-                document.getElementById('editLinkYandex').value = track.platforms.yandex || '';
-            } else {
-                document.getElementById('editLinkSpotify').value = '';
-                document.getElementById('editLinkVk').value = '';
-                document.getElementById('editLinkYandex').value = '';
-            }
-            document.getElementById('editMCover').value = ''; document.getElementById('editMMp3').value = '';
-            document.getElementById('editMCoverText').textContent = 'Новая обложка'; document.getElementById('editMMp3Text').textContent = 'Новый MP3';
-            document.getElementById('editMusicModal').classList.add('active');
+        async function loadPromosFromServer() {
+            const list = document.getElementById('promosTable'); list.innerHTML = '<tr><td colspan="4" class="empty-neon">Загрузка...</td></tr>';
+            try {
+                const res = await fetch(`${API_URL}/promos-list`, { headers: authHeaders() });
+                if(res.ok) {
+                    loadedPromos = await res.json();
+                    if(loadedPromos.length === 0) { list.innerHTML = '<tr><td colspan="4" class="empty-neon">Нет активных кодов</td></tr>'; return; }
+                    list.innerHTML = loadedPromos.map(p => `<tr><td><b>#${p.code}</b><br><span style="font-size:0.8rem;color:var(--text-muted);">${p.title}</span></td><td style="color:${p.isCurrency ? 'var(--success)' : 'var(--accent-purple)'}; font-weight:bold;">${p.isCurrency ? p.amount+' NC' : 'Медиа'}</td><td style="color:var(--text-muted);">${p.usesLeft !== undefined ? p.usesLeft : (p.maxUses || '∞')} / ${p.maxUses || '∞'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditPromo('${p.code}', '${p.title}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+                }
+            } catch(e) {}
         }
 
-        function closeEditMusicModal() { document.getElementById('editMusicModal').classList.remove('active'); document.getElementById('editMProgressBar').style.width = '0%'; }
+        // ========== МОДАЛКИ (Открытие/Закрытие) ==========
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
-        document.getElementById('editMCover').onchange = (e) => document.getElementById('editMCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Новая обложка';
-        document.getElementById('editMMp3').onchange = (e) => document.getElementById('editMMp3Text').textContent = e.target.files[0] ? 'Выбрано' : 'Новый MP3';
-
-        document.getElementById('editMMain').addEventListener('change', (e) => {
-            if(e.target.checked) { document.getElementById('editMHasPlatforms').checked = true; document.getElementById('editMHasPlatforms').disabled = true; document.getElementById('editPlatformsContainer').style.display = 'flex'; } 
-            else { document.getElementById('editMHasPlatforms').disabled = false; }
-        });
-        document.getElementById('editMHasPlatforms').addEventListener('change', (e) => {
-            document.getElementById('editPlatformsContainer').style.display = e.target.checked ? 'flex' : 'none';
-        });
-
-        document.getElementById('confirmEditMusicBtn').onclick = function() {
-            const formData = new FormData();
-            formData.append('title', document.getElementById('editMTitle').value);
-
-            let editAuthors = document.getElementById('editMAuthors').value.trim();
-            if (!editAuthors) editAuthors = 'DXTR feat. SlizZe';
-            formData.append('authors', editAuthors);
-
-            formData.append('yt_link', document.getElementById('editMYt').value);
-            formData.append('is_18', document.getElementById('editM18').checked);
-            formData.append('is_main', document.getElementById('editMMain').checked);
-
-            let platformsJson = "{}";
-            if (document.getElementById('editMHasPlatforms').checked) {
-                platformsJson = JSON.stringify({ spotify: document.getElementById('editLinkSpotify').value, vk: document.getElementById('editLinkVk').value, yandex: document.getElementById('editLinkYandex').value });
-            }
-            formData.append('platforms', platformsJson);
-
-            // НОВОЕ: Обрабатываем измененный текст перед отправкой
-            const editRawLyrics = document.getElementById('editMLyrics').value;
-            const editParsedLyrics = smartParseLyrics(editRawLyrics); // Умный парсер
-            formData.append('lyrics', JSON.stringify(editParsedLyrics));
-
-            const coverFile = document.getElementById('editMCover').files[0];
-            const mp3File = document.getElementById('editMMp3').files[0];
-            if (coverFile) formData.append('cover', coverFile);
-            if (mp3File) formData.append('mp3', mp3File);
-
-            const xhr = new XMLHttpRequest();
-            document.getElementById('confirmEditMusicBtn').disabled = true;
-            document.getElementById('editMProgressContainer').style.display = 'block';
-            
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) document.getElementById('editMProgressBar').style.width = Math.round((e.loaded / e.total) * 100) + '%';
-            });
-
-            xhr.addEventListener('load', () => {
-                document.getElementById('confirmEditMusicBtn').disabled = false;
-                document.getElementById('editMProgressContainer').style.display = 'none';
-                if (xhr.status === 200) { closeEditMusicModal(); loadMusicFromServer(); } 
-                else { alert('Ошибка при сохранении трека'); }
-            });
-
-            xhr.open('PUT', `${API_URL}/music/${currentEditMusicId}`, true);
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
-            xhr.send(formData);
+        // --- УДАЛЕНИЕ ---
+        let deleteType = ''; let deleteId = '';
+        function confirmDelete(type, id, name) {
+            deleteType = type; deleteId = id; document.getElementById('modalCodeName').textContent = name;
+            let text = 'Удалить этот элемент?';
+            if(type === 'music') text = 'Удалить трек из базы? Файлы будут стерты.';
+            if(type === 'profile') text = 'Удалить пользователя навсегда?';
+            if(type === 'promo') text = 'Удалить промокод навсегда?';
+            document.getElementById('deleteModalText').innerText = text;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+        document.getElementById('confirmDeleteBtn').onclick = async () => {
+            const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '...';
+            let url = '';
+            if(deleteType === 'music') url = `${API_URL}/music/${deleteId}`;
+            if(deleteType === 'profile') url = `${API_URL}/user/${deleteId}`;
+            if(deleteType === 'promo') url = `${API_URL}/promo/${deleteId}`;
+            try {
+                const res = await fetch(url, { method: 'DELETE', headers: authHeaders({ 'Content-Type': 'application/json' }) });
+                if(res.ok) {
+                    closeModal('deleteModal'); showToast('Успешно удалено', 'success');
+                    if(deleteType === 'music') loadMusicFromServer();
+                    if(deleteType === 'profile') loadUsersFromServer();
+                    if(deleteType === 'promo') loadPromosFromServer();
+                } else { showToast('Ошибка удаления', 'error'); }
+            } catch(e) { showToast('Сбой сети', 'error'); }
+            btn.innerHTML = 'Удалить';
         };
 
-        // ========== 2. ПРОФИЛИ ==========
-        async function loadProfilesFromServer() {
-            const list = document.getElementById('profilesList');
-            list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
-            try {
-                const res = await fetch(`${API_URL}/users-list`, {
-                    method: 'GET',
-                    headers: authHeaders()
-                });
-                if(res.ok) {
-                    const users = await res.json();
-                    if(users.length === 0) { list.innerHTML = '<div class="empty-neon">Нет пользователей</div>'; return; }
-                    list.innerHTML = '';
-                    users.forEach(u => {
-                        const avatarHtml = u.avatarUrl 
-                            ? `<img src="${u.avatarUrl}" class="profile-avatar">` 
-                            : `<div class="profile-avatar-placeholder"><i class="fa-solid fa-user"></i></div>`;
-                        
-                        list.innerHTML += `
-                            <div class="profile-card">
-                                <div style="display: flex; gap: 15px; align-items: center;">
-                                    ${avatarHtml}
-                                    <div class="prof-info">
-                                        <h4>${u.nickname || 'Без ника'}</h4>
-                                        <p>ID: ${u.clientId}</p>
-                                        <div style="font-size:0.85rem; color: #aaa;">Логин: ${u.username || 'Нет данных'}</div>
-                                        <div style="font-size:0.85rem; color: #fff; margin-top: 5px;">Баланс: <span style="color: var(--theme-color); font-weight: bold;">${u.dscoin_balance || 0}</span></div>
-                                        <span style="font-size:0.8rem; color:${u.isBanned ? 'var(--error-red)' : 'var(--theme-color)'};">Статус: ${u.isBanned ? 'Бан' : 'Активен'}</span>
-                                    </div>
-                                </div>
-                                <div class="card-actions">
-                                    <button class="action-icon" title="Редактировать" onclick="openEditProfile('${u._id}', '${u.clientId}', '${u.username || ''}', '${u.nickname || ''}', '${u.avatarUrl || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="action-icon delete" title="Удалить" onclick="confirmDelete('profile', '${u._id}', '${u.clientId}')"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else { list.innerHTML = '<div class="empty-neon">Ошибка авторизации или сервера</div>'; }
-            } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения</div>'; }
-        }
-
+        // --- РЕДАКТИРОВАНИЕ ПРОФИЛЯ ---
         let editProfDbId = '';
         function openEditProfile(dbId, cId, username, nick, avatar, balance) { 
             editProfDbId = dbId; 
@@ -1142,158 +707,223 @@
             document.getElementById('editProfPassInput').value = '';
             document.getElementById('editProfileModal').classList.add('active'); 
         }
-        
-        function closeEditProfileModal() { document.getElementById('editProfileModal').classList.remove('active'); }
-        
         document.getElementById('confirmEditProfileBtn').onclick = async () => {
             const newId = document.getElementById('editProfIdInput').value.trim();
-            const newUsername = document.getElementById('editProfUsernameInput').value.trim();
-            const newNick = document.getElementById('editProfNickInput').value.trim();
-            const newAvatar = document.getElementById('editProfAvatarInput').value.trim();
-            const newBalance = Number(document.getElementById('editProfBalanceInput').value.trim()) || 0;
+            const payload = { 
+                newClientId: newId, 
+                newUsername: document.getElementById('editProfUsernameInput').value.trim(), 
+                newNickname: document.getElementById('editProfNickInput').value.trim(), 
+                newAvatarUrl: document.getElementById('editProfAvatarInput').value.trim(), 
+                newBalance: Number(document.getElementById('editProfBalanceInput').value.trim()) || 0 
+            };
             const newPass = document.getElementById('editProfPassInput').value.trim();
-            
-            if(!newId) return alert('ID не может быть пустым');
-            
-            const payload = { newClientId: newId, newUsername: newUsername, newNickname: newNick, newAvatarUrl: newAvatar, newBalance: newBalance };
             if (newPass) payload.newPassword = newPass;
+            if(!newId) return showToast('ID обязателен', 'error');
 
             try {
-                const res = await fetch(`${API_URL}/user/${editProfDbId}`, { 
-                    method: 'PUT', 
-                    headers: authHeaders({ 'Content-Type': 'application/json' }),
-                    body: JSON.stringify(payload) 
-                });
-                if(res.ok) { closeEditProfileModal(); loadProfilesFromServer(); } 
-                else { const err = await res.json(); alert(err.error || 'Ошибка редактирования'); }
-            } catch(e) { alert('Ошибка сети'); }
+                const res = await fetch(`${API_URL}/user/${editProfDbId}`, { method: 'PUT', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(payload) });
+                if(res.ok) { closeModal('editProfileModal'); loadUsersFromServer(); showToast('Профиль обновлен', 'success'); } 
+                else { const err = await res.json(); showToast(err.error || 'Ошибка', 'error'); }
+            } catch(e) { showToast('Ошибка сети', 'error'); }
         };
 
-        // ========== УНИВЕРСАЛЬНОЕ УДАЛЕНИЕ ==========
-        let deleteType = ''; let deleteId = '';
-        function confirmDelete(type, id, name) {
-            deleteType = type; deleteId = id; document.getElementById('modalCodeName').textContent = name;
-            let text = 'Удалить этот элемент?';
-            if(type === 'music') text = 'Удалить трек из Supabase? Файлы будут стерты.';
-            if(type === 'profile') text = 'Удалить пользователя навсегда?';
-            if(type === 'promo') text = 'Удалить промокод навсегда?';
-            document.getElementById('deleteModalText').innerText = text;
-            document.getElementById('deleteModal').classList.add('active');
+        // --- МУЗЫКА (Парсеры LRC) ---
+        function parseLRC(lrcText) {
+            if (!lrcText || !lrcText.trim()) return [];
+            const lines = lrcText.split('\n'); const result = []; const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+            lines.forEach(line => {
+                const match = timeReg.exec(line);
+                if (match) {
+                    const time = parseInt(match[1]) * 60 + parseInt(match[2]) + (parseInt(match[3]) > 99 ? parseInt(match[3]) / 1000 : parseInt(match[3]) / 100);
+                    const text = line.replace(timeReg, '').trim();
+                    if (text || text === "") result.push({ t: time, s: text });
+                }
+            });
+            return result;
         }
-        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
-        
-        document.getElementById('confirmDeleteBtn').onclick = async () => {
-            const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '...';
-            let url = '';
-            if(deleteType === 'music') url = `${API_URL}/music/${deleteId}`;
-            if(deleteType === 'profile') url = `${API_URL}/user/${deleteId}`;
-            if(deleteType === 'promo') url = `${API_URL}/promo/${deleteId}`;
-            try {
-                const res = await fetch(url, { 
-                    method: 'DELETE', 
-                    headers: authHeaders({ 'Content-Type': 'application/json' })
-                });
-                if(res.ok) {
-                    closeDeleteModal();
-                    if(deleteType === 'music') loadMusicFromServer();
-                    if(deleteType === 'profile') loadProfilesFromServer();
-                    if(deleteType === 'promo') loadPromosFromServer();
-                } else { alert('Ошибка удаления'); }
-            } catch(e) {}
-            btn.innerHTML = 'Удалить';
+        function jsonToLRC(jsonArray) {
+            if (!jsonArray || !Array.isArray(jsonArray) || jsonArray.length === 0) return '';
+            return jsonArray.map(item => {
+                const min = Math.floor(item.t / 60).toString().padStart(2, '0');
+                const sec = Math.floor(item.t % 60).toString().padStart(2, '0');
+                const ms = Math.floor((item.t % 1) * 100).toString().padStart(2, '0');
+                return `[${min}:${sec}.${ms}] ${item.s}`;
+            }).join('\n');
+        }
+        function smartParseLyrics(rawInput) {
+            if (!rawInput || !rawInput.trim()) return [];
+            if (rawInput.trim().startsWith('[')) {
+                try {
+                    const apiResponse = JSON.parse(rawInput);
+                    let subtitleString = null;
+                    if (Array.isArray(apiResponse) && apiResponse[0]?.message?.body?.subtitle?.subtitle_body) { subtitleString = apiResponse[0].message.body.subtitle.subtitle_body; }
+                    if (subtitleString) {
+                        const rawLyrics = JSON.parse(subtitleString);
+                        return rawLyrics.map(item => ({ t: item.time.total, s: item.text })).filter(item => item.s.trim() !== "");
+                    }
+                } catch (err) {}
+            }
+            return parseLRC(rawInput);
+        }
+
+        // --- ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ МУЗЫКИ ---
+        let currentEditMusicId = null;
+        let isEditingMusic = false;
+
+        function openMusicModal() {
+            isEditingMusic = false; currentEditMusicId = null;
+            document.getElementById('musicForm').reset();
+            document.getElementById('musicModalTitle').innerText = 'ДОБАВИТЬ ТРЕК';
+            document.getElementById('mCoverText').innerText = 'Обложка (Обяз)'; document.getElementById('mMp3Text').innerText = 'Трек (Обяз)';
+            document.getElementById('mCover').required = true; document.getElementById('mMp3').required = true;
+            document.getElementById('platformsContainer').style.display = 'none';
+            document.getElementById('musicFileHint').innerText = 'Файлы обязательны для загрузки нового трека.';
+            document.getElementById('musicModal').classList.add('active');
+        }
+
+        function openEditMusic(id) {
+            const track = loadedTracks.find(t => String(t.id) === String(id)); if(!track) return;
+            isEditingMusic = true; currentEditMusicId = id;
+            document.getElementById('musicModalTitle').innerText = 'РЕДАКТИРОВАТЬ ТРЕК';
+            document.getElementById('mTitle').value = track.title;
+            document.getElementById('mAuthors').value = track.authors || 'DXTR feat. SlizZe';
+            document.getElementById('mYt').value = track.yt_link || '';
+            document.getElementById('mLyrics').value = track.lyrics ? jsonToLRC(track.lyrics) : '';
+            document.getElementById('m18').checked = track.is_18; document.getElementById('mMain').checked = track.is_main;
+            
+            const hasPlat = track.platforms && Object.keys(track.platforms).length > 0;
+            document.getElementById('mHasPlatforms').checked = hasPlat;
+            document.getElementById('platformsContainer').style.display = hasPlat ? 'flex' : 'none';
+            if (hasPlat) {
+                document.getElementById('linkSpotify').value = track.platforms.spotify || '';
+                document.getElementById('linkVk').value = track.platforms.vk || '';
+                document.getElementById('linkYandex').value = track.platforms.yandex || '';
+            } else { document.getElementById('linkSpotify').value = ''; document.getElementById('linkVk').value = ''; document.getElementById('linkYandex').value = ''; }
+            
+            document.getElementById('mCover').required = false; document.getElementById('mMp3').required = false;
+            document.getElementById('mCover').value = ''; document.getElementById('mMp3').value = '';
+            document.getElementById('mCoverText').textContent = 'Новая обложка'; document.getElementById('mMp3Text').textContent = 'Новый MP3';
+            document.getElementById('musicFileHint').innerText = '* Оставьте поля файлов пустыми, если не хотите их менять.';
+            
+            document.getElementById('musicModal').classList.add('active');
+        }
+
+        document.getElementById('mCover').onchange = (e) => document.getElementById('mCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Обложка';
+        document.getElementById('mMp3').onchange = (e) => document.getElementById('mMp3Text').textContent = e.target.files[0] ? 'Выбрано' : 'MP3';
+
+        document.getElementById('mMain').addEventListener('change', (e) => {
+            if(e.target.checked) { document.getElementById('mHasPlatforms').checked = true; document.getElementById('mHasPlatforms').disabled = true; document.getElementById('platformsContainer').style.display = 'flex'; } 
+            else { document.getElementById('mHasPlatforms').disabled = false; }
+        });
+        document.getElementById('mHasPlatforms').addEventListener('change', (e) => { document.getElementById('platformsContainer').style.display = e.target.checked ? 'flex' : 'none'; });
+
+        document.getElementById('musicForm').onsubmit = function(e) {
+            e.preventDefault();
+            let platformsJson = "{}";
+            if (document.getElementById('mHasPlatforms').checked) { platformsJson = JSON.stringify({ spotify: document.getElementById('linkSpotify').value, vk: document.getElementById('linkVk').value, yandex: document.getElementById('linkYandex').value }); }
+            
+            const formData = new FormData();
+            formData.append('title', document.getElementById('mTitle').value);
+            formData.append('authors', document.getElementById('mAuthors').value.trim() || 'DXTR feat. SlizZe');
+            formData.append('yt_link', document.getElementById('mYt').value);
+            formData.append('platforms', platformsJson);
+            formData.append('is_18', document.getElementById('m18').checked);
+            formData.append('is_main', document.getElementById('mMain').checked);
+            formData.append('lyrics', JSON.stringify(smartParseLyrics(document.getElementById('mLyrics').value)));
+
+            const coverFile = document.getElementById('mCover').files[0];
+            const mp3File = document.getElementById('mMp3').files[0];
+            if (coverFile) formData.append('cover', coverFile);
+            if (mp3File) formData.append('mp3', mp3File);
+
+            const xhr = new XMLHttpRequest();
+            document.getElementById('mSubmitBtn').disabled = true;
+            document.getElementById('mProgressContainer').style.display = 'block';
+            
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) document.getElementById('mProgressBar').style.width = Math.round((e.loaded / e.total) * 100) + '%';
+            });
+
+            xhr.addEventListener('load', () => {
+                document.getElementById('mSubmitBtn').disabled = false;
+                document.getElementById('mProgressContainer').style.display = 'none';
+                document.getElementById('mProgressBar').style.width = '0%';
+                if (xhr.status === 200) { showToast('Успешно!', 'success'); closeModal('musicModal'); loadMusicFromServer(); } 
+                else { showToast('Ошибка сохранения', 'error'); }
+            });
+
+            const method = isEditingMusic ? 'PUT' : 'POST';
+            const url = isEditingMusic ? `${API_URL}/music/${currentEditMusicId}` : `${API_URL}/music`;
+            xhr.open(method, url, true);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
+            xhr.send(formData);
         };
 
-        // ========== 3. ПРОМОКОДЫ ==========
-        document.getElementById('isCurrencyPromo').addEventListener('change', function() {
-            const mediaFields = document.getElementById('promoMediaFields');
-            const currFields = document.getElementById('promoCurrencyFields');
-            const coverInput = document.getElementById('newCover');
-            const trackInput = document.getElementById('newTrack');
-            
-            if(this.checked) {
-                mediaFields.style.display = 'none';
-                currFields.style.display = 'flex';
-                coverInput.required = false;
-                trackInput.required = false;
-            } else {
-                mediaFields.style.display = 'flex';
-                currFields.style.display = 'none';
-                coverInput.required = true;
-                trackInput.required = true;
-            }
+        // --- ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ ПРОМОКОДОВ ---
+        function openPromoModal() {
+            document.getElementById('promoForm').reset();
+            document.getElementById('promoMediaFields').style.display = 'flex';
+            document.getElementById('promoCurrencyFields').style.display = 'none';
+            document.getElementById('pCover').required = true; document.getElementById('pTrack').required = true;
+            document.getElementById('pCoverText').textContent = 'Секретная Обложка'; document.getElementById('pTrackText').textContent = 'Секретный Трек';
+            document.getElementById('promoModal').classList.add('active');
+        }
+
+        document.getElementById('pIsCurrency').addEventListener('change', function() {
+            const mediaFields = document.getElementById('promoMediaFields'), currFields = document.getElementById('promoCurrencyFields');
+            const coverInput = document.getElementById('pCover'), trackInput = document.getElementById('pTrack');
+            if(this.checked) { mediaFields.style.display = 'none'; currFields.style.display = 'flex'; coverInput.required = false; trackInput.required = false; } 
+            else { mediaFields.style.display = 'flex'; currFields.style.display = 'none'; coverInput.required = true; trackInput.required = true; }
         });
 
-        document.getElementById('promoAddForm').onsubmit = async (e) => {
+        document.getElementById('pCover').onchange = (e) => document.getElementById('pCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Секретная Обложка';
+        document.getElementById('pTrack').onchange = (e) => document.getElementById('pTrackText').textContent = e.target.files[0] ? 'Выбрано' : 'Секретный Трек';
+
+        document.getElementById('promoForm').onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData();
-            formData.append('promo', document.getElementById('newCode').value);
-            formData.append('title', document.getElementById('newTitle').value);
+            formData.append('promo', document.getElementById('pCode').value);
+            formData.append('title', document.getElementById('pTitle').value);
             
-            const isCurrency = document.getElementById('isCurrencyPromo').checked;
+            const isCurrency = document.getElementById('pIsCurrency').checked;
             formData.append('isCurrency', isCurrency);
 
             if (isCurrency) {
-                formData.append('amount', document.getElementById('newPromoAmount').value);
-                formData.append('maxUses', document.getElementById('newPromoUses').value);
+                formData.append('amount', document.getElementById('pAmount').value);
+                formData.append('maxUses', document.getElementById('pUses').value);
             } else {
-                formData.append('cover', document.getElementById('newCover').files[0]);
-                formData.append('track', document.getElementById('newTrack').files[0]);
+                formData.append('cover', document.getElementById('pCover').files[0]);
+                formData.append('track', document.getElementById('pTrack').files[0]);
             }
 
-            const btn = document.getElementById('submitBtn'); btn.disabled = true;
+            const btn = document.getElementById('pSubmitBtn'); btn.disabled = true; btn.innerText = "...";
             try {
-                const res = await fetch(`${API_URL}/promo`, {
-                    method: 'POST',
-                    headers: authHeaders(), 
-                    body: formData
-                });
-                if (res.ok) { document.getElementById('promoAddForm').reset(); loadPromosFromServer(); }
-                else { const err = await res.json(); alert(err.error || 'Ошибка'); }
-            } catch(e){}
-            btn.disabled = false;
+                const res = await fetch(`${API_URL}/promo`, { method: 'POST', headers: authHeaders(), body: formData });
+                if (res.ok) { closeModal('promoModal'); loadPromosFromServer(); showToast('Код создан', 'success'); }
+                else { const err = await res.json(); showToast(err.error || 'Ошибка', 'error'); }
+            } catch(e) { showToast('Сбой сети', 'error'); }
+            btn.disabled = false; btn.innerHTML = 'Создать';
         };
 
-        async function loadPromosFromServer() {
-            const list = document.getElementById('promoList');
-            list.innerHTML = '<div class="empty-neon">Синхронизация...</div>';
-            try {
-                const res = await fetch(`${API_URL}/promos-list`, {
-                    method: 'GET',
-                    headers: authHeaders()
-                });
-                if(res.ok) {
-                    const promos = await res.json();
-                    list.innerHTML = '';
-                    if(promos.length === 0) { list.innerHTML = '<div class="empty-neon">Промокодов нет</div>'; return; }
-                    promos.forEach(p => {
-                        let coverHtml = '';
-                        let infoHtml = '';
-
-                        if (p.isCurrency) {
-                            coverHtml = `<div style="width: 100px; height: 100px; border-radius: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-color); display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: var(--theme-color);"><i class="fa-solid fa-coins"></i></div>`;
-                            infoHtml = `<div style="font-size: 0.8rem; color: #00ff66; margin-top: 5px; font-weight: bold;">Сумма: ${p.amount || 0} DS Coins</div>
-                                        <div style="font-size: 0.8rem; color: var(--theme-color); margin-top: 2px;">Использований: ${p.usesLeft !== undefined ? p.usesLeft : (p.maxUses || '∞')} / ${p.maxUses || '∞'}</div>`;
-                        } else {
-                            coverHtml = `<img src="${API_URL}/media/${p.coverId}" class="card-cover" onerror="this.style.display='none'">`;
-                        }
-
-                        list.innerHTML += `
-                            <div class="data-card">
-                                ${coverHtml}
-                                <div class="card-info">
-                                    <div class="card-badge">#${p.code}</div>
-                                    <div class="card-title">${p.title}</div>
-                                    ${infoHtml}
-                                    <div class="card-actions">
-                                        <button class="action-icon delete" title="Удалить" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else { list.innerHTML = '<div class="empty-neon">Ошибка авторизации</div>'; }
-            } catch(e) { list.innerHTML = '<div class="empty-neon">Ошибка соединения</div>'; }
+        function openEditPromo(code, title) {
+            document.getElementById('editPCode').value = code; document.getElementById('editPTitle').value = title;
+            document.getElementById('editPromoModal').classList.add('active');
         }
+        document.getElementById('confirmEditPromoBtn').onclick = async () => {
+            const oldCode = document.getElementById('editPCode').defaultValue; // Старый код достаем из DOM если надо, или передаем переменной
+            // Для упрощения мы просто отправляем данные. Если нужно менять сам код, нужно сохранять oldCode глобально.
+            const newCode = document.getElementById('editPCode').value;
+            const newTitle = document.getElementById('editPTitle').value;
+            try {
+                const res = await fetch(`${API_URL}/promo/${newCode}`, { method: 'PUT', headers: authHeaders({'Content-Type': 'application/json'}), body: JSON.stringify({ newCode, newTitle }) });
+                if(res.ok) { closeModal('editPromoModal'); loadPromosFromServer(); showToast('Обновлено', 'success'); }
+                else { showToast('Ошибка сохранения', 'error'); }
+            } catch(e) {}
+        };
+
+        // Запуск сессии при старте
+        verifySessionOnLoad();
+
     </script>
 </body>
 </html>
