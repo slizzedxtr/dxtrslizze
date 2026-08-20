@@ -1,204 +1,214 @@
+require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const { MongoClient } = require('mongodb');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Создаем HTTP сервер и привязываем к нему Socket.io (для чата)
 const server = http.createServer(app);
-const io = new Server(server, {
-    cors: { origin: "*", methods: ["GET", "POST"] }
-});
+const io = new Server(server, { cors: { origin: "*" } });
 
-// ==========================================
-// БАЗЫ ДАННЫХ
-// ==========================================
-const mongoClient = new MongoClient(process.env.MONGODB_URI);
+// Инициализация Supabase
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-let usersCollection;
 
-mongoClient.connect().then(() => {
-    // Подключаемся к базе по умолчанию из твоего URI
-    usersCollection = mongoClient.db().collection('users');
-    console.log('✅ MongoDB успешно подключена');
-}).catch(console.error);
+console.log('⚡ Инициализация DXTR Game Engine...');
 
-app.get('/', (req, res) => res.send('DXTR | SlizZe Game & Chat Server Active'));
+// Хранилище сессий для сложных игр (Мины, Блэкджек, Квиз)
+const gameSessions = new Map(); 
 
 // ==========================================
-// API ЭКОНОМИКИ И ИГР (DSCoin)
+// MIDDLEWARE АВТОРИЗАЦИИ
 // ==========================================
+const authUser = async (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'Нет токена' });
+    
+    const token = authHeader.split(' ')[1];
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    
+    if (error || !user) return res.status(401).json({ error: 'Неверный токен' });
+    req.user = user;
+    next();
+};
 
-// 1. Синхронизация баланса при входе
-app.post('/api/game/sync', async (req, res) => {
-    const { clientId } = req.body;
-    if (!clientId) return res.status(400).json({ error: 'No clientId' });
+// ==========================================
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ==========================================
+async function getBalance(userId) {
+    const { data } = await supabase.from('g_users').select('dscoin_balance').eq('id', userId).single();
+    return data ? data.dscoin_balance : 0;
+}
 
-    try {
-        let user = await usersCollection.findOne({ clientId: String(clientId) });
-        if (!user) {
-            // Новый пользователь получает 100 DSCoin
-            user = { clientId: String(clientId), dscoin_balance: 100, last_sync: Date.now() };
-            await usersCollection.insertOne(user);
-        }
-        res.json({ balance: user.dscoin_balance || 0 });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+async function updateBalance(userId, amount) {
+    const current = await getBalance(userId);
+    const newBal = current + amount;
+    await supabase.from('g_users').update({ dscoin_balance: newBal }).eq('id', userId);
+    return newBal;
+}
+
+app.get('/', (req, res) => res.send('DXTR | SlizZe V2 API Active'));
+
+// ==========================================
+// API: ОСНОВА И ЭКОНОМИКА
+// ==========================================
+app.get('/api/auth/me', authUser, async (req, res) => {
+    const { data } = await supabase.from('g_users').select('*').eq('id', req.user.id).single();
+    res.json({ success: true, user: data });
 });
 
-// 2. Синхронизация кликера (сохраняем накликаное)
-app.post('/api/game/clicker-sync', async (req, res) => {
-    const { clientId, clicks } = req.body;
-    if (!clientId || !clicks) return res.status(400).json({ error: 'Invalid data' });
-
-    try {
-        const result = await usersCollection.findOneAndUpdate(
-            { clientId: String(clientId) },
-            { $inc: { dscoin_balance: Number(clicks) } },
-            { returnDocument: 'after' }
-        );
-        res.json({ balance: result.value ? result.value.dscoin_balance : 0 });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+app.get('/api/games/leaderboard', async (req, res) => {
+    const { data, error } = await supabase.from('g_users')
+        .select('id, nickname, avatar_url, dscoin_balance')
+        .order('dscoin_balance', { ascending: false })
+        .limit(5);
+    if (error) return res.status(500).json({ error: error.message });
+    res.json({ success: true, leaders: data });
 });
 
-// 3. Выдача трека для игры "Угадай трек"
-app.get('/api/game/guess-track', async (req, res) => {
-    try {
-        const { data: tracks, error } = await supabase.from('music').select('id, title, mp3_url, cover_url');
-        if (error || !tracks || tracks.length < 3) throw new Error('Мало треков в БД');
-
-        const correct = tracks[Math.floor(Math.random() * tracks.length)];
-        let options = [correct.title];
-        
-        while (options.length < 3) {
-            let rndTitle = tracks[Math.floor(Math.random() * tracks.length)].title;
-            if (!options.includes(rndTitle)) options.push(rndTitle);
-        }
-
-        res.json({
-            audioUrl: correct.mp3_url,
-            options: options.sort(() => Math.random() - 0.5),
-            answer: correct.title
-        });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+app.post('/api/games/daily', authUser, async (req, res) => {
+    const { data: userData } = await supabase.from('g_users').select('last_daily_claim').eq('id', req.user.id).single();
+    const now = new Date();
+    
+    if (userData && userData.last_daily_claim) {
+        const lastClaim = new Date(userData.last_daily_claim);
+        const diffHours = Math.abs(now - lastClaim) / 36e5;
+        if (diffHours < 6) return res.status(400).json({ error: 'Поставка еще не готова' });
     }
+
+    const newBalance = await updateBalance(req.user.id, 100);
+    await supabase.from('g_users').update({ last_daily_claim: now.toISOString() }).eq('id', req.user.id);
+    
+    res.json({ success: true, newBalance, message: 'ПОЛУЧЕНО 100 NC' });
 });
 
-// 4. Результат "Угадай трек" (+100 или -50 DSC)
-app.post('/api/game/guess-result', async (req, res) => {
-    const { clientId, isWin } = req.body;
-    try {
-        const user = await usersCollection.findOne({ clientId: String(clientId) });
-        if (!user) return res.status(404).json({ error: 'User not found' });
-
-        let newBalance = (user.dscoin_balance || 0) + (isWin ? 100 : -50);
-        
-        await usersCollection.updateOne(
-            { clientId: String(clientId) },
-            { $set: { dscoin_balance: newBalance } }
-        );
-        res.json({ newBalance });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// 5. Мини-казино (Спины)
-app.post('/api/game/casino-spin', async (req, res) => {
-    const { clientId } = req.body;
-    try {
-        const user = await usersCollection.findOne({ clientId: String(clientId) });
-        if (!user || (user.dscoin_balance || 0) < 25) {
-            return res.status(400).json({ error: 'Недостаточно DSCoin (Нужно 25)' });
-        }
-
-        const prizes = [
-            { type: 'Пусто', amount: 0, chance: 50 },
-            { type: 'Утешительный', amount: 10, chance: 30 },
-            { type: 'Победа', amount: 50, chance: 15 },
-            { type: 'ДЖЕКПОТ', amount: 250, chance: 5 }
-        ];
-
-        // Рандомайзер с учетом шансов
-        const rand = Math.random() * 100;
-        let cumulative = 0;
-        let wonPrize = prizes[0];
-
-        for (let p of prizes) {
-            cumulative += p.chance;
-            if (rand <= cumulative) { wonPrize = p; break; }
-        }
-
-        // Вычитаем 25 за спин и прибавляем выигрыш
-        let newBalance = user.dscoin_balance - 25 + wonPrize.amount;
-        
-        await usersCollection.updateOne(
-            { clientId: String(clientId) },
-            { $set: { dscoin_balance: newBalance } }
-        );
-
-        res.json({ prizeType: wonPrize.type, amount: wonPrize.amount, newBalance });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
+// Сброс зависших сессий
+app.post('/api/games/reset', authUser, (req, res) => {
+    gameSessions.delete(req.user.id);
+    res.json({ success: true });
 });
 
 // ==========================================
-// SOCKET.IO (ТЕХПОДДЕРЖКА И ОНЛАЙН)
+// API: ИГРЫ (ОДНОРАЗОВЫЕ ЗАПРОСЫ)
 // ==========================================
 
+// Слоты
+app.post('/api/games/slots', authUser, async (req, res) => {
+    const { bet } = req.body;
+    const balance = await getBalance(req.user.id);
+    if (bet > balance || bet <= 0) return res.status(400).json({ error: 'Неверная ставка' });
+
+    await updateBalance(req.user.id, -bet);
+    
+    // Эмуляция шанса (15% на победу)
+    const isWin = Math.random() < 0.15;
+    const winAmount = isWin ? bet * 10 : 0;
+    
+    const newBalance = await updateBalance(req.user.id, winAmount);
+    
+    // В реальном проекте тут нужно подтягивать картинки из твоей базы
+    res.json({ win: winAmount, newBalance, items: [{}, {}, {}] }); 
+});
+
+// Дайс
+app.post('/api/games/dice', authUser, async (req, res) => {
+    const { bet, guess } = req.body; // guess: 1(<25), 2(25-50), 3(51-75), 4(>75)
+    const balance = await getBalance(req.user.id);
+    if (bet > balance || bet <= 0) return res.status(400).json({ error: 'Неверная ставка' });
+
+    const roll = Math.floor(Math.random() * 100) + 1;
+    let isWin = false;
+    let mult = 0;
+
+    if (guess === 1 && roll < 25) { isWin = true; mult = 3; }
+    else if (guess === 2 && roll >= 25 && roll <= 50) { isWin = true; mult = 2; }
+    else if (guess === 3 && roll >= 51 && roll <= 75) { isWin = true; mult = 2; }
+    else if (guess === 4 && roll > 75) { isWin = true; mult = 3; }
+
+    await updateBalance(req.user.id, -bet);
+    const winAmount = isWin ? bet * mult : 0;
+    const newBalance = await updateBalance(req.user.id, winAmount);
+
+    res.json({ roll, win: winAmount, newBalance });
+});
+
+// Краш
+app.post('/api/games/crash', authUser, async (req, res) => {
+    const { bet, targetMultiplier } = req.body;
+    const balance = await getBalance(req.user.id);
+    if (bet > balance || bet <= 0) return res.status(400).json({ error: 'Неверная ставка' });
+
+    // Классическая математика краша
+    const e = 2 ** 32;
+    const h = Math.floor(Math.random() * e);
+    let crashPoint = Math.max(1.00, Math.floor((100 * e - h) / (e - h)) / 100);
+    
+    await updateBalance(req.user.id, -bet);
+    
+    const isWin = targetMultiplier <= crashPoint;
+    const winAmount = isWin ? Math.floor(bet * targetMultiplier) : 0;
+    const newBalance = await updateBalance(req.user.id, winAmount);
+
+    res.json({ crashPoint, target: targetMultiplier, win: winAmount, newBalance });
+});
+
+// Рулетка
+app.post('/api/games/roulette', authUser, async (req, res) => {
+    const { bet, color } = req.body;
+    const balance = await getBalance(req.user.id);
+    if (bet > balance || bet <= 0) return res.status(400).json({ error: 'Неверная ставка' });
+
+    const r = Math.random() * 100;
+    let resultColor = r < 5 ? 'gold' : (r < 52.5 ? 'cyan' : 'purple');
+    
+    await updateBalance(req.user.id, -bet);
+    
+    const isWin = color === resultColor;
+    const mult = resultColor === 'gold' ? 14 : 2;
+    const winAmount = isWin ? bet * mult : 0;
+    const newBalance = await updateBalance(req.user.id, winAmount);
+
+    res.json({ resultColor, isWin, win: winAmount, newBalance });
+});
+
+// ==========================================
+// SOCKET.IO: ТЕХПОДДЕРЖКА
+// ==========================================
 io.on('connection', (socket) => {
-    // При подключении обновляем всем счетчик онлайна
     io.emit('online_update', io.engine.clientsCount);
 
-    // Регистрация клиента (как в твоей админке)
-    socket.on('register_client', async (data) => {
-        const { clientId, fpHash } = data;
-        
-        // Тут можно проверять бан пользователя через MongoDB
-        // Для примера шлем статус, что не забанен
-        socket.emit('ban_status', { isBanned: false });
-        
-        // Подтягиваем никнейм и аватар, если они есть в БД
+    socket.on('register_client', async ({ token }) => {
+        if (!token) return;
         try {
-            if (usersCollection) {
-                const user = await usersCollection.findOne({ clientId: String(clientId) });
-                if (user) {
-                    socket.emit('user_data', { nickname: user.nickname, avatarUrl: user.avatarUrl });
+            const { data: { user } } = await supabase.auth.getUser(token);
+            if (user) {
+                const { data } = await supabase.from('g_users').select('nickname, avatar_url').eq('id', user.id).single();
+                if (data) {
+                    socket.emit('user_data', { nickname: data.nickname, avatarUrl: data.avatar_url });
+                    socket.emit('ban_status', { isBanned: false }); // Логика банов
                 }
             }
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Socket Auth Error"); }
     });
 
-    // Обработка сообщений чата
-    socket.on('send_message', (data) => {
-        // Рассылаем сообщение (админам/поддержке)
-        // В реальной ситуации тут можно сохранять лог в БД
-        socket.broadcast.emit('receive_message', {
-            text: data.text,
-            clientId: data.clientId,
-            isWarning: false,
-            isSuccess: false
+    socket.on('send_message', async (data) => {
+        // Здесь можно записывать логи чата в Supabase
+        socket.broadcast.emit('receive_message', { 
+            text: data.text, 
+            isWarning: false, 
+            isSuccess: false 
         });
     });
 
     socket.on('disconnect', () => {
-        // При отключении обновляем счетчик
         io.emit('online_update', io.engine.clientsCount);
     });
 });
 
-// Запуск сервера (используем server.listen, чтобы работали сокеты)
 const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-    console.log(`DXTR Game & Chat Engine is running on port ${PORT}`);
+    console.log(`🚀 DXTR Server Online on port ${PORT}`);
 });
