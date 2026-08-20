@@ -7,7 +7,7 @@
     <meta name="description" content="Игровой терминал. Фарми крипту, играй в мини-игры.">
     <link rel="icon" type="image.png" href="/dslogo.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
@@ -57,6 +57,7 @@
         .toast { background: rgba(15, 15, 20, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-left: 4px solid var(--accent-purple); color: #fff; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 15px; animation: slideInRight 0.4s ease forwards; pointer-events: auto; }
         .toast.toast-error { border-left-color: var(--error); }
         .toast.toast-success { border-left-color: var(--success); }
+        .toast i { font-size: 1.4rem; }
         @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadeOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
 
@@ -67,7 +68,7 @@
         .nav-link.active { color: #fff; background: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
 
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: var(--glass-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.1rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
-        .burger-btn:hover { background: rgba(255,255,255,0.1); }
+        .burger-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
 
         .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(25px); border-right: 1px solid var(--glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s ease; box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
@@ -89,11 +90,16 @@
         .music-toggle:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
         .music-toggle.playing { color: var(--success); border-color: var(--success); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
 
+        .online-counter { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; white-space: nowrap; }
+        .pulse-dot { width: 10px; height: 10px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: pulseGreen 2s infinite; }
+        @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        .online-num { color: var(--text-main); font-weight: 800; font-size: 0.85rem; }
+
         .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--glass-border); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-body); transition: 0.3s; text-decoration: none; cursor: pointer; }
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-btn:hover { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
+        .profile-btn:hover { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); transform: scale(1.05); }
 
-        /* ── ЧАТ ── */
+        /* ── ЧАТ ТЕХПОДДЕРЖКИ ── */
         #chat-window { display: none; position: fixed; bottom: 30px; right: 30px; width: 360px; height: 500px; flex-direction: column; overflow: hidden; background: rgba(15, 15, 20, 0.9); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); z-index: 9999; }
         .chat-header { background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--glass-border); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2; cursor: grab; }
         .chat-header:active { cursor: grabbing; }
@@ -115,279 +121,286 @@
         #chat-send { background: var(--accent-purple); border: none; color: #fff; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; }
         #chat-send:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 5px 15px var(--accent-purple-glow); }
 
-        /* ── ГЛОБАЛЬНЫЙ ДИЗАЙН АРЕНЫ ── */
+        /* ── MAIN CONTAINER & HEADER ── */
         header { text-align: center; padding: 4vh 20px 2vh; position: relative; z-index: 10; }
-        header h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--accent-purple), var(--accent-gold), #fff); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); animation: gradient-shift 6s linear infinite; }
-        @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
+        header h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--accent-purple), var(--accent-gold), #fff); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); animation: gradient-shift 6s linear infinite; }
 
-        .arena { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px 80px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 10; }
+        main { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px 80px; z-index: 10; display: flex; flex-direction: column; align-items: center; }
 
-        /* Плавающий ДОК навигации игр */
-        .floating-nav {
-            position: sticky; top: 20px; z-index: 100;
-            display: flex; gap: 8px; overflow-x: auto;
-            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border); padding: 10px;
-            border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-            margin-bottom: 40px; max-width: 100%; width: max-content;
+        .games-container {
+            width: 100%; background: rgba(10, 10, 15, 0.4); backdrop-filter: blur(25px); border: 1px solid var(--glass-border);
+            border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(139, 92, 246, 0.05);
+            position: relative; display: flex; flex-direction: column; min-height: 620px;
+            animation: borderGlow 6s infinite; overflow: hidden;
         }
-        .floating-nav::-webkit-scrollbar { display: none; }
+
+        /* ── AUTH OVERLAY ── */
+        .auth-overlay { position: absolute; inset: 0; background: rgba(5, 5, 8, 0.85); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px; backdrop-filter: blur(15px); }
+        .auth-overlay i { font-size: 4rem; color: var(--accent-purple); filter: drop-shadow(0 0 20px var(--accent-purple-glow)); margin-bottom: 20px; }
+        .auth-overlay h2 { font-size: 1.8rem; font-weight: 900; color: #fff; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .btn-auth-link { background: var(--accent-purple); color: #fff; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 800; font-size: 1rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; border: none; cursor: pointer; }
+        .btn-auth-link:hover { filter: brightness(1.1); box-shadow: 0 5px 20px var(--accent-purple-glow); transform: translateY(-2px); }
+
+        /* ── ТАБЫ ИГР ── */
+        .game-nav {
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+            background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border);
+            padding: 15px; border-radius: 28px 28px 0 0;
+        }
         .tab-btn {
-            flex: 0 0 auto; padding: 12px 18px; background: transparent; border: 1px solid transparent;
-            color: var(--text-muted); font-weight: 700; font-size: 0.85rem; text-transform: uppercase;
+            flex: 0 1 auto; padding: 12px 18px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+            color: var(--text-muted); font-weight: 800; font-size: 0.8rem; text-transform: uppercase;
             cursor: pointer; transition: 0.3s; border-radius: 12px; display: flex; align-items: center; gap: 8px; letter-spacing: 1px;
         }
-        .tab-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .tab-btn.active { background: var(--accent-purple); color: #fff; box-shadow: 0 5px 15px var(--accent-purple-glow); }
+        .tab-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .tab-btn.active { background: var(--accent-purple); color: #fff; border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
 
-        .tab-content { display: none; width: 100%; flex-direction: column; align-items: center; text-align: center; animation: fadeUp 0.4s ease forwards; }
+        /* ── ТЕЛО ИГРЫ ── */
+        .game-body { padding: clamp(24px,5vw,50px) clamp(12px,3vw,40px); display: flex; justify-content: center; flex: 1; position: relative; z-index: 1;}
+        .tab-content { display: none; width: 100%; max-width: 940px; flex-direction: column; align-items: center; text-align: center; animation: fadeUp 0.45s ease forwards; }
         .tab-content.active { display: flex; }
 
-        .g-title { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px; text-shadow: 0 0 15px rgba(255,255,255,0.1); }
-        .g-desc { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 40px; font-weight: 500; }
+        .g-title { font-size: clamp(1.8rem,5vw,2.8rem); font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 5px; margin-bottom: 8px; text-shadow: 0 0 15px rgba(255,255,255,0.2); }
+        .g-desc { font-size: clamp(0.78rem,1.7vw,0.92rem); color: var(--text-muted); margin-bottom: 26px; letter-spacing: 0.5px; }
 
-        /* ПАНЕЛЬ УПРАВЛЕНИЯ ИГР */
-        .game-control-dock {
-            display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;
-            background: rgba(20, 20, 25, 0.4); border: 1px solid var(--glass-border); border-radius: 24px;
-            padding: 25px; width: 100%; max-width: 800px; margin-top: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
+        /* INPUTS & BUTTONS */
+        .bet-box { display: flex; flex-direction: column; align-items: center; margin-bottom: 22px; width: 100%; max-width: 340px; }
+        .bet-label { color: var(--text-muted); font-weight: 800; font-size: 0.72rem; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 2px; }
+        .bet-input-wrapper { width: 100%; cursor: pointer; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 14px; padding: 15px; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
+        .bet-input-wrapper:hover { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); background: rgba(0,0,0,0.5); }
+        .bet-val-display { font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; color: #fff; }
 
-        .bet-box { display: flex; flex-direction: column; align-items: flex-start; flex: 1; min-width: 220px; }
-        .bet-label { color: var(--text-muted); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; padding-left: 5px; }
-        .bet-input-wrapper { width: 100%; cursor: pointer; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 14px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-        .bet-input-wrapper:hover { border-color: var(--accent-purple); background: rgba(0,0,0,0.7); }
-        .bet-val-display { font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; color: #fff; }
-        
-        .bet-quick-row { display: flex; gap: 8px; margin-top: 10px; width: 100%; }
-        .b-q-btn { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-muted); font-weight: 700; font-size: 0.75rem; padding: 8px 0; cursor: pointer; transition: 0.3s; }
-        .b-q-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+        .bet-quick-btns { display: flex; gap: 8px; width: 100%; max-width: 340px; margin-bottom: 15px; }
+        .b-q-btn { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-muted); font-weight: 700; font-size: 0.75rem; padding: 6px; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .b-q-btn:hover { background: rgba(255,255,255,0.08); color: #fff; border-color: rgba(255,255,255,0.2); }
 
-        .play-btn-huge {
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold));
-            color: white; border: none; padding: 0 40px; height: 95px; border-radius: 18px;
-            font-size: 1.2rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;
-            cursor: pointer; transition: 0.3s; flex-shrink: 0; min-width: 220px;
-            box-shadow: 0 8px 25px var(--accent-purple-glow); display: flex; justify-content: center; align-items: center;
-        }
-        .play-btn-huge:hover:not(:disabled) { transform: scale(1.03) translateY(-3px); filter: brightness(1.1); box-shadow: 0 12px 30px var(--accent-purple-glow); }
-        .play-btn-huge:disabled { background: rgba(255,255,255,0.05) !important; color: rgba(255,255,255,0.2) !important; box-shadow: none !important; cursor: not-allowed; transform: none; }
+        .play-btn { background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold)); color: white; border: none; padding: 16px 40px; border-radius: 14px; font-size: 1rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; width: 100%; max-width: 340px; box-shadow: 0 5px 20px var(--accent-purple-glow); }
+        .play-btn:hover:not(:disabled) { transform: scale(1.03) translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px var(--accent-purple-glow); }
+        .play-btn:disabled { background: rgba(255,255,255,0.05) !important; color: rgba(255,255,255,0.3) !important; box-shadow: none !important; cursor: not-allowed; transform: none; }
 
         /* СИСТЕМНЫЕ УВЕДОМЛЕНИЯ */
-        .sys-msg { margin-top: 20px; font-size: 1rem; font-weight: 800; text-transform: uppercase; min-height: 24px; letter-spacing: 1px; }
-        .sys-win  { color: var(--success); text-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
-        .sys-lose { color: var(--error); text-shadow: 0 0 15px rgba(239, 68, 68, 0.3); }
+        .sys-msg { margin-top: 18px; font-size: 0.9rem; font-weight: 900; text-transform: uppercase; min-height: 22px; letter-spacing: 1.5px; }
+        .sys-win  { color: var(--success); text-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        .sys-lose { color: var(--error); text-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
         .sys-err  { color: var(--accent-gold); text-shadow: 0 0 15px var(--accent-gold-glow); }
-        .float-win { position: fixed; pointer-events: none; z-index: 99999; font-size: 2rem; font-weight: 800; color: var(--success); text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); animation: floatUpFade 1.5s ease forwards; }
+        .float-win { position: fixed; pointer-events: none; z-index: 99999; font-size: 2rem; font-weight: 900; color: var(--success); text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); animation: floatUpFade 1.5s ease forwards; }
 
         /* ── ДАШБОРД (БАЗА) ── */
-        .dash-grid { display: grid; grid-template-columns: 1fr; gap: 25px; width: 100%; max-width: 900px; }
-        .daily-banner {
-            width: 100%; background: rgba(20, 20, 30, 0.5);
-            border: 1px solid var(--glass-border); border-radius: 24px; padding: 35px;
-            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px;
-        }
-        .db-info { text-align: left; flex: 1; min-width: 200px; }
-        .db-title { font-size: 1.5rem; color: #fff; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .db-desc  { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
-        .db-action-btn { 
-            background: rgba(16, 185, 129, 0.1); color: var(--success); font-weight: 800; border: 1px solid rgba(16, 185, 129, 0.3); 
-            padding: 16px 30px; border-radius: 14px; text-transform: uppercase; font-size: 1.1rem; cursor: pointer; transition: 0.3s;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .db-action-btn:hover:not(:disabled) { background: var(--success); color: #000; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); transform: scale(1.05); }
-        .db-action-btn:disabled { background: rgba(255,255,255,0.05); border-color: transparent; color: rgba(255,255,255,0.3); cursor: not-allowed; }
+        .dash-layout { display: flex; flex-direction: column; gap: 22px; width: 100%; }
+        .daily-banner-btn { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px 30px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 18px; cursor: pointer; transition: 0.3s; }
+        .daily-banner-btn:hover:not(:disabled) { border-color: var(--accent-gold); background: rgba(244, 199, 69, 0.05); box-shadow: 0 5px 20px var(--accent-gold-glow); transform: translateY(-2px); }
+        .daily-banner-btn:disabled { filter: grayscale(80%); opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; border-color: var(--glass-border); background: rgba(255,255,255,0.02); }
+        .db-info { text-align: left; flex: 1; min-width: 180px; }
+        .db-title { font-size: 1.2rem; color: #fff; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+        .db-desc  { font-size: 0.85rem; color: var(--text-muted); }
+        .db-action { background: rgba(16, 185, 129, 0.1); color: var(--success); font-weight: 900; border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px 25px; border-radius: 12px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; flex-shrink: 0; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); transition: 0.3s; }
+        .daily-banner-btn:disabled .db-action { color: var(--text-muted); border-color: var(--glass-border); box-shadow: none; background: rgba(255,255,255,0.05); }
 
-        .leaderboard-container { background: rgba(20, 20, 25, 0.5); border: 1px solid var(--glass-border); border-radius: 24px; padding: 35px; width: 100%; text-align: left; }
-        .leaderboard-container h3 { font-size: 1.3rem; color: #fff; margin-bottom: 25px; display: flex; align-items: center; gap: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800;}
-        .leaderboard-container h3 i { color: var(--accent-gold); font-size: 1.5rem; }
-        
-        .leaderboard-grid { display: flex; flex-direction: column; gap: 12px; }
-        .ld-item { display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 16px; padding: 12px 20px; transition: 0.3s; }
-        .ld-item:hover { background: rgba(255,255,255,0.03); transform: translateX(5px); }
-        .ld-rank { font-weight: 800; font-size: 1.2rem; width: 35px; text-align: center; flex-shrink: 0; }
-        .ld-avatar { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; margin: 0 15px; flex-shrink: 0; border: 1px solid var(--glass-border); }
-        .ld-info { display: flex; flex-direction: column; flex: 1; min-width: 0; justify-content: center; }
-        .ld-name { font-weight: 800; color: #fff; font-size: 1rem; margin-bottom: 4px; }
-        .ld-score { font-weight: 700; font-size: 0.9rem; color: var(--success); display: flex; align-items: center; }
+        .d-card { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 25px; border-radius: 20px; width: 100%; text-align: left; }
+        .d-card h3 { font-size: 1.1rem; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .leaderboard { display: flex; flex-direction: column; gap: 10px; }
+        .ld-item { display: flex; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-left: 4px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px 15px; transition: 0.3s; }
+        .ld-item:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); border-color: rgba(255,255,255,0.2); }
+        .ld-item.rank-1 { border-left-color: var(--accent-gold) !important; background: rgba(244, 199, 69, 0.05); }
+        .ld-item.rank-2 { border-left-color: #c0c0c0 !important; }
+        .ld-item.rank-3 { border-left-color: #cd7f32 !important; }
+        .ld-rank { font-weight: 900; font-size: 1.1rem; width: 30px; text-align: center; flex-shrink: 0; }
+        .ld-avatar { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; margin: 0 15px; flex-shrink: 0; border: 1px solid var(--glass-border); }
+        .ld-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+        .ld-name { font-weight: 800; color: #fff; font-size: 0.95rem; margin-bottom: 4px; }
+        .ld-score { font-weight: 900; font-size: 0.85rem; color: var(--success); display: flex; align-items: center; }
 
         /* ── СЛОТЫ ── */
-        .slots-visual { display: flex; gap: 15px; justify-content: center; margin-bottom: 10px; }
-        .reel { width: clamp(90px, 20vw, 150px); height: clamp(90px, 20vw, 150px); border-radius: 20px; overflow: hidden; position: relative; background: #000; border: 1px solid var(--glass-border); box-shadow: inset 0 0 25px rgba(0,0,0,0.8); }
+        .slots-box { display: flex; gap: 15px; margin-bottom: 30px; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 20px; border: 1px solid var(--glass-border); box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
+        .reel { width: clamp(80px,20vw,130px); height: clamp(80px,20vw,130px); border-radius: 14px; overflow: hidden; position: relative; background: #000; border: 1px solid var(--glass-border); box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
         .reel::before, .reel::after { content: ''; position: absolute; left: 0; width: 100%; height: 30%; z-index: 1; pointer-events: none; }
         .reel::before { top: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); }
         .reel::after  { bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); }
         .reel-strip { display: flex; flex-direction: column; width: 100%; transition: transform 3s cubic-bezier(0.15,0.85,0.15,1); }
-        .reel-strip img { width: 100%; height: clamp(90px, 20vw, 150px); object-fit: cover; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .reel-strip img { width: 100%; height: clamp(80px,20vw,130px); object-fit: cover; border-bottom: 1px solid var(--glass-border); }
 
         /* ── ДАЙС ── */
-        .dice-res { font-size: clamp(4.5rem, 12vw, 7rem); font-weight: 800; margin-bottom: 20px; height: 140px; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; color: #fff; }
-        .dice-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; width: 100%; max-width: 550px; }
-        .d-opt { padding: 18px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 14px; color: var(--text-muted); font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
-        .d-opt:hover { border-color: rgba(255,255,255,0.2); color: #fff; }
-        .d-opt.active { background: var(--accent-purple); border-color: var(--accent-purple); color: #fff; box-shadow: 0 5px 15px var(--accent-purple-glow); }
+        .dice-res { font-size: clamp(4rem,13vw,6rem); font-weight: 900; margin-bottom: 25px; height: 100px; display: flex; align-items: center; justify-content: center; font-variant-numeric: tabular-nums; transition: 0.3s; color: #fff; }
+        .dice-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; width: 100%; max-width: 500px; }
+        .d-opt { padding: 15px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 14px; color: var(--text-muted); font-weight: 800; font-size: 0.8rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .d-opt:hover { border-color: var(--accent-purple); color: #fff; background: rgba(139, 92, 246, 0.05); }
+        .d-opt.active { background: rgba(139, 92, 246, 0.15); border-color: var(--accent-purple); color: #fff; box-shadow: 0 0 20px var(--accent-purple-glow); transform: scale(1.03); }
 
         /* ── КРАШ ── */
-        .crash-graph { width: 100%; max-width: 700px; height: clamp(180px, 35vw, 280px); background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 24px; margin-bottom: 10px; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .crash-graph { width: 100%; max-width: 600px; height: clamp(160px,30vw,240px); background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 20px; margin-bottom: 25px; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
         .crash-graph::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px); background-size: 40px 40px; }
-        .cr-mult { font-size: clamp(3rem, 9vw, 5rem); font-weight: 800; color: #fff; z-index: 2; transition: 0.2s; }
-        .cr-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--accent-gold); box-shadow: 0 -5px 20px rgba(244, 199, 69, 0.3); transform-origin: bottom left; transition: transform 0.1s linear; }
+        .cr-mult { font-size: clamp(2.5rem,8vw,4.5rem); font-weight: 900; color: #fff; z-index: 2; transition: 0.2s; }
+        .cr-line { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: var(--accent-gold); box-shadow: 0 0 20px var(--accent-gold), 0 -5px 15px rgba(244, 199, 69, 0.5); transform-origin: bottom left; transition: transform 0.1s linear; }
+        .crash-inputs { display: flex; gap: 15px; width: 100%; max-width: 500px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
 
         /* ── РУЛЕТКА ── */
-        .roulette-wheel { width: 100%; max-width: 700px; height: clamp(70px, 14vw, 95px); background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); border-radius: 20px; margin-bottom: 25px; position: relative; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 0 30px rgba(0,0,0,0.7); }
-        .roulette-wheel::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 3px; height: 100%; background: #fff; z-index: 10; box-shadow: 0 0 15px rgba(255,255,255,0.5); }
-        .roulette-wheel::after  { content: '▼'; position: absolute; top: -3px; left: 50%; transform: translateX(-50%); font-size: 18px; color: #fff; z-index: 11; }
+        .roulette-wheel { width: 100%; max-width: 600px; height: clamp(65px,12vw,85px); background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); border-radius: 16px; margin-bottom: 25px; position: relative; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+        .roulette-wheel::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: #fff; z-index: 10; box-shadow: 0 0 15px #fff; }
+        .roulette-wheel::after  { content: '▼'; position: absolute; top: -2px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #fff; z-index: 11; text-shadow: 0 0 10px #fff; }
         .r-strip { display: flex; height: 100%; will-change: transform; }
-        .r-cell { width: clamp(70px, 14vw, 95px); height: 100%; flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1.1rem; color: #fff; border-right: 1px solid rgba(0,0,0,0.4); }
+        .r-cell { width: clamp(65px,12vw,85px); height: 100%; flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 1rem; color: #fff; border-right: 1px solid rgba(0,0,0,0.3); }
         .r-purple { background: rgba(139, 92, 246, 0.8); }
         .r-cyan   { background: rgba(0, 198, 255, 0.8); color: #000; }
         .r-gold   { background: rgba(244, 199, 69, 0.8); color: #000; }
-        .r-opts { display: flex; gap: 12px; width: 100%; max-width: 700px; margin-bottom: 10px; }
-        .r-opt { flex: 1; padding: 18px 8px; border-radius: 14px; font-weight: 800; font-size: 0.9rem; cursor: pointer; border: 1px solid transparent; transition: 0.3s; opacity: 0.5; text-transform: uppercase; }
-        .r-opt:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); }
-        .r-opt.active { opacity: 1; transform: scale(1.05); border-color: rgba(255,255,255,0.4); box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        .r-opts { display: flex; gap: 12px; margin-bottom: 25px; width: 100%; max-width: 600px; }
+        .r-opt { flex: 1; padding: 15px 5px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: 1px solid transparent; transition: 0.3s; opacity: 0.6; text-transform: uppercase; }
+        .r-opt:hover:not(:disabled) { opacity: 1; transform: translateY(-2px); }
+        .r-opt.active { opacity: 1; transform: scale(1.05); border-color: rgba(255,255,255,0.5); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .r-opt:disabled { cursor: not-allowed; }
         .btn-purple { background: var(--accent-purple); color: #fff; }
         .btn-cyan   { background: #00c6ff; color: #000; }
         .btn-gold   { background: var(--accent-gold); color: #000; }
 
         /* ── ФАРМ ── */
-        .farm-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 800px; }
-        .farm-stat { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 30px; border-radius: 24px; text-align: center; transition: 0.3s; }
-        .farm-stat:hover { border-color: rgba(255,255,255,0.2); background: rgba(0,0,0,0.4); }
-        .farm-stat h4 { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
-        .farm-stat .val { font-size: 2.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; color: #fff; }
-        .farm-upgrade-btn { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: #fff; padding: 14px; border-radius: 14px; font-weight: 700; font-size: 0.9rem; width: 100%; margin-top: 20px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 5px; text-transform: uppercase; }
-        .farm-upgrade-btn:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); }
+        .farm-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 700px; margin-bottom: 25px; }
+        .farm-stat { background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 25px; border-radius: 18px; text-align: center; transition: 0.3s; }
+        .farm-stat:hover { border-color: var(--accent-purple); box-shadow: 0 0 20px var(--accent-purple-glow); background: rgba(0,0,0,0.4); }
+        .farm-stat h4 { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase; }
+        .farm-stat .val { font-size: 2rem; font-weight: 900; display: flex; align-items: center; justify-content: center; gap: 8px; color: #fff; }
+        .farm-upgrade-btn { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: #fff; padding: 12px; border-radius: 12px; font-weight: 800; width: 100%; margin-top: 15px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .farm-upgrade-btn:hover:not(:disabled) { background: rgba(139, 92, 246, 0.1); border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
         .farm-upgrade-btn:disabled { border-color: transparent; color: rgba(255,255,255,0.2); cursor: not-allowed; }
-        .farm-upgrade-btn .cost { font-size: 0.85rem; display: flex; align-items: center; gap: 5px; color: var(--accent-gold); }
-        .farm-locked-screen { text-align: center; padding: 60px 30px; background: rgba(0,0,0,0.4); border: 1px dashed var(--glass-border); border-radius: 24px; width: 100%; max-width: 600px; }
+        .farm-upgrade-btn .cost { font-size: 0.8rem; display: flex; align-items: center; gap: 4px; color: var(--accent-gold); }
+        .farm-locked-screen { text-align: center; padding: 50px 20px; background: rgba(0,0,0,0.4); border: 1px dashed var(--glass-border); border-radius: 20px; width: 100%; max-width: 600px; }
 
         /* ── БЛЭКДЖЕК ── */
-        .bj-table { width: 100%; max-width: 750px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.15); border-radius: 24px; padding: 30px 20px; margin-bottom: 10px; backdrop-filter: blur(10px); }
-        .bj-zone { margin-bottom: 20px; }
-        .bj-zone-label { font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; }
-        .bj-cards { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 95px; align-items: center; }
-        .bj-card { width: clamp(50px, 12vw, 65px); height: clamp(70px, 18vw, 95px); border-radius: 8px; background: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-size: 1rem; font-weight: 800; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid #ccc; flex-shrink: 0; }
+        .bj-table { width: 100%; max-width: 650px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 20px; padding: 25px 20px; margin-bottom: 25px; backdrop-filter: blur(10px); }
+        .bj-zone { margin-bottom: 15px; }
+        .bj-zone-label { font-size: 0.8rem; font-weight: 800; letter-spacing: 2px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; }
+        .bj-cards { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 85px; align-items: center; }
+        .bj-card { width: clamp(45px,11vw,55px); height: clamp(65px,16vw,80px); border-radius: 8px; background: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-size: 0.9rem; font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: 0.3s; border: 1px solid #ccc; flex-shrink: 0; }
         .bj-card.red { color: #ef4444; } .bj-card.black { color: #111; }
-        .bj-card.hidden { background: rgba(20, 20, 30, 0.9); color: transparent; border-color: var(--accent-purple); display: flex; justify-content: center; align-items: center; }
-        .bj-card.hidden::after { content: '?'; font-size: 2rem; color: var(--accent-purple); }
-        .bj-card-suit { font-size: 1.5rem; margin: auto; }
-        .bj-score { font-size: 1rem; font-weight: 800; margin-left: 8px; }
-        .bj-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-        .bj-btn { padding: 15px 35px; border-radius: 14px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: none; letter-spacing: 1px; }
+        .bj-card.hidden { background: var(--bg-body); color: transparent; border-color: var(--glass-border); display: flex; justify-content: center; align-items: center; }
+        .bj-card.hidden::after { content: '?'; font-size: 1.5rem; color: var(--text-muted); }
+        .bj-card-suit { font-size: 1.2rem; margin: auto; }
+        .bj-score { font-size: 0.9rem; font-weight: 900; margin-left: 5px; }
+        .bj-actions { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .bj-btn { padding: 14px 30px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: none; }
         .bj-hit   { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
         .bj-stand { background: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid var(--error); }
-        .bj-hit:hover:not(:disabled)   { background: var(--success); color: #000; transform: translateY(-2px); }
-        .bj-stand:hover:not(:disabled) { background: var(--error); color: #fff; transform: translateY(-2px); }
-        .bj-btn:disabled { background: rgba(255,255,255,0.03) !important; color: rgba(255,255,255,0.2) !important; border-color: transparent !important; cursor: not-allowed; transform: none !important; }
+        .bj-hit:hover:not(:disabled)   { background: var(--success); color: #fff; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
+        .bj-stand:hover:not(:disabled) { background: var(--error); color: #fff; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); transform: translateY(-2px); }
+        .bj-btn:disabled { background: rgba(255,255,255,0.05) !important; color: rgba(255,255,255,0.2) !important; border-color: transparent !important; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
         /* ── КВИЗ ── */
-        .quiz-cover { width: clamp(140px, 30vw, 220px); height: clamp(140px, 30vw, 220px); border-radius: 20px; object-fit: cover; margin-bottom: 20px; border: 1px solid var(--glass-border); transition: filter 0.5s ease; }
-        .quiz-cover.blurred { filter: blur(20px) contrast(1.2); pointer-events: none; }
-        .quiz-hint { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 20px; font-weight: 500; }
-        .quiz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 600px; margin-bottom: 10px; }
-        .quiz-opt { padding: 16px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; font-weight: 600; cursor: pointer; transition: 0.3s; font-size: 0.85rem; text-transform: uppercase; }
-        .quiz-opt:hover:not(:disabled) { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
-        .quiz-opt.correct { background: rgba(16, 185, 129, 0.2); border-color: var(--success); color: var(--success); }
-        .quiz-opt.wrong   { background: rgba(239, 68, 68, 0.2); border-color: var(--error); color: var(--text-main); }
+        .quiz-cover { width: clamp(120px,28vw,180px); height: clamp(120px,28vw,180px); border-radius: 16px; object-fit: cover; margin-bottom: 20px; border: 2px solid var(--accent-purple); box-shadow: 0 0 30px var(--accent-purple-glow); transition: filter 0.8s ease, transform 0.8s ease; }
+        .quiz-cover.blurred { filter: blur(20px) contrast(1.2); pointer-events: none; transform: scale(1.05); border-color: var(--glass-border); box-shadow: none; }
+        .quiz-cover.no-transition { transition: none !important; }
+        .quiz-hint { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; font-style: italic; }
+        .quiz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin-bottom: 20px; }
+        .quiz-opt { padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.85rem; }
+        .quiz-opt:hover:not(:disabled) { border-color: var(--accent-purple); background: rgba(139, 92, 246, 0.1); box-shadow: 0 0 15px var(--accent-purple-glow); }
+        .quiz-opt.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--success); color: var(--success); }
+        .quiz-opt.wrong   { background: rgba(239, 68, 68, 0.15); border-color: var(--error); color: var(--error); }
         .quiz-opt:disabled { cursor: not-allowed; }
-        .quiz-streak { font-size: 1.1rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 15px; letter-spacing: 1px; }
+        .quiz-streak { font-size: 0.9rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 10px; letter-spacing: 1px; text-shadow: 0 0 10px var(--accent-gold-glow); }
 
         /* ── МИНЫ ── */
-        .mines-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; width: 100%; max-width: 400px; margin-bottom: 25px; }
-        .mine-cell { aspect-ratio: 1; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: 0.2s; position: relative; overflow: hidden; }
-        .mine-cell:hover:not(.revealed):not(.exploded) { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
-        .mine-cell.safe { background: rgba(16, 185, 129, 0.15); border-color: var(--success); color: var(--success); cursor: default; }
+        .mines-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; width: 100%; max-width: 350px; margin-bottom: 25px; }
+        .mine-cell { aspect-ratio: 1; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: 0.2s; position: relative; overflow: hidden; }
+        .mine-cell::before { content: ''; position: absolute; inset: 0; background: rgba(255,255,255,0.05); opacity: 0; transition: 0.2s; }
+        .mine-cell:hover:not(.revealed):not(.exploded) { border-color: var(--accent-purple); transform: scale(1.05); box-shadow: 0 0 15px var(--accent-purple-glow); }
+        .mine-cell:hover:not(.revealed):not(.exploded)::before { opacity: 1; }
+        .mine-cell.safe { background: rgba(16, 185, 129, 0.15); border-color: var(--success); color: var(--success); cursor: default; box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.2); }
         .mine-cell.exploded { background: rgba(239, 68, 68, 0.2); border-color: var(--error); cursor: default; }
         .mine-cell.revealed { cursor: default; }
-        .mines-info { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 800px; }
-        .mines-stat { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 12px 20px; border-radius: 14px; font-weight: 700; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; display: flex; align-items: center; gap: 12px; }
-        .mines-mult { font-size: 2rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 10px; }
-        .mines-cashout { background: rgba(244, 199, 69, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 15px 35px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin-bottom: 10px; font-size: 1rem; letter-spacing: 1px; }
-        .mines-cashout:hover:not(:disabled) { background: var(--accent-gold); color: #000; }
-        .mines-cashout:disabled { border-color: transparent; color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.03); cursor: not-allowed; }
-        .mines-ctrl-btn { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); border-radius: 8px; cursor: pointer; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.2s; font-size: 1.1rem; }
-        .mines-ctrl-btn:hover:not(:disabled) { background: rgba(255,255,255,0.1); }
+        .mines-info { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .mines-stat { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem; }
+        .mines-mult { font-size: 1.5rem; font-weight: 900; color: var(--accent-gold); text-shadow: 0 0 15px var(--accent-gold-glow); margin-bottom: 15px; }
+        .mines-cashout { background: rgba(244, 199, 69, 0.1); border: 1px solid var(--accent-gold); color: var(--accent-gold); padding: 14px 30px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin-bottom: 15px; }
+        .mines-cashout:hover:not(:disabled) { background: var(--accent-gold); color: #000; box-shadow: 0 0 20px var(--accent-gold-glow); }
+        .mines-cashout:disabled { border-color: transparent; color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); cursor: not-allowed; }
+        .mines-ctrl-btn { background: transparent; color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 6px; cursor: pointer; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.2s; }
+        .mines-ctrl-btn:hover:not(:disabled) { background: var(--accent-purple); color: #fff; }
 
         /* ── ПЛИНКО ── */
-        .plinko-canvas { border-radius: 20px; border: 1px solid var(--glass-border); max-width: 100%; background: rgba(0,0,0,0.3); margin-bottom: 15px; }
-        .plinko-buckets { display: flex; justify-content: center; gap: 5px; width: 100%; max-width: 460px; margin-bottom: 10px; }
-        .plinko-bucket { flex: 1; text-align: center; padding: 10px 2px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); }
+        .plinko-canvas { border-radius: 16px; border: 1px solid var(--glass-border); max-width: 100%; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); background: rgba(0,0,0,0.2); }
+        .plinko-buckets { display: flex; justify-content: center; gap: 4px; width: 100%; max-width: 420px; margin-bottom: 20px; }
+        .plinko-bucket { flex: 1; text-align: center; padding: 6px 2px; border-radius: 6px; font-size: 0.7rem; font-weight: 800; }
 
         /* ── БИТ (PTB) ── */
-        .ptb-wave { width: 100%; max-width: 700px; height: 100px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 20px; margin-bottom: 25px; overflow: hidden; position: relative; }
+        .ptb-wave { width: 100%; max-width: 600px; height: 90px; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 16px; margin-bottom: 20px; overflow: hidden; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
         .ptb-wave canvas { width: 100%; height: 100%; }
-        .ptb-prompt { font-size: 1.1rem; font-weight: 700; margin-bottom: 15px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .ptb-opts { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; width: 100%; max-width: 650px; margin-bottom: 10px; }
-        .ptb-opt { padding: 18px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 14px; color: #fff; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-align: center; text-transform: uppercase; }
-        .ptb-opt:hover:not(:disabled) { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); }
-        .ptb-opt.active  { background: rgba(255,255,255,0.1); border-color: #fff; }
+        .ptb-prompt { font-size: 1.1rem; font-weight: 800; margin-bottom: 15px; color: #fff; }
+        .ptb-opts { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; width: 100%; max-width: 550px; margin-bottom: 20px; }
+        .ptb-opt { padding: 14px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s; text-align: center; }
+        .ptb-opt:hover:not(:disabled) { border-color: var(--accent-purple); background: rgba(139, 92, 246, 0.1); }
+        .ptb-opt.active  { background: rgba(139, 92, 246, 0.2); border-color: var(--accent-purple); color: #fff; box-shadow: 0 0 15px var(--accent-purple-glow); }
         .ptb-opt.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--success); color: var(--success); }
         .ptb-opt.wrong   { background: rgba(239, 68, 68, 0.15); border-color: var(--error); color: var(--error); }
         .ptb-opt:disabled { cursor: not-allowed; }
-        .ptb-round { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 2px; text-transform: uppercase; }
+        .ptb-round { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 1px; }
 
         /* ── МОДАЛКА ВХОДА GOOGLE ── */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; }
-        .install-box { background: rgba(10, 10, 15, 0.95); border: 1px solid var(--glass-border); border-radius: 24px; padding: 40px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative; }
-        .install-box i.fa-user-astronaut { font-size: 3rem; color: var(--accent-purple); margin-bottom: 15px; }
-        .install-box h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+        .install-box { background: rgba(10, 10, 15, 0.95); border: 1px solid var(--accent-purple); border-radius: 24px; padding: 40px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); position: relative; }
+        .install-box h3 { font-size: 1.3rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
         .install-box p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5; }
-        .install-close { position: absolute; top: 15px; right: 20px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+        .install-close { position: absolute; top: 20px; right: 25px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
         .install-close:hover { color: var(--error); }
-        .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; padding: 15px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin: 0 auto; position: relative; }
+        
+        .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 300px; padding: 15px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin: 0 auto; position: relative; }
         .google-login-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); }
         .google-login-btn img { width: 20px; height: 20px; }
 
         /* ── ПЛАВАЮЩИЙ NUMPAD ── */
         #numpad-modal { 
             display: none; flex-direction: column; align-items: center; padding: 25px; 
-            background: rgba(15, 15, 20, 0.95); border: 1px solid var(--glass-border); border-radius: 24px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.02); 
+            background: rgba(15, 15, 20, 0.95); border: 1px solid var(--accent-purple); border-radius: 24px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); 
             width: 280px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999999;
             backdrop-filter: blur(20px);
         }
         #numpad-modal.active { display: flex; animation: npPop 0.2s ease-out forwards; }
-        @keyframes npPop { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes npPop { from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        /* При перетаскивании мы убираем трансформ */
+        #numpad-modal.dragging { transform: none !important; animation: none !important; }
+        
         .np-header { width: 100%; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-weight: 700; font-size: 0.85rem; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--glass-border); letter-spacing: 1px; text-transform: uppercase; cursor: grab; user-select: none; }
         .np-header:active { cursor: grabbing; }
         .np-close { color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.3rem; transition: 0.3s; line-height: 1; padding: 5px; }
         .np-close:hover { color: var(--error); }
         .np-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; }
         .np-btn { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px 0; font-size: 1.2rem; font-weight: 800; color: #fff; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
-        .np-btn:hover { background: rgba(255,255,255,0.08); }
-        .np-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.95); }
+        .np-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent-purple); }
+        .np-btn:active { background: var(--accent-purple); transform: scale(0.95); }
         .np-action { color: var(--text-muted); background: transparent; border-color: transparent; }
-        .np-confirm { grid-column: span 3; background: var(--glass-bg); border: 1px solid var(--glass-border); color: #fff; padding: 15px; font-size: 0.9rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; border-radius: 12px;}
-        .np-confirm:hover { background: rgba(255,255,255,0.1); }
+        .np-confirm { grid-column: span 3; background: var(--accent-purple); color: #fff; padding: 15px; font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; border-radius: 12px; border: none; box-shadow: 0 0 15px var(--accent-purple-glow);}
+        .np-confirm:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
-        footer { padding: 40px 20px; text-align: center; border-top: 1px solid var(--glass-border); margin-top: auto; }
+        footer { padding: 40px 20px; text-align: center; border-top: 1px solid var(--glass-border); margin-top: auto; background: rgba(10, 10, 15, 0.4); }
         footer p { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
 
         /* ── АДАПТИВ ── */
         @media (max-width: 800px) {
-            header h1 { font-size: 2.2rem; letter-spacing: 5px; }
-            .floating-nav { justify-content: flex-start; padding: 10px; border-radius: 16px; margin-bottom: 25px; width: calc(100% - 30px); }
-            .tab-btn { padding: 10px 15px; font-size: 0.75rem; flex-shrink: 0; }
-            .game-control-dock { flex-direction: column; padding: 20px; border-radius: 20px; }
-            .bet-box, .play-btn-huge { width: 100%; max-width: 100%; }
-            .play-btn-huge { height: 75px; font-size: 1.1rem; }
-            .daily-banner { flex-direction: column; text-align: center; padding: 25px 20px; border-radius: 20px; }
+            .top-nav { flex-wrap: wrap; padding: 10px; border-radius: 20px; margin: 20px 15px 0; max-width: calc(100% - 30px); }
+            .nav-link { font-size: 0.8rem; padding: 8px 15px; }
+            .game-nav { border-radius: 20px 20px 0 0; padding: 10px; }
+            .tab-btn { flex: 1 1 30%; min-width: 100px; padding: 10px; font-size: 0.75rem; }
+            
+            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
+            .top-controls { top: 15px; right: 15px; flex-direction: row-reverse; gap: 10px; }
+            .online-counter { display: none; }
+            .profile-btn, .music-toggle { width: 40px; height: 40px; }
+            
+            .daily-banner-btn { flex-direction: column; text-align: center; padding: 20px; }
             .db-info { text-align: center; }
-            .db-action-btn { width: 100%; justify-content: center; }
-            .leaderboard-container { padding: 20px 15px; border-radius: 20px; }
+            .db-action { width: 100%; justify-content: center; }
             .ld-avatar { width: 40px; height: 40px; margin: 0 10px; }
             .dice-opts, .ptb-opts, .quiz-opts { grid-template-columns: 1fr; }
             .crash-inputs { flex-direction: column; align-items: center; }
+            .crash-inputs .bet-box { max-width: 100%; }
             .farm-dashboard { grid-template-columns: 1fr; }
             .r-opts { flex-direction: column; gap: 8px; }
+            .bet-box, .play-btn { max-width: 100%; }
             .bj-actions { gap: 10px; }
-            .top-controls { top: 15px; right: 15px; flex-direction: row-reverse; gap: 10px; }
-            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; }
-            .online-counter { display: none; }
-            .profile-btn, .music-toggle { width: 40px; height: 40px; }
+            
+            #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+            .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
+            .drag-handle { display: none; }
         }
+        @keyframes slideUpMobile { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
     
     <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
@@ -407,10 +420,11 @@
     <div class="modal" id="loginModal">
         <div class="install-box">
             <i class="fa-solid fa-xmark install-close" onclick="closeLoginModal()"></i>
-            <i class="fa-solid fa-user-astronaut"></i>
-            <h3>Вход в систему</h3>
-            <p>Авторизуйтесь для доступа к терминалу.</p>
-            <div style="position: relative; width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 12px; margin-top: 10px;">
+            <i class="fa-solid fa-user-astronaut" style="font-size:3.5rem; color:var(--accent-purple); margin-bottom:15px; filter:drop-shadow(0 0 15px var(--accent-purple-glow));"></i>
+            <h3 style="color:#fff; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Доступ закрыт</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; margin-bottom:20px;">Авторизуйтесь через Google для доступа к терминалу.</p>
+            
+            <div style="position: relative; width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 12px;">
                 <button class="google-login-btn" style="margin: 0; width: 100%;">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
                     Войти
@@ -436,9 +450,11 @@
             <button class="np-btn" onclick="npPress('7')">7</button>
             <button class="np-btn" onclick="npPress('8')">8</button>
             <button class="np-btn" onclick="npPress('9')">9</button>
-            <button class="np-btn np-action" onclick="npPress('.')">.</button>
+            
+            <div style="grid-column: span 1;"></div> <!-- Пустая ячейка вместо точки -->
             <button class="np-btn" onclick="npPress('0')">0</button>
             <button class="np-btn np-action" onclick="npPress('DEL')"><i class="fa-solid fa-delete-left"></i></button>
+            
             <button class="np-btn np-confirm" id="npConfirmBtn">ПРИМЕНИТЬ</button>
         </div>
     </div>
@@ -464,13 +480,17 @@
     <div class="top-controls fade-in">
         <div class="ctrl-row">
             <div class="music-toggle" id="musicBtn"><i class="fa-solid fa-volume-xmark"></i></div>
-            <div class="online-counter">
+            <div class="online-counter" style="white-space: nowrap;">
                 <div class="pulse-dot"></div>
                 <span class="online-num" id="onlineCount">ЗАГРУЗКА...</span>
             </div>
             <a href="javascript:void(0)" class="profile-btn" title="Профиль" id="profileBtnLink">
                 <img src="/dslogo.png" alt="Profile" id="userAvatar">
             </a>
+        </div>
+        <div class="global-balance" id="globalBalanceWrap">
+            <span class="val" id="uiBalance">0</span>
+            <img src="/valuta.png" class="valuta-icon" alt="NC">
         </div>
     </div>
 
@@ -493,382 +513,351 @@
         </div>
     </div>
 
+    <nav class="top-nav fade-in">
+        <a href="https://dxtrslizze.xyz/" class="nav-link">Главная</a>
+        <a href="https://dxtrslizze.xyz/muzcatalog" class="nav-link">Муз. каталог</a>
+        <a href="https://dxtrslizze.xyz/games" class="nav-link active">Игры</a>
+        <a href="https://dxtrslizze.xyz/about" class="nav-link">О нас</a>
+        <a href="https://dxtrslizze.xyz/shop" class="nav-link">Магазин</a>
+    </nav>
+
     <header class="fade-in">
         <h1>Арена</h1>
         <p>Игровой терминал. Умножай баланс.</p>
     </header>
 
-    <main class="arena fade-in" style="animation-delay:0.2s;">
-        
-        <div class="floating-nav">
-            <button class="tab-btn active" onclick="switchTab('dash',this)"><i class="fa-solid fa-server"></i> База</button>
-            <button class="tab-btn" onclick="switchTab('slots',this)"><i class="fa-solid fa-bolt"></i> Слоты</button>
-            <button class="tab-btn" onclick="switchTab('dice',this)"><i class="fa-solid fa-cubes"></i> Дайс</button>
-            <button class="tab-btn" onclick="switchTab('crash',this)"><i class="fa-solid fa-rocket"></i> Краш</button>
-            <button class="tab-btn" onclick="switchTab('roulette',this)"><i class="fa-solid fa-dharmachakra"></i> Рулетка</button>
-            <button class="tab-btn" onclick="switchTab('miner',this)"><i class="fa-solid fa-network-wired"></i> Фарм</button>
-            <button class="tab-btn" onclick="switchTab('blackjack',this)"><i class="fa-solid fa-layer-group"></i> 21 Очко</button>
-            <button class="tab-btn" onclick="switchTab('quiz',this)"><i class="fa-solid fa-brain"></i> Квиз</button>
-            <button class="tab-btn" onclick="switchTab('mines',this)"><i class="fa-solid fa-burst"></i> Мины</button>
-            <button class="tab-btn" onclick="switchTab('plinko',this)"><i class="fa-solid fa-shapes"></i> Плинко</button>
-            <button class="tab-btn" onclick="switchTab('ptb',this)"><i class="fa-solid fa-tower-broadcast"></i> БИТ</button>
-            <div class="global-balance active" id="globalBalanceWrap" style="margin-left:auto; border-radius: 50px;">
-                <span class="val" id="uiBalance">0</span>
-                <img src="/valuta.png" class="valuta-icon" alt="NC">
+    <main class="fade-in" style="animation-delay:0.2s;">
+        <div class="games-container">
+
+            <div class="auth-overlay" id="authLock">
+                <i class="fa-solid fa-lock"></i>
+                <h2>СИСТЕМА ЗАБЛОКИРОВАНА</h2>
+                <p style="color:var(--text-muted);margin-bottom:28px;letter-spacing:1px;font-size: 0.95rem;">Доступ к терминалу только для авторизованных пользователей.</p>
+                <button class="btn-auth-link" onclick="openLoginModal()">АВТОРИЗАЦИЯ</button>
             </div>
-        </div>
 
-        <div class="auth-overlay" id="authLock">
-            <i class="fa-solid fa-lock"></i>
-            <h2>СИСТЕМА ЗАБЛОКИРОВАНА</h2>
-            <p style="color:var(--text-muted);margin-bottom:30px;letter-spacing:1px;font-size: 0.95rem;">Доступ к терминалу только для авторизованных пользователей.</p>
-            <button class="btn-auth-link" onclick="openLoginModal()">АВТОРИЗАЦИЯ</button>
-        </div>
+            <div class="game-nav">
+                <button class="tab-btn active" onclick="switchTab('dash',this)"><i class="fa-solid fa-layer-group"></i> База</button>
+                <button class="tab-btn" onclick="switchTab('slots',this)"><i class="fa-solid fa-bolt"></i> Слоты</button>
+                <button class="tab-btn" onclick="switchTab('dice',this)"><i class="fa-solid fa-cubes"></i> Дайс</button>
+                <button class="tab-btn" onclick="switchTab('crash',this)"><i class="fa-solid fa-rocket"></i> Краш</button>
+                <button class="tab-btn" onclick="switchTab('roulette',this)"><i class="fa-solid fa-dharmachakra"></i> Рулетка</button>
+                <button class="tab-btn" onclick="switchTab('miner',this)"><i class="fa-solid fa-network-wired"></i> Фарм</button>
+                <button class="tab-btn" onclick="switchTab('blackjack',this)"><i class="fa-solid fa-layer-group"></i> 21 Очко</button>
+                <button class="tab-btn" onclick="switchTab('quiz',this)"><i class="fa-solid fa-brain"></i> Квиз</button>
+                <button class="tab-btn" onclick="switchTab('mines',this)"><i class="fa-solid fa-burst"></i> Мины</button>
+                <button class="tab-btn" onclick="switchTab('plinko',this)"><i class="fa-solid fa-shapes"></i> Плинко</button>
+                <button class="tab-btn" onclick="switchTab('ptb',this)"><i class="fa-solid fa-wave-square"></i> БИТ</button>
+            </div>
 
-        <div class="game-body">
+            <div class="game-body">
 
-            <!-- ДАШБОРД -->
-            <div id="tab-dash" class="tab-content active">
-                <div class="dash-grid">
-                    <div class="daily-banner" id="btnDaily">
-                        <div class="db-info">
-                            <div class="db-title">ЕЖЕДНЕВНАЯ ПОСТАВКА</div>
-                            <div class="db-desc">Бесплатные коины от системы каждые 6 часов.</div>
-                            <div class="sys-msg" id="msg-dash" style="margin-top: 10px; font-size: 0.85rem;"></div>
-                        </div>
-                        <button class="db-action-btn" id="dailyActionBtn" onclick="claimDaily()">
-                            + 100 <img src="/valuta.png" class="valuta-icon">
+                <!-- ДАШБОРД -->
+                <div id="tab-dash" class="tab-content active">
+                    <div class="dash-layout">
+                        <button class="daily-banner-btn" onclick="claimDaily()" id="btnDaily">
+                            <div class="db-info">
+                                <div class="db-title">ЕЖЕДНЕВНАЯ ПОСТАВКА</div>
+                                <div class="db-desc">Бесплатные коины от системы каждые 6 часов.</div>
+                                <div class="sys-msg" id="msg-dash" style="margin-top: 10px; font-size: 0.85rem;"></div>
+                            </div>
+                            <div class="db-action" id="dailyActionBtn">+ 100 <img src="/valuta.png" class="valuta-icon"></div>
                         </button>
-                    </div>
-                    
-                    <div class="leaderboard-container">
-                        <h3><i class="fa-solid fa-trophy"></i> ЭЛИТА СЕТИ (ТОП-5)</h3>
-                        <div class="leaderboard-grid" id="leaderboardData">
-                            <p style="color:var(--text-muted);text-align:center;padding:20px;">Синхронизация с базой...</p>
+                        
+                        <div class="d-card">
+                            <h3><i class="fa-solid fa-trophy" style="color:var(--accent-gold);"></i> ЭЛИТА СЕТИ (ТОП-5)</h3>
+                            <div class="leaderboard" id="leaderboardData">
+                                <p style="color:var(--text-muted);text-align:center;padding:20px;">Синхронизация с базой...</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- СЛОТЫ -->
-            <div id="tab-slots" class="tab-content">
-                <div class="g-title glow-text">NEON SLOTS</div>
-                <p class="g-desc">Три совпадения обложек релизов умножают куш.</p>
-                
-                <div class="slots-visual">
-                    <div class="reel"><div class="reel-strip" id="reel1"></div></div>
-                    <div class="reel"><div class="reel-strip" id="reel2"></div></div>
-                    <div class="reel"><div class="reel-strip" id="reel3"></div></div>
-                </div>
-
-                <div class="game-control-dock">
+                <!-- СЛОТЫ -->
+                <div id="tab-slots" class="tab-content">
+                    <div class="g-title glow-text">NEON SLOTS</div>
+                    <p class="g-desc">Три совпадения обложек релизов умножают куш.</p>
+                    <div class="slots-box">
+                        <div class="reel"><div class="reel-strip" id="reel1"></div></div>
+                        <div class="reel"><div class="reel-strip" id="reel2"></div></div>
+                        <div class="reel"><div class="reel-strip" id="reel3"></div></div>
+                    </div>
                     <div class="bet-box">
                         <div class="bet-label">РАЗМЕР СТАВКИ</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betSlots')">
                             <span class="bet-val-display glow-text" id="betSlots_disp">10</span>
                         </div>
-                        <div class="bet-quick-row">
-                            <button class="b-q-btn" onclick="setBet('betSlots', 10)">10</button>
-                            <button class="b-q-btn" onclick="setBet('betSlots', 50)">50</button>
-                            <button class="b-q-btn" onclick="setBet('betSlots', 100)">100</button>
-                            <button class="b-q-btn" onclick="setBet('betSlots', 'MAX')">MAX</button>
-                        </div>
                     </div>
-                    <button class="play-btn-huge" id="btnSlots" onclick="playSlots()">КРУТИТЬ</button>
-                </div>
-                <div class="sys-msg" id="msg-slots"></div>
-            </div>
-
-            <!-- ДАЙС -->
-            <div id="tab-dice" class="tab-content">
-                <div class="g-title glow-text">CYBER DICE</div>
-                <p class="g-desc">Угадай сектор числа от 1 до 100.</p>
-                
-                <div class="dice-res glow-text" id="diceDisplay">0</div>
-                
-                <div class="dice-opts">
-                    <button class="d-opt" id="d-opt-1" onclick="selectDice(1)">МЕНЬШЕ 25 (×3)</button>
-                    <button class="d-opt" id="d-opt-2" onclick="selectDice(2)">ОТ 25 ДО 50 (×2)</button>
-                    <button class="d-opt" id="d-opt-3" onclick="selectDice(3)">ОТ 51 ДО 75 (×2)</button>
-                    <button class="d-opt" id="d-opt-4" onclick="selectDice(4)">БОЛЬШЕ 75 (×3)</button>
+                    <div class="bet-quick-btns">
+                        <button class="b-q-btn" onclick="setBet('betSlots', 10)">10</button>
+                        <button class="b-q-btn" onclick="setBet('betSlots', 50)">50</button>
+                        <button class="b-q-btn" onclick="setBet('betSlots', 100)">100</button>
+                        <button class="b-q-btn" onclick="setBet('betSlots', 'MAX')">MAX</button>
+                    </div>
+                    <button class="play-btn" id="btnSlots" onclick="playSlots()">КРУТИТЬ</button>
+                    <div class="sys-msg" id="msg-slots"></div>
                 </div>
 
-                <div class="game-control-dock">
+                <!-- ДАЙС -->
+                <div id="tab-dice" class="tab-content">
+                    <div class="g-title glow-text">CYBER DICE</div>
+                    <p class="g-desc">Угадай сектор числа от 1 до 100.</p>
+                    <div class="dice-res glow-text" id="diceDisplay">0</div>
+                    <div class="dice-opts">
+                        <button class="d-opt" id="d-opt-1" onclick="selectDice(1)">МЕНЬШЕ 25 (×3)</button>
+                        <button class="d-opt" id="d-opt-2" onclick="selectDice(2)">ОТ 25 ДО 50 (×2)</button>
+                        <button class="d-opt" id="d-opt-3" onclick="selectDice(3)">ОТ 51 ДО 75 (×2)</button>
+                        <button class="d-opt" id="d-opt-4" onclick="selectDice(4)">БОЛЬШЕ 75 (×3)</button>
+                    </div>
                     <div class="bet-box">
                         <div class="bet-label">РАЗМЕР СТАВКИ</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betDice')">
                             <span class="bet-val-display glow-text" id="betDice_disp">10</span>
                         </div>
-                        <div class="bet-quick-row">
-                            <button class="b-q-btn" onclick="setBet('betDice', 10)">10</button>
-                            <button class="b-q-btn" onclick="setBet('betDice', 50)">50</button>
-                            <button class="b-q-btn" onclick="setBet('betDice', 100)">100</button>
-                            <button class="b-q-btn" onclick="setBet('betDice', 'MAX')">MAX</button>
+                    </div>
+                    <div class="bet-quick-btns">
+                        <button class="b-q-btn" onclick="setBet('betDice', 10)">10</button>
+                        <button class="b-q-btn" onclick="setBet('betDice', 50)">50</button>
+                        <button class="b-q-btn" onclick="setBet('betDice', 100)">100</button>
+                        <button class="b-q-btn" onclick="setBet('betDice', 'MAX')">MAX</button>
+                    </div>
+                    <button class="play-btn" id="btnDice" onclick="playDice()">БРОСОК</button>
+                    <div class="sys-msg" id="msg-dice">ВЫБЕРИТЕ СЕКТОР</div>
+                </div>
+
+                <!-- КРАШ -->
+                <div id="tab-crash" class="tab-content">
+                    <div class="g-title glow-text">СИСТЕМНЫЙ КРАШ</div>
+                    <p class="g-desc">Множитель растёт, пока не рухнет. Успей забрать.</p>
+                    <div class="crash-graph">
+                        <div class="cr-mult glow-text" id="crMult">1.00×</div>
+                        <div class="cr-line" id="crLine"></div>
+                    </div>
+                    <div class="crash-inputs">
+                        <div class="bet-box" style="flex:1;max-width:220px;">
+                            <div class="bet-label">СТАВКА</div>
+                            <div class="bet-input-wrapper" onclick="openNumpad('betCrash')">
+                                <span class="bet-val-display glow-text" id="betCrash_disp">10</span>
+                            </div>
+                            <div class="bet-quick-btns" style="margin-top: 10px; margin-bottom: 0;">
+                                <button class="b-q-btn" onclick="setBet('betCrash', 10)">10</button>
+                                <button class="b-q-btn" onclick="setBet('betCrash', 'MAX')">MAX</button>
+                            </div>
+                        </div>
+                        <div class="bet-box" style="flex:1;max-width:220px;">
+                            <div class="bet-label">АВТОВЫВОД (X)</div>
+                            <div class="bet-input-wrapper" onclick="openNumpad('targetCrash',true)">
+                                <span class="bet-val-display glow-text" id="targetCrash_disp">2.0</span>
+                            </div>
+                            <div class="bet-quick-btns" style="margin-top: 10px; margin-bottom: 0;">
+                                <button class="b-q-btn" onclick="setBet('targetCrash', 1.5)">1.5</button>
+                                <button class="b-q-btn" onclick="setBet('targetCrash', 2.0)">2.0</button>
+                            </div>
                         </div>
                     </div>
-                    <button class="play-btn-huge" id="btnDice" onclick="playDice()">БРОСОК</button>
-                </div>
-                <div class="sys-msg" id="msg-dice">ВЫБЕРИТЕ СЕКТОР</div>
-            </div>
-
-            <!-- КРАШ -->
-            <div id="tab-crash" class="tab-content">
-                <div class="g-title glow-text">СИСТЕМНЫЙ КРАШ</div>
-                <p class="g-desc">Множитель растёт, пока не рухнет. Успей забрать.</p>
-                
-                <div class="crash-graph">
-                    <div class="cr-mult glow-text" id="crMult">1.00×</div>
-                    <div class="cr-line" id="crLine"></div>
+                    <button class="play-btn" id="btnCrash" onclick="playCrash()">СТАРТ</button>
+                    <div class="sys-msg" id="msg-crash"></div>
                 </div>
 
-                <div class="game-control-dock">
-                    <div class="bet-box">
-                        <div class="bet-label">СТАВКА</div>
-                        <div class="bet-input-wrapper" onclick="openNumpad('betCrash')">
-                            <span class="bet-val-display glow-text" id="betCrash_disp">10</span>
-                        </div>
-                        <div class="bet-quick-row">
-                            <button class="b-q-btn" onclick="setBet('betCrash', 10)">10</button>
-                            <button class="b-q-btn" onclick="setBet('betCrash', 'MAX')">MAX</button>
-                        </div>
+                <!-- РУЛЕТКА -->
+                <div id="tab-roulette" class="tab-content">
+                    <div class="g-title glow-text">NEON ROULETTE</div>
+                    <p class="g-desc">Выбирай цвет. Фиол/Голубой = ×2. Золото = ×14.</p>
+                    <div class="roulette-wheel"><div class="r-strip" id="rStrip"></div></div>
+                    <div class="r-opts">
+                        <button class="r-opt btn-purple" id="r-opt-purple" onclick="selectRoulette('purple')">ФИОЛ (×2)</button>
+                        <button class="r-opt btn-gold" id="r-opt-gold" onclick="selectRoulette('gold')">ЗОЛОТО (×14)</button>
+                        <button class="r-opt btn-cyan" id="r-opt-cyan" onclick="selectRoulette('cyan')">ГОЛУБОЙ (×2)</button>
                     </div>
-                    <div class="bet-box">
-                        <div class="bet-label">АВТОВЫВОД (X)</div>
-                        <div class="bet-input-wrapper" onclick="openNumpad('targetCrash',true)">
-                            <span class="bet-val-display glow-text" id="targetCrash_disp">2.0</span>
-                        </div>
-                        <div class="bet-quick-row">
-                            <button class="b-q-btn" onclick="setBet('targetCrash', 1.5)">1.5</button>
-                            <button class="b-q-btn" onclick="setBet('targetCrash', 2.0)">2.0</button>
-                        </div>
-                    </div>
-                    <button class="play-btn-huge" id="btnCrash" onclick="playCrash()">СТАРТ</button>
-                </div>
-                <div class="sys-msg" id="msg-crash"></div>
-            </div>
-
-            <!-- РУЛЕТКА -->
-            <div id="tab-roulette" class="tab-content">
-                <div class="g-title glow-text">NEON ROULETTE</div>
-                <p class="g-desc">Выбирай цвет. Фиол/Голубой = ×2. Золото = ×14.</p>
-                
-                <div class="roulette-wheel"><div class="r-strip" id="rStrip"></div></div>
-                
-                <div class="r-opts">
-                    <button class="r-opt btn-purple" id="r-opt-purple" onclick="selectRoulette('purple')">ФИОЛ (×2)</button>
-                    <button class="r-opt btn-gold" id="r-opt-gold" onclick="selectRoulette('gold')">ЗОЛОТО (×14)</button>
-                    <button class="r-opt btn-cyan" id="r-opt-cyan" onclick="selectRoulette('cyan')">ГОЛУБОЙ (×2)</button>
-                </div>
-
-                <div class="game-control-dock">
                     <div class="bet-box">
                         <div class="bet-label">РАЗМЕР СТАВКИ</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betRoulette')">
                             <span class="bet-val-display glow-text" id="betRoulette_disp">10</span>
                         </div>
-                        <div class="bet-quick-row">
-                            <button class="b-q-btn" onclick="setBet('betRoulette', 10)">10</button>
-                            <button class="b-q-btn" onclick="setBet('betRoulette', 50)">50</button>
-                            <button class="b-q-btn" onclick="setBet('betRoulette', 100)">100</button>
-                            <button class="b-q-btn" onclick="setBet('betRoulette', 'MAX')">MAX</button>
-                        </div>
                     </div>
-                    <button class="play-btn-huge" id="btnRoulette" onclick="playRoulette()">КРУТИТЬ</button>
-                </div>
-                <div class="sys-msg" id="msg-roulette">ВЫБЕРИТЕ ЦВЕТ</div>
-            </div>
-
-            <!-- ФАРМ -->
-            <div id="tab-miner" class="tab-content">
-                <div class="g-title glow-text">ПАССИВНЫЙ ДОХОД</div>
-                <p class="g-desc">Генерируй валюту на автопилоте.</p>
-                
-                <div id="farm-locked" class="farm-locked-screen">
-                    <i class="fa-solid fa-microchip" style="font-size:3rem;color:var(--text-muted);opacity:0.4;margin-bottom:20px;display:block;"></i>
-                    <h3 style="color:#fff;font-size:1.3rem;margin-bottom:15px;text-transform:uppercase;letter-spacing:1px;">Система отключена</h3>
-                    <p style="color:var(--text-muted);margin-bottom:30px;font-size:0.95rem;">Для активации пассивного дохода необходим первичный взнос.</p>
-                    <button class="play-btn-huge" style="margin: 0 auto; height: 75px;" onclick="activateFarm()" id="btnActivateFarm">АКТИВИРОВАТЬ (1000 NC)</button>
-                    <div class="sys-msg" id="msg-farm-activate"></div>
-                </div>
-                
-                <div id="farm-active" style="display:none;width:100%;flex-direction:column;align-items:center;">
-                    <div class="farm-dashboard">
-                        <div class="farm-stat">
-                            <h4>ИНТЕРВАЛ ДОБЫЧИ</h4>
-                            <div class="val"><span id="fTimeVal">30</span> мин</div>
-                            <button class="farm-upgrade-btn" id="btnUpTime" onclick="upgradeFarm('time')">
-                                <span>УЛУЧШИТЬ ВРЕМЯ</span>
-                                <span class="cost" id="fTimeCostDisplay">750 <img src="/valuta.png" class="valuta-icon"></span>
-                            </button>
-                        </div>
-                        <div class="farm-stat">
-                            <h4>РАЗМЕР ДОХОДА</h4>
-                            <div class="val glow-green">+<span id="fIncVal">2</span> <img src="/valuta.png" class="valuta-icon" style="filter:none;"></div>
-                            <button class="farm-upgrade-btn" id="btnUpInc" onclick="upgradeFarm('income')">
-                                <span>УЛУЧШИТЬ ДОХОД</span>
-                                <span class="cost" id="fIncCostDisplay">750 <img src="/valuta.png" class="valuta-icon"></span>
-                            </button>
-                        </div>
+                    <div class="bet-quick-btns">
+                        <button class="b-q-btn" onclick="setBet('betRoulette', 10)">10</button>
+                        <button class="b-q-btn" onclick="setBet('betRoulette', 50)">50</button>
+                        <button class="b-q-btn" onclick="setBet('betRoulette', 100)">100</button>
+                        <button class="b-q-btn" onclick="setBet('betRoulette', 'MAX')">MAX</button>
                     </div>
-                    <div class="sys-msg" id="msg-farm"></div>
-                </div>
-            </div>
-
-            <!-- БЛЭКДЖЕК -->
-            <div id="tab-blackjack" class="tab-content">
-                <div class="g-title glow-text">БЛЭКДЖЕК 21</div>
-                <p class="g-desc">Обыграй дилера. Перебор = проигрыш. ×2.5 за блэкджек.</p>
-                
-                <div class="bj-table">
-                    <div class="bj-zone">
-                        <div class="bj-zone-label">Дилер <span class="bj-score" id="bjDealerScore" style="color:var(--error);"></span></div>
-                        <div class="bj-cards" id="bjDealerCards"></div>
-                    </div>
-                    <div style="height:1px;background:var(--glass-border);margin:20px 0;"></div>
-                    <div class="bj-zone">
-                        <div class="bj-zone-label">Твоя рука <span class="bj-score" id="bjPlayerScore" style="color:var(--success);"></span></div>
-                        <div class="bj-cards" id="bjPlayerCards"></div>
-                    </div>
-                </div>
-                
-                <div class="bj-actions">
-                    <button class="bj-btn bj-hit" id="bjHitBtn" onclick="bjHit()" disabled>ЕЩЁ КАРТУ</button>
-                    <button class="bj-btn bj-stand" id="bjStandBtn" onclick="bjStand()" disabled>СТОЯТЬ</button>
+                    <button class="play-btn" id="btnRoulette" onclick="playRoulette()">КРУТИТЬ</button>
+                    <div class="sys-msg" id="msg-roulette">ВЫБЕРИТЕ ЦВЕТ</div>
                 </div>
 
-                <div class="game-control-dock">
+                <!-- ФАРМ -->
+                <div id="tab-miner" class="tab-content">
+                    <div class="g-title glow-text">ПАССИВНЫЙ ДОХОД</div>
+                    <p class="g-desc">Генерируй валюту на автопилоте.</p>
+                    <div id="farm-locked" class="farm-locked-screen">
+                        <i class="fa-solid fa-microchip" style="font-size:3rem;color:var(--text-muted);opacity:0.4;margin-bottom:20px;display:block;"></i>
+                        <h3 style="color:#fff;font-size:1.2rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Система отключена</h3>
+                        <p style="color:var(--text-muted);margin-bottom:20px;font-size:0.9rem;">Для активации пассивного дохода необходим первичный взнос.</p>
+                        <button class="play-btn" onclick="activateFarm()" id="btnActivateFarm">АКТИВИРОВАТЬ (1000 NC)</button>
+                        <div class="sys-msg" id="msg-farm-activate"></div>
+                    </div>
+                    <div id="farm-active" style="display:none;width:100%;flex-direction:column;align-items:center;">
+                        <div class="farm-dashboard">
+                            <div class="farm-stat">
+                                <h4>ИНТЕРВАЛ ДОБЫЧИ</h4>
+                                <div class="val"><span id="fTimeVal">30</span> мин</div>
+                                <button class="farm-upgrade-btn" id="btnUpTime" onclick="upgradeFarm('time')">
+                                    <span>УЛУЧШИТЬ ВРЕМЯ</span>
+                                    <span class="cost" id="fTimeCostDisplay">750 <img src="/valuta.png" class="valuta-icon"></span>
+                                </button>
+                            </div>
+                            <div class="farm-stat">
+                                <h4>РАЗМЕР ДОХОДА</h4>
+                                <div class="val" style="color:var(--success);">+<span id="fIncVal">2</span> <img src="/valuta.png" class="valuta-icon" style="width:0.8em;height:0.8em;filter:none;"></div>
+                                <button class="farm-upgrade-btn" id="btnUpInc" onclick="upgradeFarm('income')">
+                                    <span>УЛУЧШИТЬ ДОХОД</span>
+                                    <span class="cost" id="fIncCostDisplay">750 <img src="/valuta.png" class="valuta-icon"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="sys-msg" id="msg-farm"></div>
+                    </div>
+                </div>
+
+                <!-- БЛЭКДЖЕК -->
+                <div id="tab-blackjack" class="tab-content">
+                    <div class="g-title glow-text">БЛЭКДЖЕК 21</div>
+                    <p class="g-desc">Обыграй дилера. Перебор = проигрыш. ×2.5 за блэкджек.</p>
+                    <div class="bj-table">
+                        <div class="bj-zone">
+                            <div class="bj-zone-label">Дилер <span class="bj-score" id="bjDealerScore" style="color:var(--error);"></span></div>
+                            <div class="bj-cards" id="bjDealerCards"></div>
+                        </div>
+                        <div style="height:1px;background:var(--glass-border);margin:15px 0;"></div>
+                        <div class="bj-zone">
+                            <div class="bj-zone-label">Твоя рука <span class="bj-score" id="bjPlayerScore" style="color:var(--success);"></span></div>
+                            <div class="bj-cards" id="bjPlayerCards"></div>
+                        </div>
+                    </div>
+                    <div class="bj-actions">
+                        <button class="bj-btn bj-hit" id="bjHitBtn" onclick="bjHit()" disabled>ЕЩЁ КАРТУ</button>
+                        <button class="bj-btn bj-stand" id="bjStandBtn" onclick="bjStand()" disabled>СТОЯТЬ</button>
+                    </div>
                     <div class="bet-box">
                         <div class="bet-label">СТАВКА</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betBJ')">
                             <span class="bet-val-display glow-text" id="betBJ_disp">10</span>
                         </div>
-                        <div class="bet-quick-row">
-                            <button class="b-q-btn" onclick="setBet('betBJ', 10)">10</button>
-                            <button class="b-q-btn" onclick="setBet('betBJ', 50)">50</button>
-                            <button class="b-q-btn" onclick="setBet('betBJ', 'MAX')">MAX</button>
-                        </div>
                     </div>
-                    <button class="play-btn-huge" id="bjDealBtn" onclick="bjDeal()">РАЗДАТЬ</button>
+                    <div class="bet-quick-btns">
+                        <button class="b-q-btn" onclick="setBet('betBJ', 10)">10</button>
+                        <button class="b-q-btn" onclick="setBet('betBJ', 50)">50</button>
+                        <button class="b-q-btn" onclick="setBet('betBJ', 100)">100</button>
+                        <button class="b-q-btn" onclick="setBet('betBJ', 'MAX')">MAX</button>
+                    </div>
+                    <button class="play-btn" id="bjDealBtn" onclick="bjDeal()">РАЗДАТЬ КАРТЫ</button>
+                    <div class="sys-msg" id="msg-bj"></div>
                 </div>
-                <div class="sys-msg" id="msg-bj"></div>
-            </div>
 
-            <!-- КВИЗ -->
-            <div id="tab-quiz" class="tab-content">
-                <div class="g-title glow-text">NEURO-QUIZ</div>
-                <p class="g-desc">Восстанови повреждённые данные обложки. Угадай трек по пикселям.</p>
-                
-                <img src="/dslogo.png" class="quiz-cover blurred" id="quizCover" alt="Cover">
-                <div class="quiz-streak" id="quizStreak">СЕРИЯ: 0 🔥</div>
-                <p class="quiz-hint" id="quizHint">Загрузка данных...</p>
-                
-                <div class="quiz-opts" id="quizOpts"></div>
-
-                <div class="game-control-dock">
-                    <div class="bet-box" style="opacity: 0.6; pointer-events: none;">
+                <!-- КВИЗ -->
+                <div id="tab-quiz" class="tab-content">
+                    <div class="g-title glow-text">NEURO-QUIZ</div>
+                    <p class="g-desc">Восстанови повреждённые данные обложки. Угадай трек по пикселям.</p>
+                    <img src="/dslogo.png" class="quiz-cover blurred" id="quizCover" alt="Cover">
+                    <div class="quiz-streak" id="quizStreak">СЕРИЯ: 0 🔥</div>
+                    <p class="quiz-hint" id="quizHint">Загрузка данных...</p>
+                    <div class="quiz-opts" id="quizOpts"></div>
+                    
+                    <div class="bet-box">
                         <div class="bet-label">ФИКСИРОВАННАЯ СТАВКА</div>
-                        <div class="bet-input-wrapper">
+                        <div class="bet-input-wrapper" style="pointer-events: none; opacity: 0.5;">
                             <span class="bet-val-display glow-text" id="betQuiz_disp">100</span>
                         </div>
                     </div>
-                    <button class="play-btn-huge" id="btnQuiz" onclick="startQuiz()" disabled>НОВЫЙ РАУНД</button>
-                </div>
-                <div class="sys-msg" id="msg-quiz"></div>
-            </div> 
+                    
+                    <button class="play-btn" id="btnQuiz" onclick="startQuiz()" disabled>НОВЫЙ РАУНД</button>
+                    <div class="sys-msg" id="msg-quiz"></div>
+                </div> 
 
-            <!-- МИНЫ -->
-            <div id="tab-mines" class="tab-content">
-                <div class="g-title glow-text">МИННОЕ ПОЛЕ</div>
-                <p class="g-desc">Открывай клетки, избегай мин. Выводи в любой момент.</p>
-                
-                <div class="mines-info">
-                    <div class="mines-stat" style="display:flex;align-items:center;gap:15px;">
-                        Мины:
-                        <button class="mines-ctrl-btn" id="minesMinus" onclick="changeMinesCount(-1)">-</button>
-                        <span id="mineCount" style="min-width:24px;text-align:center;">3</span>
-                        <button class="mines-ctrl-btn" id="minesPlus" onclick="changeMinesCount(1)">+</button>
+                <!-- МИНЫ -->
+                <div id="tab-mines" class="tab-content">
+                    <div class="g-title glow-text">МИННОЕ ПОЛЕ</div>
+                    <p class="g-desc">Открывай клетки, избегай мин. Выводи в любой момент.</p>
+                    <div class="mines-info">
+                        <div class="mines-stat" style="display:flex;align-items:center;gap:10px;">
+                            Мины:
+                            <button class="mines-ctrl-btn" id="minesMinus" onclick="changeMinesCount(-1)">-</button>
+                            <span id="mineCount" style="min-width:20px;text-align:center;">3</span>
+                            <button class="mines-ctrl-btn" id="minesPlus" onclick="changeMinesCount(1)">+</button>
+                        </div>
+                        <div class="mines-stat">Открыто: <span id="mineOpened">0</span></div>
                     </div>
-                    <div class="mines-stat">Открыто: <span id="mineOpened">0</span></div>
-                </div>
-                
-                <div class="mines-mult" id="minesMult">×1.00</div>
-                <div class="mines-grid" id="minesGrid"></div>
-                
-                <button class="mines-cashout" id="minesCashoutBtn" onclick="minesCashout()" disabled>
-                    ВЫВЕСТИ (<span id="minesCashoutAmt">0</span> <img src="/valuta.png" class="valuta-icon">)
-                </button>
-
-                <div class="game-control-dock">
+                    <div class="mines-mult" id="minesMult">×1.00</div>
+                    <div class="mines-grid" id="minesGrid"></div>
+                    <button class="mines-cashout" id="minesCashoutBtn" onclick="minesCashout()" disabled>
+                        ВЫВЕСТИ (<span id="minesCashoutAmt">0</span> <img src="/valuta.png" class="valuta-icon">)
+                    </button>
                     <div class="bet-box">
                         <div class="bet-label">СТАВКА</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betMines')">
                             <span class="bet-val-display glow-text" id="betMines_disp">10</span>
                         </div>
-                        <div class="bet-quick-row">
-                            <button class="b-q-btn" onclick="setBet('betMines', 10)">10</button>
-                            <button class="b-q-btn" onclick="setBet('betMines', 50)">50</button>
-                            <button class="b-q-btn" onclick="setBet('betMines', 'MAX')">MAX</button>
+                    </div>
+                    <div class="bet-quick-btns">
+                        <button class="b-q-btn" onclick="setBet('betMines', 10)">10</button>
+                        <button class="b-q-btn" onclick="setBet('betMines', 50)">50</button>
+                        <button class="b-q-btn" onclick="setBet('betMines', 100)">100</button>
+                        <button class="b-q-btn" onclick="setBet('betMines', 'MAX')">MAX</button>
+                    </div>
+                    <button class="play-btn" id="btnMines" onclick="startMines()">НАЧАТЬ</button>
+                    <div class="sys-msg" id="msg-mines"></div>
+                </div>
+
+                <!-- ПЛИНКО -->
+                <div id="tab-plinko" class="tab-content">
+                    <div class="g-title glow-text">PLINKO</div>
+                    <p class="g-desc">Брось шары — они упадут в ячейки с множителем.</p>
+                    <canvas id="plinkoCanvas" class="plinko-canvas" width="420" height="300"></canvas>
+                    <div class="plinko-buckets" id="plinkoBuckets" style="max-width:420px;"></div>
+                    <div class="crash-inputs">
+                        <div class="bet-box" style="flex:1;max-width:220px;">
+                            <div class="bet-label">СТАВКА ЗА ШАР</div>
+                            <div class="bet-input-wrapper" onclick="openNumpad('betPlinko')">
+                                <span class="bet-val-display glow-text" id="betPlinko_disp">10</span>
+                            </div>
+                        </div>
+                        <div class="bet-box" style="flex:1;max-width:220px;">
+                            <div class="bet-label">КОЛ-ВО ШАРОВ</div>
+                            <div class="bet-input-wrapper" onclick="openNumpad('ballsPlinko')">
+                                <span class="bet-val-display glow-text" id="ballsPlinko_disp">1</span>
+                            </div>
                         </div>
                     </div>
-                    <button class="play-btn-huge" id="btnMines" onclick="startMines()">НАЧАТЬ</button>
+                    <button class="play-btn" id="btnPlinko" onclick="dropPlinko()">БРОСИТЬ ШАРЫ</button>
+                    <div class="sys-msg" id="msg-plinko"></div>
                 </div>
-                <div class="sys-msg" id="msg-mines"></div>
-            </div>
 
-            <!-- ПЛИНКО -->
-            <div id="tab-plinko" class="tab-content">
-                <div class="g-title glow-text">PLINKO</div>
-                <p class="g-desc">Брось шары — они упадут в ячейки с множителем.</p>
-                
-                <canvas id="plinkoCanvas" class="plinko-canvas" width="460" height="320"></canvas>
-                <div class="plinko-buckets" id="plinkoBuckets" style="max-width:460px;"></div>
-
-                <div class="game-control-dock">
-                    <div class="bet-box" style="max-width:200px;">
-                        <div class="bet-label">СТАВКА ЗА ШАР</div>
-                        <div class="bet-input-wrapper" onclick="openNumpad('betPlinko')">
-                            <span class="bet-val-display glow-text" id="betPlinko_disp">10</span>
-                        </div>
+                <!-- БИТ (PTB) -->
+                <div id="tab-ptb" class="tab-content">
+                    <div class="g-title glow-text">УГАДАЙ ТРЕК</div>
+                    <p class="g-desc">Слушай 10 секунд аудио-базы и выбери правильное название.</p>
+                    <div class="ptb-wave">
+                        <canvas id="ptbCanvas" width="600" height="90"></canvas>
                     </div>
-                    <div class="bet-box" style="max-width:200px;">
-                        <div class="bet-label">КОЛ-ВО ШАРОВ</div>
-                        <div class="bet-input-wrapper" onclick="openNumpad('ballsPlinko')">
-                            <span class="bet-val-display glow-text" id="ballsPlinko_disp">1</span>
-                        </div>
-                    </div>
-                    <button class="play-btn-huge" id="btnPlinko" onclick="dropPlinko()">БРОСИТЬ</button>
-                </div>
-                <div class="sys-msg" id="msg-plinko"></div>
-            </div>
-
-            <!-- БИТ (PTB) -->
-            <div id="tab-ptb" class="tab-content">
-                <div class="g-title glow-text">УГАДАЙ ТРЕК</div>
-                <p class="g-desc">Слушай 10 секунд аудио-базы и выбери правильное название.</p>
-                
-                <div class="ptb-wave">
-                    <canvas id="ptbCanvas" width="700" height="100"></canvas>
-                </div>
-                
-                <p class="ptb-prompt" id="ptbPrompt">Нажми "Начать", чтобы услышать отрывок</p>
-                <div class="ptb-opts" id="ptbOpts"></div>
-
-                <div class="game-control-dock">
+                    <p class="ptb-prompt" id="ptbPrompt">Нажми "Начать", чтобы услышать отрывок</p>
+                    <div class="ptb-opts" id="ptbOpts"></div>
                     <div class="bet-box">
                         <div class="bet-label">СТАВКА</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betPtb')">
                             <span class="bet-val-display glow-text" id="betPtb_disp">10</span>
                         </div>
-                        <div class="bet-quick-row">
-                            <button class="b-q-btn" onclick="setBet('betPtb', 10)">10</button>
-                            <button class="b-q-btn" onclick="setBet('betPtb', 'MAX')">MAX</button>
-                        </div>
                     </div>
-                    <button class="play-btn-huge" id="btnPtb" onclick="startPtb()" disabled>НАЧАТЬ</button>
+                    <div class="bet-quick-btns">
+                        <button class="b-q-btn" onclick="setBet('betPtb', 10)">10</button>
+                        <button class="b-q-btn" onclick="setBet('betPtb', 50)">50</button>
+                        <button class="b-q-btn" onclick="setBet('betPtb', 100)">100</button>
+                        <button class="b-q-btn" onclick="setBet('betPtb', 'MAX')">MAX</button>
+                    </div>
+                    <button class="play-btn" id="btnPtb" onclick="startPtb()" disabled>НАЧАТЬ</button>
+                    <div class="sys-msg" id="msg-ptb">Загрузка треков...</div>
                 </div>
-                <div class="sys-msg" id="msg-ptb">Загрузка треков...</div>
-            </div>
 
+            </div>
         </div>
     </main>
 
@@ -904,6 +893,7 @@
     let crashInterval = null, currentDice = null, isMusicPlaying = false;
     let dailyCooldownInterval = null;
     let lbHtmlCache = ''; 
+    let socket = null;
 
     function showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
@@ -926,13 +916,94 @@
         if (el) el.innerText = userBalance;
     }
 
-    // Сокеты онлайн (сразу инициализируем)
+    // Сокеты (Онлайн + Поддержка)
     if (typeof io !== 'undefined') {
-        const socket = io("https://dxtrslizze.onrender.com/");
+        socket = io("https://dxtrslizze.onrender.com/");
+        
         socket.on('online_update', c => {
             const el = document.getElementById('onlineCount');
             if (el) el.textContent = c + ' ОНЛАЙН';
         });
+
+        socket.on('connect', () => { 
+            if (isAuthUser && currentSessionToken) { socket.emit('register_client', { token: currentSessionToken }); }
+        });
+
+        const chatBanNotice = document.getElementById('chatBanNotice');
+        const chatGreeting = document.getElementById('chatGreeting');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send');
+        const chatWindow = document.getElementById('chat-window');
+
+        socket.on('ban_status', d => { 
+            if (d.isBanned) { 
+                if(chatBanNotice) chatBanNotice.style.display = 'block'; 
+                if(chatGreeting) chatGreeting.style.display = 'none'; 
+                if(chatInput) { chatInput.disabled = true; chatInput.placeholder = "Доступ ограничен."; chatInput.style.borderColor = "var(--error)"; }
+                if(chatSendBtn) { chatSendBtn.disabled = true; chatSendBtn.style.background = 'rgba(255,255,255,0.1)'; chatSendBtn.style.color = '#555'; }
+            } else { 
+                if(chatBanNotice) chatBanNotice.style.display = 'none'; 
+                if(chatGreeting && isAuthUser) chatGreeting.style.display = 'block'; 
+                if(chatInput && isAuthUser) { chatInput.disabled = false; chatInput.placeholder = "Опишите проблему..."; chatInput.style.borderColor = "var(--glass-border)"; }
+                if(chatSendBtn && isAuthUser) { chatSendBtn.disabled = false; chatSendBtn.style.background = 'var(--accent-purple)'; chatSendBtn.style.color = '#fff'; }
+            } 
+        });
+        
+        socket.on('receive_message', d => { 
+            if (chatWindow && (chatWindow.style.display === 'none' || chatWindow.style.display === '')) {
+                chatWindow.style.display = 'flex';
+            }
+            addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); 
+        });
+
+        socket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
+        socket.on('chat_closed_reset', () => { showChatClosedAnimation("Пароль сброшен", "fa-check-double"); });
+
+        if(chatSendBtn) chatSendBtn.onclick = sendMessageToBot; 
+        if(chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
+        
+        function sendMessageToBot() { 
+            const t = chatInput.value.trim(); 
+            if (!t || chatInput.disabled || !isAuthUser) return; 
+            socket.emit('send_message', { text: t, token: currentSessionToken }); 
+            addChatMessage('Вы', t, 'flex-end', true, false, false); 
+            chatInput.value = ''; 
+        }
+
+        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { 
+            const wrapper = document.createElement('div'); 
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; 
+            const nameLab = document.createElement('span'); 
+            nameLab.className = 'chat-msg-name'; 
+            nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; 
+            const bubble = document.createElement('div'); 
+            bubble.className = 'chat-msg-bubble'; 
+            bubble.textContent = text; 
+            if (isWarn) { nameLab.style.color = 'var(--error)'; bubble.style.background = 'rgba(239, 68, 68, 0.1)'; bubble.style.border = '1px solid var(--error)'; } 
+            else if (isSucc) { nameLab.style.color = 'var(--success)'; bubble.style.background = 'rgba(16, 185, 129, 0.1)'; bubble.style.border = '1px solid var(--success)'; } 
+            wrapper.appendChild(nameLab); wrapper.appendChild(bubble); 
+            const msgsContainer = document.getElementById('chat-messages');
+            if(msgsContainer) { msgsContainer.appendChild(wrapper); msgsContainer.scrollTop = msgsContainer.scrollHeight; }
+            if (save) { 
+                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; 
+                h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); 
+                if (h.length > 50) h.shift(); 
+                localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); 
+            } 
+        }
+
+        function showChatClosedAnimation(titleHtml, iconClass) {
+            const inputArea = document.getElementById('chat-input-area');
+            if(inputArea) inputArea.style.opacity = "0";
+            setTimeout(() => {
+                if(inputArea) inputArea.style.display = "none";
+                const statusBlock = document.createElement('div');
+                statusBlock.className = 'chat-resolved-status';
+                statusBlock.innerHTML = `<i class="fa-solid ${iconClass} chat-resolved-icon"></i><div class="chat-resolved-title">${titleHtml}</div>`;
+                const msgsContainer = document.getElementById('chat-messages');
+                if(msgsContainer) { msgsContainer.appendChild(statusBlock); msgsContainer.scrollTop = msgsContainer.scrollHeight; }
+            }, 500); 
+        }
     }
 
     // === АВТОРИЗАЦИЯ И СЕССИЯ ===
@@ -945,23 +1016,22 @@
         if (data) return data;
         const email = user.email;
         const nickname = user.user_metadata.full_name || user.user_metadata.name || email.split('@')[0];
-        const avatarUrl = user.user_metadata.avatar_url || 'dslogo.png';
+        const avatarUrl = user.user_metadata.avatar_url || '/dslogo.png';
         await supabaseClient.from('g_users').insert({ id: user.id, email: email, nickname: nickname, avatar_url: avatarUrl });
         return { nickname, avatar_url: avatarUrl, dscoin_balance: 100, last_daily_claim: null };
     }
 
-    function updateDailyTimer(lastClaimISO) {
+    function updateDailyTimer(lastClaim) {
         const btn = document.getElementById('dailyActionBtn');
         if (!btn) return;
         if (dailyCooldownInterval) clearInterval(dailyCooldownInterval);
         
-        if (!lastClaimISO) {
+        if (!lastClaim || lastClaim == 0) {
             btn.disabled = false;
             btn.innerHTML = `+ 100 <img src="/valuta.png" class="valuta-icon">`;
             return;
         }
 
-        const lastClaim = new Date(lastClaimISO).getTime();
         const cooldown = 6 * 3600 * 1000;
 
         function tick() {
@@ -993,18 +1063,19 @@
             const userData = await getUserDataSafe(user);
 
             const avatarImg = document.getElementById('userAvatar');
-            if (avatarImg && userData && userData.avatar_url !== 'dslogo.png') avatarImg.src = userData.avatar_url;
+            if (avatarImg && userData && userData.avatar_url && userData.avatar_url !== 'dslogo.png') avatarImg.src = userData.avatar_url;
 
             const lockScreen = document.getElementById('authLock');
             if (lockScreen) lockScreen.style.display = 'none';
             
-            // Надежное получение баланса из Supabase, а не с сервера
             if(userData) {
                 updateBalance(userData.dscoin_balance || 0);
+                const gbw = document.getElementById('globalBalanceWrap');
+                if (gbw) { gbw.style.display = 'flex'; gbw.classList.add('active'); }
                 updateDailyTimer(userData.last_daily_claim);
+                window.userNickname = userData.nickname;
             }
             
-            // Будим бэкенд и фарм
             try {
                 fetch(`${API_URL}/games/reset`, { method: 'POST', headers: { 'Authorization': `Bearer ${currentSessionToken}` } }).catch(() => {});
                 fetch(`${API_URL}/games/farm/status`, { headers: { 'Authorization': `Bearer ${currentSessionToken}` } })
@@ -1013,8 +1084,9 @@
 
             fetchLeaderboard();
             setInterval(fetchLeaderboard, 10000); 
-
             closeLoginModal();
+
+            if (socket && socket.connected) { socket.emit('register_client', { token: currentSessionToken }); }
 
         } else {
             isAuthUser = false;
@@ -1023,6 +1095,8 @@
             if (lockScreen) { lockScreen.style.display = 'flex'; lockScreen.style.opacity = '1'; }
             const avatarImg = document.getElementById('userAvatar');
             if (avatarImg) avatarImg.src = '/dslogo.png';
+            const gbw = document.getElementById('globalBalanceWrap');
+            if (gbw) { gbw.style.display = 'none'; gbw.classList.remove('active'); }
         }
     }
 
@@ -1090,7 +1164,6 @@
             const lb = document.getElementById('leaderboardData');
             
             if (data.success && Array.isArray(data.leaders) && lb) {
-                // Сервер теперь сам отдает id, nickname, avatarUrl, dscoin_balance напрямую из Supabase
                 const newHtml = data.leaders.map((u, i) => {
                     const rc = i < 3 ? `rank-${i+1}` : '';
                     const col = i === 0 ? 'var(--accent-gold)' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)';
@@ -1107,7 +1180,6 @@
                     </div>`;
                 }).join('');
 
-                // Обновляем только если изменился контент, чтобы избежать дёргания
                 if (lbHtmlCache !== newHtml) {
                     lb.innerHTML = newHtml;
                     lbHtmlCache = newHtml;
@@ -1123,19 +1195,26 @@
         initPtbWave();
         loadTracksData();
         initRouletteStrip();
+        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
 
         const bBtn = document.getElementById('burgerBtn'), sBar = document.getElementById('sidebar'), sOver = document.getElementById('sidebarOverlay'), cSBar = document.getElementById('closeSidebar');
         function toggleSBar() { if(sBar) sBar.classList.toggle('active'); if(sOver) sOver.classList.toggle('active'); }
         if(bBtn) bBtn.onclick = toggleSBar; if(cSBar) cSBar.onclick = toggleSBar; if(sOver) sOver.onclick = toggleSBar;
 
-        document.getElementById('menuSupportBtn').onclick = (e) => { 
-            e.preventDefault(); toggleSBar(); 
-            const cw = document.getElementById('chat-window');
-            if(cw.style.display !== 'flex') {
-                cw.style.display = 'flex';
-                setTimeout(() => { const msgs = document.getElementById('chat-messages'); if(msgs) msgs.scrollTop = msgs.scrollHeight; }, 50);
-            }
-        };
+        const menuSupportBtn = document.getElementById('menuSupportBtn');
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+
+        if(menuSupportBtn) {
+            menuSupportBtn.onclick = (e) => { 
+                e.preventDefault(); toggleSBar(); 
+                if(chatWindow.style.display !== 'flex') {
+                    chatWindow.style.display = 'flex';
+                    setTimeout(() => { const msgs = document.getElementById('chat-messages'); if(msgs) msgs.scrollTop = msgs.scrollHeight; }, 50);
+                }
+            };
+        }
+        if(chatClose) chatClose.onclick = () => chatWindow.style.display = 'none';
 
         const musicBtn = document.getElementById('musicBtn');
         const bgm1 = document.getElementById('bgm1');
@@ -1192,33 +1271,32 @@
     const npModal = document.getElementById('numpad-modal');
     const npHeader = document.getElementById('np-header');
     
-    // Перетаскивание нумпада
     let npDragging = false, npOffsetX, npOffsetY;
-    npHeader.addEventListener('mousedown', (e) => {
-        if (e.target.classList.contains('np-close')) return;
-        npDragging = true;
-        const rect = npModal.getBoundingClientRect();
-        npOffsetX = e.clientX - rect.left;
-        npOffsetY = e.clientY - rect.top;
-        npModal.style.transform = 'none'; // Снимаем центрирование чтобы не скакал
-        npModal.style.left = rect.left + 'px';
-        npModal.style.top = rect.top + 'px';
-    });
-    document.addEventListener('mousemove', (e) => {
-        if (!npDragging) return;
-        let x = e.clientX - npOffsetX;
-        let y = e.clientY - npOffsetY;
-        npModal.style.left = `${x}px`;
-        npModal.style.top = `${y}px`;
-    });
-    document.addEventListener('mouseup', () => npDragging = false);
+    if(npHeader) {
+        npHeader.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('np-close')) return;
+            npDragging = true;
+            const rect = npModal.getBoundingClientRect();
+            npOffsetX = e.clientX - rect.left;
+            npOffsetY = e.clientY - rect.top;
+            npModal.style.transform = 'none'; 
+            npModal.style.left = rect.left + 'px';
+            npModal.style.top = rect.top + 'px';
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (!npDragging) return;
+            let x = e.clientX - npOffsetX;
+            let y = e.clientY - npOffsetY;
+            npModal.style.left = `${x}px`;
+            npModal.style.top = `${y}px`;
+        });
+        document.addEventListener('mouseup', () => npDragging = false);
+    }
 
-    // Центрирование при открытии (мобилки и тд)
     function openNumpad(targetId, allowDecimal = false) {
         if (!npModal) return;
         activeInputId = targetId; isDecimalAllowed = allowDecimal;
         npModal.style.display = 'flex';
-        // Если он еще не таскался, ставим по центру
         if (!npModal.style.transform || npModal.style.transform !== 'none') {
             npModal.style.top = '50%';
             npModal.style.left = '50%';
@@ -1231,9 +1309,10 @@
         activeInputId = null;
     }
     
-    // Привязываем кнопки к закрытию
-    document.getElementById('npCloseBtn').onclick = closeNumpad;
-    document.getElementById('npConfirmBtn').onclick = closeNumpad;
+    const npCloseBtn = document.getElementById('npCloseBtn');
+    if(npCloseBtn) npCloseBtn.onclick = closeNumpad;
+    const npConfirmBtn = document.getElementById('npConfirmBtn');
+    if(npConfirmBtn) npConfirmBtn.onclick = closeNumpad;
 
     function npPress(val) {
         if (!activeInputId) return;
@@ -1268,7 +1347,7 @@
             const data = await res.json();
             if (res.ok) { 
                 updateBalance(data.newBalance); 
-                updateDailyTimer(new Date().toISOString());
+                updateDailyTimer(Date.now()); 
                 printMsg('dash', data.message, 'win'); 
             } else { 
                 printMsg('dash', data.error, 'err'); 
@@ -1389,12 +1468,12 @@
                     if (data.win > 0) {
                         spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2);
                         printMsg('dice', `УСПЕХ! +${data.win} NC`, 'win');
-                        if (disp) { disp.style.color = 'var(--success)'; disp.style.filter = 'drop-shadow(0 0 20px var(--success))'; }
+                        if (disp) { disp.style.color = 'var(--success)'; disp.style.textShadow = '0 0 20px var(--success)'; }
                     } else {
                         printMsg('dice', 'ПРОВАЛ', 'lose');
-                        if (disp) { disp.style.color = 'var(--error)'; disp.style.filter = 'drop-shadow(0 0 20px var(--error))'; }
+                        if (disp) { disp.style.color = 'var(--error)'; disp.style.textShadow = '0 0 20px var(--error)'; }
                     }
-                    setTimeout(() => { if (disp) { disp.style.color = ''; disp.style.filter = ''; } }, 2000);
+                    setTimeout(() => { if (disp) { disp.style.color = ''; disp.style.textShadow = ''; } }, 2000);
                 } else { if (disp) disp.innerText = '0'; printMsg('dice', data.error, 'err'); }
                 if (btn) btn.disabled = false;
             }, 1000);
@@ -1409,7 +1488,7 @@
         if (target < 1.1) return printMsg('crash', 'МИН. ВЫВОД 1.1', 'err');
         const btn = document.getElementById('btnCrash'); if (btn) btn.disabled = true;
         const disp = document.getElementById('crMult'); const line = document.getElementById('crLine');
-        if (disp) { disp.style.color = ''; disp.style.filter = ''; }
+        if (disp) { disp.style.color = ''; disp.style.textShadow = ''; }
         try {
             const res = await fetch(`${API_URL}/games/crash`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet, targetMultiplier: target }) });
             const data = await res.json();
@@ -1423,13 +1502,13 @@
                 if (line) line.style.transform = `scaleY(${cur})`;
                 if (data.win === 0 && cur >= data.crashPoint) {
                     clearInterval(crashInterval); crashInterval = null;
-                    if (disp) { disp.innerText = data.crashPoint.toFixed(2) + '×'; disp.style.color = 'var(--error)'; disp.style.filter = 'drop-shadow(0 0 20px var(--error))'; }
+                    if (disp) { disp.innerText = data.crashPoint.toFixed(2) + '×'; disp.style.color = 'var(--error)'; disp.style.textShadow = '0 0 30px var(--error)'; }
                     printMsg('crash', 'КРАШ!', 'lose');
                     updateBalance(data.newBalance);
                     if (btn) btn.disabled = false;
                 } else if (data.win > 0 && cur >= data.target) {
                     clearInterval(crashInterval); crashInterval = null;
-                    if (disp) { disp.innerText = data.target.toFixed(2) + '×'; disp.style.color = 'var(--success)'; disp.style.filter = 'drop-shadow(0 0 20px var(--success))'; }
+                    if (disp) { disp.innerText = data.target.toFixed(2) + '×'; disp.style.color = 'var(--success)'; disp.style.textShadow = '0 0 30px var(--success)'; }
                     spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2);
                     printMsg('crash', `ВЫВОД: +${data.win} NC`, 'win');
                     updateBalance(data.newBalance);
@@ -1852,123 +1931,6 @@
                 const pmt = document.getElementById('ptbPrompt'); if (pmt) pmt.textContent = 'Игра завершена';
             } else { setTimeout(() => ptbNextRound(), 2000); }
         } catch (e) { printMsg('ptb', 'Сбой проверки', 'err'); ptbAnswered = false; }
-    }
-
-    // Чат (drag, socket и логика)
-    const chatClose = document.getElementById('chat-close');
-    const chatHeader = document.getElementById('chat-header');
-    const chatWindow = document.getElementById('chat-window');
-    
-    if(chatClose) chatClose.onclick = () => chatWindow.style.display = 'none';
-
-    let isDraggingChat = false, chatOffsetX, chatOffsetY;
-    if(chatHeader) {
-        chatHeader.addEventListener('mousedown', (e) => {
-            if (window.innerWidth <= 800 || e.target.id === 'chat-close') return;
-            isDraggingChat = true; chatWindow.style.animation = 'none'; chatWindow.style.transform = 'none';
-            const rect = chatWindow.getBoundingClientRect(); chatOffsetX = e.clientX - rect.left; chatOffsetY = e.clientY - rect.top;
-            chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto'; chatWindow.style.margin = '0';
-            chatWindow.style.left = rect.left + 'px'; chatWindow.style.top = rect.top + 'px';
-        });
-        document.addEventListener('mousemove', (e) => {
-            if (!isDraggingChat) return; e.preventDefault();
-            let newX = Math.max(0, Math.min(e.clientX - chatOffsetX, window.innerWidth - chatWindow.offsetWidth));
-            let newY = Math.max(0, Math.min(e.clientY - chatOffsetY, window.innerHeight - chatWindow.offsetHeight));
-            chatWindow.style.left = `${newX}px`; chatWindow.style.top = `${newY}px`;
-        });
-        document.addEventListener('mouseup', () => { isDraggingChat = false; });
-    }
-
-    if (typeof io !== 'undefined') {
-        const chatInput = document.getElementById('chat-input');
-        const chatSendBtn = document.getElementById('chat-send');
-        const chatGreeting = document.getElementById('chatGreeting');
-        const chatMessages = document.getElementById('chat-messages');
-
-        const sysSocket = io("https://dxtrslizze.onrender.com/");
-        
-        sysSocket.on('connect', () => { 
-            if (isAuthUser && currentSessionToken) { sysSocket.emit('register_client', { token: currentSessionToken }); }
-        });
-
-        const chatBanNotice = document.getElementById('chatBanNotice');
-
-        sysSocket.on('ban_status', d => { 
-            if (d.isBanned) { 
-                if(chatBanNotice) chatBanNotice.style.display = 'block'; 
-                if(chatGreeting) chatGreeting.style.display = 'none'; 
-                if(chatInput) { chatInput.disabled = true; chatInput.placeholder = "Доступ ограничен."; chatInput.style.borderColor = "var(--error)"; }
-                if(chatSendBtn) { chatSendBtn.disabled = true; chatSendBtn.style.background = 'rgba(255,255,255,0.1)'; chatSendBtn.style.color = '#555'; }
-            } else { 
-                if(chatBanNotice) chatBanNotice.style.display = 'none'; 
-                if(chatGreeting && isAuthUser) chatGreeting.style.display = 'block'; 
-                if(chatInput && isAuthUser) { chatInput.disabled = false; chatInput.placeholder = "Опишите проблему..."; chatInput.style.borderColor = "var(--glass-border)"; }
-                if(chatSendBtn && isAuthUser) { chatSendBtn.disabled = false; chatSendBtn.style.background = 'var(--accent-purple)'; chatSendBtn.style.color = '#fff'; }
-            } 
-        });
-        
-        sysSocket.on('receive_message', d => { 
-            if (chatWindow && (chatWindow.style.display === 'none' || chatWindow.style.display === '')) {
-                chatWindow.style.display = 'flex';
-                if(window.innerWidth > 800) { chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '100px'; }
-            }
-            addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); 
-        });
-
-        sysSocket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
-        sysSocket.on('chat_closed_reset', () => { showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double"); });
-
-        if(chatSendBtn) chatSendBtn.onclick = sendMessageToBot; 
-        if(chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
-        
-        function sendMessageToBot() { 
-            const t = chatInput.value.trim(); 
-            if (!t || chatInput.disabled || !isAuthUser) return; 
-            sysSocket.emit('send_message', { text: t, token: currentSessionToken }); 
-            addChatMessage('Вы', t, 'flex-end', true, false, false); 
-            chatInput.value = ''; 
-        }
-
-        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { 
-            const wrapper = document.createElement('div'); 
-            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; 
-            
-            const nameLab = document.createElement('span'); 
-            nameLab.className = 'chat-msg-name'; 
-            nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; 
-            
-            const bubble = document.createElement('div'); 
-            bubble.className = 'chat-msg-bubble'; 
-            bubble.textContent = text; 
-            
-            if (isWarn) { nameLab.style.color = 'var(--error)'; bubble.style.background = 'rgba(239, 68, 68, 0.1)'; bubble.style.border = '1px solid var(--error)'; } 
-            else if (isSucc) { nameLab.style.color = 'var(--success)'; bubble.style.background = 'rgba(16, 185, 129, 0.1)'; bubble.style.border = '1px solid var(--success)'; } 
-            
-            wrapper.appendChild(nameLab); wrapper.appendChild(bubble); 
-            
-            if(chatMessages) { chatMessages.appendChild(wrapper); chatMessages.scrollTop = chatMessages.scrollHeight; }
-            
-            if (save) { 
-                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; 
-                h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); 
-                if (h.length > 50) h.shift(); 
-                localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); 
-            } 
-        }
-
-        function showChatClosedAnimation(titleHtml, iconClass) {
-            const inputArea = document.getElementById('chat-input-area');
-            if(inputArea) inputArea.style.opacity = "0";
-            setTimeout(() => {
-                if(inputArea) inputArea.style.display = "none";
-                const statusBlock = document.createElement('div');
-                statusBlock.className = 'chat-resolved-status';
-                statusBlock.innerHTML = `<i class="fa-solid ${iconClass} chat-resolved-icon"></i><div class="chat-resolved-title">${titleHtml}</div>`;
-                if(chatMessages) { chatMessages.appendChild(statusBlock); chatMessages.scrollTop = chatMessages.scrollHeight; }
-            }, 500); 
-        }
-
-        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
     }
     </script>
 </body>
