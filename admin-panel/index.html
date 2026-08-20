@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMMAND CENTER | DXTR | SlizZe</title>
+    <title>COMMAND CENTER | WHUBERAL</title>
     <link rel="icon" type="image.png" href="/dslogo.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -11,7 +11,6 @@
 
     <style>
         :root {
-            /* Премиальная палитра */
             --bg-body: #08090d;
             --accent-purple: #8b5cf6;
             --accent-purple-glow: rgba(139, 92, 246, 0.4);
@@ -84,8 +83,8 @@
         .loader-fill { height: 100%; width: 50%; background: var(--accent-purple); border-radius: 10px; animation: loadIndeterminate 1.5s infinite ease-in-out; box-shadow: 0 0 15px var(--accent-purple-glow); }
         @keyframes loadIndeterminate { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
 
-        .auth-submit-btn { background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold)); color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 800; font-size: 1rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; position: relative; z-index: 1; box-shadow: 0 5px 20px var(--accent-purple-glow); }
-        .auth-submit-btn:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px var(--accent-purple-glow); }
+        .auth-submit-btn { background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold)); color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 800; font-size: 1rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; position: relative; z-index: 1; box-shadow: 0 5px 20px var(--accent-purple-glow); width: 100%;}
+        .auth-submit-btn:hover { filter: brightness(1.15); box-shadow: 0 8px 25px var(--accent-purple-glow); }
 
         .btn-back { display: none; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 14px 30px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: 0.3s; margin: 0 auto; position: relative; z-index: 1;}
         .btn-back:hover { background: rgba(239, 68, 68, 0.15); border-color: var(--error); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); color: var(--error); }
@@ -98,21 +97,22 @@
             box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 100;
         }
         .admin-logo { text-align: center; margin-bottom: 40px; }
-        .admin-logo h2 { font-size: 1.5rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 4px; text-shadow: 0 0 15px var(--accent-purple-glow); }
+        .admin-logo h2 { font-size: 1.5rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 15px var(--accent-purple-glow); }
         .admin-logo span { color: var(--accent-purple); }
 
         .nav-item {
             display: flex; align-items: center; gap: 15px; padding: 16px 20px;
             color: var(--text-muted); font-weight: 700; font-size: 0.9rem; text-transform: uppercase;
             letter-spacing: 1px; border-radius: 14px; cursor: pointer; transition: 0.3s; margin-bottom: 8px;
+            user-select: none;
         }
         .nav-item i { font-size: 1.2rem; width: 25px; text-align: center; transition: 0.3s; }
         .nav-item:hover { background: rgba(255,255,255,0.03); color: #fff; }
         .nav-item.active { background: var(--accent-purple); color: #fff; box-shadow: 0 5px 15px var(--accent-purple-glow); }
 
         .sidebar-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--glass-border); }
-        .logout-btn { display: flex; align-items: center; gap: 15px; padding: 15px 20px; color: var(--error); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 14px; text-decoration: none; }
-        .logout-btn:hover { background: rgba(239, 68, 68, 0.1); }
+        .logout-btn { display: flex; align-items: center; gap: 15px; padding: 15px 20px; color: var(--text-muted); font-weight: 800; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 14px; text-decoration: none; }
+        .logout-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
         /* ── ОСНОВНАЯ ПАНЕЛЬ ── */
         .admin-main { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; padding: 40px; position: relative; }
@@ -121,19 +121,19 @@
         .header-title h1 { font-size: 2rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
         .header-title p { color: var(--text-muted); font-size: 0.9rem; }
         
-        .admin-profile { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s; text-decoration: none; }
+        .admin-profile { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 10px 20px; border-radius: 50px; border: 1px solid var(--glass-border); cursor: pointer; transition: 0.3s; text-decoration: none; user-select: none; }
         .admin-profile:hover { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
         .admin-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--accent-purple); object-fit: cover; }
         .admin-name { font-weight: 800; color: #fff; font-size: 0.95rem; }
 
-        /* ── ТАБЫ (Секции) ── */
         .admin-section { display: none; animation: fadeIn 0.4s ease forwards; }
         .admin-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ── КАРТОЧКИ СТАТИСТИКИ ── */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
         .stat-card { background: rgba(15, 15, 20, 0.6); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; display: flex; align-items: center; gap: 20px; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: 0.3s; }
-        .stat-card:hover { border-color: var(--accent-purple); box-shadow: 0 10px 30px var(--accent-purple-glow); transform: translateY(-3px); }
+        .stat-card:hover { border-color: var(--accent-purple); box-shadow: 0 10px 30px var(--accent-purple-glow); }
         .stat-icon { width: 60px; height: 60px; border-radius: 16px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-purple); }
         .stat-info h4 { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
         .stat-info .val { font-size: 1.8rem; font-weight: 900; color: #fff; }
@@ -144,23 +144,23 @@
         .table-header h3 { font-size: 1.2rem; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
         
         .action-btn { background: var(--accent-purple); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; }
-        .action-btn:hover { filter: brightness(1.15); box-shadow: 0 5px 15px var(--accent-purple-glow); transform: translateY(-2px); }
+        .action-btn:hover { filter: brightness(1.15); box-shadow: 0 5px 15px var(--accent-purple-glow); }
 
         table { width: 100%; border-collapse: collapse; min-width: 700px; }
         th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); }
         td { padding: 15px; color: #fff; font-size: 0.95rem; font-weight: 500; border-bottom: 1px solid rgba(255,255,255,0.02); vertical-align: middle; }
-        tr:hover td { background: rgba(255,255,255,0.02); }
+        tr:hover td { background: rgba(255,255,255,0.03); }
         
         .td-user { display: flex; align-items: center; gap: 12px; }
         .td-user img { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; border: 1px solid var(--glass-border); }
         .td-actions { display: flex; gap: 8px; }
         
-        .btn-sm { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; width: 35px; height: 35px; }
-        .btn-sm:hover { background: rgba(255,255,255,0.1); }
-        .btn-sm.edit:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
-        .btn-sm.ban:hover { border-color: var(--error); color: var(--error); }
+        .btn-sm { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; width: 35px; height: 35px; }
+        .btn-sm:hover { background: rgba(255,255,255,0.15); }
+        .btn-sm.edit:hover { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(244, 199, 69, 0.1); }
+        .btn-sm.ban:hover { border-color: var(--error); color: var(--error); background: rgba(239, 68, 68, 0.1); }
 
-        /* ── ФОРМЫ (Модалки создания/редактирования) ── */
+        /* ── ФОРМЫ (Модалки) ── */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 10005; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.3s; }
         .modal-overlay.active { display: flex; opacity: 1; }
         .modal-box { background: rgba(15, 15, 20, 0.95); border: 1px solid var(--accent-purple); border-radius: 24px; padding: 30px; max-width: 500px; width: 90%; transform: scale(0.95); transition: 0.3s; box-shadow: 0 20px 50px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;}
@@ -186,16 +186,17 @@
         .m-btn-cancel { background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--glass-border); }
         .m-btn-cancel:hover { background: rgba(255,255,255,0.1); }
         .m-btn-confirm { background: var(--accent-purple); color: #fff; box-shadow: 0 5px 15px var(--accent-purple-glow); }
-        .m-btn-confirm:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .m-btn-confirm:hover:not(:disabled) { filter: brightness(1.15); }
         .m-btn-danger { background: rgba(239, 68, 68, 0.15); border: 1px solid var(--error); color: var(--error); }
-        .m-btn-danger:hover { background: var(--error); color: #fff; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); transform: translateY(-2px); }
+        .m-btn-danger:hover:not(:disabled) { background: var(--error); color: #fff; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4); }
+        .m-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .empty-neon { text-align: center; color: var(--text-muted); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 30px; }
 
         #mProgressContainer { width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px; display: none; }
         #mProgressBar { height:100%; width:0%; background:var(--accent-purple); box-shadow:0 0 10px var(--accent-purple-glow); transition:width 0.2s; }
 
-        /* ── МОДАЛКА ВХОДА GOOGLE ── */
+        /* МОДАЛКА ВХОДА GOOGLE */
         .install-box { background: rgba(10, 10, 15, 0.95); border: 1px solid var(--accent-purple); border-radius: 28px; padding: 40px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); position: relative; display: flex; flex-direction: column; align-items: center; margin: auto; }
         .install-box i.fa-user-astronaut { font-size: 3.5rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); }
         .install-box h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
@@ -203,17 +204,16 @@
         .install-close { position: absolute; top: 20px; right: 25px; color: var(--text-muted); font-size: 1.8rem; cursor: pointer; transition: 0.3s; }
         .install-close:hover { color: var(--error); transform: rotate(90deg); }
         .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); color: #fff; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 1px; margin: 0 auto; position: relative; }
-        .google-login-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-        .google-login-btn img { width: 24px; height: 24px; }
-
-        /* Адаптив админки */
+        .google-login-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+        
+        /* Адаптив */
         @media (max-width: 900px) {
             .admin-sidebar { position: fixed; left: -300px; }
             .admin-sidebar.active { left: 0; }
             .admin-main { padding: 20px; margin-top: 60px; }
             .header-top { flex-direction: column; align-items: flex-start; gap: 15px; }
             .admin-profile { align-self: flex-start; }
-            .mobile-menu-toggle { display: block; position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 10px 15px; border-radius: 10px; color: #fff; cursor: pointer; }
+            .mobile-menu-toggle { display: flex; align-items: center; gap: 8px; position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 10px 15px; border-radius: 10px; color: #fff; cursor: pointer; font-weight: 700; font-size: 0.85rem;}
         }
         @media (min-width: 901px) {
             .mobile-menu-toggle { display: none; }
@@ -221,7 +221,6 @@
         }
     </style>
     
-    <!-- Скрипты Google Auth и Supabase -->
     <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -250,7 +249,7 @@
             
             <div style="position: relative; width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 14px; margin-top: 15px;">
                 <button class="google-login-btn" style="margin: 0; width: 100%;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 24px; height: 24px;">
                     Войти через Google
                 </button>
                 <div id="google-btn-wrapper" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.01; z-index: 10; cursor: pointer;"></div>
@@ -269,20 +268,20 @@
                 <div class="loader-fill"></div>
             </div>
 
-            <button class="auth-submit-btn" id="loginGoogleBtnOverlay" onclick="openLoginModal()" style="width: 100%; margin-top: 15px;">
+            <button class="auth-submit-btn" id="loginGoogleBtnOverlay" onclick="openLoginModal()" style="display: none; margin-top: 15px;">
                 АВТОРИЗОВАТЬСЯ
             </button>
 
             <a href="https://dxtrslizze.xyz/" class="btn-back" id="btnBack" style="margin-top: 20px;">
-                <i class="fa-solid fa-arrow-left"></i> Вернуться на сайт
+                <i class="fa-solid fa-arrow-left"></i> На сайт
             </a>
         </div>
     </div>
 
-    <!-- БОКОВОЕ МЕНЮ (АДМИН) -->
+    <!-- БОКОВОЕ МЕНЮ -->
     <aside class="admin-sidebar">
         <div class="admin-logo">
-            <h2>DXTR <span>|</span> CC</h2>
+            <h2>WHUBERAL <span>|</span> CC</h2>
         </div>
         <nav>
             <div class="nav-item active" onclick="switchSection('dashboard', this)"><i class="fa-solid fa-chart-pie"></i> Дашборд</div>
@@ -291,8 +290,8 @@
             <div class="nav-item" onclick="switchSection('promos', this)"><i class="fa-solid fa-ticket"></i> Промокоды</div>
         </nav>
         <div class="sidebar-footer">
-            <a href="https://dxtrslizze.xyz/" class="logout-btn"><i class="fa-solid fa-door-open"></i> На сайт</a>
-            <div class="logout-btn" style="color: var(--text-muted); margin-top: 10px;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Выход</div>
+            <a href="https://dxtrslizze.xyz/" class="logout-btn" style="color:#fff;"><i class="fa-solid fa-door-open"></i> На сайт</a>
+            <div class="logout-btn" style="margin-top: 10px;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Выход</div>
         </div>
     </aside>
 
@@ -303,7 +302,7 @@
                 <h1 id="pageTitle">Дашборд</h1>
                 <p>Сводка данных платформы</p>
             </div>
-            <a href="#" class="admin-profile" onclick="switchSection('profile', document.querySelector('.nav-item'))">
+            <a href="#" class="admin-profile" onclick="switchSection('profile', null)">
                 <img src="/dslogo.png" alt="Admin" class="admin-avatar" id="adminAvatar">
                 <div class="admin-name" id="adminName">Admin</div>
             </a>
@@ -315,7 +314,7 @@
                 <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent-purple); margin: 0 auto 20px; overflow: hidden; box-shadow: 0 0 20px var(--accent-purple-glow);">
                     <img src="/dslogo.png" alt="Avatar" id="profAvatarBig" onerror="this.src='/dslogo.png'" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
-                <h2 id="profNickBig" style="font-size: 1.8rem; margin-bottom: 5px; color: #fff;">DXTR | SlizZe</h2>
+                <h2 id="profNickBig" style="font-size: 1.8rem; margin-bottom: 5px; color: #fff;">Admin</h2>
                 <div style="color: var(--accent-gold); font-weight: 800; letter-spacing: 1px; margin-bottom: 25px; text-transform: uppercase; font-size: 0.85rem;">Системный администратор</div>
                 
                 <a href="https://dxtrslizze.xyz/profile" class="m-btn m-btn-confirm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; margin-bottom: 15px; color: #fff;">
@@ -383,7 +382,7 @@
                 </div>
                 <div style="overflow-x: auto;">
                     <table>
-                        <thead><tr><th>Пользователь</th><th>ID</th><th>Логин</th><th>Баланс</th><th>Статус</th><th>Действия</th></tr></thead>
+                        <thead><tr><th>Пользователь</th><th>ID</th><th>Логин/Email</th><th>Баланс</th><th>Статус</th><th>Действия</th></tr></thead>
                         <tbody id="allUsersTable"><tr><td colspan="6" class="empty-neon">Загрузка...</td></tr></tbody>
                     </table>
                 </div>
@@ -423,7 +422,7 @@
         </section>
     </main>
 
-    <!-- МОДАЛКИ (Формы) -->
+    <!-- МОДАЛКИ -->
     
     <!-- Подтверждение удаления -->
     <div class="modal-overlay" id="deleteModal">
@@ -441,12 +440,9 @@
     <div class="modal-overlay" id="editProfileModal">
         <div class="modal-box">
             <h3>Изменить профиль</h3>
-            <div class="form-group"><label class="form-label">Цифровой ID</label><input type="text" id="editProfIdInput" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Логин (Username)</label><input type="text" id="editProfUsernameInput" class="form-input"></div>
             <div class="form-group"><label class="form-label">Никнейм</label><input type="text" id="editProfNickInput" class="form-input"></div>
             <div class="form-group"><label class="form-label">Аватарка (URL)</label><input type="url" id="editProfAvatarInput" class="form-input"></div>
             <div class="form-group"><label class="form-label">Баланс (NC)</label><input type="number" id="editProfBalanceInput" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Новый пароль</label><input type="text" id="editProfPassInput" class="form-input" placeholder="Оставить пустым для сохранения старого"></div>
             <div class="modal-btns">
                 <button class="m-btn m-btn-cancel" onclick="closeModal('editProfileModal')">Отмена</button>
                 <button class="m-btn m-btn-confirm" id="confirmEditProfileBtn">Сохранить</button>
@@ -513,6 +509,8 @@
                     <div class="form-group"><label class="form-label">Кол-во активаций</label><input type="number" id="pUses" class="form-input" placeholder="100"></div>
                 </div>
 
+                <div id="pProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px;"><div id="pProgressBar" style="height:100%; width:0%; background:var(--accent-gold);"></div></div>
+
                 <div class="modal-btns">
                     <button type="button" class="m-btn m-btn-cancel" onclick="closeModal('promoModal')">Отмена</button>
                     <button type="submit" class="m-btn m-btn-confirm" id="pSubmitBtn">Создать</button>
@@ -525,8 +523,8 @@
     <div class="modal-overlay" id="editPromoModal">
         <div class="modal-box">
             <h3>Редактировать код</h3>
-            <div class="form-group"><label class="form-label">Код</label><input type="text" id="editPCode" class="form-input"></div>
-            <div class="form-group"><label class="form-label">Название</label><input type="text" id="editPTitle" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Новый Код</label><input type="text" id="editPCode" class="form-input"></div>
+            <div class="form-group"><label class="form-label">Новое Название</label><input type="text" id="editPTitle" class="form-input"></div>
             <div class="modal-btns">
                 <button class="m-btn m-btn-cancel" onclick="closeModal('editPromoModal')">Отмена</button>
                 <button class="m-btn m-btn-confirm" id="confirmEditPromoBtn">Сохранить</button>
@@ -535,7 +533,6 @@
     </div>
 
     <script>
-        const API_URL = "https://dxtrslizze.onrender.com/api";
         const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
         const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'; 
         let supabaseClient;
@@ -558,11 +555,16 @@
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             
             document.getElementById('sec-' + secId).classList.add('active');
-            btnElement.classList.add('active');
+            if (btnElement) btnElement.classList.add('active');
             
-            const titles = { 'dashboard': 'Дашборд', 'users': 'Пользователи', 'music': 'Муз. Каталог', 'promos': 'Промокоды' };
-            document.getElementById('pageTitle').innerText = titles[secId];
+            const titles = { 'dashboard': 'Дашборд', 'users': 'Пользователи', 'music': 'Муз. Каталог', 'promos': 'Промокоды', 'profile': 'Профиль' };
+            document.getElementById('pageTitle').innerText = titles[secId] || '';
             
+            if (secId === 'dashboard') loadDashboardData();
+            if (secId === 'users') loadUsers();
+            if (secId === 'music') loadMusic();
+            if (secId === 'promos') loadPromos();
+
             if (window.innerWidth <= 900) { document.querySelector('.admin-sidebar').classList.remove('active'); }
         }
 
@@ -571,24 +573,18 @@
             document.getElementById('loginGoogleBtnOverlay').style.display = 'block';
             document.getElementById('authIcon').className = 'fa-solid fa-lock auth-icon';
             document.getElementById('authIcon').style.color = 'var(--error)';
-            document.getElementById('authIcon').style.filter = 'drop-shadow(0 0 15px rgba(239, 68, 68, 0.4))';
             document.getElementById('authTitle').innerText = 'ДОСТУП ЗАПРЕЩЕН';
             document.getElementById('authTitle').style.color = 'var(--error)';
             document.getElementById('authDesc').innerText = message;
             document.getElementById('btnBack').style.display = 'inline-flex';
         }
 
-        function openLoginModal() {
-            document.getElementById('loginModal').style.display = 'flex';
-        }
-
-        function closeLoginModal() {
-            document.getElementById('loginModal').style.display = 'none';
-        }
+        function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
+        function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
         async function handleGoogleCredential(response) {
             closeLoginModal();
-            
             document.getElementById('authTitle').innerText = 'ПРОВЕРКА СВЯЗИ';
             document.getElementById('authDesc').innerText = 'Синхронизация с сервером...';
             document.getElementById('loginGoogleBtnOverlay').style.display = 'none';
@@ -596,7 +592,6 @@
 
             const { data, error } = await supabaseClient.auth.signInWithIdToken({ provider: 'google', token: response.credential });
             if (error) { setAuthError('Ошибка входа через Google'); return; }
-            
             checkSession();
         }
 
@@ -606,7 +601,7 @@
                     client_id: '538822205607-83ip6fjfah8pjphus91d3ru2tfeb018b.apps.googleusercontent.com',
                     callback: handleGoogleCredential
                 });
-                document.querySelectorAll(".google-login-btn").forEach((btn, index) => {
+                document.querySelectorAll(".google-login-btn").forEach((btn) => {
                     const wrapper = btn.nextElementSibling;
                     if (wrapper) google.accounts.id.renderButton(wrapper, { type: "standard", theme: "outline", size: "large", width: 300 });
                 });
@@ -616,10 +611,9 @@
         async function checkSession() {
             if(!supabaseClient) return;
             const { data: { session } } = await supabaseClient.auth.getSession();
-            
             if (session) {
                 currentSessionToken = session.access_token;
-                verifyAdminAccess(currentSessionToken, session.user);
+                verifyAdminAccess(session.user);
             } else {
                 document.getElementById('authTitle').innerText = 'ТРЕБУЕТСЯ АВТОРИЗАЦИЯ';
                 document.getElementById('authDesc').innerText = 'Для доступа к панели управления войдите в систему.';
@@ -628,125 +622,365 @@
             }
         }
 
-        async function verifyAdminAccess(token, user) {
+        async function verifyAdminAccess(user) {
             document.getElementById('authTitle').innerText = 'ПРОВЕРКА СВЯЗИ';
             document.getElementById('authDesc').innerText = 'Проверка прав доступа...';
             document.getElementById('loginGoogleBtnOverlay').style.display = 'none';
             document.getElementById('authLoader').style.display = 'block';
 
-            // 1. ЖЕЛЕЗОБЕТОННАЯ ПРОВЕРКА (Почта верифицирована Google)
+            // ЖЕЛЕЗОБЕТОННАЯ ПРОВЕРКА ПОЧТЫ
             if (user.email !== 'slizzedxtr@gmail.com') {
                 setAuthError('Ваш аккаунт не имеет прав администратора.');
                 return;
             }
 
-            // 2. Достаем никнейм и аватарку напрямую из Supabase
             try {
                 const { data: dbUser, error } = await supabaseClient.from('g_users').select('*').eq('id', user.id).single();
-                
                 if (error || !dbUser) {
-                    // Если юзер заходит впервые и его еще нет в таблице g_users
-                    initAdminPanel({ nickname: 'Admin', avatarUrl: '/dslogo.png' });
+                    initAdminPanel({ nickname: 'Admin', avatar_url: '/dslogo.png' });
                 } else {
-                    initAdminPanel({ nickname: dbUser.nickname, avatarUrl: dbUser.avatar_url });
+                    initAdminPanel(dbUser);
                 }
-            } catch (e) {
-                setAuthError('Ошибка связи с базой данных.');
-            }
+            } catch (e) { setAuthError('Ошибка связи с базой данных.'); }
         }
 
         function initAdminPanel(user) {
             document.getElementById('adminName').innerText = user.nickname || 'Admin';
             document.getElementById('profNickBig').innerText = user.nickname || 'Admin';
-            if (user.avatarUrl && user.avatarUrl !== 'dslogo.png') {
-                document.getElementById('adminAvatar').src = user.avatarUrl;
-                document.getElementById('profAvatarBig').src = user.avatarUrl;
+            if (user.avatar_url && user.avatar_url !== 'dslogo.png') {
+                document.getElementById('adminAvatar').src = user.avatar_url;
+                document.getElementById('profAvatarBig').src = user.avatar_url;
             }
             document.getElementById('authOverlay').classList.add('hidden');
             loadDashboardData();
         }
 
-        function logout() {
-            if(supabaseClient) supabaseClient.auth.signOut();
-            location.reload();
-        }
+        function logout() { if(supabaseClient) supabaseClient.auth.signOut(); location.reload(); }
 
-        function authHeaders(extra) {
-            return Object.assign({ 'Authorization': 'Bearer ' + currentSessionToken }, extra || {});
-        }
+        // ================= ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE =================
+        let loadedUsers = [], loadedTracks = [], loadedPromos = [];
 
-        // Заглушки для загрузки данных (до обновления бэкенда они могут отдавать ошибку из-за отсутствия токена)
         async function loadDashboardData() {
             try {
-                // Загружаем юзеров из Supabase
-                const { data: users, error } = await supabaseClient.from('g_users').select('*').order('created_at', { ascending: false });
-                if (!error && users) {
+                const { data: users, error: errU } = await supabaseClient.from('g_users').select('*').order('created_at', { ascending: false });
+                if (!errU && users) {
                     document.getElementById('statUsers').innerText = users.length;
-                    const totalCoins = users.reduce((sum, u) => sum + (Number(u.dscoin_balance) || 0), 0);
-                    document.getElementById('statCoins').innerText = totalCoins;
-
-                    const recentHtml = users.slice(0, 5).map(u => `
-                        <tr>
-                            <td class="td-user">
-                                <img src="${u.avatar_url || '/dslogo.png'}">
-                                <b>${u.nickname || 'Аноним'}</b>
-                            </td>
-                            <td style="color:var(--text-muted); font-size: 0.8rem;">${u.id.substring(0,8)}...</td>
-                            <td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td>
-                        </tr>
-                    `).join('');
+                    document.getElementById('statCoins').innerText = users.reduce((sum, u) => sum + (Number(u.dscoin_balance) || 0), 0);
+                    const recentHtml = users.slice(0, 5).map(u => `<tr><td class="td-user"><img src="${u.avatar_url || '/dslogo.png'}"><b>${u.nickname || 'Аноним'}</b></td><td style="color:var(--text-muted); font-size: 0.8rem;">${u.id.substring(0,8)}...</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td></tr>`).join('');
                     document.getElementById('recentUsersTable').innerHTML = recentHtml || '<tr><td colspan="3">Пусто</td></tr>';
-
-                    const allHtml = users.map(u => `
-                        <tr>
-                            <td class="td-user">
-                                <img src="${u.avatar_url || '/dslogo.png'}">
-                                <b>${u.nickname || 'Аноним'}</b>
-                            </td>
-                            <td style="color:var(--text-muted); font-size: 0.8rem;">${u.id.substring(0,12)}...</td>
-                            <td style="color:var(--text-muted);">${u.email || 'Скрыто'}</td>
-                            <td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td>
-                            <td style="color:${u.isBanned ? 'var(--error)' : 'var(--text-muted)'};">${u.isBanned ? 'Да' : 'Нет'}</td>
-                            <td class="td-actions">
-                                <button class="btn-sm edit" title="Редактировать"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn-sm ban" title="Заблокировать"><i class="fa-solid fa-ban"></i></button>
-                            </td>
-                        </tr>
-                    `).join('');
-                    document.getElementById('allUsersTable').innerHTML = allHtml;
                 }
+                const { data: tracks, error: errT } = await supabaseClient.from('music').select('id');
+                if (!errT && tracks) document.getElementById('statTracks').innerText = tracks.length;
+            } catch (e) {}
+        }
 
-                // Загружаем треки из Supabase
-                const { data: tracks, error: errT } = await supabaseClient.from('music').select('*').order('created_at', { ascending: false });
-                if (!errT && tracks) {
-                    document.getElementById('statTracks').innerText = tracks.length;
-                    
-                    const musicHtml = tracks.map(t => `
-                        <tr>
-                            <td class="td-user">
-                                <img src="${t.cover_url || '/dslogo.png'}">
-                                <b>${t.title}</b>
-                            </td>
-                            <td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'};">${t.is_main ? 'Да' : 'Нет'}</td>
-                            <td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'};">${t.is_18 ? 'Да' : 'Нет'}</td>
-                            <td class="td-actions">
-                                <button class="btn-sm edit" title="Редактировать"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn-sm ban" title="Удалить"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `).join('');
-                    document.getElementById('musicTable').innerHTML = musicHtml || '<tr><td colspan="4">Пусто</td></tr>';
-                }
+        // --- ПОЛЬЗОВАТЕЛИ ---
+        async function loadUsers() {
+            const list = document.getElementById('allUsersTable'); list.innerHTML = '<tr><td colspan="6" class="empty-neon">Загрузка...</td></tr>';
+            const { data, error } = await supabaseClient.from('g_users').select('*').order('created_at', { ascending: false });
+            if (!error && data) {
+                loadedUsers = data;
+                if(data.length === 0) list.innerHTML = '<tr><td colspan="6" class="empty-neon">Пусто</td></tr>';
+                else renderUsersTable(data);
+            } else { list.innerHTML = '<tr><td colspan="6" class="empty-neon">Ошибка БД</td></tr>'; }
+        }
 
-            } catch (e) {
-                console.error("Ошибка загрузки данных дашборда", e);
+        function renderUsersTable(users) {
+            document.getElementById('allUsersTable').innerHTML = users.map(u => `<tr><td class="td-user"><img src="${u.avatar_url || '/dslogo.png'}"><b>${u.nickname || 'Аноним'}</b></td><td style="color:var(--text-muted); font-size:0.8rem;">${u.id.substring(0,8)}...</td><td style="color:var(--text-muted);">${u.email || 'Скрыто'}</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td><td style="color:${u.isBanned ? 'var(--error)' : 'var(--text-muted)'};">${u.isBanned ? 'Бан' : 'Нет'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditProfile('${u.id}', '${u.nickname || ''}', '${u.avatar_url || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('profile', '${u.id}', '${u.nickname || 'Аноним'}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+        }
+
+        document.getElementById('userSearchInput').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            renderUsersTable(loadedUsers.filter(u => (u.nickname && u.nickname.toLowerCase().includes(q)) || (u.email && u.email.toLowerCase().includes(q))));
+        });
+
+        // --- МУЗЫКА ---
+        async function loadMusic() {
+            const list = document.getElementById('musicTable'); list.innerHTML = '<tr><td colspan="4" class="empty-neon">Загрузка...</td></tr>';
+            const { data, error } = await supabaseClient.from('music').select('*').order('created_at', { ascending: false });
+            if (!error && data) {
+                loadedTracks = data;
+                if(data.length === 0) list.innerHTML = '<tr><td colspan="4" class="empty-neon">Каталог пуст</td></tr>';
+                else list.innerHTML = data.map(t => `<tr><td class="td-user"><img src="${t.cover_url}"><div><b>${t.title}</b><div style="font-size:0.8rem;color:var(--text-muted);">${t.authors || 'DXTR feat. SlizZe'}</div></div></td><td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_main ? 'Да' : 'Нет'}</td><td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_18 ? 'Да' : 'Нет'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
             }
         }
 
-        // Старт проверки при загрузке
-        window.onload = () => {
-            setTimeout(checkSession, 1000); 
+        // --- ПРОМОКОДЫ ---
+        async function loadPromos() {
+            const list = document.getElementById('promosTable'); list.innerHTML = '<tr><td colspan="4" class="empty-neon">Загрузка...</td></tr>';
+            const { data, error } = await supabaseClient.from('promos').select('*').order('created_at', { ascending: false });
+            if (!error && data) {
+                loadedPromos = data;
+                if(data.length === 0) list.innerHTML = '<tr><td colspan="4" class="empty-neon">Нет активных кодов</td></tr>';
+                else list.innerHTML = data.map(p => `<tr><td><b>#${p.code}</b><br><span style="font-size:0.8rem;color:var(--text-muted);">${p.title}</span></td><td style="color:${p.is_currency ? 'var(--success)' : 'var(--accent-purple)'}; font-weight:bold;">${p.is_currency ? p.amount+' NC' : 'Медиа'}</td><td style="color:var(--text-muted);">${p.uses_left !== null ? p.uses_left : '∞'} / ${p.max_uses || '∞'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditPromo('${p.code}', '${p.title}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
+            }
+        }
+
+        // ================= УДАЛЕНИЕ (SUPABASE) =================
+        let deleteType = '', deleteId = '';
+        function confirmDelete(type, id, name) {
+            deleteType = type; deleteId = id; document.getElementById('modalCodeName').textContent = name;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+        document.getElementById('confirmDeleteBtn').onclick = async () => {
+            const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '...'; btn.disabled = true;
+            try {
+                let error = null;
+                if(deleteType === 'music') { const res = await supabaseClient.from('music').delete().eq('id', deleteId); error = res.error; }
+                if(deleteType === 'profile') { const res = await supabaseClient.from('g_users').delete().eq('id', deleteId); error = res.error; }
+                if(deleteType === 'promo') { const res = await supabaseClient.from('promos').delete().eq('code', deleteId); error = res.error; }
+                
+                if(!error) {
+                    closeModal('deleteModal'); showToast('Успешно удалено', 'success');
+                    if(deleteType === 'music') loadMusic();
+                    if(deleteType === 'profile') loadUsers();
+                    if(deleteType === 'promo') loadPromos();
+                } else { showToast('Ошибка удаления', 'error'); }
+            } catch(e) { showToast('Сбой сети', 'error'); }
+            btn.innerHTML = 'Удалить'; btn.disabled = false;
         };
+
+        // ================= РЕДАКТИРОВАНИЕ ПРОФИЛЯ =================
+        let editProfDbId = '';
+        function openEditProfile(id, nick, avatar, balance) { 
+            editProfDbId = id; 
+            document.getElementById('editProfNickInput').value = nick; 
+            document.getElementById('editProfAvatarInput').value = avatar; 
+            document.getElementById('editProfBalanceInput').value = balance; 
+            document.getElementById('editProfileModal').classList.add('active'); 
+        }
+        document.getElementById('confirmEditProfileBtn').onclick = async () => {
+            const payload = { 
+                nickname: document.getElementById('editProfNickInput').value.trim(), 
+                avatar_url: document.getElementById('editProfAvatarInput').value.trim(), 
+                dscoin_balance: Number(document.getElementById('editProfBalanceInput').value.trim()) || 0 
+            };
+            const btn = document.getElementById('confirmEditProfileBtn'); btn.disabled = true;
+            try {
+                const { error } = await supabaseClient.from('g_users').update(payload).eq('id', editProfDbId);
+                if(!error) { closeModal('editProfileModal'); loadUsers(); showToast('Профиль обновлен', 'success'); } 
+                else { showToast('Ошибка БД', 'error'); }
+            } catch(e) { showToast('Ошибка сети', 'error'); }
+            btn.disabled = false;
+        };
+
+        // ================= РЕДАКТИРОВАНИЕ ПРОМОКОДОВ =================
+        let currentEditPromoCode = '';
+        function openEditPromo(code, title) {
+            currentEditPromoCode = code;
+            document.getElementById('editPCode').value = code; document.getElementById('editPTitle').value = title;
+            document.getElementById('editPromoModal').classList.add('active');
+        }
+        document.getElementById('confirmEditPromoBtn').onclick = async () => {
+            const newCode = document.getElementById('editPCode').value.trim();
+            const newTitle = document.getElementById('editPTitle').value.trim();
+            const btn = document.getElementById('confirmEditPromoBtn'); btn.disabled = true;
+            try {
+                const { error } = await supabaseClient.from('promos').update({ code: newCode, title: newTitle }).eq('code', currentEditPromoCode);
+                if(!error) { closeModal('editPromoModal'); loadPromos(); showToast('Обновлено', 'success'); }
+                else { showToast('Ошибка сохранения', 'error'); }
+            } catch(e) {}
+            btn.disabled = false;
+        };
+
+        // ================= ПАРСЕР LRC =================
+        function parseLRC(lrcText) {
+            if (!lrcText || !lrcText.trim()) return [];
+            const lines = lrcText.split('\n'); const result = []; const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
+            lines.forEach(line => {
+                const match = timeReg.exec(line);
+                if (match) {
+                    const time = parseInt(match[1]) * 60 + parseInt(match[2]) + (parseInt(match[3]) > 99 ? parseInt(match[3]) / 1000 : parseInt(match[3]) / 100);
+                    const text = line.replace(timeReg, '').trim();
+                    if (text || text === "") result.push({ t: time, s: text });
+                }
+            });
+            return result;
+        }
+        function jsonToLRC(jsonArray) {
+            if (!jsonArray || !Array.isArray(jsonArray) || jsonArray.length === 0) return '';
+            return jsonArray.map(item => {
+                const min = Math.floor(item.t / 60).toString().padStart(2, '0');
+                const sec = Math.floor(item.t % 60).toString().padStart(2, '0');
+                const ms = Math.floor((item.t % 1) * 100).toString().padStart(2, '0');
+                return `[${min}:${sec}.${ms}] ${item.s}`;
+            }).join('\n');
+        }
+        function smartParseLyrics(rawInput) {
+            if (!rawInput || !rawInput.trim()) return [];
+            if (rawInput.trim().startsWith('[')) {
+                try {
+                    const apiResponse = JSON.parse(rawInput);
+                    let subtitleString = null;
+                    if (Array.isArray(apiResponse) && apiResponse[0]?.message?.body?.subtitle?.subtitle_body) { subtitleString = apiResponse[0].message.body.subtitle.subtitle_body; }
+                    if (subtitleString) {
+                        const rawLyrics = JSON.parse(subtitleString);
+                        return rawLyrics.map(item => ({ t: item.time.total, s: item.text })).filter(item => item.s.trim() !== "");
+                    }
+                } catch (err) {}
+            }
+            return parseLRC(rawInput);
+        }
+
+        // ================= ЗАГРУЗКА ФАЙЛОВ В SUPABASE STORAGE =================
+        async function uploadToSupabaseStorage(file, folder) {
+            if (!file) return null;
+            const ext = file.name.split('.').pop();
+            const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+            const { data, error } = await supabaseClient.storage.from('music-content').upload(fileName, file);
+            if (error) throw error;
+            return supabaseClient.storage.from('music-content').getPublicUrl(fileName).data.publicUrl;
+        }
+
+        // ================= МУЗЫКА (Добавление/Редактирование) =================
+        let isEditingMusic = false; let currentEditMusicId = null;
+
+        function openMusicModal() {
+            isEditingMusic = false; currentEditMusicId = null;
+            document.getElementById('musicForm').reset();
+            document.getElementById('musicModalTitle').innerText = 'ДОБАВИТЬ ТРЕК';
+            document.getElementById('mCoverText').innerText = 'Обложка (Обяз)'; document.getElementById('mMp3Text').innerText = 'Трек (Обяз)';
+            document.getElementById('mCover').required = true; document.getElementById('mMp3').required = true;
+            document.getElementById('platformsContainer').style.display = 'none';
+            document.getElementById('musicFileHint').innerText = 'Файлы обязательны для нового трека.';
+            document.getElementById('musicModal').classList.add('active');
+        }
+
+        function openEditMusic(id) {
+            const track = loadedTracks.find(t => String(t.id) === String(id)); if(!track) return;
+            isEditingMusic = true; currentEditMusicId = id;
+            document.getElementById('musicModalTitle').innerText = 'РЕДАКТИРОВАТЬ ТРЕК';
+            document.getElementById('mTitle').value = track.title;
+            document.getElementById('mAuthors').value = track.authors || 'DXTR feat. SlizZe';
+            document.getElementById('mYt').value = track.yt_link || '';
+            document.getElementById('mLyrics').value = track.lyrics ? jsonToLRC(track.lyrics) : '';
+            document.getElementById('m18').checked = track.is_18; document.getElementById('mMain').checked = track.is_main;
+            
+            const hasPlat = track.platforms && Object.keys(track.platforms).length > 0;
+            document.getElementById('mHasPlatforms').checked = hasPlat;
+            document.getElementById('platformsContainer').style.display = hasPlat ? 'flex' : 'none';
+            if (hasPlat) {
+                document.getElementById('linkSpotify').value = track.platforms.spotify || '';
+                document.getElementById('linkVk').value = track.platforms.vk || '';
+                document.getElementById('linkYandex').value = track.platforms.yandex || '';
+            }
+            
+            document.getElementById('mCover').required = false; document.getElementById('mMp3').required = false;
+            document.getElementById('mCoverText').textContent = 'Новая обложка'; document.getElementById('mMp3Text').textContent = 'Новый MP3';
+            document.getElementById('musicFileHint').innerText = '* Оставьте файлы пустыми, чтобы не менять их.';
+            document.getElementById('musicModal').classList.add('active');
+        }
+
+        document.getElementById('mCover').onchange = (e) => document.getElementById('mCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Обложка';
+        document.getElementById('mMp3').onchange = (e) => document.getElementById('mMp3Text').textContent = e.target.files[0] ? 'Выбрано' : 'MP3';
+
+        document.getElementById('mMain').addEventListener('change', (e) => {
+            if(e.target.checked) { document.getElementById('mHasPlatforms').checked = true; document.getElementById('mHasPlatforms').disabled = true; document.getElementById('platformsContainer').style.display = 'flex'; } 
+            else { document.getElementById('mHasPlatforms').disabled = false; }
+        });
+        document.getElementById('mHasPlatforms').addEventListener('change', (e) => { document.getElementById('platformsContainer').style.display = e.target.checked ? 'flex' : 'none'; });
+
+        document.getElementById('musicForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('mSubmitBtn'); btn.disabled = true;
+            document.getElementById('mProgressContainer').style.display = 'block';
+            document.getElementById('mProgressBar').style.width = '30%';
+
+            try {
+                let platformsJson = {};
+                if (document.getElementById('mHasPlatforms').checked) { platformsJson = { spotify: document.getElementById('linkSpotify').value, vk: document.getElementById('linkVk').value, yandex: document.getElementById('linkYandex').value }; }
+                
+                const payload = {
+                    title: document.getElementById('mTitle').value,
+                    authors: document.getElementById('mAuthors').value.trim() || 'DXTR feat. SlizZe',
+                    yt_link: document.getElementById('mYt').value,
+                    platforms: platformsJson,
+                    is_18: document.getElementById('m18').checked,
+                    is_main: document.getElementById('mMain').checked,
+                    lyrics: smartParseLyrics(document.getElementById('mLyrics').value)
+                };
+
+                const coverFile = document.getElementById('mCover').files[0];
+                const mp3File = document.getElementById('mMp3').files[0];
+
+                document.getElementById('mProgressBar').style.width = '60%';
+
+                if (coverFile) payload.cover_url = await uploadToSupabaseStorage(coverFile, 'covers');
+                if (mp3File) payload.mp3_url = await uploadToSupabaseStorage(mp3File, 'tracks');
+
+                document.getElementById('mProgressBar').style.width = '90%';
+
+                let error = null;
+                if (isEditingMusic) { const res = await supabaseClient.from('music').update(payload).eq('id', currentEditMusicId); error = res.error; }
+                else { const res = await supabaseClient.from('music').insert([payload]); error = res.error; }
+
+                if (!error) { showToast('Успешно сохранено', 'success'); closeModal('musicModal'); loadMusic(); }
+                else { showToast('Ошибка сохранения в БД', 'error'); }
+
+            } catch(e) { showToast('Ошибка при загрузке файлов', 'error'); }
+
+            document.getElementById('mProgressBar').style.width = '100%';
+            setTimeout(() => { document.getElementById('mProgressContainer').style.display = 'none'; document.getElementById('mProgressBar').style.width = '0%'; btn.disabled = false; }, 500);
+        };
+
+        // ================= ПРОМОКОДЫ (Создание) =================
+        function openPromoModal() {
+            document.getElementById('promoForm').reset();
+            document.getElementById('promoMediaFields').style.display = 'flex';
+            document.getElementById('promoCurrencyFields').style.display = 'none';
+            document.getElementById('pCover').required = true; document.getElementById('pTrack').required = true;
+            document.getElementById('pCoverText').textContent = 'Секретная Обложка'; document.getElementById('pTrackText').textContent = 'Секретный Трек';
+            document.getElementById('promoModal').classList.add('active');
+        }
+
+        document.getElementById('pIsCurrency').addEventListener('change', function() {
+            const mediaFields = document.getElementById('promoMediaFields'), currFields = document.getElementById('promoCurrencyFields');
+            const coverInput = document.getElementById('pCover'), trackInput = document.getElementById('pTrack');
+            if(this.checked) { mediaFields.style.display = 'none'; currFields.style.display = 'flex'; coverInput.required = false; trackInput.required = false; } 
+            else { mediaFields.style.display = 'flex'; currFields.style.display = 'none'; coverInput.required = true; trackInput.required = true; }
+        });
+
+        document.getElementById('pCover').onchange = (e) => document.getElementById('pCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Секретная Обложка';
+        document.getElementById('pTrack').onchange = (e) => document.getElementById('pTrackText').textContent = e.target.files[0] ? 'Выбрано' : 'Секретный Трек';
+
+        document.getElementById('promoForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('pSubmitBtn'); btn.disabled = true; btn.innerText = "...";
+            const prog = document.getElementById('pProgressContainer'); const pBar = document.getElementById('pProgressBar');
+            prog.style.display = 'block'; pBar.style.width = '30%';
+
+            try {
+                const isCurrency = document.getElementById('pIsCurrency').checked;
+                const payload = {
+                    code: document.getElementById('pCode').value.trim(),
+                    title: document.getElementById('pTitle').value.trim(),
+                    is_currency: isCurrency
+                };
+
+                if (isCurrency) {
+                    payload.amount = Number(document.getElementById('pAmount').value) || 0;
+                    payload.max_uses = Number(document.getElementById('pUses').value) || null;
+                    payload.uses_left = payload.max_uses;
+                } else {
+                    pBar.style.width = '50%';
+                    payload.cover_url = await uploadToSupabaseStorage(document.getElementById('pCover').files[0], 'promos_media');
+                    pBar.style.width = '80%';
+                    payload.track_url = await uploadToSupabaseStorage(document.getElementById('pTrack').files[0], 'promos_media');
+                }
+
+                pBar.style.width = '90%';
+                const { error } = await supabaseClient.from('promos').insert([payload]);
+                
+                if (!error) { closeModal('promoModal'); loadPromos(); showToast('Код создан', 'success'); }
+                else { showToast('Ошибка: ' + error.message, 'error'); }
+            } catch(err) { showToast('Ошибка загрузки файлов', 'error'); }
+
+            pBar.style.width = '100%';
+            setTimeout(() => { prog.style.display = 'none'; pBar.style.width = '0%'; btn.disabled = false; btn.innerText = "Создать"; }, 500);
+        };
+
+        // Запуск сессии при старте
+        window.onload = () => { setTimeout(checkSession, 1000); };
     </script>
 </body>
 </html>
