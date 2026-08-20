@@ -20,7 +20,7 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ================ ПРОВЕРКА АДМИНИСТРАТОРА (НОВАЯ СИСТЕМА) =================
+// ================= ПРОВЕРКА АДМИНИСТРАТОРА (НОВАЯ СИСТЕМА) =================
 // Этот роут дергает фронтенд админки. Если почта не совпадает - выкидываем.
 app.get('/api/admin/check', async (req, res) => {
     const authHeader = req.headers.authorization;
