@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROMOCODE | DXTR | SlizZe</title>
+    <title>PROMOCODE | Whunx | l1beral</title>
     <meta name="description" content="Секретная страница. Введите промокод для доступа к эксклюзивным материалам.">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -267,7 +267,7 @@
 
     <div class="top-controls">
         <a href="https://dxtrslizze.xyz/profile" class="profile-btn" title="Профиль">
-            <img src="../dslogo.png" alt="Profile" id="userAvatar">
+            <img src="/dslogo.png" alt="Profile" id="userAvatar">
         </a>
     </div>
 
@@ -289,7 +289,7 @@
             <div class="hero-release" id="snippetHero">
                 <div class="hero-cover-wrap">
                     <div class="cover-placeholder" id="coverPlaceholder"><i class="fa-solid fa-question"></i></div>
-                    <img src="" id="realCover" alt="Cover" onerror="this.src='../dslogo.png'">
+                    <img src="" id="realCover" alt="Cover" onerror="this.src='/dslogo.png'">
                 </div>
                 <div class="hero-info">
                     <div class="hero-badge locked-badge" id="lockBadge"><i class="fa-solid fa-lock"></i> Контент заблокирован</div>
@@ -314,7 +314,7 @@
         <div class="chat-header" id="chat-header">
             <div class="chat-header-info">
                 <i class="fa-solid fa-grip-vertical drag-handle"></i>
-                <span class="chat-header-title">D&S Support</span>
+                <span class="chat-header-title">W&L Support</span>
             </div>
             <i class="fa-solid fa-xmark" id="chat-close"></i>
         </div>
@@ -436,7 +436,7 @@
         closeSidebar.onclick = toggleMenu;
         sidebarOverlay.onclick = toggleMenu;
 
-        // ========== ЧАТ + АВТОРИЗАЦИЯ (ЛОГИКА ИЗ ГЛАВНОЙ СТРАНИЦЫ) ==========
+        // ========== ЧАТ + АВТОРИЗАЦИЯ ==========
         const chatWindow = document.getElementById('chat-window');
         const chatClose = document.getElementById('chat-close');
         const chatMessages = document.getElementById('chat-messages');
@@ -450,7 +450,6 @@
         const token = localStorage.getItem('dxtr_token');
         let isAuthUser = !!token;
 
-        // Блокировка чата для гостей
         function lockChatForGuests() {
             if (chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо войти в аккаунт на странице <a href='https://dxtrslizze.xyz/profile' style='color:#00ff66;'>Профиля</a>.</b>";
             if (chatInput) {
@@ -465,11 +464,10 @@
             }
         }
 
-        // Проверка токена и загрузка аватара (как на главной)
         window.onload = async () => {
             if (token) {
                 try {
-                    const res = await fetch("https://dxtrslizze.onrender.com/api/auth/me", {
+                    const res = await fetch(`${API_URL}/auth/me`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const data = await res.json();
@@ -492,7 +490,6 @@
             }
         };
 
-        // Socket.io — подключение с токеном (как на главной)
         const socket = io("https://dxtrslizze.onrender.com/");
 
         socket.on('connect', () => {
@@ -559,7 +556,6 @@
         socket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
         socket.on('chat_closed_reset', () => { showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double"); });
 
-        // Открытие чата из сайдбара
         sidebarSupportBtn.onclick = (e) => {
             e.preventDefault();
             toggleMenu();
@@ -574,7 +570,6 @@
         };
         chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        // Drag and drop для чата
         let isDraggingChat = false, chatOffX, chatOffY;
         chatHeader.addEventListener('mousedown', e => {
             if (window.innerWidth <= 600 || e.target.id === 'chat-close') return;
@@ -596,7 +591,6 @@
         });
         document.addEventListener('mouseup', () => isDraggingChat = false);
 
-        // Отправка сообщений
         if (chatSendBtn) chatSendBtn.onclick = sendMessage;
         if (chatInput) chatInput.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
 
@@ -658,7 +652,6 @@
             }, 500);
         }
 
-        // Восстановление истории чата
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
 
         // ========== ПРОМОКОД (СВЯЗЬ С СЕРВЕРОМ) ==========
@@ -691,18 +684,15 @@
                 const data = await res.json();
                 
                 if (res.ok) {
-                    // 1. ЛОГИКА ДЛЯ ДЕНЕЖНОГО ПРОМОКОДА
-                    if (data.type === 'money' || data.amount !== undefined) {
+                    if (data.isCurrency) {
                         promoSubmit.innerHTML = '<i class="fa-solid fa-check"></i>';
                         promoError.style.color = 'var(--neon-green)'; 
-                        promoError.textContent = data.message || `УСПЕХ! Зачислено: ${data.amount} NC`;
+                        promoError.textContent = `УСПЕХ! Зачислено: ${data.amount} NC`;
                         
-                        // --- Обновляем баланс в UI ---
-                        // Если сервер прислал обновленный итоговый баланс:
-                        if (data.dscoin_balance !== undefined) {
+                        // Если мы реализуем получение баланса
+                        if (data.dscoin_balance !== undefined && typeof updateBalance === 'function') {
                             updateBalance(data.dscoin_balance);
                         }
-                        // -----------------------------
 
                         promoError.classList.add('visible');
                         
@@ -720,11 +710,8 @@
                         return;
                     }
 
-                    // 2. СТАРАЯ ЛОГИКА ДЛЯ СЕКРЕТНОГО ТРЕКА
-                    const BASE_URL = "https://dxtrslizze.onrender.com";
-                    
                     try {
-                        const audioRes = await fetch(BASE_URL + data.trackUrl);
+                        const audioRes = await fetch(data.trackUrl);
                         const audioBlob = await audioRes.blob();
                         
                         if (currentAudioBlobUrl) URL.revokeObjectURL(currentAudioBlobUrl);
@@ -734,11 +721,11 @@
                         audioObj.src = currentAudioBlobUrl;
                         audioObj.load();
                     } catch(e) {
-                        document.getElementById('snippetAudio').src = BASE_URL + data.trackUrl;
+                        document.getElementById('snippetAudio').src = data.trackUrl;
                     }
 
                     document.getElementById('trackTitle').textContent = data.title;
-                    document.getElementById('realCover').src = BASE_URL + data.coverUrl;
+                    document.getElementById('realCover').src = data.coverUrl;
                     
                     promoSubmit.innerHTML = '<i class="fa-solid fa-terminal"></i>';
                     
