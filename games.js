@@ -17,11 +17,14 @@ let musicCache = { data: [], lastFetch: 0 };
 module.exports = function(app, UserMongo, supabase) {
 
     // ══════════════════════════════════════════════════════════════
-    // БЕЗОПАСНОЕ СОХРАНЕНИЕ В SUPABASE
+    // БЕЗОПАСНОЕ СОХРАНЕНИЕ В SUPABASE (ФИКС)
     // ══════════════════════════════════════════════════════════════
     async function saveUser(user, updates) {
         const { error } = await supabase.from('g_users').update(updates).eq('id', user.id);
-        if (error) console.error("Ошибка сохранения в БД:", error.message);
+        if (error) {
+            console.error("КРИТИЧЕСКАЯ ОШИБКА СОХРАНЕНИЯ:", error.message, "Попытка записать:", updates);
+            throw new Error("Сбой транзакции БД");
+        }
         Object.assign(user, updates);
     }
 
