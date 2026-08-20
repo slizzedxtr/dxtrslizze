@@ -158,7 +158,7 @@ io.on('connection', (socket) => {
             if (dbUser.ban_expire_at !== 0 && dbUser.ban_expire_at < Date.now()) {
                 await supabase.from('g_users').update({ is_banned: false, ban_expire_at: 0 }).eq('id', dbUser.id);
                 socket.emit('ban_status', { isBanned: false });
-                sendToUser(dbUser.id, "Ограничение снято. Приятного пользования!", 'success', null, null);
+                sendToUser(dbUser.id, "Ограничение снято. Не повторяйте ошибок!", 'success', null, null);
             } else {
                 socket.emit('ban_status', { isBanned: true });
                 return;
@@ -226,12 +226,12 @@ bot.on('callback_query', async (query) => {
         const userId = query.data.replace('closechat_', '');
         io.to(userId).emit('chat_closed_solved'); 
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
-        bot.answerCallbackQuery(query.id, { text: "Чат закрыт." });
+        bot.answerCallbackQuery(query.id, { text: "Чат закрыт администратором." });
     }
 
     if (query.data.startsWith('spam_')) {
         const userId = query.data.replace('spam_', '');
-        await sendToUser(userId, "Пожалуйста, не присылайте бессмысленные сообщения.", 'warning', query.message.message_id, "Spam-фильтр");
+        await sendToUser(userId, "Пожалуйста, не присылайте сообщения не связанные с тематикой сайта или не имеющие смысла в общем.", 'warning', query.message.message_id, "Spam-фильтр");
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
         bot.answerCallbackQuery(query.id, { text: "Отправлено" });
     }
@@ -240,7 +240,7 @@ bot.on('callback_query', async (query) => {
         const isPerm = query.data.startsWith('banperm_');
         const userId = query.data.replace(isPerm ? 'banperm_' : 'ban1h_', '');
         const expireAt = isPerm ? 0 : Date.now() + 3600000;
-        const banMsg = isPerm ? "Вам НАВСЕГДА перекрыт доступ к техподдержке." : "Бан чата на 1 час.";
+        const banMsg = isPerm ? "Вам НАВСЕГДА заблокирован доступ к тех.поддержке." : "Вам заблокирован доступ к чату тех.поддержки сроком на 1 час.";
         
         const { data: mapped } = await supabase.from('support_mappings').select('*').eq('tg_msg_id', query.message.message_id).single();
         const reason = mapped ? mapped.text : "Нарушение правил";
@@ -268,7 +268,7 @@ bot.on('callback_query', async (query) => {
         const userId = query.data.replace('unban_', '');
         await supabase.from('g_users').update({ is_banned: false }).eq('id', userId);
         io.to(userId).emit('ban_status', { isBanned: false });
-        await sendToUser(userId, "Ограничение снято.", 'success', null, null);
+        await sendToUser(userId, "Ограничение досрочно снято администратором, более не нарушайте.", 'success', null, null);
         bot.answerCallbackQuery(query.id, {text: "Разблокирован!"});
         sendBannedMenu(adminId, query.message.message_id);
     }
