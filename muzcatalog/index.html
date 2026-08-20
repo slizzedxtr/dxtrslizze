@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DXTR | SlizZe - Музыкальный каталог</title>
-    <meta name="description" content="Официальный каталог треков DXTR и SlizZe. Слушай и скачивай музыку в высоком качестве.">
+    <title>Whunx | l1beral - Музыкальный каталог</title>
+    <meta name="description" content="Официальный каталог треков Whunx и l1beral. Слушай и скачивай музыку в высоком качестве.">
     <link rel="icon" type="image.png" href="../dslogo.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800;900&display=swap" rel="stylesheet">
@@ -524,11 +524,11 @@
         <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
             МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.5rem; cursor: pointer; color: white; transition: 0.3s;"></i>
         </div>
-        <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home icon-main"></i> Главная</a>
-        <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link active"><i class="fa-solid fa-music icon-main"></i> Муз. каталог</a>
-        <a href="https://dxtrslizze.xyz/games" class="sidebar-link"><i class="fa-solid fa-gamepad icon-main"></i> Игры</a>
-        <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info icon-main"></i> О нас</a>
-        <a href="https://dxtrslizze.xyz/shop" class="sidebar-link"><i class="fa-solid fa-store icon-main"></i> Магазин</a>
+        <a href="https://whuberal.com/" class="sidebar-link"><i class="fa-solid fa-home icon-main"></i> Главная</a>
+        <a href="https://whuberal.com/muzcatalog/" class="sidebar-link active"><i class="fa-solid fa-music icon-main"></i> Муз. каталог</a>
+        <a href="https://whuberal.com/games" class="sidebar-link"><i class="fa-solid fa-gamepad icon-main"></i> Игры</a>
+        <a href="https://whuberal.com/about" class="sidebar-link"><i class="fa-solid fa-circle-info icon-main"></i> О нас</a>
+        <a href="https://whuberal.com/shop" class="sidebar-link"><i class="fa-solid fa-store icon-main"></i> Магазин</a>
         <a href="#" class="sidebar-link" id="sidebarSupportBtn">
             <i class="fa-solid fa-headset icon-main"></i> Тех. поддержка
             <i class="fa-solid fa-lock" id="menuBanLock"></i>
@@ -540,17 +540,17 @@
             <div class="pulse-dot"></div>
             <div class="online-text"><span class="online-num" id="onlineCount">1</span><span class="online-word"> онлайн</span></div>
         </div>
-        <a href="https://dxtrslizze.xyz/profile" class="profile-btn" title="Профиль">
+        <a href="https://whuberal.com/profile" class="profile-btn" title="Профиль">
             <img src="../dslogo.png" alt="Profile" id="userAvatar">
         </a>
     </div>
 
     <nav class="top-nav fade-in">
-        <a href="https://dxtrslizze.xyz/" class="nav-link">Главная</a>
-        <a href="https://dxtrslizze.xyz/muzcatalog/" class="nav-link active">Муз. каталог</a>
-        <a href="https://dxtrslizze.xyz/games" class="nav-link">Игры</a>
-        <a href="https://dxtrslizze.xyz/about" class="nav-link">О нас</a>
-        <a href="https://dxtrslizze.xyz/shop" class="nav-link">Магазин</a>
+        <a href="https://whuberal.com/" class="nav-link">Главная</a>
+        <a href="https://whuberal.com/muzcatalog/" class="nav-link active">Муз. каталог</a>
+        <a href="https://whuberal.com/games" class="nav-link">Игры</a>
+        <a href="https://whuberal.com/about" class="nav-link">О нас</a>
+        <a href="https://whuberal.com/shop" class="nav-link">Магазин</a>
     </nav>
 
     <!-- ОБНОВЛЕННАЯ МОДАЛКА ПЛОЩАДОК -->
@@ -593,7 +593,7 @@
     </div>
 
     <header class="fade-in">
-        <h1>MUZ CATALOG</h1>
+        <h1>WHUTALOG</h1>
         <p>Все треки в одном месте. Слушай. Скачивай. Наслаждайся.</p>
     </header>
 
@@ -618,7 +618,7 @@
     </main>
 
     <footer>
-        <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; letter-spacing: 1px;">© 2026 DXTR | SlizZe</p>
+        <p style="color: var(--text-muted); font-size: 0.9rem; font-weight: 600; letter-spacing: 1px;">© 2026 Whunx | l1beral</p>
     </footer>
 
     <audio id="globalAudio" preload="metadata"></audio>
@@ -646,7 +646,7 @@
                         <div class="gp-title" id="gpTitle">Загрузка...</div>
                         <span class="badge-18" id="gpBadge18" style="display: none;">18+</span>
                     </div>
-                    <div class="gp-artist" id="gpArtist">DXTR feat. SlizZe</div>
+                    <div class="gp-artist" id="gpArtist">Whunx & l1beral</div>
                 </div>
             </div>
 
@@ -790,7 +790,7 @@
                                 ${explicitBadge}
                                 ${mainBadge}
                             </div>
-                            <div class="ci-artist">${track.authors || 'DXTR feat. SlizZe'}</div>
+                            <div class="ci-artist">${track.authors || 'Whunx & l1beral'}</div>
                             <div class="ci-player-controls">
                                 <div class="progress-container" data-index="${index}" onclick="event.stopPropagation()">
                                     <div class="progress-bar" id="cardBar-${index}"></div>
@@ -801,7 +801,7 @@
                         <div class="ci-right">
                             <a href="${track.yt_link}" target="_blank" class="action-btn-sm yt-btn" onclick="event.stopPropagation();"><i class="fa-brands fa-youtube"></i> Клип</a>
                             ${pltBtn}
-                            <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); handleDownload(this, '${track.title.replace(/'/g, "\\'")}', '${(track.authors || 'DXTR feat. SlizZe').replace(/'/g, "\\'")}', '${track.mp3_url}')"><i class="fa-solid fa-download"></i> Скачать</button>
+                            <button class="action-btn-sm dl-btn" onclick="event.stopPropagation(); handleDownload(this, '${track.title.replace(/'/g, "\\'")}', '${(track.authors || 'Whunx & l1beral').replace(/'/g, "\\'")}', '${track.mp3_url}')"><i class="fa-solid fa-download"></i> Скачать</button>
                         </div>
                     </div>
                 `;
@@ -942,7 +942,7 @@
 
                 globalAudio.src = tracks[index].mp3_url;
                 document.getElementById('gpTitle').textContent = tracks[index].title;
-                document.getElementById('gpArtist').textContent = tracks[index].authors || 'DXTR feat. SlizZe';
+                document.getElementById('gpArtist').textContent = tracks[index].authors || 'Whunx & l1beral';
                 document.getElementById('gpCover').src = tracks[index].cover_url;
                 
                 gpBgGlow.style.backgroundImage = `url('${tracks[index].cover_url}')`;
@@ -1353,7 +1353,7 @@
         let currentSessionToken = null;
 
         function lockChatForGuests() {
-            if(chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо войти в аккаунт на странице <a href='https://dxtrslizze.xyz/profile' style='color:var(--accent-purple);'>Профиля</a>.</b>";
+            if(chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо войти в аккаунт на странице <a href='https://whuberal.com/profile' style='color:var(--accent-purple);'>Профиля</a>.</b>";
             if(chatInput) {
                 chatInput.disabled = true;
                 chatInput.placeholder = "Необходима авторизация";
