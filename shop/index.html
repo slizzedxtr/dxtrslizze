@@ -33,7 +33,7 @@
         }
 
         html, body { scrollbar-width: none; -ms-overflow-style: none; overflow-x: hidden; }
-        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+        html::-webkit-scrollbar { display: none; }
 
         body {
             font-family: 'Montserrat', sans-serif;
@@ -66,7 +66,7 @@
         @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadeOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
 
-        /* ── НАВИГАЦИЯ И БУРГЕР ── */
+        /* ── МЕНЮ И ШАПКА ── */
         .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: var(--glass-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.1rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
 
@@ -78,53 +78,46 @@
         .sidebar-link:hover i, .sidebar-link.active i { color: var(--accent-gold); }
         .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
-        #menuBanLock { color: var(--error); font-size: 1rem; text-shadow: 0 0 10px rgba(239, 68, 68, 0.8); margin-left: auto; display: none; animation: pulseRed 2s infinite; }
-        @keyframes pulseRed { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        /* ── ТОП-КОНТРОЛЫ ── */
         .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 12px; }
         .online-counter { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; white-space: nowrap; }
         .pulse-dot { width: 10px; height: 10px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: pulseGreen 2s infinite; }
         @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
         .online-num { color: var(--text-main); font-weight: 800; font-size: 0.85rem; }
+
         .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--glass-border); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-body); transition: 0.3s; text-decoration: none; cursor: pointer; }
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
         .profile-btn:hover { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); transform: scale(1.05); }
 
         /* ── ЧАТ ТЕХПОДДЕРЖКИ ── */
-        #chat-window { display: none; position: fixed; bottom: 30px; right: 30px; width: 360px; height: 500px; flex-direction: column; overflow: hidden; background: rgba(15, 15, 20, 0.9); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); z-index: 9999; }
-        .chat-header { background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--glass-border); color: #fff; padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2; cursor: grab; }
+        #chat-window { display: none; position: fixed; bottom: 30px; right: 30px; width: 360px; height: 500px; flex-direction: column; overflow: hidden; background: rgba(15, 15, 20, 0.9); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); z-index: 9999; }
+        .chat-header { background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--glass-border); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2; cursor: grab; }
         .chat-header:active { cursor: grabbing; }
         .chat-header-title { font-weight: 800; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-purple); }
-        #chat-close { cursor: pointer; font-size: 1.4rem; transition: 0.3s; color: rgba(255,255,255,0.5); line-height: 1; padding: 5px; }
+        #chat-close { cursor: pointer; font-size: 1.4rem; transition: 0.3s; color: rgba(255,255,255,0.5); padding: 5px; line-height: 1; }
         #chat-close:hover { color: var(--error); }
         #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem; scroll-behavior: smooth; }
         #chat-messages::-webkit-scrollbar { width: 4px; } #chat-messages::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
         .chat-system-msg { color: var(--text-muted); text-align: center; font-size: 0.75rem; font-weight: 600; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.02); text-transform: uppercase; letter-spacing: 1px; }
-        .chat-system-ban { color: var(--error); text-align: center; font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; padding: 12px; border: 1px solid var(--error); border-radius: 10px; background: rgba(239,68,68,0.1); display: none; }
         .chat-msg-wrapper { display: flex; flex-direction: column; animation: fadeIn 0.3s ease forwards; }
-        .chat-msg-name { font-size: 0.7rem; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
         .chat-msg-bubble { padding: 12px 16px; border-radius: 14px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.4; font-weight: 500; }
-        .msg-user { align-items: flex-end; } .msg-user .chat-msg-name { color: var(--accent-gold); } .msg-user .chat-msg-bubble { background: var(--accent-purple); border-bottom-right-radius: 2px; }
-        .msg-bot { align-items: flex-start; } .msg-bot .chat-msg-name { color: var(--accent-purple); } .msg-bot .chat-msg-bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
+        .msg-user { align-items: flex-end; } .msg-user .chat-msg-name { color: var(--accent-gold); font-size: 0.7rem; font-weight: 700; margin-bottom: 5px; text-transform: uppercase;} .msg-user .chat-msg-bubble { background: var(--accent-purple); border-bottom-right-radius: 2px; }
+        .msg-bot { align-items: flex-start; } .msg-bot .chat-msg-name { color: var(--accent-purple); font-size: 0.7rem; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; } .msg-bot .chat-msg-bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
         .chat-input-area { padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); }
-        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; }
+        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; padding: 12px 15px; border-radius: 12px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; }
         #chat-input:focus { border-color: var(--accent-purple); }
-        #chat-send { background: var(--accent-purple); border: none; color: #fff; width: 48px; height: 48px; border-radius: 14px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        #chat-send { background: var(--accent-purple); border: none; color: #fff; width: 48px; height: 48px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
         #chat-send:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 5px 15px var(--accent-purple-glow); }
-        .chat-resolved-status { text-align: center; margin-top: auto; padding: 25px 20px; border: 1px solid var(--success); border-radius: 16px; background: rgba(16, 185, 129, 0.05); animation: fadeIn 0.5s ease forwards; }
-        .chat-resolved-icon { font-size: 2.5rem; color: var(--success); margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4)); }
-        .chat-resolved-title { color: var(--success); font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* ── МОДАЛКА ВХОДА GOOGLE ── */
+        /* ── МОДАЛКА ВХОДА ── */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; }
-        .install-box { background: rgba(10, 10, 15, 0.95); border: 1px solid var(--glass-border); border-radius: 28px; padding: 40px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.8); position: relative; }
-        .install-box i.fa-user-astronaut { font-size: 3.5rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); }
-        .install-box h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .install-box p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
+        .install-box { background: rgba(10, 10, 15, 0.95); border: 1px solid var(--glass-border); border-radius: 24px; padding: 40px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative; }
+        .install-box i.fa-user-astronaut { font-size: 3rem; color: var(--accent-purple); margin-bottom: 15px; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); }
+        .install-box h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+        .install-box p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5; }
         .install-close { position: absolute; top: 20px; right: 25px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; line-height: 1;}
-        .install-close:hover { color: var(--error); transform: rotate(90deg); }
-        .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); color: #fff; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; margin: 0 auto; position: relative; }
+        .install-close:hover { color: var(--error); }
+        .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; margin: 0 auto; position: relative; }
         .google-login-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
         .google-login-btn img { width: 22px; height: 22px; }
 
@@ -172,22 +165,45 @@
 
         .dev-subtitle { font-size: 0.95rem; color: var(--text-muted); font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; line-height: 1.6; }
 
-        .progress-container {
-            width: 100%; height: 8px; background: rgba(0, 0, 0, 0.4); border-radius: 10px;
-            border: 1px solid var(--glass-border); overflow: hidden; margin-bottom: 45px; position: relative;
+        /* ИСПРАВЛЕННЫЙ ПРОГРЕСС БАР */
+        .dev-progress-box {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 45px;
+            position: relative;
+            /* Убрали overflow: hidden, чтобы точка не срезалась */
         }
 
-        .progress-fill {
-            height: 100%; width: 65%; /* Визуальный прогресс */
+        .dev-progress-fill {
+            height: 100%;
+            width: 65%; /* Визуальный прогресс */
             background: linear-gradient(90deg, var(--accent-purple), var(--accent-gold));
-            border-radius: 10px; box-shadow: 0 0 15px var(--accent-purple-glow);
-            animation: loadingPulse 2s infinite ease-in-out; position: relative;
+            border-radius: 10px;
+            box-shadow: 0 0 15px var(--accent-purple-glow);
+            position: relative;
+            animation: pulseBar 2s infinite ease-in-out;
         }
-        .progress-fill::after {
-            content: ''; position: absolute; right: -5px; top: -4px; width: 16px; height: 16px;
-            background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+
+        .dev-progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -8px; /* Выносим точку за край заливки */
+            top: -4px;  /* Центрируем (16px высота точки минус 8px высота бара) / 2 */
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 20px var(--accent-gold);
         }
-        @keyframes loadingPulse { 0% { filter: brightness(1); } 50% { filter: brightness(1.3); box-shadow: 0 0 25px var(--accent-gold-glow); } 100% { filter: brightness(1); } }
+
+        @keyframes pulseBar {
+            0% { filter: brightness(1); box-shadow: 0 0 15px var(--accent-purple-glow); }
+            50% { filter: brightness(1.2); box-shadow: 0 0 25px var(--accent-gold-glow); }
+            100% { filter: brightness(1); box-shadow: 0 0 15px var(--accent-purple-glow); }
+        }
 
         .back-btn {
             display: inline-flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
@@ -212,7 +228,7 @@
         }
         @keyframes slideUpMobile { from { transform: translateY(100%); } to { transform: translateY(0); } }
     </style>
-
+    
     <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -249,7 +265,6 @@
         <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-users icon-main"></i> О нас</a>
         <a href="#" class="sidebar-link" id="sidebarSupportBtn">
             <i class="fa-solid fa-headset icon-main"></i> Поддержка
-            <i class="fa-solid fa-lock" id="menuBanLock" style="display:none; color:var(--error); margin-left:auto;"></i>
         </a>
     </div>
 
@@ -297,8 +312,9 @@
                 <h1 class="dev-title">ДОСТУП ЗАКРЫТ</h1>
                 <p class="dev-subtitle">Сектор находится в стадии активной разработки и компиляции.</p>
                 
-                <div class="loading-bar-container">
-                    <div class="progress-fill"></div>
+                <!-- ИСПРАВЛЕННЫЙ ПРОГРЕСС БАР -->
+                <div class="dev-progress-box">
+                    <div class="dev-progress-fill"></div>
                 </div>
 
                 <a href="https://dxtrslizze.xyz/" class="back-btn">
@@ -460,7 +476,7 @@
         if (profileBtnLink) {
             profileBtnLink.onclick = (e) => {
                 if (!isAuthUser) { e.preventDefault(); openLoginModal(); }
-                else { window.location.href = '/profile'; }
+                else { window.location.href = 'https://dxtrslizze.xyz/profile'; }
             };
         }
 
@@ -485,19 +501,12 @@
                 if(el) el.textContent = c + ' ОНЛАЙН';
             });
             
-            const chatBanNotice = document.getElementById('chatBanNotice');
-            const menuBanLock = document.getElementById('menuBanLock');
-
             socket.on('ban_status', d => { 
                 if (d.isBanned) { 
-                    if(menuBanLock) menuBanLock.style.display = 'inline-block';
-                    if(chatBanNotice) chatBanNotice.style.display = 'block'; 
                     if(chatGreeting) chatGreeting.style.display = 'none'; 
                     if(chatInput) { chatInput.disabled = true; chatInput.placeholder = "Доступ ограничен."; chatInput.style.borderColor = "var(--error)"; }
                     if(chatSendBtn) { chatSendBtn.disabled = true; chatSendBtn.style.background = 'rgba(255,255,255,0.05)'; chatSendBtn.style.color = '#555'; }
                 } else { 
-                    if(menuBanLock) menuBanLock.style.display = 'none';
-                    if(chatBanNotice) chatBanNotice.style.display = 'none'; 
                     if(chatGreeting && isAuthUser) chatGreeting.style.display = 'block'; 
                     if(chatInput && isAuthUser) { chatInput.disabled = false; chatInput.placeholder = "Опишите проблему..."; chatInput.style.borderColor = "var(--glass-border)"; }
                     if(chatSendBtn && isAuthUser) { chatSendBtn.disabled = false; chatSendBtn.style.background = 'var(--accent-purple)'; chatSendBtn.style.color = '#fff'; }
@@ -568,7 +577,7 @@
                 localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); 
             } 
         }
-        
+
         function showChatClosedAnimation(titleHtml, iconClass) {
             const inputArea = document.getElementById('chat-input-area');
             if(inputArea) inputArea.style.opacity = "0";
@@ -584,7 +593,7 @@
                 if(msgsContainer) { msgsContainer.appendChild(statusBlock); msgsContainer.scrollTop = msgsContainer.scrollHeight; }
             }, 500); 
         }
-
+        
         (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
     </script>
 </body>
