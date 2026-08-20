@@ -26,27 +26,74 @@ app.get('/api/admin/check', async (req, res) => {
     if (!authHeader) return res.status(401).json({ error: 'Нет токена авторизации' });
 
     const jwtToken = authHeader.split(' ')[1];
-    
     const { data: { user }, error } = await supabase.auth.getUser(jwtToken);
+    
     if (error || !user) return res.status(401).json({ error: 'Неверный токен' });
-
-    if (user.email !== 'slizzedxtr@gmail.com') {
-        return res.status(403).json({ error: 'Доступ запрещен: нет прав администратора.' });
-    }
+    if (user.email !== 'slizzedxtr@gmail.com') return res.status(403).json({ error: 'Доступ запрещен.' });
 
     res.json({ success: true, message: 'Доступ разрешен.' });
 });
 
-// ================= ПУБЛИЧНЫЕ ПРОМО-МАРШРУТЫ =================
+// ================= ПУБЛИЧНЫЕ ПРОМО-МАРШРУТЫ (С НАЧИСЛЕНИЕМ) =================
 app.get('/api/check/:code', async (req, res) => {
-    const { data: promo, error } = await supabase.from('promos').select('*').eq('code', req.params.code).single();
+    // 1. Пытаемся понять, кто запрашивает промокод
+    const authHeader = req.headers.authorization;
+    let userId = null;
+    if (authHeader) {
+        const token = authHeader.split(' ')[1];
+        const { data: { user } } = await supabase.auth.getUser(token);
+        if (user) userId = user.id;
+    }
+
+    const promoCode = req.params.code;
+    const { data: promo, error } = await supabase.from('promos').select('*').eq('code', promoCode).single();
     
-    if (error || !promo) return res.status(404).json({ error: 'Неверный код' });
+    if (error || !promo) return res.status(404).json({ error: 'Данный промокод не существует' });
     
+    // Если это промокод на валюту
     if (promo.is_currency) {
-        res.json({ title: promo.title, isCurrency: true, amount: promo.amount, usesLeft: promo.uses_left });
+        if (!userId) return res.status(401).json({ error: 'Для активации необходимо войти в аккаунт' });
+
+        // Проверка: Использовал ли юзер этот код ранее?
+        const { data: used } = await supabase.from('used_promos').select('*').eq('user_id', userId).eq('promo_code', promo.code).single();
+        if (used) return res.status(400).json({ error: 'Вы уже использовали этот код' });
+
+        // Проверка: Закончились ли лимиты?
+        if (promo.max_uses > 0 && promo.uses_left <= 0) {
+            return res.status(400).json({ error: 'Лимит активаций этого кода исчерпан' });
+        }
+
+        // Выдаем награду
+        const { data: dbUser } = await supabase.from('g_users').select('dscoin_balance').eq('id', userId).single();
+        const currentBalance = Number(dbUser?.dscoin_balance) || 0;
+        const newBalance = currentBalance + Number(promo.amount);
+
+        // Сохраняем новый баланс
+        await supabase.from('g_users').update({ dscoin_balance: newBalance }).eq('id', userId);
+
+        // Отнимаем использование (если лимит установлен)
+        if (promo.max_uses > 0) {
+            await supabase.from('promos').update({ uses_left: promo.uses_left - 1 }).eq('code', promo.code);
+        }
+
+        // Записываем, что юзер забрал код
+        await supabase.from('used_promos').insert([{ user_id: userId, promo_code: promo.code }]);
+
+        return res.json({ 
+            title: promo.title, 
+            isCurrency: true, 
+            amount: promo.amount, 
+            dscoin_balance: newBalance,
+            message: `УСПЕХ! Зачислено: ${promo.amount} NC`
+        });
     } else {
-        res.json({ title: promo.title, isCurrency: false, coverUrl: promo.cover_url, trackUrl: promo.track_url });
+        // Если это секретный трек (медиа-промокод)
+        res.json({ 
+            title: promo.title, 
+            isCurrency: false, 
+            coverUrl: promo.cover_url, 
+            trackUrl: promo.track_url 
+        });
     }
 });
 
@@ -111,7 +158,7 @@ io.on('connection', (socket) => {
             if (dbUser.ban_expire_at !== 0 && dbUser.ban_expire_at < Date.now()) {
                 await supabase.from('g_users').update({ is_banned: false, ban_expire_at: 0 }).eq('id', dbUser.id);
                 socket.emit('ban_status', { isBanned: false });
-                sendToUser(dbUser.id, "Ограничение снято. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
+                sendToUser(dbUser.id, "Ограничение снято. Приятного пользования!", 'success', null, null);
             } else {
                 socket.emit('ban_status', { isBanned: true });
                 return;
@@ -140,11 +187,7 @@ io.on('connection', (socket) => {
             if (error || !user) return;
 
             const { data: dbUser } = await supabase.from('g_users').select('*').eq('id', user.id).single();
-            
-            if (dbUser.is_banned) {
-                if (dbUser.ban_expire_at === 0 || dbUser.ban_expire_at > Date.now()) return;
-                else await supabase.from('g_users').update({ is_banned: false }).eq('id', dbUser.id);
-            }
+            if (dbUser.is_banned) return;
 
             const nickStr = dbUser.nickname ? ` (<b>${dbUser.nickname}</b>)` : '';
             const tgText = `🌐 <b>Новый запрос с сайта!</b>\n\n💬 <i>«${data.text}»</i>\n\n👤 ID: <code>${dbUser.id}</code>${nickStr}\n➖➖➖➖➖➖➖➖➖\n💡 <i>Ответь реплаем (или используй /nick для имени), либо выбери действие:</i>`;
@@ -161,9 +204,7 @@ io.on('connection', (socket) => {
             }).then(async (msg) => {
                 await supabase.from('support_mappings').insert([{ tg_msg_id: msg.message_id, user_id: dbUser.id, text: data.text }]);
             });
-        } catch (err) {
-            console.error("Ошибка чата:", err.message);
-        }
+        } catch (err) { console.error("Ошибка чата:", err.message); }
     });
 });
 
@@ -174,13 +215,10 @@ bot.on('callback_query', async (query) => {
     if (query.data.startsWith('delavatar_')) {
         const userId = query.data.replace('delavatar_', '');
         await supabase.from('g_users').update({ avatar_url: '/dslogo.png' }).eq('id', userId);
-        
-        const warningMsg = `Ваш аватар был удалён. Аватар не должен содержать:\nКровь\nСцены насилия\n18+ контент\n\nАдминистрация оставляет за собой право удалить ваш аватар без объяснения причины.`;
+        const warningMsg = `Ваш аватар был удалён администрацией.`;
         await sendToUser(userId, warningMsg, 'warning', query.message.message_id, "Удаление аватара");
-        
         io.to(userId).emit('user_data', { avatarUrl: '/dslogo.png' });
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
-        bot.sendMessage(adminId, "✅ <b>Аватар пользователя успешно удален.</b>", { parse_mode: 'HTML', reply_to_message_id: query.message.message_id });
         bot.answerCallbackQuery(query.id, { text: "Аватар удален!" });
     }
     
@@ -188,12 +226,12 @@ bot.on('callback_query', async (query) => {
         const userId = query.data.replace('closechat_', '');
         io.to(userId).emit('chat_closed_solved'); 
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
-        bot.answerCallbackQuery(query.id, { text: "Чат закрыт, юзер уведомлен." });
+        bot.answerCallbackQuery(query.id, { text: "Чат закрыт." });
     }
 
     if (query.data.startsWith('spam_')) {
         const userId = query.data.replace('spam_', '');
-        await sendToUser(userId, "Пожалуйста, не присылайте сообщения, которые не имеют смысла или не связаны с темой сайта.", 'warning', query.message.message_id, "Spam-фильтр");
+        await sendToUser(userId, "Пожалуйста, не присылайте бессмысленные сообщения.", 'warning', query.message.message_id, "Spam-фильтр");
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
         bot.answerCallbackQuery(query.id, { text: "Отправлено" });
     }
@@ -202,116 +240,46 @@ bot.on('callback_query', async (query) => {
         const isPerm = query.data.startsWith('banperm_');
         const userId = query.data.replace(isPerm ? 'banperm_' : 'ban1h_', '');
         const expireAt = isPerm ? 0 : Date.now() + 3600000;
-        const banMsg = isPerm ? "Вам НАВСЕГДА был перекрыт доступ к связи с тех. поддержкой." : "Вам был перекрыт доступ к связи с тех. поддержкой сроком на 1 час.";
+        const banMsg = isPerm ? "Вам НАВСЕГДА перекрыт доступ к техподдержке." : "Бан чата на 1 час.";
         
         const { data: mapped } = await supabase.from('support_mappings').select('*').eq('tg_msg_id', query.message.message_id).single();
         const reason = mapped ? mapped.text : "Нарушение правил";
 
-        await supabase.from('g_users').update({ 
-            is_banned: true, ban_expire_at: expireAt, ban_reason: reason, ban_duration_text: isPerm ? "Навсегда" : "1 час" 
-        }).eq('id', userId);
-        
+        await supabase.from('g_users').update({ is_banned: true, ban_expire_at: expireAt, ban_reason: reason, ban_duration_text: isPerm ? "Навсегда" : "1 час" }).eq('id', userId);
         io.to(userId).emit('ban_status', { isBanned: true });
         await sendToUser(userId, banMsg, 'warning', query.message.message_id, "Блокировка чата");
         
         bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
-        bot.answerCallbackQuery(query.id, { text: isPerm ? "Выдан перманентный бан чата" : "Выдан бан чата на 1 час" });
+        bot.answerCallbackQuery(query.id, { text: isPerm ? "Выдан пермач" : "Выдан бан на 1 час" });
     }
 
     if (query.data.startsWith('baninfo_')) {
         const userId = query.data.replace('baninfo_', '');
         const { data: user } = await supabase.from('g_users').select('*').eq('id', userId).single();
-        
-        if (!user || !user.is_banned) return bot.answerCallbackQuery(query.id, {text: "Пользователь уже разбанен"});
+        if (!user || !user.is_banned) return bot.answerCallbackQuery(query.id, {text: "Уже разбанен"});
 
-        const nick = user.nickname || "Без ника";
-        const text = `👤 <b>${nick}</b> (<code>${userId}</code>)\n\n💬 <b>Причина:</b> <i>"${user.ban_reason}"</i>\n⏳ <b>Срок:</b> ${user.ban_duration_text}`;
-        const opts = {
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [
-                    [{text: "🔓 Разблокировать", callback_data: `unban_${userId}`}],
-                    [{text: "🔙 Назад к списку", callback_data: `banlist`}]
-                ]
-            }
-        };
-        bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
+        const text = `👤 <b>${user.nickname || "Без ника"}</b>\n\n💬 <b>Причина:</b> <i>"${user.ban_reason}"</i>\n⏳ <b>Срок:</b> ${user.ban_duration_text}`;
+        bot.editMessageText(text, { chat_id: adminId, message_id: query.message.message_id, parse_mode: 'HTML', reply_markup: { inline_keyboard: [ [{text: "🔓 Разблокировать", callback_data: `unban_${userId}`}], [{text: "🔙 Назад", callback_data: `banlist`}] ] } });
     }
 
-    if (query.data === 'banlist') { sendBannedMenu(adminId, query.message.message_id); }
+    if (query.data === 'banlist') sendBannedMenu(adminId, query.message.message_id);
 
     if (query.data.startsWith('unban_')) {
         const userId = query.data.replace('unban_', '');
         await supabase.from('g_users').update({ is_banned: false }).eq('id', userId);
-        
         io.to(userId).emit('ban_status', { isBanned: false });
-        await sendToUser(userId, "Ограничение снято. Администратор досрочно снял блокировку с вас. Приятного пользования! И больше не нарушайте 🤫", 'success', null, null);
-
-        bot.answerCallbackQuery(query.id, {text: "Чат разблокирован!"});
+        await sendToUser(userId, "Ограничение снято.", 'success', null, null);
+        bot.answerCallbackQuery(query.id, {text: "Разблокирован!"});
         sendBannedMenu(adminId, query.message.message_id);
-    }
-
-    if (query.data === 'apbanlist') { sendApBannedMenu(adminId, query.message.message_id); }
-
-    if (query.data.startsWith('apbaninfo_')) {
-        const banId = query.data.replace('apbaninfo_', '');
-        const { data: ban } = await supabase.from('admin_bans').select('*').eq('id', banId).single();
-        
-        if (!ban || ban.expires_at < Date.now()) {
-            if (ban) await supabase.from('admin_bans').delete().eq('id', ban.id);
-            return bot.answerCallbackQuery(query.id, {text: "Пользователь уже разбанен (срок истек)"});
-        }
-
-        const { data: user } = await supabase.from('g_users').select('*').eq('id', ban.client_id).single();
-        const nick = (user && user.nickname) ? user.nickname : "Без ника";
-        const displayId = ban.client_id;
-
-        const timeLeft = Math.ceil((ban.expires_at - Date.now()) / 1000);
-        const m = Math.floor(timeLeft / 60);
-        const s = timeLeft % 60;
-        
-        const text = `🔐 <b>${nick}</b> (<code>${displayId}</code>)\n\n💬 <b>Причина:</b> <i>Многократные попытки входа в админ-панель</i>\n⏳ <b>Осталось до разбана:</b> ${m} мин ${s} сек`;
-        
-        const opts = {
-            parse_mode: 'HTML',
-            reply_markup: {
-                inline_keyboard: [
-                    [{text: "🔓 Разблокировать доступ", callback_data: `apunban_${ban.id}`}],
-                    [{text: "🔙 Назад к списку", callback_data: `apbanlist`}]
-                ]
-            }
-        };
-        bot.editMessageText(text, {chat_id: adminId, message_id: query.message.message_id, ...opts});
-    }
-
-    if (query.data.startsWith('apunban_') || query.data.startsWith('alert_apunban_')) {
-        const isAlert = query.data.startsWith('alert_apunban_');
-        const banId = query.data.replace(isAlert ? 'alert_apunban_' : 'apunban_', '');
-        
-        const { data: ban } = await supabase.from('admin_bans').select('*').eq('id', banId).single();
-        if (ban) {
-            await supabase.from('admin_bans').delete().eq('id', ban.id);
-            io.to(`admin_${ban.client_id}`).emit('admin_unbanned');
-        }
-
-        bot.answerCallbackQuery(query.id, {text: "Доступ в админку открыт!"});
-        
-        if (isAlert) {
-            bot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: adminId, message_id: query.message.message_id });
-            bot.sendMessage(adminId, "✅ <b>Доступ восстановлен.</b>", { parse_mode: 'HTML', reply_to_message_id: query.message.message_id });
-        } else {
-            sendApBannedMenu(adminId, query.message.message_id);
-        }
     }
 });
 
-// ================= TELEGRAM БОТ (MESSAGE) =================
+// ================= TELEGRAM БОТ (МЕССЕДЖИ) =================
 bot.on('message', async (msg) => {
     if (msg.from.id.toString() !== adminId.toString()) return;
     const text = msg.text || '';
 
     if (text === '/bans') { sendBannedMenu(msg.chat.id); return; }
-    if (text === '/apban') { sendApBannedMenu(msg.chat.id); return; }
 
     if (msg.reply_to_message) {
         const { data: mapped } = await supabase.from('support_mappings').select('*').eq('tg_msg_id', msg.reply_to_message.message_id).single();
@@ -323,21 +291,16 @@ bot.on('message', async (msg) => {
             const nick = text.replace('/nick ', '').trim();
             await supabase.from('g_users').update({ nickname: nick }).eq('id', userId);
             io.to(userId).emit('user_data', { nickname: nick });
-            bot.sendMessage(adminId, `✅ Никнейм <b>${nick}</b> сохранен в базе для ${userId}!`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
+            bot.sendMessage(adminId, `✅ Никнейм <b>${nick}</b> сохранен!`, { parse_mode: 'HTML', reply_to_message_id: msg.message_id });
             return;
         }
 
         if (text === '/ban 1h' || text === '/ban perm') {
             const isPerm = text === '/ban perm';
             const expireAt = isPerm ? 0 : Date.now() + 3600000;
-            const banMsg = isPerm ? "Вам НАВСЕГДА был перекрыт доступ к связи с тех. поддержкой." : "Вам был перекрыт доступ к связи с тех. поддержкой сроком на 1 час.";
-            
-            await supabase.from('g_users').update({ 
-                is_banned: true, ban_expire_at: expireAt, ban_reason: mapped.text, ban_duration_text: isPerm ? "Навсегда" : "1 час" 
-            }).eq('id', userId);
-
+            await supabase.from('g_users').update({ is_banned: true, ban_expire_at: expireAt, ban_reason: mapped.text, ban_duration_text: isPerm ? "Навсегда" : "1 час" }).eq('id', userId);
             io.to(userId).emit('ban_status', { isBanned: true });
-            await sendToUser(userId, banMsg, 'warning', msg.message_id, "Блокировка чата");
+            await sendToUser(userId, isPerm ? "Вам НАВСЕГДА перекрыт доступ." : "Бан на 1 час.", 'warning', msg.message_id, "Блокировка");
             return;
         }
 
@@ -379,42 +342,11 @@ async function sendBannedMenu(chatId, messageId = null) {
     const keyboard = [];
     for (const u of validBans) {
         const nick = u.nickname || "Без ника";
-        keyboard.push([{ text: `${nick} ( ${u.id.substring(0,8)}... )`, callback_data: `baninfo_${u.id}` }]);
+        keyboard.push([{ text: `${nick}`, callback_data: `baninfo_${u.id}` }]);
     }
 
     const opts = { reply_markup: { inline_keyboard: keyboard }, parse_mode: 'HTML' };
-    const title = "🚫 <b>Заблокированные в техподдержке:</b>";
-    
-    if (messageId) bot.editMessageText(title, { chat_id: chatId, message_id: messageId, ...opts });
-    else bot.sendMessage(chatId, title, opts);
-}
-
-async function sendApBannedMenu(chatId, messageId = null) {
-    const { data: adminBans } = await supabase.from('admin_bans').select('*');
-    const validBans = [];
-    const now = Date.now();
-    
-    for (const ban of (adminBans || [])) {
-        if (ban.expires_at < now) { await supabase.from('admin_bans').delete().eq('id', ban.id); } 
-        else { validBans.push(ban); }
-    }
-
-    if (validBans.length === 0) {
-        const text = "✅ Список заблокированных в админ-панели пуст.";
-        if (messageId) bot.editMessageText(text, { chat_id: chatId, message_id: messageId });
-        else bot.sendMessage(chatId, text);
-        return;
-    }
-
-    const keyboard = [];
-    for (const ban of validBans) {
-        const { data: user } = await supabase.from('g_users').select('*').eq('id', ban.client_id).single();
-        const nick = (user && user.nickname) ? user.nickname : "Без ника";
-        keyboard.push([{ text: `🔐 ${nick} ( ${ban.client_id.substring(0,8)}... )`, callback_data: `apbaninfo_${ban.id}` }]);
-    }
-
-    const opts = { reply_markup: { inline_keyboard: keyboard }, parse_mode: 'HTML' };
-    const title = "🔐 <b>Заблокированные в Админ-панели:</b>";
+    const title = "🚫 <b>Заблокированные:</b>";
     
     if (messageId) bot.editMessageText(title, { chat_id: chatId, message_id: messageId, ...opts });
     else bot.sendMessage(chatId, title, opts);
