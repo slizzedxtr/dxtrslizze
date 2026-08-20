@@ -4,163 +4,247 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>В РАЗРАБОТКЕ | DXTR | SlizZe</title>
+    <link rel="icon" type="image.png" href="/dslogo.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* БАЗОВЫЕ ПЕРЕМЕННЫЕ И ТЕМЫ */
         :root {
-            --bg-dark: #020602; --glass-bg: rgba(5, 15, 5, 0.7); --text-main: #ffffff;
-            --theme-color: #00c6ff; --theme-glow: rgba(0, 198, 255, 0.4);
-            --theme-glass-border: rgba(0, 198, 255, 0.2); --text-muted: #8a9ba8; --error-red: #cc4444; 
+            /* Премиальная палитра whunx */
+            --bg-body: #08090d;
+            --accent-purple: #8b5cf6;
+            --accent-purple-glow: rgba(139, 92, 246, 0.4);
+            --accent-gold: #f4c745;
+            --accent-gold-glow: rgba(244, 199, 69, 0.4);
+            
+            --glass-bg: rgba(20, 20, 25, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --error: #ef4444;
+            --success: #10b981;
         }
-        body.theme-blue { --theme-color: #00c6ff; --theme-glow: rgba(0, 198, 255, 0.4); --theme-glass-border: rgba(0, 198, 255, 0.3); --text-muted: #8a9ba8; }
-        body.theme-red { --theme-color: #ff0033; --theme-glow: rgba(255, 0, 51, 0.4); --theme-glass-border: rgba(255, 0, 51, 0.3); --text-muted: #a88a8a; }
-        body.theme-green { --theme-color: #00ff66; --theme-glow: rgba(0, 255, 102, 0.4); --theme-glass-border: rgba(0, 255, 102, 0.3); --text-muted: #8aa88a; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; transition: color 0.5s, border-color 0.5s, box-shadow 0.5s, background-color 0.5s; }
-        body { background-color: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; position: relative; }
+        *, *::before, *::after {
+            margin: 0; padding: 0; box-sizing: border-box;
+            user-select: none; -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        /* МАТРИЦА ФОН */
-        #matrixCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; opacity: 0.6; }
-        
-        body::after {
+        html, body { scrollbar-width: none; -ms-overflow-style: none; overflow-x: hidden; }
+        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            width: 100%; min-height: 100vh; background-color: var(--bg-body);
+            color: var(--text-main); display: flex; flex-direction: column;
+        }
+
+        /* ── ФОНОВЫЕ СЛОИ (Глассморфизм) ── */
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: var(--bg-body); }
+        .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.3; animation: float 20s infinite alternate ease-in-out; }
+        .blob-1 { width: 600px; height: 600px; background: var(--accent-purple); top: -10%; left: -10%; }
+        .blob-2 { width: 500px; height: 500px; background: var(--accent-gold); bottom: -20%; right: -10%; animation-delay: -5s; opacity: 0.2; }
+        .blob-3 { width: 400px; height: 400px; background: var(--accent-purple); top: 30%; left: 40%; opacity: 0.15; animation-delay: -10s; }
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
+
+        body::before {
             content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
-            background: transparent; transition: background 0.3s ease;
+            background: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+            background-size: 40px 40px; mask-image: radial-gradient(circle at center, black 50%, transparent 100%);
         }
 
-        /* МЕНЮ И ПРОФИЛЬ */
-        .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 15px; }
-        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--theme-color); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-dark); transition: 0.3s; box-shadow: 0 0 10px var(--theme-glow); text-decoration: none; }
-        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
-        .profile-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px var(--theme-color); border-color: #fff; }
+        .fade-in { animation: fadeIn 0.7s cubic-bezier(0.2,0.8,0.2,1) forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 
-        .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: rgba(0,0,0,0.5); border: 1px solid var(--theme-glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; backdrop-filter: blur(10px); }
-        .burger-btn:hover { background: var(--theme-color); color: #000; box-shadow: 0 0 15px var(--theme-color); border-color: var(--theme-color); }
-        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(2, 6, 2, 0.95); backdrop-filter: blur(25px); border-right: 1px solid var(--theme-glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: left 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
+        /* ── TOAST УВЕДОМЛЕНИЯ ── */
+        .toast-container { position: fixed; top: 25px; right: 25px; z-index: 10005; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
+        .toast { background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-left: 4px solid var(--accent-purple); color: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 15px; animation: slideInRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: auto; }
+        .toast.toast-error { border-left-color: var(--error); }
+        .toast.toast-success { border-left-color: var(--success); }
+        .toast i { font-size: 1.3rem; }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+
+        /* ── НАВИГАЦИЯ И МЕНЮ ── */
+        .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: var(--glass-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
+        .burger-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
+
+        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(25px); border-right: 1px solid var(--glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
-        .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
-        .sidebar-link i { color: var(--theme-color); font-size: 1.4rem; }
-        .sidebar-link:hover { color: var(--theme-color); padding-left: 10px; border-bottom-color: var(--theme-glow); }
-        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: opacity 0.3s; }
+        .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+        .sidebar-link i.icon-main { color: var(--accent-purple); font-size: 1.4rem; transition: 0.3s; }
+        .sidebar-link:hover, .sidebar-link.active { color: var(--accent-gold); padding-left: 10px; border-bottom-color: rgba(255,255,255,0.2); }
+        .sidebar-link:hover i.icon-main { color: var(--accent-gold); }
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
 
-        /* === ТЕХПОДДЕРЖКА (ЧАТ) === */
-        .support-btn { position: fixed; bottom: 25px; right: 25px; z-index: 9000; background: var(--glass-bg); border: 1px solid var(--theme-glass-border); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--theme-color); font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); transition: 0.3s; }
-        .support-btn:hover { background: var(--theme-color); color: #000; transform: scale(1.1); box-shadow: 0 0 25px var(--theme-glow); }
-        .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--error-red); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: bold; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--error-red); }
-        
-        .chat-window { position: fixed; bottom: 100px; right: 25px; width: 350px; height: 450px; background: rgba(5, 10, 5, 0.95); border: 1px solid var(--theme-glass-border); border-radius: 20px; z-index: 9000; display: none; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(20px); overflow: hidden; transform: translateY(20px); opacity: 0; transition: all 0.3s ease; }
-        .chat-window.active { display: flex; transform: translateY(0); opacity: 1; }
-        .chat-header { background: rgba(0,0,0,0.5); padding: 15px 20px; border-bottom: 1px solid var(--theme-glass-border); display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: var(--theme-color); letter-spacing: 1px; text-transform: uppercase; }
-        .close-chat { cursor: pointer; font-size: 1.2rem; color: #fff; transition: 0.3s; }
-        .close-chat:hover { color: var(--error-red); }
-        
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg { max-width: 85%; padding: 10px 15px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
-        .msg-user { align-self: flex-end; background: rgba(0, 198, 255, 0.1); border: 1px solid var(--theme-color); color: #fff; border-bottom-right-radius: 2px; }
-        .msg-admin { align-self: flex-start; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-bottom-left-radius: 2px; }
-        .msg-warning { align-self: flex-start; background: rgba(204, 68, 68, 0.2); border: 1px solid var(--error-red); color: #fff; }
-        .msg-success { align-self: flex-start; background: rgba(0, 255, 102, 0.2); border: 1px solid #00ff66; color: #fff; }
-        
-        .chat-input { display: flex; padding: 15px; background: rgba(0,0,0,0.5); border-top: 1px solid var(--theme-glass-border); gap: 10px; }
-        .chat-input input { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 15px; border-radius: 10px; color: #fff; outline: none; font-family: 'Montserrat'; transition: 0.3s; }
-        .chat-input input:focus { border-color: var(--theme-color); }
-        .chat-input button { background: var(--theme-color); color: #000; border: none; width: 45px; height: 45px; border-radius: 10px; cursor: pointer; font-size: 1.1rem; transition: 0.3s; display: flex; justify-content: center; align-items: center; }
-        .chat-input button:hover { box-shadow: 0 0 15px var(--theme-glow); transform: scale(1.05); background: #fff; }
-        .chat-input button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; background: #333; color: #888; }
+        /* ── ТОП-КОНТРОЛЫ ── */
+        .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 15px; }
+        .online-counter { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; }
+        .pulse-dot { width: 10px; height: 10px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: pulseGreen 2s infinite; }
+        .online-text { font-size: 0.85rem; font-weight: 700; color: #fff; letter-spacing: 1px; text-transform: uppercase; }
+        .online-num { color: var(--accent-gold); font-weight: 900; }
+        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--glass-border); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-body); transition: 0.3s; text-decoration: none; cursor: pointer; }
+        .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-btn:hover { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); transform: scale(1.05); }
 
-        /* === БЛОК В РАЗРАБОТКЕ === */
-        main { flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px; z-index: 10; }
+        /* ── ЧАТ ТЕХПОДДЕРЖКИ ── */
+        .support-btn { position: fixed; bottom: 25px; right: 25px; z-index: 9000; background: var(--glass-bg); border: 1px solid var(--glass-border); width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--accent-purple); font-size: 1.5rem; cursor: pointer; box-shadow: 0 0 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px); transition: 0.3s; }
+        .support-btn:hover { background: var(--accent-purple); color: #fff; transform: scale(1.1); box-shadow: 0 0 25px var(--accent-purple-glow); }
+        .unread-badge { position: absolute; top: -5px; right: -5px; background: var(--error); color: white; width: 22px; height: 22px; border-radius: 50%; font-size: 0.7rem; font-weight: bold; display: none; justify-content: center; align-items: center; box-shadow: 0 0 10px var(--error); }
+        
+        #chat-window { display: none; position: fixed; bottom: 100px; right: 25px; width: 380px; height: 520px; flex-direction: column; overflow: hidden; background: rgba(15, 15, 20, 0.85); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.02); backdrop-filter: blur(25px); z-index: 9999; animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .chat-header { background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2; cursor: grab; user-select: none; }
+        .chat-header:active { cursor: grabbing; }
+        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        .chat-header-title { font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-purple); }
+        .drag-handle { color: rgba(255,255,255,0.2); font-size: 1rem; }
+        #chat-close { cursor: pointer; font-size: 1.5rem; transition: 0.3s; color: rgba(255,255,255,0.5); padding: 5px; }
+        #chat-close:hover { color: var(--error); transform: rotate(90deg); }
+        
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth; }
+        #chat-messages::-webkit-scrollbar { width: 4px; }
+        #chat-messages::-webkit-scrollbar-track { background: transparent; }
+        #chat-messages::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+        
+        .chat-system-msg { color: var(--text-muted); text-align: center; font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.02); text-transform: uppercase; letter-spacing: 1px; }
+        .chat-system-ban { color: var(--error); text-align: center; font-size: 0.8rem; font-weight: 800; margin-bottom: 10px; padding: 10px; border: 1px solid var(--error); border-radius: 8px; background: rgba(239,68,68,0.1); display: none; }
+        
+        .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; }
+        @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+        .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; font-weight: 500; }
+        
+        .msg-user { align-items: flex-end; }
+        .msg-user .chat-msg-name { color: var(--accent-gold); }
+        .msg-user .chat-msg-bubble { background: var(--accent-purple); border-bottom-right-radius: 2px; box-shadow: 0 5px 15px rgba(139, 92, 246, 0.2); }
+        .msg-bot { align-items: flex-start; }
+        .msg-bot .chat-msg-name { color: var(--accent-purple); }
+        .msg-bot .chat-msg-bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
+        
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); z-index: 2; position: relative; transition: opacity 0.5s ease; }
+        #chat-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; }
+        #chat-input:focus { border-color: var(--accent-purple); box-shadow: 0 0 10px var(--accent-purple-glow); }
+        #chat-send { background: var(--accent-purple); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        #chat-send:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 5px 15px var(--accent-purple-glow); }
+        @keyframes chatTerminalOpen { 0% { opacity: 0; transform: scale(0.9) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+        /* ── МОДАЛКА ВХОДА GOOGLE ── */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; }
+        .install-box { background: rgba(10, 10, 15, 0.95); border: 1px solid var(--accent-purple); border-radius: 28px; padding: 40px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); position: relative; }
+        .install-box i.fa-user-astronaut { font-size: 3.5rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); }
+        .install-box h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+        .install-box p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
+        .install-close { position: absolute; top: 20px; right: 25px; color: var(--text-muted); font-size: 1.8rem; cursor: pointer; transition: 0.3s; }
+        .install-close:hover { color: var(--error); transform: rotate(90deg); }
+        
+        .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); color: #fff; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 1px; margin: 0 auto; position: relative; }
+        .google-login-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+        .google-login-btn img { width: 24px; height: 24px; }
+
+        /* ── БЛОК В РАЗРАБОТКЕ ── */
+        main { flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px; z-index: 10; position: relative; }
         
         .dev-container {
-            background: var(--glass-bg);
-            border: 1px solid var(--theme-glass-border);
-            border-radius: 25px;
-            padding: 50px 40px;
+            background: rgba(10, 10, 15, 0.4);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 60px 40px;
             text-align: center;
-            max-width: 600px;
+            max-width: 650px;
             width: 100%;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.7);
-            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(139, 92, 246, 0.05);
+            backdrop-filter: blur(25px);
             animation: floatUp 0.8s ease forwards;
             position: relative;
             overflow: hidden;
         }
-
-        @keyframes floatUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .dev-container::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at center, rgba(139,92,246,0.1) 0%, transparent 60%);
+            animation: rotateBg 20s linear infinite reverse; pointer-events: none; z-index: 0;
         }
+        @keyframes rotateBg { 100% { transform: rotate(360deg); } }
+
+        .dev-content { position: relative; z-index: 1; }
 
         .dev-icon {
-            font-size: 4rem;
-            color: var(--theme-color);
-            text-shadow: 0 0 25px var(--theme-glow);
-            margin-bottom: 20px;
-            animation: pulseIcon 2s infinite alternate;
+            font-size: 4.5rem;
+            color: var(--accent-purple);
+            filter: drop-shadow(0 0 20px var(--accent-purple-glow));
+            margin-bottom: 25px;
+            animation: pulseIcon 2.5s infinite alternate;
         }
-
         @keyframes pulseIcon {
-            from { transform: scale(1); opacity: 0.8; }
-            to { transform: scale(1.1); opacity: 1; }
+            from { transform: scale(1); filter: drop-shadow(0 0 20px var(--accent-purple-glow)); }
+            to { transform: scale(1.1); filter: drop-shadow(0 0 35px var(--accent-purple)); }
         }
 
         .dev-title {
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            font-size: clamp(2rem, 5vw, 3rem);
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 5px;
-            color: #fff;
-            margin-bottom: 10px;
+            background: linear-gradient(90deg, #fff, var(--accent-purple), var(--accent-gold), #fff);
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 6s linear infinite;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 15px var(--accent-purple-glow));
         }
 
         .dev-subtitle {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            font-weight: 500;
+            font-weight: 600;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 35px;
-            line-height: 1.5;
+            margin-bottom: 40px;
+            line-height: 1.6;
         }
 
         .loading-bar-container {
             width: 100%;
-            height: 10px;
-            background: rgba(0, 0, 0, 0.6);
+            height: 8px;
+            background: rgba(0, 0, 0, 0.4);
             border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
             overflow: hidden;
-            margin-bottom: 40px;
+            margin-bottom: 45px;
             position: relative;
         }
 
         .loading-bar-fill {
             height: 100%;
             width: 65%; /* Визуальный прогресс */
-            background: linear-gradient(90deg, transparent, var(--theme-color));
+            background: linear-gradient(90deg, var(--accent-purple), var(--accent-gold));
             border-radius: 10px;
-            box-shadow: 0 0 15px var(--theme-glow);
-            animation: loadingPulse 2s infinite;
+            box-shadow: 0 0 15px var(--accent-purple-glow);
+            animation: loadingPulse 2s infinite ease-in-out;
+            position: relative;
         }
-
+        .loading-bar-fill::after {
+            content: ''; position: absolute; right: -5px; top: -4px; width: 16px; height: 16px;
+            background: #fff; border-radius: 50%; box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+        }
         @keyframes loadingPulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.3); box-shadow: 0 0 25px var(--accent-gold-glow); }
+            100% { filter: brightness(1); }
         }
 
         .back-btn {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            background: transparent;
+            gap: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
             color: #fff;
-            border: 2px solid var(--theme-color);
-            padding: 15px 30px;
-            border-radius: 12px;
+            padding: 16px 35px;
+            border-radius: 16px;
             font-weight: 800;
             font-size: 1rem;
             text-transform: uppercase;
@@ -169,271 +253,399 @@
             text-decoration: none;
             transition: all 0.3s ease;
         }
-
         .back-btn:hover {
-            background: var(--theme-color);
-            color: var(--bg-dark);
-            box-shadow: 0 0 20px var(--theme-glow);
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.1);
+            box-shadow: 0 0 20px var(--accent-purple-glow);
             transform: translateY(-3px);
         }
 
-        @media (max-width: 600px) {
+        /* АДАПТИВ */
+        @media (max-width: 800px) {
             .top-controls { top: 15px; right: 15px; gap: 10px; }
             .profile-btn { width: 40px; height: 40px; }
-            .chat-window { width: calc(100vw - 40px); right: 20px; bottom: 90px; height: 60vh; }
-            .support-btn { width: 50px; height: 50px; right: 20px; bottom: 20px; font-size: 1.2rem; }
-            .dev-container { padding: 40px 20px; }
+            .online-counter { display: none; }
+            .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
+            
+            #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+            .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
+            .drag-handle { display: none; }
+            .support-btn { width: 50px; height: 50px; right: 15px; bottom: 15px; font-size: 1.2rem; }
+            
+            .dev-container { padding: 40px 20px; border-radius: 20px; border-width: 1px; }
+            .dev-title { font-size: 2rem; }
         }
+        @keyframes slideUpMobile { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
+
+    <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="theme-blue">
+<body>
 
-    <canvas id="matrixCanvas"></canvas>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
 
-    <div class="top-controls">
-        <a href="https://dxtrslizze.xyz/profile" class="profile-btn" title="Профиль">
-            <img src="../dslogo.png" alt="Profile" id="userAvatar" onerror="this.src='https://via.placeholder.com/100/000000/00c6ff?text=D%26S'">
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="top-controls fade-in">
+        <div class="online-counter">
+            <div class="pulse-dot"></div>
+            <span class="online-num" id="onlineCount">ЗАГРУЗКА...</span>
+        </div>
+        <a href="javascript:void(0)" class="profile-btn" title="Профиль" id="profileBtnLink">
+            <img src="/dslogo.png" alt="Profile" id="userAvatar">
         </a>
     </div>
 
-    <div class="burger-btn" id="burgerBtn"><i class="fa-solid fa-bars"></i></div>
+    <div class="burger-btn fade-in" id="burgerBtn"><i class="fa-solid fa-bars"></i></div>
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
-        <div style="color: var(--text-muted); font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
-            МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.5rem; cursor: pointer; color: white; transition: 0.3s;"></i>
+        <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 35px; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase;">
+            МЕНЮ <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size: 1.6rem; cursor: pointer; color: rgba(255,255,255,0.5); transition: 0.3s;"></i>
         </div>
         <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home"></i> Главная</a>
-        <a href="https://dxtrslizze.xyz/muzcatalog/" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
-        <a href="https://dxtrslizze.xyz/promocode" class="sidebar-link"><i class="fa-solid fa-terminal"></i> Ввод промокода</a>
-        <a class="sidebar-link" id="menuSupportBtn"><i class="fa-solid fa-headset"></i> Поддержка</a>
+        <a href="https://dxtrslizze.xyz/muzcatalog" class="sidebar-link"><i class="fa-solid fa-music"></i> Муз. каталог</a>
+        <a href="https://dxtrslizze.xyz/games" class="sidebar-link"><i class="fa-solid fa-gamepad"></i> Игры</a>
+        <a href="https://dxtrslizze.xyz/shop" class="sidebar-link"><i class="fa-solid fa-store"></i> Магазин</a>
+        <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-users"></i> О нас</a>
     </div>
 
-    <div class="support-btn" id="supportBtn">
+    <div class="support-btn fade-in" id="supportBtn">
         <i class="fa-solid fa-headset"></i>
         <div class="unread-badge" id="unreadBadge">!</div>
     </div>
 
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-            <div><i class="fa-solid fa-headset"></i> ТЕХ. ПОДДЕРЖКА</div>
-            <i class="fa-solid fa-xmark close-chat" id="closeChat"></i>
+    <div id="chat-window">
+        <div class="chat-header" id="chat-header">
+            <div class="chat-header-info">
+                <i class="fa-solid fa-grip-vertical drag-handle"></i>
+                <span class="chat-header-title">D&S Support</span>
+            </div>
+            <i class="fa-solid fa-xmark" id="chat-close"></i>
         </div>
-        <div class="chat-messages" id="chatMessages"></div>
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Введите сообщение..." autocomplete="off">
-            <button id="chatSend"><i class="fa-solid fa-paper-plane"></i></button>
+        <div id="chat-messages">
+            <div class="chat-system-ban" id="chatBanNotice"><i class="fa-solid fa-circle-exclamation"></i> ДОСТУП ОГРАНИЧЕН</div>
+            <div class="chat-system-msg" id="chatGreeting">Подключение...</div>
+        </div>
+        <div class="chat-input-area" id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Опишите проблему..." disabled>
+            <button id="chat-send" style="background: rgba(255,255,255,0.1);" disabled><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- МОДАЛКА ВХОДА -->
+    <div class="modal" id="loginModal">
+        <div class="install-box">
+            <i class="fa-solid fa-xmark install-close" onclick="closeLoginModal()"></i>
+            <i class="fa-solid fa-user-astronaut"></i>
+            <h3>Вход в аккаунт</h3>
+            <p>Авторизуйтесь через Google для доступа к профилю и тех. поддержке.</p>
+            
+            <div style="position: relative; width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 14px; margin-top: 15px;">
+                <button class="google-login-btn" style="margin: 0; width: 100%;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                    Войти через Google
+                </button>
+                <div id="google-btn-wrapper" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.01; z-index: 10; cursor: pointer;"></div>
+            </div>
         </div>
     </div>
 
     <main>
-        <div class="dev-container">
-            <i class="fa-solid fa-screwdriver-wrench dev-icon"></i>
-            <h1 class="dev-title">ДОСТУП ЗАКРЫТ</h1>
-            <p class="dev-subtitle">Сектор находится в стадии активной разработки и компиляции.</p>
-            
-            <div class="loading-bar-container">
-                <div class="loading-bar-fill"></div>
-            </div>
+        <div class="dev-container fade-in" style="animation-delay: 0.2s;">
+            <div class="dev-content">
+                <i class="fa-solid fa-screwdriver-wrench dev-icon"></i>
+                <h1 class="dev-title">ДОСТУП ЗАКРЫТ</h1>
+                <p class="dev-subtitle">Сектор находится в стадии активной разработки и компиляции.</p>
+                
+                <div class="loading-bar-container">
+                    <div class="loading-bar-fill"></div>
+                </div>
 
-            <a href="https://dxtrslizze.xyz/" class="back-btn">
-                <i class="fa-solid fa-chevron-left"></i> ВЕРНУТЬСЯ В ШТАБ
-            </a>
+                <a href="https://dxtrslizze.xyz/" class="back-btn">
+                    <i class="fa-solid fa-chevron-left"></i> Вернуться в штаб
+                </a>
+            </div>
         </div>
     </main>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        // ========== МАТРИЦА ==========
-        const canvas = document.getElementById('matrixCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-        const FONT_SIZE = 16;
-        let columns = Math.floor(canvas.width / FONT_SIZE);
-        let drops = [];
-        for (let i = 0; i < columns; i++) drops[i] = Math.random() * -60;
-
-        function drawMatrix() {
-            const isRed = document.body.classList.contains('theme-red');
-            const isGreen = document.body.classList.contains('theme-green');
-            ctx.fillStyle = isRed ? 'rgba(5, 1, 1, 0.08)' : (isGreen ? 'rgba(2, 6, 2, 0.08)' : 'rgba(1, 4, 8, 0.08)');
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = FONT_SIZE + 'px monospace';
-            for (let i = 0; i < drops.length; i++) {
-                const char = Math.random() > 0.5 ? '1' : '0';
-                if (isRed) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#ff5555' : '#cc0000';
-                else if (isGreen) ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#afffbf' : '#00ff66';
-                else ctx.fillStyle = Math.floor(drops[i]) % 6 < 2 ? '#aadeff' : '#00c6ff';
-                ctx.fillText(char, i * FONT_SIZE, drops[i] * FONT_SIZE);
-                if (drops[i] * FONT_SIZE > canvas.height && Math.random() > 0.975) drops[i] = 0;
-                drops[i]++;
-            }
+        // === TOAST ===
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if(!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            let iconClass = 'fa-circle-info';
+            if(type === 'error') iconClass = 'fa-circle-exclamation';
+            if(type === 'success') iconClass = 'fa-circle-check';
+            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOutRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards'; setTimeout(() => toast.remove(), 400); }, 3500);
         }
-        setInterval(drawMatrix, 50);
-        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; columns = Math.floor(canvas.width / FONT_SIZE); drops = []; for (let i = 0; i < columns; i++) drops[i] = Math.random() * -60; });
 
-        // ========== МЕНЮ ==========
+        // === МЕНЮ И ЧАТ UI ===
         const burgerBtn = document.getElementById('burgerBtn'), sidebar = document.getElementById('sidebar'), sidebarOverlay = document.getElementById('sidebarOverlay'), closeSidebar = document.getElementById('closeSidebar');
-        function toggleMenu() { sidebar.classList.toggle('active'); sidebarOverlay.classList.toggle('active'); }
-        burgerBtn.onclick = toggleMenu; closeSidebar.onclick = toggleMenu; sidebarOverlay.onclick = toggleMenu;
+        function toggleSBar() { if(sBar) sBar.classList.toggle('active'); if(sOver) sOver.classList.toggle('active'); }
+        if(burgerBtn) burgerBtn.onclick = toggleSBar; if(closeSidebar) closeSidebar.onclick = toggleSBar; if(sidebarOverlay) sidebarOverlay.onclick = toggleSBar;
 
-        // ========== ЧАТ ТЕХПОДДЕРЖКИ ==========
+        const chatWindow = document.getElementById('chat-window');
+        const chatClose = document.getElementById('chat-close');
+        const chatHeader = document.getElementById('chat-header');
         const supportBtn = document.getElementById('supportBtn');
-        const chatWindow = document.getElementById('chatWindow');
-        const closeChat = document.getElementById('closeChat');
-        const menuSupportBtn = document.getElementById('menuSupportBtn');
         const unreadBadge = document.getElementById('unreadBadge');
         
-        const chatMessages = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const chatSend = document.getElementById('chatSend');
-        
-        let chatHistory = JSON.parse(localStorage.getItem('chatHistory_dxtr') || '[]');
-        let isSupportBanned = false;
-
         function toggleChat() {
             if (chatWindow.style.display === 'flex') {
-                chatWindow.classList.remove('active');
-                setTimeout(() => chatWindow.style.display = 'none', 300);
+                chatWindow.style.display = 'none';
             } else {
+                const inputArea = document.getElementById('chat-input-area');
+                if (inputArea) { inputArea.style.opacity = "1"; inputArea.style.display = "flex"; }
+                const resolvedBlocks = document.querySelectorAll('.chat-resolved-status');
+                resolvedBlocks.forEach(block => block.remove());
+
                 chatWindow.style.display = 'flex';
-                setTimeout(() => chatWindow.classList.add('active'), 10);
+                if(window.innerWidth > 800) { chatWindow.style.left = 'auto'; chatWindow.style.top = 'auto'; chatWindow.style.right = '30px'; chatWindow.style.bottom = '100px'; }
                 unreadBadge.style.display = 'none';
-                scrollToBottom();
+                setTimeout(() => { const msgs = document.getElementById('chat-messages'); if(msgs) msgs.scrollTop = msgs.scrollHeight; }, 50);
             }
         }
-        
-        supportBtn.onclick = toggleChat;
-        closeChat.onclick = toggleChat;
-        menuSupportBtn.onclick = (e) => { e.preventDefault(); toggleMenu(); toggleChat(); };
+        if(supportBtn) supportBtn.onclick = toggleChat;
+        if(chatClose) chatClose.onclick = () => chatWindow.style.display = 'none';
 
-        function renderHistory() {
-            chatMessages.innerHTML = '';
-            chatHistory.forEach(m => addMessageToUI(m.text, m.type));
-            scrollToBottom();
-        }
-        renderHistory();
-
-        function addMessageToUI(text, type) {
-            const div = document.createElement('div');
-            div.className = `msg msg-${type}`;
-            div.innerHTML = text; 
-            chatMessages.appendChild(div);
-            scrollToBottom();
-        }
-
-        function scrollToBottom() { chatMessages.scrollTop = chatMessages.scrollHeight; }
-
-        function saveMessage(text, type) {
-            chatHistory.push({ text, type });
-            if (chatHistory.length > 50) chatHistory.shift();
-            localStorage.setItem('chatHistory_dxtr', JSON.stringify(chatHistory));
+        let isDraggingChat = false, chatOffsetX, chatOffsetY;
+        if(chatHeader) {
+            chatHeader.addEventListener('mousedown', (e) => {
+                if (window.innerWidth <= 800 || e.target.id === 'chat-close') return;
+                isDraggingChat = true; chatWindow.style.animation = 'none'; chatWindow.style.transform = 'none';
+                const rect = chatWindow.getBoundingClientRect(); chatOffsetX = e.clientX - rect.left; chatOffsetY = e.clientY - rect.top;
+                chatWindow.style.right = 'auto'; chatWindow.style.bottom = 'auto'; chatWindow.style.margin = '0';
+                chatWindow.style.left = rect.left + 'px'; chatWindow.style.top = rect.top + 'px';
+            });
+            document.addEventListener('mousemove', (e) => {
+                if (!isDraggingChat) return; e.preventDefault();
+                let newX = Math.max(0, Math.min(e.clientX - chatOffsetX, window.innerWidth - chatWindow.offsetWidth));
+                let newY = Math.max(0, Math.min(e.clientY - chatOffsetY, window.innerHeight - chatWindow.offsetHeight));
+                chatWindow.style.left = `${newX}px`; chatWindow.style.top = `${newY}px`;
+            });
+            document.addEventListener('mouseup', () => { isDraggingChat = false; });
         }
 
-        chatSend.onclick = () => {
-            if (isSupportBanned || !chatInput.value.trim()) return;
-            const text = chatInput.value.trim();
-            addMessageToUI(text, 'user');
-            saveMessage(text, 'user');
-            if (window.socket) window.socket.emit('send_message', { clientId: window.clientId, text });
-            chatInput.value = '';
-        };
+        // === SUPABASE AUTH И СОКЕТЫ ===
+        const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
+        const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'; 
+        let supabaseClient;
+        if (window.supabase) supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') chatSend.click();
-        });
+        let isAuthUser = false;
+        let currentSessionToken = null;
+        let socket = null;
 
-        // ========== СИСТЕМА ID И СОКЕТЫ ==========
-        function setCookie(name, value, days) {
-            let expires = "";
-            if (days) {
-                let date = new Date();
-                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                expires = "; expires=" + date.toUTCString();
-            }
-            document.cookie = name + "=" + (value || "")  + expires + "; path=/";
-        }
-        function getCookie(name) {
-            let nameEQ = name + "=";
-            let ca = document.cookie.split(';');
-            for(let i=0;i < ca.length;i++) {
-                let c = ca[i].trim();
-                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
-            }
-            return null;
+        const chatGreeting = document.getElementById('chatGreeting');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send');
+        const profileBtnLink = document.getElementById('profileBtnLink');
+        const loginModal = document.getElementById('loginModal');
+
+        function openLoginModal() { if(loginModal) loginModal.style.display = 'flex'; }
+        function closeLoginModal() { if(loginModal) loginModal.style.display = 'none'; }
+
+        function lockChatForGuests() {
+            if(chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо авторизоваться (иконка профиля).</b>";
+            if(chatInput) { chatInput.disabled = true; chatInput.placeholder = "Необходима авторизация"; chatInput.style.borderColor = "var(--glass-border)"; }
+            if(chatSendBtn) { chatSendBtn.disabled = true; chatSendBtn.style.background = 'rgba(255,255,255,0.1)'; chatSendBtn.style.color = '#555'; }
         }
 
-        let lsId = localStorage.getItem('dxtrNumericId');
-        let cookieId = getCookie('dxtrNumericId');
-        window.clientId = lsId || cookieId || null;
-        window.userNickname = localStorage.getItem('dxtrUserNickname') || null;
-        
-        if (window.clientId) {
-            localStorage.setItem('dxtrNumericId', window.clientId);
-            setCookie('dxtrNumericId', window.clientId, 365);
+        function unlockChatForUser(nickname) {
+            window.userNickname = nickname;
+            if(chatGreeting) chatGreeting.innerHTML = `Чат тех. поддержки. Приветствую, <b>${nickname}</b>!`; 
+            if(chatInput) { chatInput.disabled = false; chatInput.placeholder = "Опишите проблему..."; chatInput.style.borderColor = "var(--glass-border)"; }
+            if(chatSendBtn) { chatSendBtn.disabled = false; chatSendBtn.style.background = 'var(--accent-purple)'; chatSendBtn.style.color = '#fff'; }
         }
 
-        let fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FP => FP.load());
-        let fingerprintHash = '';
-
-        try {
-            window.socket = io("https://dxtrslizze.onrender.com/");
+        async function getUserDataSafe(user) {
+            if(!supabaseClient) return null;
+            const { data } = await supabaseClient.from('g_users').select('*').eq('id', user.id).single();
+            if (data) return { nickname: data.nickname, avatarUrl: data.avatar_url };
             
-            window.socket.on('connect', () => {
-                fpPromise.then(fp => fp.get()).then(r => {
-                    fingerprintHash = r.visitorId;
-                    window.socket.emit('register_client', { clientId: window.clientId, fpHash: fingerprintHash });
-                }).catch(() => {
-                    fingerprintHash = 'blocked';
-                    window.socket.emit('register_client', { clientId: window.clientId, fpHash: fingerprintHash });
+            const email = user.email;
+            const nickname = user.user_metadata.full_name || user.user_metadata.name || email.split('@')[0];
+            const avatarUrl = user.user_metadata.avatar_url || 'dslogo.png';
+            await supabaseClient.from('g_users').insert({ id: user.id, email: email, nickname: nickname, avatar_url: avatarUrl });
+            return { nickname, avatarUrl };
+        }
+
+        async function checkSession() {
+            if(!supabaseClient) return;
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (session) {
+                isAuthUser = true;
+                currentSessionToken = session.access_token;
+                const userData = await getUserDataSafe(session.user);
+
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg && userData && userData.avatarUrl !== 'dslogo.png') avatarImg.src = userData.avatarUrl;
+
+                unlockChatForUser(userData.nickname);
+
+                if (socket && socket.connected) {
+                    socket.emit('register_client', { token: currentSessionToken });
+                }
+            } else {
+                isAuthUser = false;
+                currentSessionToken = null;
+                lockChatForGuests();
+                const avatarImg = document.getElementById('userAvatar');
+                if (avatarImg) avatarImg.src = '/dslogo.png';
+            }
+        }
+
+        async function handleGoogleCredential(response) {
+            closeLoginModal();
+            showToast('Синхронизация...', 'info');
+            const { error } = await supabaseClient.auth.signInWithIdToken({ provider: 'google', token: response.credential });
+            if (error) { showToast('Ошибка авторизации', 'error'); } 
+            else { showToast('Успешный вход!', 'success'); }
+        }
+
+        function initGoogleAuth() {
+            if(window.google) {
+                google.accounts.id.initialize({
+                    client_id: '538822205607-83ip6fjfah8pjphus91d3ru2tfeb018b.apps.googleusercontent.com',
+                    callback: handleGoogleCredential
                 });
+                const wrapper = document.getElementById("google-btn-wrapper");
+                if (wrapper) google.accounts.id.renderButton(wrapper, { type: "standard", theme: "outline", size: "large", width: 400 });
+            }
+        }
+
+        if (profileBtnLink) {
+            profileBtnLink.onclick = (e) => {
+                if (!isAuthUser) { e.preventDefault(); openLoginModal(); }
+                else { window.location.href = 'https://dxtrslizze.xyz/profile'; }
+            };
+        }
+
+        if(supabaseClient) {
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') { checkSession(); } 
+                else if (event === 'SIGNED_OUT') { isAuthUser = false; currentSessionToken = null; lockChatForGuests(); const avatarImg = document.getElementById('userAvatar'); if (avatarImg) avatarImg.src = '/dslogo.png'; }
+            });
+            window.addEventListener('load', () => checkSession());
+        }
+
+        // Инициализация Socket.io
+        try {
+            socket = io("https://dxtrslizze.onrender.com/");
+            
+            socket.on('connect', () => { 
+                if (isAuthUser && currentSessionToken) { socket.emit('register_client', { token: currentSessionToken }); }
             });
 
-            window.socket.on('assign_id', (data) => {
-                if (data && data.newId) {
-                    window.clientId = data.newId;
-                    localStorage.setItem('dxtrNumericId', window.clientId);
-                    setCookie('dxtrNumericId', window.clientId, 365);
-                }
+            socket.on('online_update', c => {
+                const el = document.getElementById('onlineCount');
+                if(el) el.textContent = c + ' ОНЛАЙН';
             });
             
-            window.socket.on('user_data', d => {
-                if (d.nickname) {
-                    window.userNickname = d.nickname;
-                    localStorage.setItem('dxtrUserNickname', d.nickname);
-                }
-                if (d.avatarUrl) {
-                    const avatarImg = document.getElementById('userAvatar');
-                    if (avatarImg) avatarImg.src = d.avatarUrl;
-                }
-            });
+            const chatBanNotice = document.getElementById('chatBanNotice');
 
-            // Слушаем входящие сообщения
-            window.socket.on('receive_message', (data) => {
-                const type = data.isWarning ? 'warning' : (data.isSuccess ? 'success' : 'admin');
-                addMessageToUI(data.text, type);
-                saveMessage(data.text, type);
-                if (chatWindow.style.display !== 'flex') {
+            socket.on('ban_status', d => { 
+                if (d.isBanned) { 
+                    if(chatBanNotice) chatBanNotice.style.display = 'block'; 
+                    if(chatGreeting) chatGreeting.style.display = 'none'; 
+                    if(chatInput) { chatInput.disabled = true; chatInput.placeholder = "Доступ ограничен."; chatInput.style.borderColor = "var(--error)"; }
+                    if(chatSendBtn) { chatSendBtn.disabled = true; chatSendBtn.style.background = 'rgba(255,255,255,0.1)'; chatSendBtn.style.color = '#555'; }
+                } else { 
+                    if(chatBanNotice) chatBanNotice.style.display = 'none'; 
+                    if(chatGreeting && isAuthUser) chatGreeting.style.display = 'block'; 
+                    if(chatInput && isAuthUser) { chatInput.disabled = false; chatInput.placeholder = "Опишите проблему..."; chatInput.style.borderColor = "var(--glass-border)"; }
+                    if(chatSendBtn && isAuthUser) { chatSendBtn.disabled = false; chatSendBtn.style.background = 'var(--accent-purple)'; chatSendBtn.style.color = '#fff'; }
+                } 
+            });
+            
+            socket.on('receive_message', d => { 
+                if (chatWindow && (chatWindow.style.display === 'none' || chatWindow.style.display === '')) {
                     unreadBadge.style.display = 'flex';
                 }
+                addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); 
             });
 
-            // Слушаем статус бана чата
-            window.socket.on('ban_status', (data) => {
-                isSupportBanned = data.isBanned;
-                if (isSupportBanned) {
-                    chatInput.disabled = true;
-                    chatSend.disabled = true;
-                    chatInput.placeholder = "Доступ к чату ограничен";
-                } else {
-                    chatInput.disabled = false;
-                    chatSend.disabled = false;
-                    chatInput.placeholder = "Введите сообщение...";
-                }
-            });
+            socket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
+            socket.on('chat_closed_reset', () => { showChatClosedAnimation("Проверка пройдена<br><span style='font-size: 0.8rem; color: var(--text-muted); font-weight: 600;'>Пароль сброшен</span>", "fa-check-double"); });
 
-        } catch(e) {
-            console.error("Socket.io connection error", e);
+            if(chatSendBtn) chatSendBtn.onclick = sendMessageToBot; 
+            if(chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
+            
+            function sendMessageToBot() { 
+                const t = chatInput.value.trim(); 
+                if (!t || chatInput.disabled || !isAuthUser) return; 
+                socket.emit('send_message', { text: t, token: currentSessionToken }); 
+                addChatMessage('Вы', t, 'flex-end', true, false, false); 
+                chatInput.value = ''; 
+            }
+        } catch(err) {
+            console.error("Ошибка при инициализации Socket.io:", err);
         }
+
+        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { 
+            const wrapper = document.createElement('div'); 
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; 
+            
+            const nameLab = document.createElement('span'); 
+            nameLab.className = 'chat-msg-name'; 
+            nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; 
+            
+            const bubble = document.createElement('div'); 
+            bubble.className = 'chat-msg-bubble'; 
+            bubble.textContent = text; 
+            
+            if (isWarn) { 
+                nameLab.style.color = 'var(--error)'; 
+                bubble.style.background = 'rgba(239, 68, 68, 0.1)'; 
+                bubble.style.border = '1px solid var(--error)'; 
+            } else if (isSucc) { 
+                nameLab.style.color = 'var(--success)'; 
+                bubble.style.background = 'rgba(16, 185, 129, 0.1)'; 
+                bubble.style.border = '1px solid var(--success)'; 
+            } 
+            
+            wrapper.appendChild(nameLab); 
+            wrapper.appendChild(bubble); 
+            
+            const msgsContainer = document.getElementById('chat-messages');
+            if(msgsContainer) {
+                msgsContainer.appendChild(wrapper); 
+                msgsContainer.scrollTop = msgsContainer.scrollHeight; 
+            }
+            
+            if (save) { 
+                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; 
+                h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); 
+                if (h.length > 50) h.shift(); 
+                localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); 
+            } 
+        }
+        
+        function showChatClosedAnimation(titleHtml, iconClass) {
+            const inputArea = document.getElementById('chat-input-area');
+            if(inputArea) inputArea.style.opacity = "0";
+            setTimeout(() => {
+                if(inputArea) inputArea.style.display = "none";
+                const statusBlock = document.createElement('div');
+                statusBlock.className = 'chat-resolved-status';
+                statusBlock.innerHTML = `<i class="fa-solid ${iconClass} chat-resolved-icon"></i><div class="chat-resolved-title">${titleHtml}</div>`;
+                const msgsContainer = document.getElementById('chat-messages');
+                if(msgsContainer) { msgsContainer.appendChild(statusBlock); msgsContainer.scrollTop = msgsContainer.scrollHeight; }
+            }, 500); 
+        }
+
+        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
     </script>
 </body>
 </html>
