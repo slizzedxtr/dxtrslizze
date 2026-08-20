@@ -56,7 +56,7 @@
         .toast.toast-success { border-left-color: var(--success); }
         @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-        /* ── ЭКРАН АВТОРИЗАЦИИ ── */
+        /* ── ЭКРАН ПРОВЕРКИ ДОСТУПА ── */
         .auth-overlay {
             position: fixed; inset: 0; background: var(--bg-body); z-index: 99999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -67,7 +67,7 @@
             background: rgba(15, 15, 20, 0.6); border: 1px solid var(--glass-border);
             border-radius: 24px; padding: 50px; max-width: 500px; width: 100%;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(139, 92, 246, 0.05);
-            position: relative; overflow: hidden;
+            position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center;
         }
         .auth-box::before {
             content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
@@ -75,28 +75,20 @@
             animation: spinBg 10s linear infinite; pointer-events: none;
         }
         @keyframes spinBg { 100% { transform: rotate(360deg); } }
-        .auth-icon { font-size: 4rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); }
-        .auth-title { font-size: 1.5rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; }
         
-        .auth-form { display: flex; flex-direction: column; gap: 15px; position: relative; z-index: 2; margin-top: 20px; }
-        .auth-input { background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; padding: 15px; border-radius: 12px; outline: none; font-family: 'Montserrat'; transition: 0.3s; text-align: center; font-size: 1.1rem; }
-        .auth-input:focus { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
-        .auth-submit-btn { background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold)); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; }
-        .auth-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px var(--accent-purple-glow); }
-        .auth-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .sys-msg { color: var(--accent-purple); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-top: 15px; }
+        .auth-icon { font-size: 4rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); transition: 0.3s; }
+        .auth-title { font-size: 1.5rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; position: relative; z-index: 1;}
+        .auth-desc { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; line-height: 1.5; position: relative; z-index: 1;}
+        
+        .loader-bar { width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 10px; overflow: hidden; margin-bottom: 20px; position: relative; z-index: 1;}
+        .loader-fill { height: 100%; width: 50%; background: var(--accent-purple); border-radius: 10px; animation: loadIndeterminate 1.5s infinite ease-in-out; box-shadow: 0 0 15px var(--accent-purple-glow); }
+        @keyframes loadIndeterminate { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
 
-        #passWrapper { max-height: 0; overflow: hidden; opacity: 0; transition: all 0.5s ease; display: flex; flex-direction: column; gap: 15px;}
-        #passWrapper.show { max-height: 200px; opacity: 1; margin-top: 5px; overflow: visible; }
+        .auth-submit-btn { background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold)); color: white; border: none; padding: 15px 30px; border-radius: 12px; font-weight: 800; font-size: 1rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; position: relative; z-index: 1; box-shadow: 0 5px 20px var(--accent-purple-glow); }
+        .auth-submit-btn:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 25px var(--accent-purple-glow); }
 
-        /* БАН ЭКРАН */
-        #banScreen { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; z-index: 2;}
-        #banScreen.active { display: flex; }
-        .ban-icon { font-size: 5rem; color: var(--error); margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(239, 68, 68, 0.5)); }
-        .ban-icon.pulsing { animation: pulseBan 2s infinite; }
-        @keyframes pulseBan { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        .ban-text { font-size: 1.5rem; font-weight: 900; color: #fff; letter-spacing: 2px; text-transform: uppercase; }
-        .ban-timer { font-size: 3rem; font-weight: 900; color: var(--error); margin-top: 10px; font-variant-numeric: tabular-nums; }
+        .btn-back { display: none; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 14px 30px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-decoration: none; transition: 0.3s; margin: 0 auto; position: relative; z-index: 1;}
+        .btn-back:hover { background: rgba(239, 68, 68, 0.15); border-color: var(--error); box-shadow: 0 0 15px rgba(239, 68, 68, 0.3); color: var(--error); }
 
         /* ── БОКОВОЕ МЕНЮ (АДМИН) ── */
         .admin-sidebar {
@@ -137,6 +129,14 @@
         /* ── ТАБЫ (Секции) ── */
         .admin-section { display: none; animation: fadeIn 0.4s ease forwards; }
         .admin-section.active { display: block; }
+
+        /* ── КАРТОЧКИ СТАТИСТИКИ ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: rgba(15, 15, 20, 0.6); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; display: flex; align-items: center; gap: 20px; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: 0.3s; }
+        .stat-card:hover { border-color: var(--accent-purple); box-shadow: 0 10px 30px var(--accent-purple-glow); transform: translateY(-3px); }
+        .stat-icon { width: 60px; height: 60px; border-radius: 16px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; color: var(--accent-purple); }
+        .stat-info h4 { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .stat-info .val { font-size: 1.8rem; font-weight: 900; color: #fff; }
 
         /* ── ТАБЛИЦЫ ── */
         .table-container { background: rgba(15, 15, 20, 0.6); border: 1px solid var(--glass-border); border-radius: 24px; padding: 25px; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow-x: auto; margin-bottom: 30px; }
@@ -192,9 +192,19 @@
 
         .empty-neon { text-align: center; color: var(--text-muted); font-size: 1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 30px; }
 
-        /* Прогресс бар загрузки */
         #mProgressContainer { width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px; display: none; }
         #mProgressBar { height:100%; width:0%; background:var(--accent-purple); box-shadow:0 0 10px var(--accent-purple-glow); transition:width 0.2s; }
+
+        /* ── МОДАЛКА ВХОДА GOOGLE ── */
+        .install-box { background: rgba(10, 10, 15, 0.95); border: 1px solid var(--accent-purple); border-radius: 28px; padding: 40px; max-width: 450px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); position: relative; display: flex; flex-direction: column; align-items: center; margin: auto; }
+        .install-box i.fa-user-astronaut { font-size: 3.5rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); }
+        .install-box h3 { font-size: 1.5rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+        .install-box p { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 25px; line-height: 1.5; }
+        .install-close { position: absolute; top: 20px; right: 25px; color: var(--text-muted); font-size: 1.8rem; cursor: pointer; transition: 0.3s; }
+        .install-close:hover { color: var(--error); transform: rotate(90deg); }
+        .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 320px; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); color: #fff; font-weight: 800; font-size: 1.05rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 1px; margin: 0 auto; position: relative; }
+        .google-login-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+        .google-login-btn img { width: 24px; height: 24px; }
 
         /* Адаптив админки */
         @media (max-width: 900px) {
@@ -203,14 +213,17 @@
             .admin-main { padding: 20px; margin-top: 60px; }
             .header-top { flex-direction: column; align-items: flex-start; gap: 15px; }
             .admin-profile { align-self: flex-start; }
-            .burger-btn { display: flex; } /* Вернуть бургер для мобилок админки, если нужен. Но тут мы его скрыли, добавим кнопку */
             .mobile-menu-toggle { display: block; position: fixed; top: 20px; right: 20px; z-index: 1000; background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 10px 15px; border-radius: 10px; color: #fff; cursor: pointer; }
         }
         @media (min-width: 901px) {
             .mobile-menu-toggle { display: none; }
-            .admin-main { margin-left: 280px; } /* Сдвигаем контент вправо от сайдбара */
+            .admin-main { margin-left: 280px; }
         }
     </style>
+    
+    <!-- Скрипты Google Auth и Supabase -->
+    <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -227,28 +240,42 @@
         <i class="fa-solid fa-bars"></i> МЕНЮ
     </div>
 
-    <!-- ЭКРАН АВТОРИЗАЦИИ -->
+    <!-- МОДАЛКА ВХОДА GOOGLE -->
+    <div class="modal" id="loginModal" style="display: none; z-index: 100000;">
+        <div class="install-box">
+            <i class="fa-solid fa-xmark install-close" onclick="closeLoginModal()"></i>
+            <i class="fa-solid fa-user-astronaut"></i>
+            <h3>Вход в систему</h3>
+            <p>Авторизуйтесь через Google для доступа к панели управления.</p>
+            
+            <div style="position: relative; width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 14px; margin-top: 15px;">
+                <button class="google-login-btn" style="margin: 0; width: 100%;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
+                    Войти через Google
+                </button>
+                <div id="google-btn-wrapper" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.01; z-index: 10; cursor: pointer;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН ПРОВЕРКИ ДОСТУПА -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box" id="authBoxContent">
-            <form id="authForm" class="auth-form">
-                <i class="fa-solid fa-shield-halved auth-icon" id="shieldIcon"></i>
-                <h2 class="auth-title">СИСТЕМА УПРАВЛЕНИЯ</h2>
-                <div class="input-wrapper" id="loginWrapper">
-                    <input type="text" id="adminLogin" class="auth-input" placeholder="ЛОГИН" autocomplete="off" spellcheck="false" required>
-                </div>
-                <div id="passWrapper">
-                    <input type="password" id="adminPass" class="auth-input" placeholder="ПАРОЛЬ">
-                    <button type="submit" class="auth-submit-btn" id="authSubmitBtn">ПРОДОЛЖИТЬ</button>
-                </div>
-                <div class="sys-msg" id="sysMsg">Ожидание ввода...</div>
-            </form>
-
-            <div id="banScreen">
-                <i class="fa-solid fa-ban ban-icon pulsing"></i>
-                <div class="ban-text">Доступ заблокирован</div>
-                <div class="ban-timer" id="banTimer">60:00</div>
-                <div style="color: var(--text-muted); margin-top: 15px; font-size: 0.9rem;">Превышено количество попыток. Запрос отправлен на сервер.</div>
+            <i class="fa-solid fa-shield-halved auth-icon" id="authIcon"></i>
+            <h2 class="auth-title" id="authTitle">ПРОВЕРКА ДОСТУПА</h2>
+            <p class="auth-desc" id="authDesc">Ожидание авторизации через Google...</p>
+            
+            <div class="loader-bar" id="authLoader" style="display: none;">
+                <div class="loader-fill"></div>
             </div>
+
+            <button class="auth-submit-btn" id="loginGoogleBtnOverlay" onclick="openLoginModal()" style="width: 100%; margin-top: 15px;">
+                АВТОРИЗОВАТЬСЯ
+            </button>
+
+            <a href="https://dxtrslizze.xyz/" class="btn-back" id="btnBack" style="margin-top: 20px;">
+                <i class="fa-solid fa-arrow-left"></i> Вернуться на сайт
+            </a>
         </div>
     </div>
 
@@ -264,8 +291,8 @@
             <div class="nav-item" onclick="switchSection('promos', this)"><i class="fa-solid fa-ticket"></i> Промокоды</div>
         </nav>
         <div class="sidebar-footer">
-            <a href="https://dxtrslizze.xyz/" class="logout-btn"><i class="fa-solid fa-door-open"></i> Вернуться на сайт</a>
-            <div class="logout-btn" style="color: var(--text-muted); margin-top: 10px;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Сменить аккаунт</div>
+            <a href="https://dxtrslizze.xyz/" class="logout-btn"><i class="fa-solid fa-door-open"></i> На сайт</a>
+            <div class="logout-btn" style="color: var(--text-muted); margin-top: 10px;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Выход</div>
         </div>
     </aside>
 
@@ -295,6 +322,53 @@
                     <i class="fa-solid fa-user"></i> Настройки профиля
                 </a>
                 <button class="m-btn m-btn-danger" style="width: 100%;" onclick="logout()">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+            </div>
+        </section>
+
+        <!-- СЕКЦИЯ: ДАШБОРД -->
+        <section id="sec-dashboard" class="admin-section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-info">
+                        <h4>Всего юзеров</h4>
+                        <div class="val" id="statUsers">--</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: var(--accent-gold); border-color: rgba(244, 199, 69, 0.3); background: rgba(244, 199, 69, 0.1);"><i class="fa-solid fa-coins"></i></div>
+                    <div class="stat-info">
+                        <h4>Эмиссия NC</h4>
+                        <div class="val" id="statCoins">--</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: var(--success); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-music"></i></div>
+                    <div class="stat-info">
+                        <h4>Релизов</h4>
+                        <div class="val" id="statTracks">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Последние регистрации</h3>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Пользователь</th>
+                                <th>ID (Client)</th>
+                                <th>Баланс</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentUsersTable">
+                            <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Загрузка...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
@@ -460,470 +534,223 @@
         </div>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
         const API_URL = "https://dxtrslizze.onrender.com/api";
+        const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
+        const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'; 
+        let supabaseClient;
+        if (window.supabase) supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // ========== СОСТОЯНИЕ СЕССИИ И АВТОРИЗАЦИЯ ==========
-        let jwtToken = localStorage.getItem('adminToken') || '';
-        let isAuthenticated = false;
-        let failedAttempts = parseInt(localStorage.getItem('adminFailedAttempts') || '0');
-        let banEndTime = parseInt(localStorage.getItem('adminBanEndTime') || '0');
-        let banTimerInterval;
+        let currentSessionToken = null;
 
-        function authHeaders(extra) { return Object.assign({ 'Authorization': 'Bearer ' + jwtToken }, extra || {}); }
-
-        function checkLocalBan() { 
-            const now = Date.now(); 
-            if (banEndTime > now) activateBanUI(Math.floor((banEndTime - now) / 1000)); 
-            else { localStorage.removeItem('adminFailedAttempts'); localStorage.removeItem('adminBanEndTime'); failedAttempts = 0; } 
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            let iconClass = type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check';
+            toast.innerHTML = `<i class="fa-solid ${iconClass}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOutRight 0.4s ease forwards'; setTimeout(() => toast.remove(), 400); }, 3500);
         }
 
-        function activateBanUI(secondsLeft) {
-            document.getElementById('authForm').style.display = 'none'; 
-            document.getElementById('banScreen').classList.add('active'); 
-            document.getElementById('authBoxContent').classList.add('danger');
-            clearInterval(banTimerInterval); updateBanTimerDisplay(secondsLeft);
-            banTimerInterval = setInterval(() => {
-                secondsLeft--; if (secondsLeft <= 0) { clearInterval(banTimerInterval); location.reload(); } else updateBanTimerDisplay(secondsLeft);
-            }, 1000);
-        }
-        function updateBanTimerDisplay(totalSecs) { const m = Math.floor(totalSecs / 60), s = totalSecs % 60; document.getElementById('banTimer').textContent = `${m < 10 ? '0':''}${m}:${s < 10 ? '0':''}${s}`; }
-
-        function triggerBan() {
-            const banTime = 3600; localStorage.setItem('adminBanEndTime', Date.now() + banTime * 1000);
-            if(window.socket) window.socket.emit('trigger_admin_ban', { clientId: window.clientId, fpHash: 'blocked', duration: banTime });
-            activateBanUI(banTime);
+        function switchSection(secId, btnElement) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('sec-' + secId).classList.add('active');
+            btnElement.classList.add('active');
+            
+            const titles = { 'dashboard': 'Дашборд', 'users': 'Пользователи', 'music': 'Муз. Каталог', 'promos': 'Промокоды' };
+            document.getElementById('pageTitle').innerText = titles[secId];
+            
+            if (window.innerWidth <= 900) { document.querySelector('.admin-sidebar').classList.remove('active'); }
         }
 
-        const loginInput = document.getElementById('adminLogin');
-        const passInput = document.getElementById('adminPass');
-        const loginWrapper = document.getElementById('loginWrapper');
-        const passWrapper = document.getElementById('passWrapper');
-        const sysMsg = document.getElementById('sysMsg');
-        let isLoginVerified = false;
-
-        function triggerError() {
-            failedAttempts++; localStorage.setItem('adminFailedAttempts', failedAttempts);
-            if (failedAttempts >= 3) { triggerBan(); return; } 
-            sysMsg.textContent = `ОШИБКА ДОСТУПА. ПОПЫТОК: ${3 - failedAttempts}`; sysMsg.style.color = 'var(--error)';
-            setTimeout(() => { sysMsg.textContent = 'Ожидание ввода...'; sysMsg.style.color = 'var(--accent-purple)'; }, 3000);
-            const activeWrapper = isLoginVerified ? passWrapper : loginWrapper;
-            activeWrapper.style.transform = 'translateX(-10px)'; setTimeout(() => activeWrapper.style.transform = 'translateX(10px)', 100); setTimeout(() => activeWrapper.style.transform = 'translateX(-10px)', 200); setTimeout(() => activeWrapper.style.transform = 'translateX(0)', 300);
-            passInput.value = '';
+        function setAuthError(message) {
+            document.getElementById('authLoader').style.display = 'none';
+            document.getElementById('loginGoogleBtnOverlay').style.display = 'block';
+            document.getElementById('authIcon').className = 'fa-solid fa-lock auth-icon';
+            document.getElementById('authIcon').style.color = 'var(--error)';
+            document.getElementById('authIcon').style.filter = 'drop-shadow(0 0 15px rgba(239, 68, 68, 0.4))';
+            document.getElementById('authTitle').innerText = 'ДОСТУП ЗАПРЕЩЕН';
+            document.getElementById('authTitle').style.color = 'var(--error)';
+            document.getElementById('authDesc').innerText = message;
+            document.getElementById('btnBack').style.display = 'inline-flex';
         }
 
-        document.getElementById('authForm').onsubmit = async (e) => {
-            e.preventDefault(); 
-            if (!isLoginVerified) {
-                if (loginInput.value.trim() !== '') {
-                    isLoginVerified = true; passWrapper.classList.add('show'); passInput.setAttribute('required', 'true');
-                    sysMsg.textContent = 'ЛОГИН ПРИНЯТ. ВВЕДИТЕ ПАРОЛЬ.'; loginInput.disabled = true; passInput.focus();
-                } else { triggerError(); }
-            } else {
-                sysMsg.textContent = 'АВТОРИЗАЦИЯ...'; sysMsg.style.color = '#fff';
-                try {
-                    const res = await fetch(`${API_URL}/auth/login`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: loginInput.value.trim(), password: passInput.value })
-                    });
-                    if (res.ok) {
-                        const userData = await res.json();
-                        const validIds = ['1', '777']; const validNicks = ['dxtr', 'slizze', 'whunx', 'l1beral'];
-                        const receivedId = String(userData.user.clientId); const receivedNick = userData.user.username;
+        function openLoginModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
 
-                        if (validIds.includes(receivedId) && validNicks.includes(receivedNick)) {
-                            failedAttempts = 0; localStorage.removeItem('adminFailedAttempts');
-                            jwtToken = userData.token; localStorage.setItem('adminToken', jwtToken);
-                            window.clientId = receivedId; localStorage.setItem('dxtrNumericId', window.clientId);
-                            
-                            initAdminPanel(userData.user);
-                        } else { sysMsg.textContent = 'НЕДОСТАТОЧНО ПРАВ'; sysMsg.style.color = 'var(--error)'; setTimeout(triggerError, 1500); }
-                    } else { triggerError(); }
-                } catch (err) { sysMsg.textContent = 'ОШИБКА СЕРВЕРА СВЯЗИ'; sysMsg.style.color = 'var(--error)'; }
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        async function handleGoogleCredential(response) {
+            closeLoginModal();
+            
+            document.getElementById('authTitle').innerText = 'ПРОВЕРКА СВЯЗИ';
+            document.getElementById('authDesc').innerText = 'Синхронизация с сервером...';
+            document.getElementById('loginGoogleBtnOverlay').style.display = 'none';
+            document.getElementById('authLoader').style.display = 'block';
+
+            const { data, error } = await supabaseClient.auth.signInWithIdToken({ provider: 'google', token: response.credential });
+            if (error) { setAuthError('Ошибка входа через Google'); return; }
+            
+            checkSession();
+        }
+
+        function initGoogleAuth() {
+            if(window.google) {
+                google.accounts.id.initialize({
+                    client_id: '538822205607-83ip6fjfah8pjphus91d3ru2tfeb018b.apps.googleusercontent.com',
+                    callback: handleGoogleCredential
+                });
+                document.querySelectorAll(".google-login-btn").forEach((btn, index) => {
+                    const wrapper = btn.nextElementSibling;
+                    if (wrapper) google.accounts.id.renderButton(wrapper, { type: "standard", theme: "outline", size: "large", width: 300 });
+                });
             }
-        };
+        }
+
+        async function checkSession() {
+            if(!supabaseClient) return;
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (session) {
+                currentSessionToken = session.access_token;
+                verifyAdminAccess(currentSessionToken, session.user);
+            } else {
+                document.getElementById('authTitle').innerText = 'ТРЕБУЕТСЯ АВТОРИЗАЦИЯ';
+                document.getElementById('authDesc').innerText = 'Для доступа к панели управления войдите в систему.';
+                document.getElementById('authLoader').style.display = 'none';
+                document.getElementById('loginGoogleBtnOverlay').style.display = 'block';
+            }
+        }
+
+        async function verifyAdminAccess(token, user) {
+            document.getElementById('authTitle').innerText = 'ПРОВЕРКА СВЯЗИ';
+            document.getElementById('authDesc').innerText = 'Синхронизация с сервером...';
+            document.getElementById('loginGoogleBtnOverlay').style.display = 'none';
+            document.getElementById('authLoader').style.display = 'block';
+
+            try {
+                // ВРЕМЕННО: пока на бэке нет /api/admin/check
+                // Мы дергаем /auth/me чтобы проверить валидность токена
+                const res = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    
+                    // БЕЗОПАСНАЯ ПРОВЕРКА НА ФРОНТЕ: (До внедрения жесткой проверки на беке)
+                    if (user.email !== 'slizzedxtr@gmail.com') {
+                        setAuthError('Ваш аккаунт не имеет прав администратора.');
+                        return;
+                    }
+
+                    initAdminPanel(data.user);
+                } else {
+                    setAuthError(data.error || 'Отказано в доступе. Ваш аккаунт не имеет прав администратора.');
+                }
+            } catch (e) {
+                setAuthError('Ошибка связи с сервером.');
+            }
+        }
 
         function initAdminPanel(user) {
-            isAuthenticated = true;
-            document.getElementById('authOverlay').classList.add('hidden');
-            document.getElementById('adminName').textContent = user.nickname || user.username;
-            document.getElementById('profNickBig').textContent = user.nickname || user.username;
+            document.getElementById('adminName').innerText = user.nickname || 'Admin';
+            document.getElementById('profNickBig').innerText = user.nickname || 'Admin';
             if (user.avatarUrl && user.avatarUrl !== 'dslogo.png') {
                 document.getElementById('adminAvatar').src = user.avatarUrl;
                 document.getElementById('profAvatarBig').src = user.avatarUrl;
             }
-            if (window.socket) window.socket.emit('register_client', { token: jwtToken });
+            document.getElementById('authOverlay').classList.add('hidden');
             loadDashboardData();
         }
 
-        async function verifySessionOnLoad() {
-            if (jwtToken) {
-                try {
-                    const res = await fetch(`${API_URL}/auth/me`, { headers: authHeaders() });
-                    if (res.ok) { const data = await res.json(); initAdminPanel(data.user); return; }
-                } catch(e){}
-                logout(); // Если токен сдох - выкидываем
-            }
-            checkLocalBan();
-        }
-
         function logout() {
-            localStorage.removeItem('adminToken'); isAuthenticated = false; location.reload();
+            if(supabaseClient) supabaseClient.auth.signOut();
+            location.reload();
         }
 
-        // ========== НАВИГАЦИЯ ==========
-        function switchSection(secId, btnElement) {
-            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            document.getElementById('sec-' + secId).classList.add('active');
-            if(btnElement) btnElement.classList.add('active');
-            const titles = { 'dashboard': 'Дашборд', 'users': 'Пользователи', 'music': 'Муз. Каталог', 'promos': 'Промокоды', 'profile': 'Профиль' };
-            document.getElementById('pageTitle').innerText = titles[secId];
-            
-            if (secId === 'dashboard') loadDashboardData();
-            if (secId === 'users') loadUsersFromServer();
-            if (secId === 'music') loadMusicFromServer();
-            if (secId === 'promos') loadPromosFromServer();
-
-            if (window.innerWidth <= 900) { document.querySelector('.admin-sidebar').classList.remove('active'); }
+        function authHeaders(extra) {
+            return Object.assign({ 'Authorization': 'Bearer ' + currentSessionToken }, extra || {});
         }
 
-        // ========== ЗАГРУЗКА ДАННЫХ (API CALLS) ==========
-        let loadedUsers = [];
-        let loadedTracks = [];
-        let loadedPromos = [];
-
+        // Заглушки для загрузки данных (до обновления бэкенда они могут отдавать ошибку из-за отсутствия токена)
         async function loadDashboardData() {
             try {
-                // Статистика юзеров
-                const uRes = await fetch(`${API_URL}/users-list`, { headers: authHeaders() });
-                if (uRes.ok) {
-                    const users = await uRes.json();
+                // Загружаем юзеров из Supabase
+                const { data: users, error } = await supabaseClient.from('g_users').select('*').order('created_at', { ascending: false });
+                if (!error && users) {
                     document.getElementById('statUsers').innerText = users.length;
                     const totalCoins = users.reduce((sum, u) => sum + (Number(u.dscoin_balance) || 0), 0);
                     document.getElementById('statCoins').innerText = totalCoins;
-                    
-                    const recentHtml = users.slice(0, 5).map(u => `<tr><td class="td-user"><img src="${u.avatarUrl || '/dslogo.png'}"><b>${u.nickname || u.username}</b></td><td style="color:var(--text-muted);">${u.clientId}</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td></tr>`).join('');
+
+                    const recentHtml = users.slice(0, 5).map(u => `
+                        <tr>
+                            <td class="td-user">
+                                <img src="${u.avatar_url || '/dslogo.png'}">
+                                <b>${u.nickname || 'Аноним'}</b>
+                            </td>
+                            <td style="color:var(--text-muted); font-size: 0.8rem;">${u.id.substring(0,8)}...</td>
+                            <td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td>
+                        </tr>
+                    `).join('');
                     document.getElementById('recentUsersTable').innerHTML = recentHtml || '<tr><td colspan="3">Пусто</td></tr>';
+
+                    const allHtml = users.map(u => `
+                        <tr>
+                            <td class="td-user">
+                                <img src="${u.avatar_url || '/dslogo.png'}">
+                                <b>${u.nickname || 'Аноним'}</b>
+                            </td>
+                            <td style="color:var(--text-muted); font-size: 0.8rem;">${u.id.substring(0,12)}...</td>
+                            <td style="color:var(--text-muted);">${u.email || 'Скрыто'}</td>
+                            <td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td>
+                            <td style="color:${u.isBanned ? 'var(--error)' : 'var(--text-muted)'};">${u.isBanned ? 'Да' : 'Нет'}</td>
+                            <td class="td-actions">
+                                <button class="btn-sm edit" title="Редактировать"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-sm ban" title="Заблокировать"><i class="fa-solid fa-ban"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    document.getElementById('allUsersTable').innerHTML = allHtml;
                 }
-                // Статистика музыки
-                const mRes = await fetch(`${API_URL}/music-list`, { headers: authHeaders() });
-                if (mRes.ok) {
-                    const tracks = await mRes.json();
+
+                // Загружаем треки из Supabase
+                const { data: tracks, error: errT } = await supabaseClient.from('music').select('*').order('created_at', { ascending: false });
+                if (!errT && tracks) {
                     document.getElementById('statTracks').innerText = tracks.length;
+                    
+                    const musicHtml = tracks.map(t => `
+                        <tr>
+                            <td class="td-user">
+                                <img src="${t.cover_url || '/dslogo.png'}">
+                                <b>${t.title}</b>
+                            </td>
+                            <td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'};">${t.is_main ? 'Да' : 'Нет'}</td>
+                            <td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'};">${t.is_18 ? 'Да' : 'Нет'}</td>
+                            <td class="td-actions">
+                                <button class="btn-sm edit" title="Редактировать"><i class="fa-solid fa-pen"></i></button>
+                                <button class="btn-sm ban" title="Удалить"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    document.getElementById('musicTable').innerHTML = musicHtml || '<tr><td colspan="4">Пусто</td></tr>';
                 }
-            } catch(e) { showToast('Ошибка загрузки дашборда', 'error'); }
-        }
 
-        async function loadUsersFromServer() {
-            const list = document.getElementById('allUsersTable'); list.innerHTML = '<tr><td colspan="6" class="empty-neon">Загрузка...</td></tr>';
-            try {
-                const res = await fetch(`${API_URL}/users-list`, { headers: authHeaders() });
-                if(res.ok) {
-                    loadedUsers = await res.json();
-                    if(loadedUsers.length === 0) { list.innerHTML = '<tr><td colspan="6" class="empty-neon">Пусто</td></tr>'; return; }
-                    renderUsersTable(loadedUsers);
-                } else { list.innerHTML = '<tr><td colspan="6" class="empty-neon">Ошибка авторизации</td></tr>'; }
-            } catch(e) { list.innerHTML = '<tr><td colspan="6" class="empty-neon">Ошибка сети</td></tr>'; }
-        }
-
-        function renderUsersTable(users) {
-            const list = document.getElementById('allUsersTable');
-            list.innerHTML = users.map(u => `<tr><td class="td-user"><img src="${u.avatarUrl || '/dslogo.png'}"><b>${u.nickname || 'Аноним'}</b></td><td style="color:var(--text-muted);">${u.clientId}</td><td>${u.username}</td><td style="color:var(--success); font-weight:700;">${u.dscoin_balance || 0} NC</td><td style="color:${u.isBanned ? 'var(--error)' : 'var(--text-muted)'};">${u.isBanned ? 'Бан' : 'Нет'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditProfile('${u._id}', '${u.clientId}', '${u.username || ''}', '${u.nickname || ''}', '${u.avatarUrl || ''}', '${u.dscoin_balance || 0}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('profile', '${u._id}', '${u.clientId}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
-        }
-
-        document.getElementById('userSearchInput').addEventListener('input', (e) => {
-            const q = e.target.value.toLowerCase();
-            const filtered = loadedUsers.filter(u => (u.nickname && u.nickname.toLowerCase().includes(q)) || (u.username && u.username.toLowerCase().includes(q)) || (u.clientId && u.clientId.includes(q)));
-            renderUsersTable(filtered);
-        });
-
-        async function loadMusicFromServer() {
-            const list = document.getElementById('musicTable'); list.innerHTML = '<tr><td colspan="4" class="empty-neon">Загрузка...</td></tr>';
-            try {
-                const res = await fetch(`${API_URL}/music-list`, { headers: authHeaders() });
-                if(res.ok) {
-                    loadedTracks = await res.json();
-                    if(loadedTracks.length === 0) { list.innerHTML = '<tr><td colspan="4" class="empty-neon">Каталог пуст</td></tr>'; return; }
-                    list.innerHTML = loadedTracks.map(t => `<tr><td class="td-user"><img src="${t.cover_url}"><div><b>${t.title}</b><div style="font-size:0.8rem;color:var(--text-muted);">${t.authors || 'DXTR feat. SlizZe'}</div></div></td><td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_main ? 'Да' : 'Нет'}</td><td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_18 ? 'Да' : 'Нет'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
-                }
-            } catch(e) {}
-        }
-
-        async function loadPromosFromServer() {
-            const list = document.getElementById('promosTable'); list.innerHTML = '<tr><td colspan="4" class="empty-neon">Загрузка...</td></tr>';
-            try {
-                const res = await fetch(`${API_URL}/promos-list`, { headers: authHeaders() });
-                if(res.ok) {
-                    loadedPromos = await res.json();
-                    if(loadedPromos.length === 0) { list.innerHTML = '<tr><td colspan="4" class="empty-neon">Нет активных кодов</td></tr>'; return; }
-                    list.innerHTML = loadedPromos.map(p => `<tr><td><b>#${p.code}</b><br><span style="font-size:0.8rem;color:var(--text-muted);">${p.title}</span></td><td style="color:${p.isCurrency ? 'var(--success)' : 'var(--accent-purple)'}; font-weight:bold;">${p.isCurrency ? p.amount+' NC' : 'Медиа'}</td><td style="color:var(--text-muted);">${p.usesLeft !== undefined ? p.usesLeft : (p.maxUses || '∞')} / ${p.maxUses || '∞'}</td><td class="td-actions"><button class="btn-sm edit" onclick="openEditPromo('${p.code}', '${p.title}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('promo', '${p.code}', '#${p.code}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('');
-                }
-            } catch(e) {}
-        }
-
-        // ========== МОДАЛКИ (Открытие/Закрытие) ==========
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        // --- УДАЛЕНИЕ ---
-        let deleteType = ''; let deleteId = '';
-        function confirmDelete(type, id, name) {
-            deleteType = type; deleteId = id; document.getElementById('modalCodeName').textContent = name;
-            let text = 'Удалить этот элемент?';
-            if(type === 'music') text = 'Удалить трек из базы? Файлы будут стерты.';
-            if(type === 'profile') text = 'Удалить пользователя навсегда?';
-            if(type === 'promo') text = 'Удалить промокод навсегда?';
-            document.getElementById('deleteModalText').innerText = text;
-            document.getElementById('deleteModal').classList.add('active');
-        }
-        document.getElementById('confirmDeleteBtn').onclick = async () => {
-            const btn = document.getElementById('confirmDeleteBtn'); btn.innerHTML = '...';
-            let url = '';
-            if(deleteType === 'music') url = `${API_URL}/music/${deleteId}`;
-            if(deleteType === 'profile') url = `${API_URL}/user/${deleteId}`;
-            if(deleteType === 'promo') url = `${API_URL}/promo/${deleteId}`;
-            try {
-                const res = await fetch(url, { method: 'DELETE', headers: authHeaders({ 'Content-Type': 'application/json' }) });
-                if(res.ok) {
-                    closeModal('deleteModal'); showToast('Успешно удалено', 'success');
-                    if(deleteType === 'music') loadMusicFromServer();
-                    if(deleteType === 'profile') loadUsersFromServer();
-                    if(deleteType === 'promo') loadPromosFromServer();
-                } else { showToast('Ошибка удаления', 'error'); }
-            } catch(e) { showToast('Сбой сети', 'error'); }
-            btn.innerHTML = 'Удалить';
-        };
-
-        // --- РЕДАКТИРОВАНИЕ ПРОФИЛЯ ---
-        let editProfDbId = '';
-        function openEditProfile(dbId, cId, username, nick, avatar, balance) { 
-            editProfDbId = dbId; 
-            document.getElementById('editProfIdInput').value = cId; 
-            document.getElementById('editProfUsernameInput').value = username; 
-            document.getElementById('editProfNickInput').value = nick; 
-            document.getElementById('editProfAvatarInput').value = avatar; 
-            document.getElementById('editProfBalanceInput').value = balance; 
-            document.getElementById('editProfPassInput').value = '';
-            document.getElementById('editProfileModal').classList.add('active'); 
-        }
-        document.getElementById('confirmEditProfileBtn').onclick = async () => {
-            const newId = document.getElementById('editProfIdInput').value.trim();
-            const payload = { 
-                newClientId: newId, 
-                newUsername: document.getElementById('editProfUsernameInput').value.trim(), 
-                newNickname: document.getElementById('editProfNickInput').value.trim(), 
-                newAvatarUrl: document.getElementById('editProfAvatarInput').value.trim(), 
-                newBalance: Number(document.getElementById('editProfBalanceInput').value.trim()) || 0 
-            };
-            const newPass = document.getElementById('editProfPassInput').value.trim();
-            if (newPass) payload.newPassword = newPass;
-            if(!newId) return showToast('ID обязателен', 'error');
-
-            try {
-                const res = await fetch(`${API_URL}/user/${editProfDbId}`, { method: 'PUT', headers: authHeaders({ 'Content-Type': 'application/json' }), body: JSON.stringify(payload) });
-                if(res.ok) { closeModal('editProfileModal'); loadUsersFromServer(); showToast('Профиль обновлен', 'success'); } 
-                else { const err = await res.json(); showToast(err.error || 'Ошибка', 'error'); }
-            } catch(e) { showToast('Ошибка сети', 'error'); }
-        };
-
-        // --- МУЗЫКА (Парсеры LRC) ---
-        function parseLRC(lrcText) {
-            if (!lrcText || !lrcText.trim()) return [];
-            const lines = lrcText.split('\n'); const result = []; const timeReg = /\[(\d{2}):(\d{2})\.(\d{2,3})\]/;
-            lines.forEach(line => {
-                const match = timeReg.exec(line);
-                if (match) {
-                    const time = parseInt(match[1]) * 60 + parseInt(match[2]) + (parseInt(match[3]) > 99 ? parseInt(match[3]) / 1000 : parseInt(match[3]) / 100);
-                    const text = line.replace(timeReg, '').trim();
-                    if (text || text === "") result.push({ t: time, s: text });
-                }
-            });
-            return result;
-        }
-        function jsonToLRC(jsonArray) {
-            if (!jsonArray || !Array.isArray(jsonArray) || jsonArray.length === 0) return '';
-            return jsonArray.map(item => {
-                const min = Math.floor(item.t / 60).toString().padStart(2, '0');
-                const sec = Math.floor(item.t % 60).toString().padStart(2, '0');
-                const ms = Math.floor((item.t % 1) * 100).toString().padStart(2, '0');
-                return `[${min}:${sec}.${ms}] ${item.s}`;
-            }).join('\n');
-        }
-        function smartParseLyrics(rawInput) {
-            if (!rawInput || !rawInput.trim()) return [];
-            if (rawInput.trim().startsWith('[')) {
-                try {
-                    const apiResponse = JSON.parse(rawInput);
-                    let subtitleString = null;
-                    if (Array.isArray(apiResponse) && apiResponse[0]?.message?.body?.subtitle?.subtitle_body) { subtitleString = apiResponse[0].message.body.subtitle.subtitle_body; }
-                    if (subtitleString) {
-                        const rawLyrics = JSON.parse(subtitleString);
-                        return rawLyrics.map(item => ({ t: item.time.total, s: item.text })).filter(item => item.s.trim() !== "");
-                    }
-                } catch (err) {}
+            } catch (e) {
+                console.error("Ошибка загрузки данных дашборда", e);
             }
-            return parseLRC(rawInput);
         }
 
-        // --- ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ МУЗЫКИ ---
-        let currentEditMusicId = null;
-        let isEditingMusic = false;
-
-        function openMusicModal() {
-            isEditingMusic = false; currentEditMusicId = null;
-            document.getElementById('musicForm').reset();
-            document.getElementById('musicModalTitle').innerText = 'ДОБАВИТЬ ТРЕК';
-            document.getElementById('mCoverText').innerText = 'Обложка (Обяз)'; document.getElementById('mMp3Text').innerText = 'Трек (Обяз)';
-            document.getElementById('mCover').required = true; document.getElementById('mMp3').required = true;
-            document.getElementById('platformsContainer').style.display = 'none';
-            document.getElementById('musicFileHint').innerText = 'Файлы обязательны для загрузки нового трека.';
-            document.getElementById('musicModal').classList.add('active');
-        }
-
-        function openEditMusic(id) {
-            const track = loadedTracks.find(t => String(t.id) === String(id)); if(!track) return;
-            isEditingMusic = true; currentEditMusicId = id;
-            document.getElementById('musicModalTitle').innerText = 'РЕДАКТИРОВАТЬ ТРЕК';
-            document.getElementById('mTitle').value = track.title;
-            document.getElementById('mAuthors').value = track.authors || 'DXTR feat. SlizZe';
-            document.getElementById('mYt').value = track.yt_link || '';
-            document.getElementById('mLyrics').value = track.lyrics ? jsonToLRC(track.lyrics) : '';
-            document.getElementById('m18').checked = track.is_18; document.getElementById('mMain').checked = track.is_main;
-            
-            const hasPlat = track.platforms && Object.keys(track.platforms).length > 0;
-            document.getElementById('mHasPlatforms').checked = hasPlat;
-            document.getElementById('platformsContainer').style.display = hasPlat ? 'flex' : 'none';
-            if (hasPlat) {
-                document.getElementById('linkSpotify').value = track.platforms.spotify || '';
-                document.getElementById('linkVk').value = track.platforms.vk || '';
-                document.getElementById('linkYandex').value = track.platforms.yandex || '';
-            } else { document.getElementById('linkSpotify').value = ''; document.getElementById('linkVk').value = ''; document.getElementById('linkYandex').value = ''; }
-            
-            document.getElementById('mCover').required = false; document.getElementById('mMp3').required = false;
-            document.getElementById('mCover').value = ''; document.getElementById('mMp3').value = '';
-            document.getElementById('mCoverText').textContent = 'Новая обложка'; document.getElementById('mMp3Text').textContent = 'Новый MP3';
-            document.getElementById('musicFileHint').innerText = '* Оставьте поля файлов пустыми, если не хотите их менять.';
-            
-            document.getElementById('musicModal').classList.add('active');
-        }
-
-        document.getElementById('mCover').onchange = (e) => document.getElementById('mCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Обложка';
-        document.getElementById('mMp3').onchange = (e) => document.getElementById('mMp3Text').textContent = e.target.files[0] ? 'Выбрано' : 'MP3';
-
-        document.getElementById('mMain').addEventListener('change', (e) => {
-            if(e.target.checked) { document.getElementById('mHasPlatforms').checked = true; document.getElementById('mHasPlatforms').disabled = true; document.getElementById('platformsContainer').style.display = 'flex'; } 
-            else { document.getElementById('mHasPlatforms').disabled = false; }
-        });
-        document.getElementById('mHasPlatforms').addEventListener('change', (e) => { document.getElementById('platformsContainer').style.display = e.target.checked ? 'flex' : 'none'; });
-
-        document.getElementById('musicForm').onsubmit = function(e) {
-            e.preventDefault();
-            let platformsJson = "{}";
-            if (document.getElementById('mHasPlatforms').checked) { platformsJson = JSON.stringify({ spotify: document.getElementById('linkSpotify').value, vk: document.getElementById('linkVk').value, yandex: document.getElementById('linkYandex').value }); }
-            
-            const formData = new FormData();
-            formData.append('title', document.getElementById('mTitle').value);
-            formData.append('authors', document.getElementById('mAuthors').value.trim() || 'DXTR feat. SlizZe');
-            formData.append('yt_link', document.getElementById('mYt').value);
-            formData.append('platforms', platformsJson);
-            formData.append('is_18', document.getElementById('m18').checked);
-            formData.append('is_main', document.getElementById('mMain').checked);
-            formData.append('lyrics', JSON.stringify(smartParseLyrics(document.getElementById('mLyrics').value)));
-
-            const coverFile = document.getElementById('mCover').files[0];
-            const mp3File = document.getElementById('mMp3').files[0];
-            if (coverFile) formData.append('cover', coverFile);
-            if (mp3File) formData.append('mp3', mp3File);
-
-            const xhr = new XMLHttpRequest();
-            document.getElementById('mSubmitBtn').disabled = true;
-            document.getElementById('mProgressContainer').style.display = 'block';
-            
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) document.getElementById('mProgressBar').style.width = Math.round((e.loaded / e.total) * 100) + '%';
-            });
-
-            xhr.addEventListener('load', () => {
-                document.getElementById('mSubmitBtn').disabled = false;
-                document.getElementById('mProgressContainer').style.display = 'none';
-                document.getElementById('mProgressBar').style.width = '0%';
-                if (xhr.status === 200) { showToast('Успешно!', 'success'); closeModal('musicModal'); loadMusicFromServer(); } 
-                else { showToast('Ошибка сохранения', 'error'); }
-            });
-
-            const method = isEditingMusic ? 'PUT' : 'POST';
-            const url = isEditingMusic ? `${API_URL}/music/${currentEditMusicId}` : `${API_URL}/music`;
-            xhr.open(method, url, true);
-            xhr.setRequestHeader('Authorization', 'Bearer ' + jwtToken);
-            xhr.send(formData);
+        // Старт проверки при загрузке
+        window.onload = () => {
+            setTimeout(checkSession, 1000); 
         };
-
-        // --- ДОБАВЛЕНИЕ / РЕДАКТИРОВАНИЕ ПРОМОКОДОВ ---
-        function openPromoModal() {
-            document.getElementById('promoForm').reset();
-            document.getElementById('promoMediaFields').style.display = 'flex';
-            document.getElementById('promoCurrencyFields').style.display = 'none';
-            document.getElementById('pCover').required = true; document.getElementById('pTrack').required = true;
-            document.getElementById('pCoverText').textContent = 'Секретная Обложка'; document.getElementById('pTrackText').textContent = 'Секретный Трек';
-            document.getElementById('promoModal').classList.add('active');
-        }
-
-        document.getElementById('pIsCurrency').addEventListener('change', function() {
-            const mediaFields = document.getElementById('promoMediaFields'), currFields = document.getElementById('promoCurrencyFields');
-            const coverInput = document.getElementById('pCover'), trackInput = document.getElementById('pTrack');
-            if(this.checked) { mediaFields.style.display = 'none'; currFields.style.display = 'flex'; coverInput.required = false; trackInput.required = false; } 
-            else { mediaFields.style.display = 'flex'; currFields.style.display = 'none'; coverInput.required = true; trackInput.required = true; }
-        });
-
-        document.getElementById('pCover').onchange = (e) => document.getElementById('pCoverText').textContent = e.target.files[0] ? 'Выбрано' : 'Секретная Обложка';
-        document.getElementById('pTrack').onchange = (e) => document.getElementById('pTrackText').textContent = e.target.files[0] ? 'Выбрано' : 'Секретный Трек';
-
-        document.getElementById('promoForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const formData = new FormData();
-            formData.append('promo', document.getElementById('pCode').value);
-            formData.append('title', document.getElementById('pTitle').value);
-            
-            const isCurrency = document.getElementById('pIsCurrency').checked;
-            formData.append('isCurrency', isCurrency);
-
-            if (isCurrency) {
-                formData.append('amount', document.getElementById('pAmount').value);
-                formData.append('maxUses', document.getElementById('pUses').value);
-            } else {
-                formData.append('cover', document.getElementById('pCover').files[0]);
-                formData.append('track', document.getElementById('pTrack').files[0]);
-            }
-
-            const btn = document.getElementById('pSubmitBtn'); btn.disabled = true; btn.innerText = "...";
-            try {
-                const res = await fetch(`${API_URL}/promo`, { method: 'POST', headers: authHeaders(), body: formData });
-                if (res.ok) { closeModal('promoModal'); loadPromosFromServer(); showToast('Код создан', 'success'); }
-                else { const err = await res.json(); showToast(err.error || 'Ошибка', 'error'); }
-            } catch(e) { showToast('Сбой сети', 'error'); }
-            btn.disabled = false; btn.innerHTML = 'Создать';
-        };
-
-        function openEditPromo(code, title) {
-            document.getElementById('editPCode').value = code; document.getElementById('editPTitle').value = title;
-            document.getElementById('editPromoModal').classList.add('active');
-        }
-        document.getElementById('confirmEditPromoBtn').onclick = async () => {
-            const oldCode = document.getElementById('editPCode').defaultValue; // Старый код достаем из DOM если надо, или передаем переменной
-            // Для упрощения мы просто отправляем данные. Если нужно менять сам код, нужно сохранять oldCode глобально.
-            const newCode = document.getElementById('editPCode').value;
-            const newTitle = document.getElementById('editPTitle').value;
-            try {
-                const res = await fetch(`${API_URL}/promo/${newCode}`, { method: 'PUT', headers: authHeaders({'Content-Type': 'application/json'}), body: JSON.stringify({ newCode, newTitle }) });
-                if(res.ok) { closeModal('editPromoModal'); loadPromosFromServer(); showToast('Обновлено', 'success'); }
-                else { showToast('Ошибка сохранения', 'error'); }
-            } catch(e) {}
-        };
-
-        // Запуск сессии при старте
-        verifySessionOnLoad();
-
     </script>
 </body>
 </html>
