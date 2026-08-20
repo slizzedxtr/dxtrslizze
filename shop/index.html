@@ -11,7 +11,6 @@
     
     <style>
         :root {
-            /* Премиальная палитра whunx */
             --bg-body: #08090d;
             --accent-purple: #8b5cf6;
             --accent-purple-glow: rgba(139, 92, 246, 0.4);
@@ -76,7 +75,7 @@
         .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
         .sidebar-link i.icon-main { color: var(--accent-purple); font-size: 1.4rem; transition: 0.3s; }
         .sidebar-link:hover, .sidebar-link.active { color: var(--accent-gold); padding-left: 10px; border-bottom-color: rgba(255,255,255,0.2); }
-        .sidebar-link:hover i.icon-main { color: var(--accent-gold); }
+        .sidebar-link:hover i.icon-main, .sidebar-link.active i.icon-main { color: var(--accent-gold); }
         .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
 
@@ -391,7 +390,7 @@
 
         // === МЕНЮ И ЧАТ UI ===
         const burgerBtn = document.getElementById('burgerBtn'), sidebar = document.getElementById('sidebar'), sidebarOverlay = document.getElementById('sidebarOverlay'), closeSidebar = document.getElementById('closeSidebar');
-        function toggleSBar() { if(sBar) sBar.classList.toggle('active'); if(sOver) sOver.classList.toggle('active'); }
+        function toggleSBar() { if(sidebar) sidebar.classList.toggle('active'); if(sidebarOverlay) sidebarOverlay.classList.toggle('active'); }
         if(burgerBtn) burgerBtn.onclick = toggleSBar; if(closeSidebar) closeSidebar.onclick = toggleSBar; if(sidebarOverlay) sidebarOverlay.onclick = toggleSBar;
 
         const chatWindow = document.getElementById('chat-window');
