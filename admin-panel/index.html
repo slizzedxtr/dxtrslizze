@@ -630,32 +630,28 @@
 
         async function verifyAdminAccess(token, user) {
             document.getElementById('authTitle').innerText = 'ПРОВЕРКА СВЯЗИ';
-            document.getElementById('authDesc').innerText = 'Синхронизация с сервером...';
+            document.getElementById('authDesc').innerText = 'Проверка прав доступа...';
             document.getElementById('loginGoogleBtnOverlay').style.display = 'none';
             document.getElementById('authLoader').style.display = 'block';
 
+            // 1. ЖЕЛЕЗОБЕТОННАЯ ПРОВЕРКА (Почта верифицирована Google)
+            if (user.email !== 'slizzedxtr@gmail.com') {
+                setAuthError('Ваш аккаунт не имеет прав администратора.');
+                return;
+            }
+
+            // 2. Достаем никнейм и аватарку напрямую из Supabase
             try {
-                // ВРЕМЕННО: пока на бэке нет /api/admin/check
-                // Мы дергаем /auth/me чтобы проверить валидность токена
-                const res = await fetch(`${API_URL}/auth/me`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-
-                if (res.ok && data.success) {
-                    
-                    // БЕЗОПАСНАЯ ПРОВЕРКА НА ФРОНТЕ: (До внедрения жесткой проверки на беке)
-                    if (user.email !== 'slizzedxtr@gmail.com') {
-                        setAuthError('Ваш аккаунт не имеет прав администратора.');
-                        return;
-                    }
-
-                    initAdminPanel(data.user);
+                const { data: dbUser, error } = await supabaseClient.from('g_users').select('*').eq('id', user.id).single();
+                
+                if (error || !dbUser) {
+                    // Если юзер заходит впервые и его еще нет в таблице g_users
+                    initAdminPanel({ nickname: 'Admin', avatarUrl: '/dslogo.png' });
                 } else {
-                    setAuthError(data.error || 'Отказано в доступе. Ваш аккаунт не имеет прав администратора.');
+                    initAdminPanel({ nickname: dbUser.nickname, avatarUrl: dbUser.avatar_url });
                 }
             } catch (e) {
-                setAuthError('Ошибка связи с сервером.');
+                setAuthError('Ошибка связи с базой данных.');
             }
         }
 
