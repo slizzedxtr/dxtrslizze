@@ -277,7 +277,7 @@
                 АВТОРИЗОВАТЬСЯ
             </button>
 
-            <a href="https://dxtrslizze.xyz/" class="btn-back" id="btnBack" style="margin-top: 20px;">
+            <a href="https://whuberal.com/" class="btn-back" id="btnBack" style="margin-top: 20px;">
                 <i class="fa-solid fa-arrow-left"></i> На сайт
             </a>
         </div>
@@ -295,7 +295,7 @@
             <div class="nav-item" onclick="switchSection('promos', this)"><i class="fa-solid fa-ticket"></i> Промокоды</div>
         </nav>
         <div class="sidebar-footer">
-            <a href="https://dxtrslizze.xyz/" class="logout-btn" style="color:#fff;"><i class="fa-solid fa-door-open"></i> На сайт</a>
+            <a href="https://whuberal.com/" class="logout-btn" style="color:#fff;"><i class="fa-solid fa-door-open"></i> На сайт</a>
             <div class="logout-btn" style="margin-top: 10px;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Выход</div>
         </div>
     </aside>
@@ -322,7 +322,7 @@
                 <h2 id="profNickBig" style="font-size: 1.8rem; margin-bottom: 5px; color: #fff;">Admin</h2>
                 <div style="color: var(--accent-gold); font-weight: 800; letter-spacing: 1px; margin-bottom: 25px; text-transform: uppercase; font-size: 0.85rem;">Системный администратор</div>
                 
-                <a href="https://dxtrslizze.xyz/profile" class="m-btn m-btn-confirm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; margin-bottom: 15px; color: #fff;">
+                <a href="https://whuberal.com/profile" class="m-btn m-btn-confirm" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; margin-bottom: 15px; color: #fff;">
                     <i class="fa-solid fa-user"></i> Настройки профиля
                 </a>
                 <button class="m-btn m-btn-danger" style="width: 100%;" onclick="logout()">ВЫЙТИ ИЗ СИСТЕМЫ</button>
@@ -461,7 +461,7 @@
             <h3 id="musicModalTitle">Добавить трек</h3>
             <form id="musicForm">
                 <div class="form-group"><label class="form-label">Название</label><input type="text" id="mTitle" class="form-input" required></div>
-                <div class="form-group"><label class="form-label">Авторы</label><input type="text" id="mAuthors" class="form-input" placeholder="DXTR feat. SlizZe"></div>
+                <div class="form-group"><label class="form-label">Авторы</label><input type="text" id="mAuthors" class="form-input" placeholder="Whunx & l1beral"></div>
                 <div class="form-group"><label class="form-label">YouTube Клип (URL)</label><input type="url" id="mYt" class="form-input"></div>
                 <div class="form-group"><label class="form-label">Текст (LRC)</label><textarea id="mLyrics" class="form-input" style="min-height: 100px; resize: vertical;" placeholder="[00:12.34] Текст..."></textarea></div>
                 
@@ -713,7 +713,7 @@
             if (!error && data) {
                 loadedTracks = data;
                 if(data.length === 0) list.innerHTML = '<tr><td colspan="4" class="empty-neon">Каталог пуст</td></tr>';
-                else list.innerHTML = data.map(t => `<tr><td class="td-user"><img src="${t.cover_url}"><div><b>${t.title}</b><div style="font-size:0.8rem;color:var(--text-muted);">${t.authors || 'DXTR feat. SlizZe'}</div></div></td><td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_main ? 'Да' : 'Нет'}</td><td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_18 ? 'Да' : 'Нет'}</td><td><div class="td-actions"><button class="btn-sm edit" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`).join('');
+                else list.innerHTML = data.map(t => `<tr><td class="td-user"><img src="${t.cover_url}"><div><b>${t.title}</b><div style="font-size:0.8rem;color:var(--text-muted);">${t.authors || 'Whunx & l1beral'}</div></div></td><td style="color:${t.is_main ? 'var(--accent-gold)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_main ? 'Да' : 'Нет'}</td><td style="color:${t.is_18 ? 'var(--error)' : 'var(--text-muted)'}; font-weight:bold;">${t.is_18 ? 'Да' : 'Нет'}</td><td><div class="td-actions"><button class="btn-sm edit" onclick="openEditMusic('${t.id}')"><i class="fa-solid fa-pen"></i></button><button class="btn-sm ban" onclick="confirmDelete('music', '${t.id}', '${t.title}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`).join('');
             }
         }
 
@@ -863,7 +863,7 @@
             isEditingMusic = true; currentEditMusicId = id;
             document.getElementById('musicModalTitle').innerText = 'РЕДАКТИРОВАТЬ ТРЕК';
             document.getElementById('mTitle').value = track.title;
-            document.getElementById('mAuthors').value = track.authors || 'DXTR feat. SlizZe';
+            document.getElementById('mAuthors').value = track.authors || 'Whunx & l1beral';
             document.getElementById('mYt').value = track.yt_link || '';
             document.getElementById('mLyrics').value = track.lyrics ? jsonToLRC(track.lyrics) : '';
             document.getElementById('m18').checked = track.is_18; document.getElementById('mMain').checked = track.is_main;
@@ -904,7 +904,7 @@
                 
                 const payload = {
                     title: document.getElementById('mTitle').value,
-                    authors: document.getElementById('mAuthors').value.trim() || 'DXTR feat. SlizZe',
+                    authors: document.getElementById('mAuthors').value.trim() || 'Whunx & l1beral',
                     yt_link: document.getElementById('mYt').value,
                     platforms: platformsJson,
                     is_18: document.getElementById('m18').checked,
