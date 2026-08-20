@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Whunx | l1beral - Арена</title>
-    <meta name="description" content="Игровой терминал. Фарми крипту, играй в мини-игры.">
+    <meta name="description" content="Игровой терминал DXTR | SlizZe. Фарми крипту, играй в мини-игры.">
     <link rel="icon" type="image.png" href="/dslogo.png">
-    
+    <link rel="apple-touch-icon" href="/dslogo.png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://dxtrslizze.xyz/games">
+    <meta property="og:title" content="Whunx | l1beral - Арена">
+    <meta property="og:description" content="Игровой терминал. Умножай баланс.">
+    <meta property="og:image" content="https://dxtrslizze.xyz/dslogo.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -17,72 +24,74 @@
             --accent-purple-glow: rgba(139, 92, 246, 0.4);
             --accent-gold: #f4c745;
             --accent-gold-glow: rgba(244, 199, 69, 0.4);
-            
-            --glass-bg: rgba(15, 15, 20, 0.65);
+
+            --glass-bg: rgba(20, 20, 25, 0.65);
             --glass-border: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff;
-            --text-muted: #a3a8b5;
+            --text-muted: #9ca3af;
             --error: #ef4444;
             --success: #10b981;
         }
 
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        html, body { scrollbar-width: none; -ms-overflow-style: none; overflow-x: hidden; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        html, body { overflow-x: hidden; width: 100%; scrollbar-width: none; -ms-overflow-style: none; }
         html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
-        body { font-family: 'Montserrat', sans-serif; width: 100%; min-height: 100vh; background-color: var(--bg-body); color: var(--text-main); display: flex; flex-direction: column; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; position: relative; }
 
         /* ── ФОН ── */
-        .bg-blobs { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; overflow: hidden; background: var(--bg-body); pointer-events: none;}
-        .blob { position: absolute; border-radius: 50%; filter: blur(150px); opacity: 0.3; animation: float 20s infinite alternate ease-in-out; }
-        .blob-1 { width: 700px; height: 700px; background: var(--accent-purple); top: -20%; left: -10%; }
+        .bg-blobs { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -2; overflow: hidden; background: var(--bg-body); }
+        .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.3; animation: float 20s infinite alternate ease-in-out; }
+        .blob-1 { width: 700px; height: 700px; background: var(--accent-purple); top: -10%; left: -10%; }
         .blob-2 { width: 600px; height: 600px; background: var(--accent-gold); bottom: -20%; right: -10%; animation-delay: -5s; opacity: 0.2; }
-        .blob-3 { width: 500px; height: 500px; background: var(--accent-purple); top: 40%; left: 30%; opacity: 0.15; animation-delay: -10s; }
-        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(40px, 40px) scale(1.1); } }
+        .blob-3 { width: 500px; height: 500px; background: var(--accent-purple); top: 30%; left: 40%; opacity: 0.15; animation-delay: -10s; }
+        @keyframes float { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.1); } }
 
         body::before {
-            content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; pointer-events: none;
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100vh; z-index: -1; pointer-events: none;
             background: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-            background-size: 50px 50px; mask-image: radial-gradient(ellipse at center, black 50%, transparent 100%);
+            background-size: 40px 40px; mask-image: radial-gradient(circle at center, black 50%, transparent 100%); -webkit-mask-image: radial-gradient(circle at center, black 50%, transparent 100%);
         }
 
         .valuta-icon { width: 1.1em; height: 1.1em; vertical-align: middle; margin: -2px 4px 0 4px; filter: drop-shadow(0 0 5px rgba(244, 199, 69, 0.5)); }
-        .glow-text   { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-        .fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .glow-text { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        .fade-in { animation: fadeIn 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; opacity: 0; transform: translateY(20px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ── TOAST ── */
         .toast-container { position: fixed; top: 25px; right: 25px; z-index: 10005; display: flex; flex-direction: column; gap: 12px; pointer-events: none; }
-        .toast { background: rgba(15, 15, 20, 0.9); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-left: 4px solid var(--accent-purple); color: #fff; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 15px; animation: slideInRight 0.4s ease forwards; pointer-events: auto; }
+        .toast { background: rgba(15, 15, 20, 0.85); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-left: 4px solid var(--accent-purple); color: #fff; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 15px; animation: slideInRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; pointer-events: auto; }
         .toast.toast-error { border-left-color: var(--error); }
         .toast.toast-success { border-left-color: var(--success); }
-        .toast i { font-size: 1.4rem; }
+        .toast i { font-size: 1.3rem; }
+        .toast-error i { color: var(--error); } .toast-success i { color: var(--success); } .toast-info i { color: var(--accent-purple); }
         @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadeOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
 
-        /* ── НАВИГАЦИЯ И БУРГЕР ── */
-        .top-nav { display: flex; justify-content: center; align-items: center; gap: 5px; padding: 8px 10px; margin: 25px auto 0; position: relative; z-index: 20; max-width: fit-content; background: rgba(20, 20, 25, 0.5); border: 1px solid var(--glass-border); border-radius: 50px; backdrop-filter: blur(20px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 20px; border-radius: 40px; transition: 0.3s; }
+        /* ── НАВИГАЦИЯ ── */
+        .top-nav { display: flex; justify-content: center; align-items: center; gap: 5px; padding: 8px 10px; margin: 25px auto 0; position: relative; z-index: 20; max-width: fit-content; background: rgba(20, 20, 25, 0.5); border: 1px solid var(--glass-border); border-radius: 50px; backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
+        .nav-link { color: var(--text-muted); text-decoration: none; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; padding: 10px 20px; border-radius: 40px; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .nav-link:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
         .nav-link.active { color: #fff; background: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
 
-        .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: var(--glass-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.1rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
+        .burger-btn { position: fixed; top: 25px; left: 25px; z-index: 10001; background: var(--glass-bg); border: 1px solid var(--glass-border); width: 45px; height: 45px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); }
         .burger-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.3); }
 
-        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(25px); border-right: 1px solid var(--glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s ease; box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 300px; height: 100vh; background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(25px); border-right: 1px solid var(--glass-border); z-index: 10000; display: flex; flex-direction: column; padding: 80px 30px 30px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
         .sidebar.active { left: 0; }
-        .sidebar-link { color: white; text-decoration: none; font-size: 1rem; font-weight: 600; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
-        .sidebar-link i { color: var(--accent-purple); font-size: 1.3rem; transition: 0.3s; width: 25px; text-align: center; }
-        .sidebar-link:hover, .sidebar-link.active { color: var(--accent-gold); padding-left: 10px; border-bottom-color: rgba(255,255,255,0.1); }
-        .sidebar-link:hover i, .sidebar-link.active i { color: var(--accent-gold); }
-        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
+        .sidebar-link { color: white; text-decoration: none; font-size: 1.1rem; font-weight: 700; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; }
+        .sidebar-link i.icon-main { color: var(--accent-purple); font-size: 1.4rem; transition: 0.3s; width: 25px; text-align: center; }
+        .sidebar-link:hover, .sidebar-link.active { color: var(--accent-gold); padding-left: 10px; border-bottom-color: rgba(255,255,255,0.2); }
+        .sidebar-link:hover i.icon-main, .sidebar-link.active i.icon-main { color: var(--accent-gold); }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 9999; display: none; opacity: 0; transition: 0.3s; }
         .sidebar-overlay.active { display: block; opacity: 1; }
 
         /* ── ТОП-КОНТРОЛЫ ── */
-        .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; align-items: center; gap: 12px; }
-        
-        .global-balance { background: rgba(20, 20, 25, 0.8); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 50px; display: none; align-items: center; gap: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+        .top-controls { position: fixed; top: 25px; right: 25px; z-index: 10002; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+        .ctrl-row { display: flex; align-items: center; gap: 12px; }
+
+        .global-balance { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 50px; display: none; align-items: center; gap: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
         .global-balance.active { display: flex; animation: fadeIn 0.5s ease forwards; }
         .global-balance .val { font-size: 1rem; font-weight: 800; color: #fff; }
 
@@ -92,71 +101,109 @@
 
         .online-counter { background: var(--glass-bg); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 50px; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; cursor: default; white-space: nowrap; }
         .pulse-dot { width: 10px; height: 10px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); animation: pulseGreen 2s infinite; }
-        @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
-        .online-num { color: var(--text-main); font-weight: 800; font-size: 0.85rem; }
+        @keyframes pulseGreen { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        .online-text { font-size: 0.85rem; font-weight: 700; color: #fff; letter-spacing: 1px; text-transform: uppercase; }
+        .online-num { color: var(--accent-gold); font-weight: 900; }
 
-        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--glass-border); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-body); transition: 0.3s; text-decoration: none; cursor: pointer; }
+        .profile-btn { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--glass-border); overflow: hidden; display: flex; justify-content: center; align-items: center; background: var(--bg-body); transition: 0.3s; text-decoration: none; cursor: pointer; flex-shrink: 0; }
         .profile-btn img { width: 100%; height: 100%; object-fit: cover; }
         .profile-btn:hover { border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); transform: scale(1.05); }
 
         /* ── ЧАТ ТЕХПОДДЕРЖКИ ── */
-        #chat-window { display: none; position: fixed; bottom: 30px; right: 30px; width: 360px; height: 500px; flex-direction: column; overflow: hidden; background: rgba(15, 15, 20, 0.9); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(25px); z-index: 9999; }
-        .chat-header { background: rgba(0,0,0,0.4); border-bottom: 1px solid var(--glass-border); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2; cursor: grab; }
+        #chat-window { display: none; position: fixed; bottom: 30px; right: 30px; width: 380px; height: 520px; flex-direction: column; overflow: hidden; background: rgba(15, 15, 20, 0.85); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 20px rgba(255,255,255,0.02); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); z-index: 9999; animation: chatTerminalOpen 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes chatTerminalOpen { from { opacity: 0; transform: scale(0.95) translateY(15px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .chat-header { background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 2; cursor: grab; user-select: none; }
         .chat-header:active { cursor: grabbing; }
-        .chat-header-title { font-weight: 800; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-purple); }
-        #chat-close { cursor: pointer; font-size: 1.3rem; transition: 0.3s; color: rgba(255,255,255,0.5); }
+        .chat-header-info { display: flex; align-items: center; gap: 10px; }
+        .chat-header-title { font-weight: 900; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-purple); }
+        .drag-handle { color: rgba(255,255,255,0.2); font-size: 1rem; }
+        #chat-close { cursor: pointer; font-size: 1.5rem; transition: 0.3s; color: rgba(255,255,255,0.5); padding: 5px; }
         #chat-close:hover { color: var(--error); transform: rotate(90deg); }
-        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem; scroll-behavior: smooth; }
+        #chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; font-size: 0.95rem; scroll-behavior: smooth; }
         #chat-messages::-webkit-scrollbar { width: 4px; } #chat-messages::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
-        .chat-system-msg { color: var(--text-muted); text-align: center; font-size: 0.75rem; font-weight: 600; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.02); text-transform: uppercase; letter-spacing: 1px; }
-        .chat-system-ban { color: var(--error); text-align: center; font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; padding: 10px; border: 1px solid var(--error); border-radius: 8px; background: rgba(239,68,68,0.1); display: none; }
-        .chat-msg-wrapper { display: flex; flex-direction: column; animation: fadeIn 0.3s ease forwards; }
-        .chat-msg-name { font-size: 0.7rem; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        .chat-msg-bubble { padding: 12px 16px; border-radius: 14px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.4; font-weight: 500; }
-        .msg-user { align-items: flex-end; } .msg-user .chat-msg-name { color: var(--accent-gold); } .msg-user .chat-msg-bubble { background: var(--accent-purple); border-bottom-right-radius: 2px; }
+        .chat-system-msg { color: var(--text-muted); text-align: center; font-size: 0.8rem; font-weight: 600; margin-bottom: 10px; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.02); text-transform: uppercase; letter-spacing: 1px; }
+        .chat-system-ban { color: var(--error); text-align: center; font-size: 0.8rem; font-weight: 800; margin-bottom: 10px; padding: 10px; border: 1px solid var(--error); border-radius: 8px; background: rgba(239,68,68,0.1); display: none; }
+        .chat-msg-wrapper { display: flex; flex-direction: column; animation: msgFade 0.3s ease-out forwards; }
+        @keyframes msgFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-msg-name { font-size: 0.7rem; font-weight: 900; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; }
+        .chat-msg-bubble { padding: 14px 18px; border-radius: 16px; color: #fff; max-width: 85%; word-wrap: break-word; line-height: 1.5; font-weight: 500; }
+        .msg-user { align-items: flex-end; } .msg-user .chat-msg-name { color: var(--accent-gold); } .msg-user .chat-msg-bubble { background: var(--accent-purple); border-bottom-right-radius: 2px; box-shadow: 0 5px 15px rgba(139, 92, 246, 0.2); }
         .msg-bot { align-items: flex-start; } .msg-bot .chat-msg-name { color: var(--accent-purple); } .msg-bot .chat-msg-bubble { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
-        .chat-input-area { padding: 15px; display: flex; gap: 10px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); }
-        #chat-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); color: #fff; padding: 12px 15px; border-radius: 12px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; }
-        #chat-input:focus { border-color: var(--accent-purple); }
-        #chat-send { background: var(--accent-purple); border: none; color: #fff; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; }
+        .chat-input-area { padding: 15px 20px; display: flex; gap: 12px; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.2); z-index: 2; position: relative; transition: opacity 0.5s ease; }
+        #chat-input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; padding: 14px 18px; border-radius: 14px; outline: none; font-family: 'Montserrat', sans-serif; transition: 0.3s; }
+        #chat-input:focus { border-color: var(--accent-purple); box-shadow: 0 0 10px var(--accent-purple-glow); }
+        #chat-send { background: var(--accent-purple); border: none; color: #fff; width: 52px; height: 52px; border-radius: 14px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
         #chat-send:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 5px 15px var(--accent-purple-glow); }
+        .chat-resolved-status { text-align: center; margin-top: auto; padding: 25px 20px; border: 1px solid var(--success); border-radius: 15px; background: rgba(16, 185, 129, 0.05); animation: msgFade 0.6s ease-out forwards; }
+        .chat-resolved-icon { font-size: 2.5rem; color: var(--success); margin-bottom: 10px; }
+        .chat-resolved-title { color: var(--success); font-size: 1.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* ── MAIN CONTAINER & HEADER ── */
-        header { text-align: center; padding: 4vh 20px 2vh; position: relative; z-index: 10; }
-        header h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--accent-purple), var(--accent-gold), #fff); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px var(--accent-purple-glow)); animation: gradient-shift 6s linear infinite; }
+        /* ── MODAL ОБЩИЙ / АВТОРИЗАЦИЯ / PWA ── */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; }
+        .install-box { background: var(--bg-body); border: 1px solid var(--accent-purple); border-radius: 24px; padding: 40px; max-width: 420px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); position: relative; }
+        .install-box i.fa-mobile-screen, .install-box i.fa-user-astronaut, .install-box i.fa-lock { font-size: 3rem; color: var(--accent-purple); margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--accent-purple-glow)); }
+        .install-box h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+        .install-box p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5; }
+        .install-btn { background: linear-gradient(135deg, var(--accent-purple), var(--accent-gold)); color: white; border: none; padding: 15px 30px; font-weight: 800; border-radius: 12px; font-size: 1rem; cursor: pointer; transition: 0.3s; width: 100%; text-transform: uppercase; letter-spacing: 1px; }
+        .install-btn:hover { box-shadow: 0 0 20px var(--accent-purple-glow); transform: scale(1.03); filter: brightness(1.1); }
+        .install-close { position: absolute; top: 20px; right: 25px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
+        .install-close:hover { color: var(--error); }
+
+        .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 15px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); color: #fff; font-weight: 800; font-size: 1rem; cursor: pointer; transition: 0.3s; backdrop-filter: blur(10px); text-transform: uppercase; letter-spacing: 1px; }
+        .google-login-btn:hover { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+        .google-login-btn img { width: 22px; height: 22px; }
+
+        /* ── ПЛАВАЮЩИЙ NUMPAD ── */
+        #numpad-modal { display: none; flex-direction: column; align-items: center; padding: 25px; background: rgba(15, 15, 20, 0.95); border: 1px solid var(--accent-purple); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); width: 280px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999999; backdrop-filter: blur(20px); }
+        #numpad-modal.active { display: flex; animation: npPop 0.2s ease-out forwards; }
+        @keyframes npPop { from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        #numpad-modal.dragging { transform: none !important; animation: none !important; }
+        .np-header { width: 100%; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-weight: 700; font-size: 0.85rem; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--glass-border); letter-spacing: 1px; text-transform: uppercase; cursor: grab; user-select: none; }
+        .np-header:active { cursor: grabbing; }
+        .np-close { color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.3rem; transition: 0.3s; line-height: 1; padding: 5px; }
+        .np-close:hover { color: var(--error); }
+        .np-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; }
+        .np-btn { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px 0; font-size: 1.2rem; font-weight: 800; color: #fff; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
+        .np-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent-purple); }
+        .np-btn:active { background: var(--accent-purple); transform: scale(0.95); }
+        .np-action { color: var(--text-muted); background: transparent; border-color: transparent; }
+        .np-confirm { grid-column: span 3; background: var(--accent-purple); color: #fff; padding: 15px; font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; border-radius: 12px; border: none; box-shadow: 0 0 15px var(--accent-purple-glow); }
+        .np-confirm:hover { filter: brightness(1.1); transform: translateY(-2px); }
+
+        /* ── HEADER / MAIN ── */
+        header { text-align: center; padding: 6vh 20px 4vh; position: relative; z-index: 10; }
+        header h1 { font-size: clamp(3rem, 7vw, 4.5rem); font-weight: 900; text-transform: uppercase; letter-spacing: 8px; background: linear-gradient(90deg, #fff, var(--accent-purple), var(--accent-gold), #fff); background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px var(--accent-purple-glow)); animation: gradient-shift 6s linear infinite; margin-bottom: 10px; }
+        @keyframes gradient-shift { 0% { background-position: 0% center; } 100% { background-position: 300% center; } }
+        header p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; font-weight: 500; letter-spacing: 1px; }
 
         main { flex: 1; width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px 80px; z-index: 10; display: flex; flex-direction: column; align-items: center; }
+
+        .section-title { margin: 0 0 30px; width: 100%; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; letter-spacing: 4px; display: flex; align-items: center; gap: 20px; }
+        .section-title::before, .section-title::after { content: ''; height: 2px; flex: 1; background: linear-gradient(90deg, transparent, var(--accent-purple), transparent); opacity: 0.3; }
 
         .games-container {
             width: 100%; background: rgba(10, 10, 15, 0.4); backdrop-filter: blur(25px); border: 1px solid var(--glass-border);
             border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(139, 92, 246, 0.05);
-            position: relative; display: flex; flex-direction: column; min-height: 620px;
-            animation: borderGlow 6s infinite; overflow: hidden;
+            position: relative; display: flex; flex-direction: column; min-height: 620px; overflow: hidden;
         }
+        .games-container::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(139,92,246,0.06) 0%, transparent 60%); animation: rotate 24s linear infinite; pointer-events: none; z-index: 0; }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
 
         /* ── AUTH OVERLAY ── */
-        .auth-overlay { position: absolute; inset: 0; background: rgba(5, 5, 8, 0.85); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px; backdrop-filter: blur(15px); }
+        .auth-overlay { position: absolute; inset: 0; background: rgba(5, 5, 8, 0.9); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 40px; backdrop-filter: blur(15px); }
         .auth-overlay i { font-size: 4rem; color: var(--accent-purple); filter: drop-shadow(0 0 20px var(--accent-purple-glow)); margin-bottom: 20px; }
         .auth-overlay h2 { font-size: 1.8rem; font-weight: 900; color: #fff; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
         .btn-auth-link { background: var(--accent-purple); color: #fff; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 800; font-size: 1rem; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px; border: none; cursor: pointer; }
         .btn-auth-link:hover { filter: brightness(1.1); box-shadow: 0 5px 20px var(--accent-purple-glow); transform: translateY(-2px); }
 
         /* ── ТАБЫ ИГР ── */
-        .game-nav {
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
-            background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border);
-            padding: 15px; border-radius: 28px 28px 0 0;
-        }
-        .tab-btn {
-            flex: 0 1 auto; padding: 12px 18px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
-            color: var(--text-muted); font-weight: 800; font-size: 0.8rem; text-transform: uppercase;
-            cursor: pointer; transition: 0.3s; border-radius: 12px; display: flex; align-items: center; gap: 8px; letter-spacing: 1px;
-        }
+        .game-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border); padding: 15px; border-radius: 28px 28px 0 0; position: relative; z-index: 1; }
+        .tab-btn { flex: 0 1 auto; padding: 12px 18px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); color: var(--text-muted); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; border-radius: 12px; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
         .tab-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .tab-btn.active { background: var(--accent-purple); color: #fff; border-color: var(--accent-purple); box-shadow: 0 0 15px var(--accent-purple-glow); }
 
         /* ── ТЕЛО ИГРЫ ── */
-        .game-body { padding: clamp(24px,5vw,50px) clamp(12px,3vw,40px); display: flex; justify-content: center; flex: 1; position: relative; z-index: 1;}
+        .game-body { padding: clamp(24px,5vw,50px) clamp(12px,3vw,40px); display: flex; justify-content: center; flex: 1; position: relative; z-index: 1; }
         .tab-content { display: none; width: 100%; max-width: 940px; flex-direction: column; align-items: center; text-align: center; animation: fadeUp 0.45s ease forwards; }
         .tab-content.active { display: flex; }
 
@@ -180,10 +227,11 @@
 
         /* СИСТЕМНЫЕ УВЕДОМЛЕНИЯ */
         .sys-msg { margin-top: 18px; font-size: 0.9rem; font-weight: 900; text-transform: uppercase; min-height: 22px; letter-spacing: 1.5px; }
-        .sys-win  { color: var(--success); text-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        .sys-win { color: var(--success); text-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
         .sys-lose { color: var(--error); text-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
-        .sys-err  { color: var(--accent-gold); text-shadow: 0 0 15px var(--accent-gold-glow); }
+        .sys-err { color: var(--accent-gold); text-shadow: 0 0 15px var(--accent-gold-glow); }
         .float-win { position: fixed; pointer-events: none; z-index: 99999; font-size: 2rem; font-weight: 900; color: var(--success); text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); animation: floatUpFade 1.5s ease forwards; }
+        @keyframes floatUpFade { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-60px); } }
 
         /* ── ДАШБОРД (БАЗА) ── */
         .dash-layout { display: flex; flex-direction: column; gap: 22px; width: 100%; }
@@ -192,7 +240,7 @@
         .daily-banner-btn:disabled { filter: grayscale(80%); opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; border-color: var(--glass-border); background: rgba(255,255,255,0.02); }
         .db-info { text-align: left; flex: 1; min-width: 180px; }
         .db-title { font-size: 1.2rem; color: #fff; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
-        .db-desc  { font-size: 0.85rem; color: var(--text-muted); }
+        .db-desc { font-size: 0.85rem; color: var(--text-muted); }
         .db-action { background: rgba(16, 185, 129, 0.1); color: var(--success); font-weight: 900; border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px 25px; border-radius: 12px; text-transform: uppercase; display: flex; align-items: center; gap: 6px; flex-shrink: 0; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); transition: 0.3s; }
         .daily-banner-btn:disabled .db-action { color: var(--text-muted); border-color: var(--glass-border); box-shadow: none; background: rgba(255,255,255,0.05); }
 
@@ -216,7 +264,7 @@
         .reel { width: clamp(80px,20vw,130px); height: clamp(80px,20vw,130px); border-radius: 14px; overflow: hidden; position: relative; background: #000; border: 1px solid var(--glass-border); box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
         .reel::before, .reel::after { content: ''; position: absolute; left: 0; width: 100%; height: 30%; z-index: 1; pointer-events: none; }
         .reel::before { top: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%); }
-        .reel::after  { bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); }
+        .reel::after { bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%); }
         .reel-strip { display: flex; flex-direction: column; width: 100%; transition: transform 3s cubic-bezier(0.15,0.85,0.15,1); }
         .reel-strip img { width: 100%; height: clamp(80px,20vw,130px); object-fit: cover; border-bottom: 1px solid var(--glass-border); }
 
@@ -237,20 +285,20 @@
         /* ── РУЛЕТКА ── */
         .roulette-wheel { width: 100%; max-width: 600px; height: clamp(65px,12vw,85px); background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); border-radius: 16px; margin-bottom: 25px; position: relative; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
         .roulette-wheel::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 2px; height: 100%; background: #fff; z-index: 10; box-shadow: 0 0 15px #fff; }
-        .roulette-wheel::after  { content: '▼'; position: absolute; top: -2px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #fff; z-index: 11; text-shadow: 0 0 10px #fff; }
+        .roulette-wheel::after { content: '▼'; position: absolute; top: -2px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #fff; z-index: 11; text-shadow: 0 0 10px #fff; }
         .r-strip { display: flex; height: 100%; will-change: transform; }
         .r-cell { width: clamp(65px,12vw,85px); height: 100%; flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-weight: 900; font-size: 1rem; color: #fff; border-right: 1px solid rgba(0,0,0,0.3); }
         .r-purple { background: rgba(139, 92, 246, 0.8); }
-        .r-cyan   { background: rgba(0, 198, 255, 0.8); color: #000; }
-        .r-gold   { background: rgba(244, 199, 69, 0.8); color: #000; }
+        .r-cyan { background: rgba(0, 198, 255, 0.8); color: #000; }
+        .r-gold { background: rgba(244, 199, 69, 0.8); color: #000; }
         .r-opts { display: flex; gap: 12px; margin-bottom: 25px; width: 100%; max-width: 600px; }
         .r-opt { flex: 1; padding: 15px 5px; border-radius: 14px; font-weight: 800; font-size: 0.85rem; cursor: pointer; border: 1px solid transparent; transition: 0.3s; opacity: 0.6; text-transform: uppercase; }
         .r-opt:hover:not(:disabled) { opacity: 1; transform: translateY(-2px); }
         .r-opt.active { opacity: 1; transform: scale(1.05); border-color: rgba(255,255,255,0.5); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .r-opt:disabled { cursor: not-allowed; }
         .btn-purple { background: var(--accent-purple); color: #fff; }
-        .btn-cyan   { background: #00c6ff; color: #000; }
-        .btn-gold   { background: var(--accent-gold); color: #000; }
+        .btn-cyan { background: #00c6ff; color: #000; }
+        .btn-gold { background: var(--accent-gold); color: #000; }
 
         /* ── ФАРМ ── */
         .farm-dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 700px; margin-bottom: 25px; }
@@ -277,9 +325,9 @@
         .bj-score { font-size: 0.9rem; font-weight: 900; margin-left: 5px; }
         .bj-actions { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
         .bj-btn { padding: 14px 30px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; border: none; }
-        .bj-hit   { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
+        .bj-hit { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
         .bj-stand { background: rgba(239, 68, 68, 0.15); color: var(--error); border: 1px solid var(--error); }
-        .bj-hit:hover:not(:disabled)   { background: var(--success); color: #fff; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
+        .bj-hit:hover:not(:disabled) { background: var(--success); color: #fff; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); transform: translateY(-2px); }
         .bj-stand:hover:not(:disabled) { background: var(--error); color: #fff; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); transform: translateY(-2px); }
         .bj-btn:disabled { background: rgba(255,255,255,0.05) !important; color: rgba(255,255,255,0.2) !important; border-color: transparent !important; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
@@ -292,7 +340,7 @@
         .quiz-opt { padding: 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.85rem; }
         .quiz-opt:hover:not(:disabled) { border-color: var(--accent-purple); background: rgba(139, 92, 246, 0.1); box-shadow: 0 0 15px var(--accent-purple-glow); }
         .quiz-opt.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--success); color: var(--success); }
-        .quiz-opt.wrong   { background: rgba(239, 68, 68, 0.15); border-color: var(--error); color: var(--error); }
+        .quiz-opt.wrong { background: rgba(239, 68, 68, 0.15); border-color: var(--error); color: var(--error); }
         .quiz-opt:disabled { cursor: not-allowed; }
         .quiz-streak { font-size: 0.9rem; font-weight: 800; color: var(--accent-gold); margin-bottom: 10px; letter-spacing: 1px; text-shadow: 0 0 10px var(--accent-gold-glow); }
 
@@ -313,6 +361,7 @@
         .mines-cashout:disabled { border-color: transparent; color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); cursor: not-allowed; }
         .mines-ctrl-btn { background: transparent; color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 6px; cursor: pointer; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; transition: 0.2s; }
         .mines-ctrl-btn:hover:not(:disabled) { background: var(--accent-purple); color: #fff; }
+        .mines-ctrl-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         /* ── ПЛИНКО ── */
         .plinko-canvas { border-radius: 16px; border: 1px solid var(--glass-border); max-width: 100%; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); background: rgba(0,0,0,0.2); }
@@ -326,64 +375,51 @@
         .ptb-opts { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; width: 100%; max-width: 550px; margin-bottom: 20px; }
         .ptb-opt { padding: 14px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s; text-align: center; }
         .ptb-opt:hover:not(:disabled) { border-color: var(--accent-purple); background: rgba(139, 92, 246, 0.1); }
-        .ptb-opt.active  { background: rgba(139, 92, 246, 0.2); border-color: var(--accent-purple); color: #fff; box-shadow: 0 0 15px var(--accent-purple-glow); }
+        .ptb-opt.active { background: rgba(139, 92, 246, 0.2); border-color: var(--accent-purple); color: #fff; box-shadow: 0 0 15px var(--accent-purple-glow); }
         .ptb-opt.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--success); color: var(--success); }
-        .ptb-opt.wrong   { background: rgba(239, 68, 68, 0.15); border-color: var(--error); color: var(--error); }
+        .ptb-opt.wrong { background: rgba(239, 68, 68, 0.15); border-color: var(--error); color: var(--error); }
         .ptb-opt:disabled { cursor: not-allowed; }
         .ptb-round { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 1px; }
 
-        /* ── МОДАЛКА ВХОДА GOOGLE ── */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; }
-        .install-box { background: rgba(10, 10, 15, 0.95); border: 1px solid var(--accent-purple); border-radius: 24px; padding: 40px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); position: relative; }
-        .install-box h3 { font-size: 1.3rem; font-weight: 900; margin-bottom: 10px; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .install-box p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; line-height: 1.5; }
-        .install-close { position: absolute; top: 20px; right: 25px; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; transition: 0.3s; }
-        .install-close:hover { color: var(--error); }
-        
-        .google-login-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; max-width: 300px; padding: 15px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; text-transform: uppercase; margin: 0 auto; position: relative; }
-        .google-login-btn:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); }
-        .google-login-btn img { width: 20px; height: 20px; }
+        /* ── ПОДВАЛ ── */
+        footer { padding: 60px 20px; text-align: center; background: linear-gradient(to top, rgba(0,0,0,0.6), transparent); border-top: 1px solid var(--glass-border); margin-top: auto; position: relative; z-index: 10; }
+        .footer-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; max-width: 900px; margin: 0 auto; }
+        .action-btn { display: flex; align-items: center; gap: 10px; padding: 15px 30px; border-radius: 50px; text-decoration: none; font-weight: 800; color: white; transition: 0.3s; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); backdrop-filter: blur(10px); }
+        .action-btn.coop-btn { border-color: rgba(139, 92, 246, 0.15); background: rgba(139, 92, 246, 0.05); }
+        .action-btn.coop-btn:hover { border-color: rgba(139, 92, 246, 0.3); background: rgba(139, 92, 246, 0.1); box-shadow: 0 5px 20px rgba(139, 92, 246, 0.15); transform: scale(1.05) translateY(-3px); }
+        .action-btn.coop-btn i { color: rgba(139, 92, 246, 0.8); }
+        .action-btn.contact-btn { border-color: rgba(0, 136, 204, 0.15); background: rgba(0, 136, 204, 0.05); }
+        .action-btn.contact-btn:hover { border-color: rgba(0, 136, 204, 0.3); background: rgba(0, 136, 204, 0.1); box-shadow: 0 5px 20px rgba(0, 136, 204, 0.15); transform: scale(1.05) translateY(-3px); }
+        .action-btn.contact-btn i { color: rgba(0, 136, 204, 0.8); }
+        .action-btn.yt-footer-btn { border-color: rgba(239, 68, 68, 0.15); background: rgba(239, 68, 68, 0.05); }
+        .action-btn.yt-footer-btn:hover { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); box-shadow: 0 5px 20px rgba(239, 68, 68, 0.15); transform: scale(1.05) translateY(-3px); }
+        .action-btn.yt-footer-btn i { color: rgba(239, 68, 68, 0.8); }
+        .action-btn.tt-footer-btn { border-color: rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.03); }
+        .action-btn.tt-footer-btn:hover { border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.08); box-shadow: 0 5px 20px rgba(255, 255, 255, 0.1); transform: scale(1.05) translateY(-3px); }
+        .action-btn.tt-footer-btn i { color: rgba(255, 255, 255, 0.7); }
+        footer .copy { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; letter-spacing: 1px; margin-top: 30px; text-transform: uppercase; }
 
-        /* ── ПЛАВАЮЩИЙ NUMPAD ── */
-        #numpad-modal { 
-            display: none; flex-direction: column; align-items: center; padding: 25px; 
-            background: rgba(15, 15, 20, 0.95); border: 1px solid var(--accent-purple); border-radius: 24px; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(139, 92, 246, 0.1); 
-            width: 280px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 999999;
-            backdrop-filter: blur(20px);
-        }
-        #numpad-modal.active { display: flex; animation: npPop 0.2s ease-out forwards; }
-        @keyframes npPop { from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-        /* При перетаскивании мы убираем трансформ */
-        #numpad-modal.dragging { transform: none !important; animation: none !important; }
-        
-        .np-header { width: 100%; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); font-weight: 700; font-size: 0.85rem; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--glass-border); letter-spacing: 1px; text-transform: uppercase; cursor: grab; user-select: none; }
-        .np-header:active { cursor: grabbing; }
-        .np-close { color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.3rem; transition: 0.3s; line-height: 1; padding: 5px; }
-        .np-close:hover { color: var(--error); }
-        .np-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; width: 100%; }
-        .np-btn { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 12px; padding: 14px 0; font-size: 1.2rem; font-weight: 800; color: #fff; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
-        .np-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent-purple); }
-        .np-btn:active { background: var(--accent-purple); transform: scale(0.95); }
-        .np-action { color: var(--text-muted); background: transparent; border-color: transparent; }
-        .np-confirm { grid-column: span 3; background: var(--accent-purple); color: #fff; padding: 15px; font-size: 0.9rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; border-radius: 12px; border: none; box-shadow: 0 0 15px var(--accent-purple-glow);}
-        .np-confirm:hover { filter: brightness(1.1); transform: translateY(-2px); }
-
-        footer { padding: 40px 20px; text-align: center; border-top: 1px solid var(--glass-border); margin-top: auto; background: rgba(10, 10, 15, 0.4); }
-        footer p { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+        /* СЕКРЕТНЫЙ РАЗЛОМ */
+        .secret-rift { position: absolute; z-index: 500; width: clamp(120px, 20vw, 180px); height: clamp(40px, 8vw, 70px); cursor: pointer; opacity: 0; transform: scale(0.1); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-in; pointer-events: none; display: flex; justify-content: center; align-items: center; }
+        .secret-rift.active { opacity: 1; transform: scale(1); pointer-events: auto; }
+        .rift-svg { width: 100%; height: 100%; transform: rotate(var(--rot)); filter: drop-shadow(0 0 10px var(--accent-purple)); transition: transform 0.4s ease; }
+        .rift-svg path { fill: #000; stroke: var(--accent-purple); stroke-width: 2; vector-effect: non-scaling-stroke; }
+        .rift-particle { position: absolute; color: var(--accent-purple); font-family: monospace; font-size: 1.1rem; font-weight: 900; pointer-events: none; text-shadow: 0 0 10px var(--accent-purple); top: 50%; left: 50%; animation: dropFade 0.7s ease-out forwards; }
+        @keyframes dropFade { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); opacity: 0; } }
 
         /* ── АДАПТИВ ── */
         @media (max-width: 800px) {
-            .top-nav { flex-wrap: wrap; padding: 10px; border-radius: 20px; margin: 20px 15px 0; max-width: calc(100% - 30px); }
-            .nav-link { font-size: 0.8rem; padding: 8px 15px; }
+            .top-nav { flex-wrap: nowrap; overflow-x: auto; padding: 10px; border-radius: 20px; margin: 20px 15px 0; max-width: calc(100% - 30px); scrollbar-width: none; }
+            .top-nav::-webkit-scrollbar { display: none; }
+            .nav-link { flex-shrink: 0; font-size: 0.8rem; padding: 8px 15px; }
             .game-nav { border-radius: 20px 20px 0 0; padding: 10px; }
             .tab-btn { flex: 1 1 30%; min-width: 100px; padding: 10px; font-size: 0.75rem; }
-            
+
             .burger-btn { top: 15px; left: 15px; width: 40px; height: 40px; font-size: 1.1rem; }
-            .top-controls { top: 15px; right: 15px; flex-direction: row-reverse; gap: 10px; }
+            .top-controls { top: 15px; right: 15px; gap: 10px; }
             .online-counter { display: none; }
             .profile-btn, .music-toggle { width: 40px; height: 40px; }
-            
+
             .daily-banner-btn { flex-direction: column; text-align: center; padding: 20px; }
             .db-info { text-align: center; }
             .db-action { width: 100%; justify-content: center; }
@@ -395,14 +431,16 @@
             .r-opts { flex-direction: column; gap: 8px; }
             .bet-box, .play-btn { max-width: 100%; }
             .bj-actions { gap: 10px; }
-            
+            .footer-buttons { flex-direction: column; }
+
             #chat-window { width: 100vw !important; height: 75vh !important; bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important; border-radius: 24px 24px 0 0 !important; border-bottom: none; animation: slideUpMobile 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
             .chat-header { border-radius: 24px 24px 0 0; cursor: default; }
             .drag-handle { display: none; }
         }
         @keyframes slideUpMobile { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @media (max-height: 400px) { .secret-rift { display: none !important; } }
     </style>
-    
+
     <script src="https://accounts.google.com/gsi/client" async defer onload="initGoogleAuth()"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -420,19 +458,21 @@
     <div class="modal" id="loginModal">
         <div class="install-box">
             <i class="fa-solid fa-xmark install-close" onclick="closeLoginModal()"></i>
-            <i class="fa-solid fa-user-astronaut" style="font-size:3.5rem; color:var(--accent-purple); margin-bottom:15px; filter:drop-shadow(0 0 15px var(--accent-purple-glow));"></i>
-            <h3 style="color:#fff; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Доступ закрыт</h3>
-            <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; margin-bottom:20px;">Авторизуйтесь через Google для доступа к терминалу.</p>
-            
-            <div style="position: relative; width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 12px;">
-                <button class="google-login-btn" style="margin: 0; width: 100%;">
+            <i class="fa-solid fa-user-astronaut"></i>
+            <h3>Доступ закрыт</h3>
+            <p>Авторизуйтесь через Google, чтобы получить доступ к игровому терминалу.</p>
+
+            <div style="position: relative; width: 100%; display: flex; justify-content: center; overflow: hidden; border-radius: 14px;">
+                <button class="google-login-btn" style="margin: 0;">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google">
-                    Войти
+                    Войти через Google
                 </button>
                 <div id="google-btn-wrapper" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.01; z-index: 10; cursor: pointer;"></div>
             </div>
         </div>
     </div>
+
+
 
     <!-- ПЛАВАЮЩИЙ NUMPAD -->
     <div id="numpad-modal">
@@ -450,11 +490,11 @@
             <button class="np-btn" onclick="npPress('7')">7</button>
             <button class="np-btn" onclick="npPress('8')">8</button>
             <button class="np-btn" onclick="npPress('9')">9</button>
-            
-            <div style="grid-column: span 1;"></div> <!-- Пустая ячейка вместо точки -->
+
+            <div></div>
             <button class="np-btn" onclick="npPress('0')">0</button>
             <button class="np-btn np-action" onclick="npPress('DEL')"><i class="fa-solid fa-delete-left"></i></button>
-            
+
             <button class="np-btn np-confirm" id="npConfirmBtn">ПРИМЕНИТЬ</button>
         </div>
     </div>
@@ -465,24 +505,24 @@
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="sidebar" id="sidebar">
-        <div style="color:var(--text-muted);font-size:0.85rem;font-weight:700;letter-spacing:2px;margin-bottom:35px;display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;">
+        <div style="color:var(--text-muted);font-size:0.9rem;font-weight:800;letter-spacing:2px;margin-bottom:30px;display:flex;justify-content:space-between;align-items:center;text-transform:uppercase;">
             МЕНЮ
-            <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size:1.6rem;cursor:pointer;color:rgba(255,255,255,0.5);transition:0.3s;"></i>
+            <i class="fa-solid fa-xmark" id="closeSidebar" style="font-size:1.5rem;cursor:pointer;color:white;transition:0.3s;"></i>
         </div>
         <a href="https://dxtrslizze.xyz/" class="sidebar-link"><i class="fa-solid fa-home icon-main"></i> Главная</a>
         <a href="https://dxtrslizze.xyz/muzcatalog" class="sidebar-link"><i class="fa-solid fa-music icon-main"></i> Муз. каталог</a>
         <a href="https://dxtrslizze.xyz/games" class="sidebar-link active"><i class="fa-solid fa-gamepad icon-main"></i> Игры</a>
-        <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-users icon-main"></i> О нас</a>
+        <a href="https://dxtrslizze.xyz/about" class="sidebar-link"><i class="fa-solid fa-circle-info icon-main"></i> О нас</a>
         <a href="https://dxtrslizze.xyz/shop" class="sidebar-link"><i class="fa-solid fa-store icon-main"></i> Магазин</a>
         <a href="#" class="sidebar-link" id="menuSupportBtn"><i class="fa-solid fa-headset icon-main"></i> Поддержка</a>
     </div>
 
     <div class="top-controls fade-in">
         <div class="ctrl-row">
-            <div class="music-toggle" id="musicBtn"><i class="fa-solid fa-volume-xmark"></i></div>
-            <div class="online-counter" style="white-space: nowrap;">
+            <div class="music-toggle" id="musicBtn" title="Музыка"><i class="fa-solid fa-volume-xmark"></i></div>
+            <div class="online-counter">
                 <div class="pulse-dot"></div>
-                <span class="online-num" id="onlineCount">ЗАГРУЗКА...</span>
+                <div class="online-text"><span class="online-num" id="onlineCount">0</span><span class="online-word"> онлайн</span></div>
             </div>
             <a href="javascript:void(0)" class="profile-btn" title="Профиль" id="profileBtnLink">
                 <img src="/dslogo.png" alt="Profile" id="userAvatar">
@@ -531,9 +571,9 @@
 
             <div class="auth-overlay" id="authLock">
                 <i class="fa-solid fa-lock"></i>
-                <h2>СИСТЕМА ЗАБЛОКИРОВАНА</h2>
+                <h2>Система заблокирована</h2>
                 <p style="color:var(--text-muted);margin-bottom:28px;letter-spacing:1px;font-size: 0.95rem;">Доступ к терминалу только для авторизованных пользователей.</p>
-                <button class="btn-auth-link" onclick="openLoginModal()">АВТОРИЗАЦИЯ</button>
+                <button class="btn-auth-link" onclick="openLoginModal()">Авторизация</button>
             </div>
 
             <div class="game-nav">
@@ -557,15 +597,15 @@
                     <div class="dash-layout">
                         <button class="daily-banner-btn" onclick="claimDaily()" id="btnDaily">
                             <div class="db-info">
-                                <div class="db-title">ЕЖЕДНЕВНАЯ ПОСТАВКА</div>
+                                <div class="db-title">Ежедневная поставка</div>
                                 <div class="db-desc">Бесплатные коины от системы каждые 6 часов.</div>
                                 <div class="sys-msg" id="msg-dash" style="margin-top: 10px; font-size: 0.85rem;"></div>
                             </div>
                             <div class="db-action" id="dailyActionBtn">+ 100 <img src="/valuta.png" class="valuta-icon"></div>
                         </button>
-                        
+
                         <div class="d-card">
-                            <h3><i class="fa-solid fa-trophy" style="color:var(--accent-gold);"></i> ЭЛИТА СЕТИ (ТОП-5)</h3>
+                            <h3><i class="fa-solid fa-trophy" style="color:var(--accent-gold);"></i> Элита сети (топ-5)</h3>
                             <div class="leaderboard" id="leaderboardData">
                                 <p style="color:var(--text-muted);text-align:center;padding:20px;">Синхронизация с базой...</p>
                             </div>
@@ -583,7 +623,7 @@
                         <div class="reel"><div class="reel-strip" id="reel3"></div></div>
                     </div>
                     <div class="bet-box">
-                        <div class="bet-label">РАЗМЕР СТАВКИ</div>
+                        <div class="bet-label">Размер ставки</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betSlots')">
                             <span class="bet-val-display glow-text" id="betSlots_disp">10</span>
                         </div>
@@ -594,7 +634,7 @@
                         <button class="b-q-btn" onclick="setBet('betSlots', 100)">100</button>
                         <button class="b-q-btn" onclick="setBet('betSlots', 'MAX')">MAX</button>
                     </div>
-                    <button class="play-btn" id="btnSlots" onclick="playSlots()">КРУТИТЬ</button>
+                    <button class="play-btn" id="btnSlots" onclick="playSlots()">Крутить</button>
                     <div class="sys-msg" id="msg-slots"></div>
                 </div>
 
@@ -604,13 +644,13 @@
                     <p class="g-desc">Угадай сектор числа от 1 до 100.</p>
                     <div class="dice-res glow-text" id="diceDisplay">0</div>
                     <div class="dice-opts">
-                        <button class="d-opt" id="d-opt-1" onclick="selectDice(1)">МЕНЬШЕ 25 (×3)</button>
-                        <button class="d-opt" id="d-opt-2" onclick="selectDice(2)">ОТ 25 ДО 50 (×2)</button>
-                        <button class="d-opt" id="d-opt-3" onclick="selectDice(3)">ОТ 51 ДО 75 (×2)</button>
-                        <button class="d-opt" id="d-opt-4" onclick="selectDice(4)">БОЛЬШЕ 75 (×3)</button>
+                        <button class="d-opt" id="d-opt-1" onclick="selectDice(1)">Меньше 25 (×3)</button>
+                        <button class="d-opt" id="d-opt-2" onclick="selectDice(2)">От 25 до 50 (×2)</button>
+                        <button class="d-opt" id="d-opt-3" onclick="selectDice(3)">От 51 до 75 (×2)</button>
+                        <button class="d-opt" id="d-opt-4" onclick="selectDice(4)">Больше 75 (×3)</button>
                     </div>
                     <div class="bet-box">
-                        <div class="bet-label">РАЗМЕР СТАВКИ</div>
+                        <div class="bet-label">Размер ставки</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betDice')">
                             <span class="bet-val-display glow-text" id="betDice_disp">10</span>
                         </div>
@@ -621,8 +661,8 @@
                         <button class="b-q-btn" onclick="setBet('betDice', 100)">100</button>
                         <button class="b-q-btn" onclick="setBet('betDice', 'MAX')">MAX</button>
                     </div>
-                    <button class="play-btn" id="btnDice" onclick="playDice()">БРОСОК</button>
-                    <div class="sys-msg" id="msg-dice">ВЫБЕРИТЕ СЕКТОР</div>
+                    <button class="play-btn" id="btnDice" onclick="playDice()">Бросок</button>
+                    <div class="sys-msg" id="msg-dice">Выберите сектор</div>
                 </div>
 
                 <!-- КРАШ -->
@@ -635,7 +675,7 @@
                     </div>
                     <div class="crash-inputs">
                         <div class="bet-box" style="flex:1;max-width:220px;">
-                            <div class="bet-label">СТАВКА</div>
+                            <div class="bet-label">Ставка</div>
                             <div class="bet-input-wrapper" onclick="openNumpad('betCrash')">
                                 <span class="bet-val-display glow-text" id="betCrash_disp">10</span>
                             </div>
@@ -645,7 +685,7 @@
                             </div>
                         </div>
                         <div class="bet-box" style="flex:1;max-width:220px;">
-                            <div class="bet-label">АВТОВЫВОД (X)</div>
+                            <div class="bet-label">Автовывод (x)</div>
                             <div class="bet-input-wrapper" onclick="openNumpad('targetCrash',true)">
                                 <span class="bet-val-display glow-text" id="targetCrash_disp">2.0</span>
                             </div>
@@ -655,7 +695,7 @@
                             </div>
                         </div>
                     </div>
-                    <button class="play-btn" id="btnCrash" onclick="playCrash()">СТАРТ</button>
+                    <button class="play-btn" id="btnCrash" onclick="playCrash()">Старт</button>
                     <div class="sys-msg" id="msg-crash"></div>
                 </div>
 
@@ -665,12 +705,12 @@
                     <p class="g-desc">Выбирай цвет. Фиол/Голубой = ×2. Золото = ×14.</p>
                     <div class="roulette-wheel"><div class="r-strip" id="rStrip"></div></div>
                     <div class="r-opts">
-                        <button class="r-opt btn-purple" id="r-opt-purple" onclick="selectRoulette('purple')">ФИОЛ (×2)</button>
-                        <button class="r-opt btn-gold" id="r-opt-gold" onclick="selectRoulette('gold')">ЗОЛОТО (×14)</button>
-                        <button class="r-opt btn-cyan" id="r-opt-cyan" onclick="selectRoulette('cyan')">ГОЛУБОЙ (×2)</button>
+                        <button class="r-opt btn-purple" id="r-opt-purple" onclick="selectRoulette('purple')">Фиол (×2)</button>
+                        <button class="r-opt btn-gold" id="r-opt-gold" onclick="selectRoulette('gold')">Золото (×14)</button>
+                        <button class="r-opt btn-cyan" id="r-opt-cyan" onclick="selectRoulette('cyan')">Голубой (×2)</button>
                     </div>
                     <div class="bet-box">
-                        <div class="bet-label">РАЗМЕР СТАВКИ</div>
+                        <div class="bet-label">Размер ставки</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betRoulette')">
                             <span class="bet-val-display glow-text" id="betRoulette_disp">10</span>
                         </div>
@@ -681,8 +721,8 @@
                         <button class="b-q-btn" onclick="setBet('betRoulette', 100)">100</button>
                         <button class="b-q-btn" onclick="setBet('betRoulette', 'MAX')">MAX</button>
                     </div>
-                    <button class="play-btn" id="btnRoulette" onclick="playRoulette()">КРУТИТЬ</button>
-                    <div class="sys-msg" id="msg-roulette">ВЫБЕРИТЕ ЦВЕТ</div>
+                    <button class="play-btn" id="btnRoulette" onclick="playRoulette()">Крутить</button>
+                    <div class="sys-msg" id="msg-roulette">Выберите цвет</div>
                 </div>
 
                 <!-- ФАРМ -->
@@ -693,24 +733,24 @@
                         <i class="fa-solid fa-microchip" style="font-size:3rem;color:var(--text-muted);opacity:0.4;margin-bottom:20px;display:block;"></i>
                         <h3 style="color:#fff;font-size:1.2rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Система отключена</h3>
                         <p style="color:var(--text-muted);margin-bottom:20px;font-size:0.9rem;">Для активации пассивного дохода необходим первичный взнос.</p>
-                        <button class="play-btn" onclick="activateFarm()" id="btnActivateFarm">АКТИВИРОВАТЬ (1000 NC)</button>
+                        <button class="play-btn" onclick="activateFarm()" id="btnActivateFarm">Активировать (1000 NC)</button>
                         <div class="sys-msg" id="msg-farm-activate"></div>
                     </div>
                     <div id="farm-active" style="display:none;width:100%;flex-direction:column;align-items:center;">
                         <div class="farm-dashboard">
                             <div class="farm-stat">
-                                <h4>ИНТЕРВАЛ ДОБЫЧИ</h4>
+                                <h4>Интервал добычи</h4>
                                 <div class="val"><span id="fTimeVal">30</span> мин</div>
                                 <button class="farm-upgrade-btn" id="btnUpTime" onclick="upgradeFarm('time')">
-                                    <span>УЛУЧШИТЬ ВРЕМЯ</span>
+                                    <span>Улучшить время</span>
                                     <span class="cost" id="fTimeCostDisplay">750 <img src="/valuta.png" class="valuta-icon"></span>
                                 </button>
                             </div>
                             <div class="farm-stat">
-                                <h4>РАЗМЕР ДОХОДА</h4>
+                                <h4>Размер дохода</h4>
                                 <div class="val" style="color:var(--success);">+<span id="fIncVal">2</span> <img src="/valuta.png" class="valuta-icon" style="width:0.8em;height:0.8em;filter:none;"></div>
                                 <button class="farm-upgrade-btn" id="btnUpInc" onclick="upgradeFarm('income')">
-                                    <span>УЛУЧШИТЬ ДОХОД</span>
+                                    <span>Улучшить доход</span>
                                     <span class="cost" id="fIncCostDisplay">750 <img src="/valuta.png" class="valuta-icon"></span>
                                 </button>
                             </div>
@@ -735,11 +775,11 @@
                         </div>
                     </div>
                     <div class="bj-actions">
-                        <button class="bj-btn bj-hit" id="bjHitBtn" onclick="bjHit()" disabled>ЕЩЁ КАРТУ</button>
-                        <button class="bj-btn bj-stand" id="bjStandBtn" onclick="bjStand()" disabled>СТОЯТЬ</button>
+                        <button class="bj-btn bj-hit" id="bjHitBtn" onclick="bjHit()" disabled>Ещё карту</button>
+                        <button class="bj-btn bj-stand" id="bjStandBtn" onclick="bjStand()" disabled>Стоять</button>
                     </div>
                     <div class="bet-box">
-                        <div class="bet-label">СТАВКА</div>
+                        <div class="bet-label">Ставка</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betBJ')">
                             <span class="bet-val-display glow-text" id="betBJ_disp">10</span>
                         </div>
@@ -750,7 +790,7 @@
                         <button class="b-q-btn" onclick="setBet('betBJ', 100)">100</button>
                         <button class="b-q-btn" onclick="setBet('betBJ', 'MAX')">MAX</button>
                     </div>
-                    <button class="play-btn" id="bjDealBtn" onclick="bjDeal()">РАЗДАТЬ КАРТЫ</button>
+                    <button class="play-btn" id="bjDealBtn" onclick="bjDeal()">Раздать карты</button>
                     <div class="sys-msg" id="msg-bj"></div>
                 </div>
 
@@ -759,20 +799,20 @@
                     <div class="g-title glow-text">NEURO-QUIZ</div>
                     <p class="g-desc">Восстанови повреждённые данные обложки. Угадай трек по пикселям.</p>
                     <img src="/dslogo.png" class="quiz-cover blurred" id="quizCover" alt="Cover">
-                    <div class="quiz-streak" id="quizStreak">СЕРИЯ: 0 🔥</div>
+                    <div class="quiz-streak" id="quizStreak">Серия: 0 🔥</div>
                     <p class="quiz-hint" id="quizHint">Загрузка данных...</p>
                     <div class="quiz-opts" id="quizOpts"></div>
-                    
+
                     <div class="bet-box">
-                        <div class="bet-label">ФИКСИРОВАННАЯ СТАВКА</div>
+                        <div class="bet-label">Фиксированная ставка</div>
                         <div class="bet-input-wrapper" style="pointer-events: none; opacity: 0.5;">
                             <span class="bet-val-display glow-text" id="betQuiz_disp">100</span>
                         </div>
                     </div>
-                    
-                    <button class="play-btn" id="btnQuiz" onclick="startQuiz()" disabled>НОВЫЙ РАУНД</button>
+
+                    <button class="play-btn" id="btnQuiz" onclick="startQuiz()" disabled>Новый раунд</button>
                     <div class="sys-msg" id="msg-quiz"></div>
-                </div> 
+                </div>
 
                 <!-- МИНЫ -->
                 <div id="tab-mines" class="tab-content">
@@ -790,10 +830,10 @@
                     <div class="mines-mult" id="minesMult">×1.00</div>
                     <div class="mines-grid" id="minesGrid"></div>
                     <button class="mines-cashout" id="minesCashoutBtn" onclick="minesCashout()" disabled>
-                        ВЫВЕСТИ (<span id="minesCashoutAmt">0</span> <img src="/valuta.png" class="valuta-icon">)
+                        Вывести (<span id="minesCashoutAmt">0</span> <img src="/valuta.png" class="valuta-icon">)
                     </button>
                     <div class="bet-box">
-                        <div class="bet-label">СТАВКА</div>
+                        <div class="bet-label">Ставка</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betMines')">
                             <span class="bet-val-display glow-text" id="betMines_disp">10</span>
                         </div>
@@ -804,7 +844,7 @@
                         <button class="b-q-btn" onclick="setBet('betMines', 100)">100</button>
                         <button class="b-q-btn" onclick="setBet('betMines', 'MAX')">MAX</button>
                     </div>
-                    <button class="play-btn" id="btnMines" onclick="startMines()">НАЧАТЬ</button>
+                    <button class="play-btn" id="btnMines" onclick="startMines()">Начать</button>
                     <div class="sys-msg" id="msg-mines"></div>
                 </div>
 
@@ -816,19 +856,19 @@
                     <div class="plinko-buckets" id="plinkoBuckets" style="max-width:420px;"></div>
                     <div class="crash-inputs">
                         <div class="bet-box" style="flex:1;max-width:220px;">
-                            <div class="bet-label">СТАВКА ЗА ШАР</div>
+                            <div class="bet-label">Ставка за шар</div>
                             <div class="bet-input-wrapper" onclick="openNumpad('betPlinko')">
                                 <span class="bet-val-display glow-text" id="betPlinko_disp">10</span>
                             </div>
                         </div>
                         <div class="bet-box" style="flex:1;max-width:220px;">
-                            <div class="bet-label">КОЛ-ВО ШАРОВ</div>
+                            <div class="bet-label">Кол-во шаров</div>
                             <div class="bet-input-wrapper" onclick="openNumpad('ballsPlinko')">
                                 <span class="bet-val-display glow-text" id="ballsPlinko_disp">1</span>
                             </div>
                         </div>
                     </div>
-                    <button class="play-btn" id="btnPlinko" onclick="dropPlinko()">БРОСИТЬ ШАРЫ</button>
+                    <button class="play-btn" id="btnPlinko" onclick="dropPlinko()">Бросить шары</button>
                     <div class="sys-msg" id="msg-plinko"></div>
                 </div>
 
@@ -842,7 +882,7 @@
                     <p class="ptb-prompt" id="ptbPrompt">Нажми "Начать", чтобы услышать отрывок</p>
                     <div class="ptb-opts" id="ptbOpts"></div>
                     <div class="bet-box">
-                        <div class="bet-label">СТАВКА</div>
+                        <div class="bet-label">Ставка</div>
                         <div class="bet-input-wrapper" onclick="openNumpad('betPtb')">
                             <span class="bet-val-display glow-text" id="betPtb_disp">10</span>
                         </div>
@@ -853,7 +893,7 @@
                         <button class="b-q-btn" onclick="setBet('betPtb', 100)">100</button>
                         <button class="b-q-btn" onclick="setBet('betPtb', 'MAX')">MAX</button>
                     </div>
-                    <button class="play-btn" id="btnPtb" onclick="startPtb()" disabled>НАЧАТЬ</button>
+                    <button class="play-btn" id="btnPtb" onclick="startPtb()" disabled>Начать</button>
                     <div class="sys-msg" id="msg-ptb">Загрузка треков...</div>
                 </div>
 
@@ -861,11 +901,15 @@
         </div>
     </main>
 
-    <footer>
-        <p>© 2026 Whunx | l1beral</p>
+    <footer class="fade-in">
+        <div class="footer-buttons">
+            <a href="mailto:slizzedxtr@gmail.com" class="action-btn coop-btn"><i class="fa-solid fa-envelope"></i> Сотрудничество</a>
+            <a href="https://t.me/dxtr_slizze" target="_blank" class="action-btn contact-btn"><i class="fa-brands fa-telegram"></i> Наш Telegram</a>
+            <a href="https://www.youtube.com/@DXTR.SlizZe" target="_blank" class="action-btn yt-footer-btn"><i class="fa-brands fa-youtube"></i> YouTube</a>
+            <a href="https://www.tiktok.com/@dxtr.slizze" target="_blank" class="action-btn tt-footer-btn"><i class="fa-brands fa-tiktok"></i> TikTok</a>
+        </div>
+        <p class="copy">© 2026 Whunx | l1beral</p>
     </footer>
-
-    <audio id="ptbAudioPlayer" preload="auto" crossorigin="anonymous"></audio>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
@@ -874,7 +918,7 @@
     // ══════════════════════════════════════════
     const API_URL = "https://dxtrslizze.onrender.com/api";
     const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
-    const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'; 
+    const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h';
     let supabaseClient;
     if (window.supabase) supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -892,7 +936,7 @@
     let bjGameActive = false, bjBet = 0;
     let crashInterval = null, currentDice = null, isMusicPlaying = false;
     let dailyCooldownInterval = null;
-    let lbHtmlCache = ''; 
+    let lbHtmlCache = '';
     let socket = null;
 
     function showToast(message, type = 'info') {
@@ -919,13 +963,13 @@
     // Сокеты (Онлайн + Поддержка)
     if (typeof io !== 'undefined') {
         socket = io("https://dxtrslizze.onrender.com/");
-        
+
         socket.on('online_update', c => {
             const el = document.getElementById('onlineCount');
-            if (el) el.textContent = c + ' ОНЛАЙН';
+            if (el) el.textContent = c;
         });
 
-        socket.on('connect', () => { 
+        socket.on('connect', () => {
             if (isAuthUser && currentSessionToken) { socket.emit('register_client', { token: currentSessionToken }); }
         });
 
@@ -935,62 +979,74 @@
         const chatSendBtn = document.getElementById('chat-send');
         const chatWindow = document.getElementById('chat-window');
 
-        socket.on('ban_status', d => { 
-            if (d.isBanned) { 
-                if(chatBanNotice) chatBanNotice.style.display = 'block'; 
-                if(chatGreeting) chatGreeting.style.display = 'none'; 
+        socket.on('ban_status', d => {
+            if (d.isBanned) {
+                if(chatBanNotice) chatBanNotice.style.display = 'block';
+                if(chatGreeting) chatGreeting.style.display = 'none';
                 if(chatInput) { chatInput.disabled = true; chatInput.placeholder = "Доступ ограничен."; chatInput.style.borderColor = "var(--error)"; }
                 if(chatSendBtn) { chatSendBtn.disabled = true; chatSendBtn.style.background = 'rgba(255,255,255,0.1)'; chatSendBtn.style.color = '#555'; }
-            } else { 
-                if(chatBanNotice) chatBanNotice.style.display = 'none'; 
-                if(chatGreeting && isAuthUser) chatGreeting.style.display = 'block'; 
+            } else {
+                if(chatBanNotice) chatBanNotice.style.display = 'none';
+                if(chatGreeting && isAuthUser) chatGreeting.style.display = 'block';
                 if(chatInput && isAuthUser) { chatInput.disabled = false; chatInput.placeholder = "Опишите проблему..."; chatInput.style.borderColor = "var(--glass-border)"; }
                 if(chatSendBtn && isAuthUser) { chatSendBtn.disabled = false; chatSendBtn.style.background = 'var(--accent-purple)'; chatSendBtn.style.color = '#fff'; }
-            } 
-        });
-        
-        socket.on('receive_message', d => { 
-            if (chatWindow && (chatWindow.style.display === 'none' || chatWindow.style.display === '')) {
-                chatWindow.style.display = 'flex';
             }
-            addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess); 
+        });
+
+        socket.on('receive_message', d => {
+            if (chatWindow) {
+                resetChatUI();
+                if (chatWindow.style.display === 'none' || chatWindow.style.display === '') chatWindow.style.display = 'flex';
+            }
+            addChatMessage('Support', d.text, 'flex-start', true, d.isWarning, d.isSuccess);
         });
 
         socket.on('chat_closed_solved', () => { showChatClosedAnimation("Проблема решена", "fa-circle-check"); });
         socket.on('chat_closed_reset', () => { showChatClosedAnimation("Пароль сброшен", "fa-check-double"); });
 
-        if(chatSendBtn) chatSendBtn.onclick = sendMessageToBot; 
+        if(chatSendBtn) chatSendBtn.onclick = sendMessageToBot;
         if(chatInput) chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") { e.preventDefault(); sendMessageToBot(); } });
-        
-        function sendMessageToBot() { 
-            const t = chatInput.value.trim(); 
-            if (!t || chatInput.disabled || !isAuthUser) return; 
-            socket.emit('send_message', { text: t, token: currentSessionToken }); 
-            addChatMessage('Вы', t, 'flex-end', true, false, false); 
-            chatInput.value = ''; 
+
+        function sendMessageToBot() {
+            const t = chatInput.value.trim();
+            if (!t || chatInput.disabled || !isAuthUser) return;
+            socket.emit('send_message', { text: t, token: currentSessionToken });
+            addChatMessage('Вы', t, 'flex-end', true, false, false);
+            chatInput.value = '';
         }
 
-        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) { 
-            const wrapper = document.createElement('div'); 
-            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`; 
-            const nameLab = document.createElement('span'); 
-            nameLab.className = 'chat-msg-name'; 
-            nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender; 
-            const bubble = document.createElement('div'); 
-            bubble.className = 'chat-msg-bubble'; 
-            bubble.textContent = text; 
-            if (isWarn) { nameLab.style.color = 'var(--error)'; bubble.style.background = 'rgba(239, 68, 68, 0.1)'; bubble.style.border = '1px solid var(--error)'; } 
-            else if (isSucc) { nameLab.style.color = 'var(--success)'; bubble.style.background = 'rgba(16, 185, 129, 0.1)'; bubble.style.border = '1px solid var(--success)'; } 
-            wrapper.appendChild(nameLab); wrapper.appendChild(bubble); 
+        function addChatMessage(sender, text, align, save = true, isWarn = false, isSucc = false) {
+            const wrapper = document.createElement('div');
+            wrapper.className = `chat-msg-wrapper ${align === 'flex-end' ? 'msg-user' : 'msg-bot'}`;
+            const nameLab = document.createElement('span');
+            nameLab.className = 'chat-msg-name';
+            nameLab.textContent = (sender === 'Вы' && window.userNickname) ? window.userNickname : sender;
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-msg-bubble';
+            bubble.textContent = text;
+            if (isWarn) { nameLab.style.color = 'var(--error)'; bubble.style.background = 'rgba(239, 68, 68, 0.1)'; bubble.style.border = '1px solid var(--error)'; }
+            else if (isSucc) { nameLab.style.color = 'var(--success)'; bubble.style.background = 'rgba(16, 185, 129, 0.1)'; bubble.style.border = '1px solid var(--success)'; }
+            wrapper.appendChild(nameLab); wrapper.appendChild(bubble);
             const msgsContainer = document.getElementById('chat-messages');
             if(msgsContainer) { msgsContainer.appendChild(wrapper); msgsContainer.scrollTop = msgsContainer.scrollHeight; }
-            if (save) { 
-                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || []; 
-                h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc }); 
-                if (h.length > 50) h.shift(); 
-                localStorage.setItem('dxtrChatHistory', JSON.stringify(h)); 
-            } 
+            if (save) {
+                const h = JSON.parse(localStorage.getItem('dxtrChatHistory')) || [];
+                h.push({ sender, text, align, isWarning: isWarn, isSuccess: isSucc });
+                if (h.length > 50) h.shift();
+                localStorage.setItem('dxtrChatHistory', JSON.stringify(h));
+            }
         }
+        window.addChatMessage = addChatMessage;
+
+        function resetChatUI() {
+            const inputArea = document.getElementById('chat-input-area');
+            const msgsContainer = document.getElementById('chat-messages');
+            if(!inputArea || !msgsContainer) return;
+            inputArea.style.opacity = "1";
+            inputArea.style.display = "flex";
+            msgsContainer.querySelectorAll('.chat-resolved-status').forEach(b => b.remove());
+        }
+        window.resetChatUI = resetChatUI;
 
         function showChatClosedAnimation(titleHtml, iconClass) {
             const inputArea = document.getElementById('chat-input-area');
@@ -1002,7 +1058,7 @@
                 statusBlock.innerHTML = `<i class="fa-solid ${iconClass} chat-resolved-icon"></i><div class="chat-resolved-title">${titleHtml}</div>`;
                 const msgsContainer = document.getElementById('chat-messages');
                 if(msgsContainer) { msgsContainer.appendChild(statusBlock); msgsContainer.scrollTop = msgsContainer.scrollHeight; }
-            }, 500); 
+            }, 500);
         }
     }
 
@@ -1025,7 +1081,7 @@
         const btn = document.getElementById('dailyActionBtn');
         if (!btn) return;
         if (dailyCooldownInterval) clearInterval(dailyCooldownInterval);
-        
+
         if (!lastClaim || lastClaim == 0) {
             btn.disabled = false;
             btn.innerHTML = `+ 100 <img src="/valuta.png" class="valuta-icon">`;
@@ -1041,7 +1097,7 @@
                 btn.disabled = true;
                 const h = Math.floor(diff / 3600000);
                 const m = Math.floor((diff % 3600000) / 60000);
-                btn.innerHTML = `ОЖИДАНИЕ ${h}Ч ${m}М`;
+                btn.innerHTML = `Ожидание ${h}ч ${m}м`;
             } else {
                 btn.disabled = false;
                 btn.innerHTML = `+ 100 <img src="/valuta.png" class="valuta-icon">`;
@@ -1055,7 +1111,7 @@
     async function checkSession() {
         if(!supabaseClient) return;
         const { data: { session } } = await supabaseClient.auth.getSession();
-        
+
         if (session) {
             isAuthUser = true;
             currentSessionToken = session.access_token;
@@ -1067,7 +1123,7 @@
 
             const lockScreen = document.getElementById('authLock');
             if (lockScreen) lockScreen.style.display = 'none';
-            
+
             if(userData) {
                 updateBalance(userData.dscoin_balance || 0);
                 const gbw = document.getElementById('globalBalanceWrap');
@@ -1075,7 +1131,7 @@
                 updateDailyTimer(userData.last_daily_claim);
                 window.userNickname = userData.nickname;
             }
-            
+
             try {
                 fetch(`${API_URL}/games/reset`, { method: 'POST', headers: { 'Authorization': `Bearer ${currentSessionToken}` } }).catch(() => {});
                 fetch(`${API_URL}/games/farm/status`, { headers: { 'Authorization': `Bearer ${currentSessionToken}` } })
@@ -1083,7 +1139,7 @@
             } catch(e){}
 
             fetchLeaderboard();
-            setInterval(fetchLeaderboard, 10000); 
+            setInterval(fetchLeaderboard, 10000);
             closeLoginModal();
 
             if (socket && socket.connected) { socket.emit('register_client', { token: currentSessionToken }); }
@@ -1104,7 +1160,7 @@
         closeLoginModal();
         showToast('Синхронизация...', 'info');
         const { error } = await supabaseClient.auth.signInWithIdToken({ provider: 'google', token: response.credential });
-        if (error) { showToast('Ошибка авторизации', 'error'); } 
+        if (error) { showToast('Ошибка авторизации', 'error'); }
         else { showToast('Успешный вход!', 'success'); }
     }
 
@@ -1121,7 +1177,7 @@
 
     if(supabaseClient) {
         supabaseClient.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') { checkSession(); } 
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') { checkSession(); }
             else if (event === 'SIGNED_OUT') { isAuthUser = false; currentSessionToken = null; checkSession(); }
         });
     }
@@ -1148,11 +1204,11 @@
         if (slotCovers.length === 0) slotCovers = ['/dslogo.png'];
 
         const btnQuiz = document.getElementById('btnQuiz'); if (btnQuiz) btnQuiz.disabled = false;
-        const hintQuiz = document.getElementById('quizHint'); if (hintQuiz) hintQuiz.textContent = "Готово. Жми 'НОВЫЙ РАУНД'.";
+        const hintQuiz = document.getElementById('quizHint'); if (hintQuiz) hintQuiz.textContent = "Готово. Жми 'Новый раунд'.";
         const btnPtb = document.getElementById('btnPtb');
         if (btnPtb) {
             btnPtb.disabled = false; printMsg('ptb', 'ТРЕКИ ЗАГРУЖЕНЫ', 'win');
-            const ptbPrompt = document.getElementById('ptbPrompt'); if (ptbPrompt) ptbPrompt.textContent = "Готово. Жми 'НАЧАТЬ'.";
+            const ptbPrompt = document.getElementById('ptbPrompt'); if (ptbPrompt) ptbPrompt.textContent = "Готово. Жми 'Начать'.";
         }
         initReels();
     }
@@ -1162,14 +1218,14 @@
             const res = await fetch(`${API_URL}/games/leaderboard`);
             const data = await res.json();
             const lb = document.getElementById('leaderboardData');
-            
+
             if (data.success && Array.isArray(data.leaders) && lb) {
                 const newHtml = data.leaders.map((u, i) => {
                     const rc = i < 3 ? `rank-${i+1}` : '';
                     const col = i === 0 ? 'var(--accent-gold)' : i === 1 ? '#c0c0c0' : i === 2 ? '#cd7f32' : 'var(--text-muted)';
                     const nickname = u.nickname || 'Аноним';
                     const avatar = u.avatarUrl || '/dslogo.png';
-                    
+
                     return `<div class="ld-item ${rc}">
                         <div class="ld-rank" style="color:${col};">#${i+1}</div>
                         <img src="${avatar}" class="ld-avatar" onerror="this.onerror=null;this.src='/dslogo.png';">
@@ -1188,6 +1244,30 @@
         } catch (e) {}
     }
 
+    // === PWA ===
+    let deferredPrompt;
+    const installModal = document.getElementById('installModal');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
+
+    function closeInstallModal() {
+        if(installModal) installModal.style.display = 'none';
+        localStorage.setItem('dxtr_visited_v4', 'true');
+    }
+
+    function triggerInstall() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+        } else {
+            showToast("Используйте меню 'Поделиться' на iOS или 'Добавить на гл. экран' на Android/ПК.", "info");
+        }
+        closeInstallModal();
+    }
+
     // === ИНИЦИАЛИЗАЦИЯ И МЕНЮ ===
     window.addEventListener('load', () => {
         checkSession();
@@ -1195,7 +1275,11 @@
         initPtbWave();
         loadTracksData();
         initRouletteStrip();
-        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
+        (JSON.parse(localStorage.getItem('dxtrChatHistory')) || []).forEach(m => window.addChatMessage && window.addChatMessage(m.sender, m.text, m.align, false, m.isWarning, m.isSuccess));
+
+        if (!localStorage.getItem('dxtr_visited_v4')) {
+            setTimeout(() => { if(installModal) installModal.style.display = 'flex'; }, 2500);
+        }
 
         const bBtn = document.getElementById('burgerBtn'), sBar = document.getElementById('sidebar'), sOver = document.getElementById('sidebarOverlay'), cSBar = document.getElementById('closeSidebar');
         function toggleSBar() { if(sBar) sBar.classList.toggle('active'); if(sOver) sOver.classList.toggle('active'); }
@@ -1206,8 +1290,9 @@
         const chatClose = document.getElementById('chat-close');
 
         if(menuSupportBtn) {
-            menuSupportBtn.onclick = (e) => { 
-                e.preventDefault(); toggleSBar(); 
+            menuSupportBtn.onclick = (e) => {
+                e.preventDefault(); toggleSBar();
+                if(window.resetChatUI) window.resetChatUI();
                 if(chatWindow.style.display !== 'flex') {
                     chatWindow.style.display = 'flex';
                     setTimeout(() => { const msgs = document.getElementById('chat-messages'); if(msgs) msgs.scrollTop = msgs.scrollHeight; }, 50);
@@ -1233,6 +1318,37 @@
                 }
             });
         }
+
+        // === ДРАГ ЧАТА ===
+        const chatHeader = document.getElementById('chat-header');
+        let isDraggingChat = false, chatOffsetX, chatOffsetY;
+        if(chatHeader) {
+            chatHeader.addEventListener('mousedown', (e) => {
+                if (window.innerWidth <= 800 || e.target.id === 'chat-close' || !chatWindow) return;
+                isDraggingChat = true;
+                chatWindow.style.animation = 'none';
+                chatWindow.style.transform = 'none';
+                const rect = chatWindow.getBoundingClientRect();
+                chatOffsetX = e.clientX - rect.left;
+                chatOffsetY = e.clientY - rect.top;
+                chatWindow.style.right = 'auto';
+                chatWindow.style.bottom = 'auto';
+                chatWindow.style.margin = '0';
+                chatWindow.style.left = rect.left + 'px';
+                chatWindow.style.top = rect.top + 'px';
+            });
+        }
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingChat || !chatWindow) return;
+            e.preventDefault();
+            let newX = e.clientX - chatOffsetX;
+            let newY = e.clientY - chatOffsetY;
+            newX = Math.max(0, Math.min(newX, window.innerWidth - chatWindow.offsetWidth));
+            newY = Math.max(0, Math.min(newY, window.innerHeight - chatWindow.offsetHeight));
+            chatWindow.style.left = `${newX}px`;
+            chatWindow.style.top = `${newY}px`;
+        });
+        document.addEventListener('mouseup', () => { isDraggingChat = false; });
     });
 
     // Установка ставки кнопками быстрого выбора
@@ -1263,14 +1379,14 @@
         if (t) t.classList.add('active');
         if (btn) btn.classList.add('active');
         if (id === 'roulette') setTimeout(() => updateRoulettePosition(0), 10);
-        if (id === 'plinko')   initPlinko();
+        if (id === 'plinko') initPlinko();
     }
 
     // === ПЛАВАЮЩИЙ NUMPAD ===
     let activeInputId = null, isDecimalAllowed = false;
     const npModal = document.getElementById('numpad-modal');
     const npHeader = document.getElementById('np-header');
-    
+
     let npDragging = false, npOffsetX, npOffsetY;
     if(npHeader) {
         npHeader.addEventListener('mousedown', (e) => {
@@ -1279,7 +1395,7 @@
             const rect = npModal.getBoundingClientRect();
             npOffsetX = e.clientX - rect.left;
             npOffsetY = e.clientY - rect.top;
-            npModal.style.transform = 'none'; 
+            npModal.style.transform = 'none';
             npModal.style.left = rect.left + 'px';
             npModal.style.top = rect.top + 'px';
         });
@@ -1303,12 +1419,12 @@
             npModal.style.transform = 'translate(-50%, -50%)';
         }
     }
-    
+
     function closeNumpad() {
         if (npModal) npModal.style.display = 'none';
         activeInputId = null;
     }
-    
+
     const npCloseBtn = document.getElementById('npCloseBtn');
     if(npCloseBtn) npCloseBtn.onclick = closeNumpad;
     const npConfirmBtn = document.getElementById('npConfirmBtn');
@@ -1345,18 +1461,18 @@
         try {
             const res = await fetch(`${API_URL}/games/daily`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
-            if (res.ok) { 
-                updateBalance(data.newBalance); 
-                updateDailyTimer(Date.now()); 
-                printMsg('dash', data.message, 'win'); 
-            } else { 
-                printMsg('dash', data.error, 'err'); 
+            if (res.ok) {
+                updateBalance(data.newBalance);
+                updateDailyTimer(Date.now());
+                printMsg('dash', data.message, 'win');
+            } else {
+                printMsg('dash', data.error, 'err');
             }
         } catch (e) { printMsg('dash', 'Ошибка связи', 'err'); }
         setTimeout(() => { printMsg('dash', '', ''); }, 3000);
     }
 
-    const timeUpgrades   = [{val:30,cost:750},{val:25,cost:1500},{val:20,cost:3000},{val:15,cost:5000},{val:10,cost:10000},{val:5,cost:null}];
+    const timeUpgrades = [{val:30,cost:750},{val:25,cost:1500},{val:20,cost:3000},{val:15,cost:5000},{val:10,cost:10000},{val:5,cost:null}];
     const incomeUpgrades = [{val:2,cost:750},{val:4,cost:1500},{val:6,cost:3000},{val:8,cost:5000},{val:10,cost:10000},{val:15,cost:17500},{val:20,cost:null}];
 
     function renderFarmUI() {
@@ -1370,33 +1486,33 @@
             const id = incomeUpgrades[farmState.incomeLevel] || incomeUpgrades[incomeUpgrades.length-1];
             const tv = document.getElementById('fTimeVal'); if (tv) tv.innerHTML = td.val;
             const iv = document.getElementById('fIncVal'); if (iv) iv.innerHTML = id.val;
-            
+
             const bt = document.getElementById('btnUpTime');
-            if (bt) { if (td.cost === null) { bt.disabled = true; bt.innerHTML = '<span>МАКС. УРОВЕНЬ</span>'; } else { bt.disabled = false; const cEl = document.getElementById('fTimeCostDisplay'); if (cEl) cEl.innerHTML = `${td.cost} <img src="/valuta.png" class="valuta-icon">`; } }
-            
+            if (bt) { if (td.cost === null) { bt.disabled = true; bt.innerHTML = '<span>Макс. уровень</span>'; } else { bt.disabled = false; const cEl = document.getElementById('fTimeCostDisplay'); if (cEl) cEl.innerHTML = `${td.cost} <img src="/valuta.png" class="valuta-icon">`; } }
+
             const bi = document.getElementById('btnUpInc');
-            if (bi) { if (id.cost === null) { bi.disabled = true; bi.innerHTML = '<span>МАКС. УРОВЕНЬ</span>'; } else { bi.disabled = false; const cEl = document.getElementById('fIncCostDisplay'); if (cEl) cEl.innerHTML = `${id.cost} <img src="/valuta.png" class="valuta-icon">`; } }
+            if (bi) { if (id.cost === null) { bi.disabled = true; bi.innerHTML = '<span>Макс. уровень</span>'; } else { bi.disabled = false; const cEl = document.getElementById('fIncCostDisplay'); if (cEl) cEl.innerHTML = `${id.cost} <img src="/valuta.png" class="valuta-icon">`; } }
         }
     }
 
     async function activateFarm() {
-        if (userBalance < 1000) return printMsg('farm-activate', 'НЕДОСТАТОЧНО СРЕДСТВ', 'err');
+        if (userBalance < 1000) return printMsg('farm-activate', 'Недостаточно средств', 'err');
         const btn = document.getElementById('btnActivateFarm'); if (btn) btn.disabled = true;
         try {
             const res = await fetch(`${API_URL}/games/farm/activate`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
             if (res.ok) { updateBalance(data.newBalance); farmState = { active: true, timeLevel: 0, incomeLevel: 0 }; renderFarmUI(); }
-            else { printMsg('farm-activate', data.error || 'ОШИБКА АКТИВАЦИИ', 'err'); if (btn) btn.disabled = false; }
-        } catch (e) { printMsg('farm-activate', 'ОШИБКА СЕТИ', 'err'); if (btn) btn.disabled = false; }
+            else { printMsg('farm-activate', data.error || 'Ошибка активации', 'err'); if (btn) btn.disabled = false; }
+        } catch (e) { printMsg('farm-activate', 'Ошибка сети', 'err'); if (btn) btn.disabled = false; }
     }
 
     async function upgradeFarm(type) {
         try {
             const res = await fetch(`${API_URL}/games/farm/upgrade`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ type }) });
             const data = await res.json();
-            if (res.ok) { updateBalance(data.newBalance); if (type === 'time') farmState.timeLevel++; else farmState.incomeLevel++; renderFarmUI(); printMsg('farm', 'УЛУЧШЕНИЕ УСТАНОВЛЕНО', 'win'); }
-            else { printMsg('farm', data.error || 'ОШИБКА АПГРЕЙДА', 'err'); }
-        } catch (e) { printMsg('farm', 'ОШИБКА СЕТИ', 'err'); }
+            if (res.ok) { updateBalance(data.newBalance); if (type === 'time') farmState.timeLevel++; else farmState.incomeLevel++; renderFarmUI(); printMsg('farm', 'Улучшение установлено', 'win'); }
+            else { printMsg('farm', data.error || 'Ошибка апгрейда', 'err'); }
+        } catch (e) { printMsg('farm', 'Ошибка сети', 'err'); }
     }
 
     // === СЛОТЫ ===
@@ -1411,9 +1527,9 @@
 
     async function playSlots() {
         const bet = getBetValue('betSlots');
-        if (bet > userBalance || bet <= 0) return printMsg('slots', 'ОШИБКА СТАВКИ', 'err');
+        if (bet > userBalance || bet <= 0) return printMsg('slots', 'Ошибка ставки', 'err');
         const btn = document.getElementById('btnSlots'); if (btn) btn.disabled = true;
-        printMsg('slots', 'ВРАЩЕНИЕ...', '');
+        printMsg('slots', 'Вращение...', '');
         try {
             const res = await fetch(`${API_URL}/games/slots`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet }) });
             const data = await res.json();
@@ -1434,7 +1550,7 @@
                 if (data.win > 0) {
                     spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2);
                     printMsg('slots', `JACKPOT! +${data.win} NC`, 'win');
-                } else { printMsg('slots', 'ПРОИГРЫШ', 'lose'); }
+                } else { printMsg('slots', 'Проигрыш', 'lose'); }
                 updateBalance(data.newBalance);
                 if (btn) btn.disabled = false;
                 setTimeout(initReels, 3500);
@@ -1447,13 +1563,13 @@
         currentDice = choice;
         document.querySelectorAll('.d-opt').forEach(b => b.classList.remove('active'));
         const o = document.getElementById('d-opt-' + choice); if (o) o.classList.add('active');
-        printMsg('dice', 'СЕКТОР ВЫБРАН', '');
+        printMsg('dice', 'Сектор выбран', '');
     }
 
     async function playDice() {
-        if (!currentDice) return printMsg('dice', 'ВЫБЕРИТЕ СЕКТОР', 'err');
+        if (!currentDice) return printMsg('dice', 'Выберите сектор', 'err');
         const bet = getBetValue('betDice');
-        if (bet > userBalance || bet <= 0) return printMsg('dice', 'ОШИБКА СТАВКИ', 'err');
+        if (bet > userBalance || bet <= 0) return printMsg('dice', 'Ошибка ставки', 'err');
         const btn = document.getElementById('btnDice'); if (btn) btn.disabled = true;
         const disp = document.getElementById('diceDisplay');
         let spin = setInterval(() => { if (disp) disp.innerText = Math.floor(Math.random() * 100) + 1; }, 50);
@@ -1467,10 +1583,10 @@
                     updateBalance(data.newBalance);
                     if (data.win > 0) {
                         spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2);
-                        printMsg('dice', `УСПЕХ! +${data.win} NC`, 'win');
+                        printMsg('dice', `Успех! +${data.win} NC`, 'win');
                         if (disp) { disp.style.color = 'var(--success)'; disp.style.textShadow = '0 0 20px var(--success)'; }
                     } else {
-                        printMsg('dice', 'ПРОВАЛ', 'lose');
+                        printMsg('dice', 'Провал', 'lose');
                         if (disp) { disp.style.color = 'var(--error)'; disp.style.textShadow = '0 0 20px var(--error)'; }
                     }
                     setTimeout(() => { if (disp) { disp.style.color = ''; disp.style.textShadow = ''; } }, 2000);
@@ -1484,8 +1600,8 @@
     async function playCrash() {
         const bet = getBetValue('betCrash');
         const target = getBetValue('targetCrash', true);
-        if (bet > userBalance || bet <= 0) return printMsg('crash', 'ОШИБКА СТАВКИ', 'err');
-        if (target < 1.1) return printMsg('crash', 'МИН. ВЫВОД 1.1', 'err');
+        if (bet > userBalance || bet <= 0) return printMsg('crash', 'Ошибка ставки', 'err');
+        if (target < 1.1) return printMsg('crash', 'Мин. вывод 1.1', 'err');
         const btn = document.getElementById('btnCrash'); if (btn) btn.disabled = true;
         const disp = document.getElementById('crMult'); const line = document.getElementById('crLine');
         if (disp) { disp.style.color = ''; disp.style.textShadow = ''; }
@@ -1493,7 +1609,7 @@
             const res = await fetch(`${API_URL}/games/crash`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet, targetMultiplier: target }) });
             const data = await res.json();
             if (!res.ok) { printMsg('crash', data.error, 'err'); if (btn) btn.disabled = false; return; }
-            printMsg('crash', 'ПОЛЁТ...', '');
+            printMsg('crash', 'Полёт...', '');
             updateBalance(userBalance - bet);
             let cur = 1.00;
             crashInterval = setInterval(() => {
@@ -1503,14 +1619,14 @@
                 if (data.win === 0 && cur >= data.crashPoint) {
                     clearInterval(crashInterval); crashInterval = null;
                     if (disp) { disp.innerText = data.crashPoint.toFixed(2) + '×'; disp.style.color = 'var(--error)'; disp.style.textShadow = '0 0 30px var(--error)'; }
-                    printMsg('crash', 'КРАШ!', 'lose');
+                    printMsg('crash', 'Краш!', 'lose');
                     updateBalance(data.newBalance);
                     if (btn) btn.disabled = false;
                 } else if (data.win > 0 && cur >= data.target) {
                     clearInterval(crashInterval); crashInterval = null;
                     if (disp) { disp.innerText = data.target.toFixed(2) + '×'; disp.style.color = 'var(--success)'; disp.style.textShadow = '0 0 30px var(--success)'; }
                     spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2);
-                    printMsg('crash', `ВЫВОД: +${data.win} NC`, 'win');
+                    printMsg('crash', `Вывод: +${data.win} NC`, 'win');
                     updateBalance(data.newBalance);
                     if (btn) btn.disabled = false;
                 }
@@ -1537,7 +1653,7 @@
         currentR = color;
         document.querySelectorAll('.r-opt').forEach(b => b.classList.remove('active'));
         const o = document.getElementById('r-opt-' + color); if (o) o.classList.add('active');
-        printMsg('roulette', 'ЦВЕТ УТВЕРЖДЁН', '');
+        printMsg('roulette', 'Цвет утверждён', '');
     }
     function updateRoulettePosition(transitionDuration = 0) {
         const strip = document.getElementById('rStrip'); const wheel = document.querySelector('.roulette-wheel');
@@ -1549,14 +1665,14 @@
         strip.style.transform = `translateX(-${offset}px)`;
     }
     window.addEventListener('resize', () => { const tab = document.getElementById('tab-roulette'); if (tab && tab.classList.contains('active') && !isRouletteSpinning) updateRoulettePosition(0); });
-    
+
     async function playRoulette() {
-        if (isRouletteSpinning || !currentR) return printMsg('roulette', 'ВЫБЕРИТЕ ЦВЕТ', 'err');
+        if (isRouletteSpinning || !currentR) return printMsg('roulette', 'Выберите цвет', 'err');
         const bet = getBetValue('betRoulette');
-        if (bet > userBalance || bet <= 0) return printMsg('roulette', 'ОШИБКА СТАВКИ', 'err');
+        if (bet > userBalance || bet <= 0) return printMsg('roulette', 'Ошибка ставки', 'err');
         const btn = document.getElementById('btnRoulette'); if (btn) btn.disabled = true;
         isRouletteSpinning = true; document.querySelectorAll('.r-opt').forEach(b => b.disabled = true);
-        updateBalance(userBalance - bet); printMsg('roulette', 'ВРАЩЕНИЕ...', '');
+        updateBalance(userBalance - bet); printMsg('roulette', 'Вращение...', '');
         try {
             const res = await fetch(`${API_URL}/games/roulette`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet, color: currentR }) });
             const data = await res.json();
@@ -1570,8 +1686,8 @@
             currentRIndex = targetIndex; updateRoulettePosition(4);
             setTimeout(() => {
                 updateBalance(data.newBalance);
-                if (data.isWin) { spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2); printMsg('roulette', `ПОБЕДА! +${data.win} NC`, 'win'); }
-                else { printMsg('roulette', 'ПРОИГРЫШ', 'lose'); }
+                if (data.isWin) { spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2); printMsg('roulette', `Победа! +${data.win} NC`, 'win'); }
+                else { printMsg('roulette', 'Проигрыш', 'lose'); }
                 resetRouletteState();
             }, 4200);
         } catch (e) { printMsg('roulette', 'Сбой сети', 'err'); resetRouletteState(); }
@@ -1592,7 +1708,7 @@
     }
     async function bjDeal() {
         bjBet = getBetValue('betBJ');
-        if (bjBet <= 0 || bjBet > userBalance) return printMsg('bj', 'ОШИБКА СТАВКИ', 'err');
+        if (bjBet <= 0 || bjBet > userBalance) return printMsg('bj', 'Ошибка ставки', 'err');
         const btn = document.getElementById('bjDealBtn'); if (btn) btn.disabled = true;
         try {
             const res = await fetch(`${API_URL}/games/bj/start`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet: bjBet }) });
@@ -1615,14 +1731,14 @@
         try {
             const res = await fetch(`${API_URL}/games/bj/hit`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
-            if (!res.ok) { printMsg('bj', data.error || 'ОШИБКА', 'err'); return; }
+            if (!res.ok) { printMsg('bj', data.error || 'Ошибка', 'err'); return; }
             const pc = document.getElementById('bjPlayerCards'); if (pc) pc.innerHTML += bjCardHTML(data.card);
             const ps = document.getElementById('bjPlayerScore'); if (ps) ps.textContent = data.score;
             if (data.status === 'bust') {
                 bjGameActive = false;
                 const hb = document.getElementById('bjHitBtn'); if (hb) hb.disabled = true;
                 const sb = document.getElementById('bjStandBtn'); if (sb) sb.disabled = true;
-                printMsg('bj', 'ПЕРЕБОР — ПРОИГРЫШ', 'lose');
+                printMsg('bj', 'Перебор — проигрыш', 'lose');
                 setTimeout(() => { const bd = document.getElementById('bjDealBtn'); if (bd) bd.disabled = false; }, 1000);
             }
         } catch (e) { printMsg('bj', 'Сбой', 'err'); }
@@ -1634,13 +1750,13 @@
         try {
             const res = await fetch(`${API_URL}/games/bj/stand`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
-            if (!res.ok) { printMsg('bj', data.error || 'ОШИБКА', 'err'); return; }
+            if (!res.ok) { printMsg('bj', data.error || 'Ошибка', 'err'); return; }
             const dc = document.getElementById('bjDealerCards'); if (dc) dc.innerHTML = data.dealerHand.map(c => bjCardHTML(c)).join('');
             const ds = document.getElementById('bjDealerScore'); if (ds) ds.textContent = data.dScore;
             bjGameActive = false; updateBalance(data.newBalance);
-            let msg = 'ДИЛЕР ПОБЕДИЛ', type = 'lose';
-            if (data.win > bjBet) { msg = `ПОБЕДА! +${data.win} NC`; type = 'win'; spawnFloat('+' + (data.win - bjBet), innerWidth / 2 - 30, innerHeight / 2); }
-            else if (data.win === bjBet) { msg = 'НИЧЬЯ — ВОЗВРАТ'; type = 'err'; }
+            let msg = 'Дилер победил', type = 'lose';
+            if (data.win > bjBet) { msg = `Победа! +${data.win} NC`; type = 'win'; spawnFloat('+' + (data.win - bjBet), innerWidth / 2 - 30, innerHeight / 2); }
+            else if (data.win === bjBet) { msg = 'Ничья — возврат'; type = 'err'; }
             printMsg('bj', msg, type);
             setTimeout(() => { const bd = document.getElementById('bjDealBtn'); if (bd) bd.disabled = false; }, 1000);
         } catch (e) { printMsg('bj', 'Сбой', 'err'); }
@@ -1649,7 +1765,7 @@
     // === КВИЗ ===
     async function startQuiz() {
         const bet = getBetValue('betQuiz');
-        if (bet <= 0 || bet > userBalance) return printMsg('quiz', 'ОШИБКА СТАВКИ', 'err');
+        if (bet <= 0 || bet > userBalance) return printMsg('quiz', 'Ошибка ставки', 'err');
         const btn = document.getElementById('btnQuiz'); if (btn) btn.disabled = true;
         const hint = document.getElementById('quizHint'); if (hint) hint.textContent = "Связь с базой...";
         try {
@@ -1676,16 +1792,16 @@
         try {
             const res = await fetch(`${API_URL}/games/quiz/answer`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ answer: chosen }) });
             const data = await res.json();
-            if (!res.ok) { printMsg('quiz', data.error || 'ОШИБКА', 'err'); quizActive = false; return; }
+            if (!res.ok) { printMsg('quiz', data.error || 'Ошибка', 'err'); quizActive = false; return; }
             const cover = document.getElementById('quizCover'); if (cover) cover.classList.remove('blurred');
             document.querySelectorAll('.quiz-opt').forEach(b => {
                 b.disabled = true;
                 if (b.dataset.answer.trim().toLowerCase() === (data.correctTitle || '').trim().toLowerCase()) b.classList.add('correct');
             });
             updateBalance(data.newBalance);
-            if (data.isCorrect) { quizStreak = data.newStreak; btn.classList.add('correct'); spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2); printMsg('quiz', `ВЕРНО! +${data.win} NC`, 'win'); }
-            else { quizStreak = 0; btn.classList.add('wrong'); printMsg('quiz', `НЕВЕРНО — ПРАВИЛЬНО: ${data.correctTitle}`, 'lose'); }
-            const qs = document.getElementById('quizStreak'); if (qs) qs.textContent = `СЕРИЯ: ${quizStreak} 🔥`;
+            if (data.isCorrect) { quizStreak = data.newStreak; btn.classList.add('correct'); spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2); printMsg('quiz', `Верно! +${data.win} NC`, 'win'); }
+            else { quizStreak = 0; btn.classList.add('wrong'); printMsg('quiz', `Неверно — правильно: ${data.correctTitle}`, 'lose'); }
+            const qs = document.getElementById('quizStreak'); if (qs) qs.textContent = `Серия: ${quizStreak} 🔥`;
             setTimeout(() => { const bq = document.getElementById('btnQuiz'); if (bq) bq.disabled = false; }, 1200);
         } catch (e) { printMsg('quiz', 'Ошибка', 'err'); const bq = document.getElementById('btnQuiz'); if (bq) bq.disabled = false; }
     }
@@ -1706,7 +1822,7 @@
     }
     async function startMines() {
         minesBet = getBetValue('betMines');
-        if (minesBet <= 0 || minesBet > userBalance) return printMsg('mines', 'ОШИБКА СТАВКИ', 'err');
+        if (minesBet <= 0 || minesBet > userBalance) return printMsg('mines', 'Ошибка ставки', 'err');
         const btn = document.getElementById('btnMines'); if (btn) btn.disabled = true;
         try {
             const res = await fetch(`${API_URL}/games/mines/start`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet: minesBet, minesCount: NUM_MINES }) });
@@ -1720,7 +1836,7 @@
             const multEl = document.getElementById('minesMult'); if (multEl) multEl.textContent = '×1.00';
             const mo = document.getElementById('mineOpened'); if (mo) mo.textContent = '0';
             const amt = document.getElementById('minesCashoutAmt'); if (amt) amt.textContent = minesBet;
-            printMsg('mines', 'ИЩИ КРИСТАЛЛЫ!', 'win');
+            printMsg('mines', 'Ищи кристаллы!', 'win');
         } catch (e) { printMsg('mines', 'Ошибка сети', 'err'); if (btn) btn.disabled = false; }
     }
     async function mineClick(idx, cell) {
@@ -1728,7 +1844,7 @@
         try {
             const res = await fetch(`${API_URL}/games/mines/step`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ cellIndex: idx }) });
             const data = await res.json();
-            if (!res.ok) { printMsg('mines', data.error || 'ОШИБКА ХОДА', 'err'); return; }
+            if (!res.ok) { printMsg('mines', data.error || 'Ошибка хода', 'err'); return; }
             if (data.status === 'lose') {
                 data.bombs.forEach(bIdx => { const c = document.querySelector(`.mine-cell[data-idx='${bIdx}']`); if (c) { c.classList.add('exploded', 'revealed'); c.innerHTML = '<i class="fa-solid fa-bomb"></i>'; } });
                 minesActive = false;
@@ -1736,7 +1852,7 @@
                 const bm = document.getElementById('btnMines'); if (bm) bm.disabled = false;
                 const mm = document.getElementById('minesMinus'); if (mm) mm.disabled = false;
                 const mp = document.getElementById('minesPlus'); if (mp) mp.disabled = false;
-                printMsg('mines', 'БОМБА! ПРОИГРЫШ', 'lose');
+                printMsg('mines', 'Бомба! Проигрыш', 'lose');
             } else if (data.status === 'safe') {
                 cell.classList.add('safe', 'revealed'); cell.innerHTML = '<i class="fa-regular fa-gem"></i>';
                 const multEl = document.getElementById('minesMult'); if (multEl) multEl.textContent = '×' + data.multiplier.toFixed(2);
@@ -1752,8 +1868,8 @@
         try {
             const res = await fetch(`${API_URL}/games/mines/cashout`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` } });
             const data = await res.json();
-            if (data.success) { updateBalance(data.newBalance); spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2); printMsg('mines', `КЭШАУТ +${data.win} NC`, 'win'); }
-            else { printMsg('mines', data.error || 'ОШИБКА ВЫВОДА', 'err'); }
+            if (data.success) { updateBalance(data.newBalance); spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2); printMsg('mines', `Кэшаут +${data.win} NC`, 'win'); }
+            else { printMsg('mines', data.error || 'Ошибка вывода', 'err'); }
         } catch (e) { printMsg('mines', 'Ошибка вывода', 'err'); }
         const bm = document.getElementById('btnMines'); if (bm) bm.disabled = false;
         const mm = document.getElementById('minesMinus'); if (mm) mm.disabled = false;
@@ -1762,7 +1878,7 @@
 
     // === ПЛИНКО ===
     const PLINKO_ROWS = 8;
-    const BUCKET_MULTS  = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10];
+    const BUCKET_MULTS = [10, 3, 1.5, 1, 0.5, 1, 1.5, 3, 10];
     const BUCKET_COLORS = ['#8b5cf6','#ef4444','#f4c745','#00e5ff','#8b5cf6','#00e5ff','#f4c745','#ef4444','#8b5cf6'];
 
     function initPlinko() {
@@ -1800,7 +1916,7 @@
                     b.finished = true;
                     if (b.isLastBall) updateBalance(b.finalServerBalance);
                     if (b.win > b.bet) spawnFloat('+' + b.win, innerWidth / 2 - 30, innerHeight / 2);
-                    printMsg('plinko', b.win >= b.bet ? `ШАР: ×${b.mult} → +${b.win} NC` : `ШАР: ×${b.mult} → ${b.win} NC`, b.win >= b.bet ? 'win' : 'lose');
+                    printMsg('plinko', b.win >= b.bet ? `Шар: ×${b.mult} → +${b.win} NC` : `Шар: ×${b.mult} → ${b.win} NC`, b.win >= b.bet ? 'win' : 'lose');
                 }
             }
         }
@@ -1811,10 +1927,10 @@
     async function dropPlinko() {
         if (plinkoAnimating) return;
         const bet = getBetValue('betPlinko'), count = getBetValue('ballsPlinko');
-        if (bet <= 0 || count <= 0) return printMsg('plinko', 'ОШИБКА ВВОДА', 'err');
-        if (count > 50) return printMsg('plinko', 'МАКСИМУМ 50 ШАРОВ', 'err');
+        if (bet <= 0 || count <= 0) return printMsg('plinko', 'Ошибка ввода', 'err');
+        if (count > 50) return printMsg('plinko', 'Максимум 50 шаров', 'err');
         const btn = document.getElementById('btnPlinko'); if (btn) btn.disabled = true;
-        printMsg('plinko', 'СВЯЗЬ С СЕРВЕРОМ...', '');
+        printMsg('plinko', 'Связь с сервером...', '');
         try {
             const res = await fetch(`${API_URL}/games/plinko`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ bet, count }) });
             const data = await res.json();
@@ -1867,7 +1983,7 @@
 
     async function startPtb() {
         const bet = getBetValue('betPtb');
-        if (bet <= 0 || bet > userBalance) return printMsg('ptb', 'ОШИБКА СТАВКИ', 'err');
+        if (bet <= 0 || bet > userBalance) return printMsg('ptb', 'Ошибка ставки', 'err');
         const btn = document.getElementById('btnPtb'); if (btn) btn.disabled = true;
         const ptbPrompt = document.getElementById('ptbPrompt'); if (ptbPrompt) ptbPrompt.textContent = "Связь с базой...";
         try {
@@ -1886,7 +2002,7 @@
             if (!res.ok) { printMsg('ptb', data.error || 'Ошибка раунда', 'err'); return; }
             const oldRound = document.getElementById('ptbRound'); if (oldRound) oldRound.remove();
             const container = document.getElementById('ptbOpts');
-            if (container) container.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">РАУНД ${data.round} / 5</div>`);
+            if (container) container.insertAdjacentHTML('beforebegin', `<div class="ptb-round" id="ptbRound">Раунд ${data.round} / 5</div>`);
             const pmt = document.getElementById('ptbPrompt'); if (pmt) pmt.textContent = 'Слушай фрагмент (10 сек)...';
             const audioPlayer = document.getElementById('ptbAudioPlayer');
             if (audioPlayer && data.mp3Url) {
@@ -1894,7 +2010,7 @@
                 audioPlayer.onloadedmetadata = () => {
                     const dur = audioPlayer.duration;
                     if (isFinite(dur) && dur > 10) audioPlayer.currentTime = Math.random() * (dur - 10); else audioPlayer.currentTime = 0;
-                    audioPlayer.play().catch(() => { if (pmt) pmt.textContent = 'АУДИО ЗАБЛОКИРОВАНО! Угадывай вслепую.'; });
+                    audioPlayer.play().catch(() => { if (pmt) pmt.textContent = 'Аудио заблокировано! Угадывай вслепую.'; });
                     if (ptbTimeout) clearTimeout(ptbTimeout);
                     ptbTimeout = setTimeout(() => { audioPlayer.pause(); if (!ptbAnswered && pmt) pmt.textContent = 'Время вышло! Выбирай ответ.'; }, 10000);
                 };
@@ -1905,7 +2021,7 @@
                     const b = document.createElement('button'); b.className = 'ptb-opt'; b.dataset.answer = optText; b.textContent = optText; b.onclick = () => ptbAnswer(b); container.appendChild(b);
                 });
             }
-            printMsg('ptb', 'ВЫБЕРИ НАЗВАНИЕ ТРЕКА', '');
+            printMsg('ptb', 'Выбери название трека', '');
         } catch (e) { printMsg('ptb', 'Сбой раунда', 'err'); }
     }
 
@@ -1918,20 +2034,21 @@
         try {
             const res = await fetch(`${API_URL}/games/ptb/answer`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` }, body: JSON.stringify({ answer: chosen }) });
             const data = await res.json();
-            if (!res.ok) { printMsg('ptb', data.error || 'ОШИБКА', 'err'); ptbAnswered = false; return; }
+            if (!res.ok) { printMsg('ptb', data.error || 'Ошибка', 'err'); ptbAnswered = false; return; }
             document.querySelectorAll('.ptb-opt').forEach(b => { b.disabled = true; });
-            if (data.isCorrect) { btn.classList.add('correct'); printMsg('ptb', `ВЕРНО! ${data.correctAnswers}/5`, 'win'); }
-            else { btn.classList.add('wrong'); printMsg('ptb', `МИМО — ${data.correctAnswers}/5`, 'lose'); }
+            if (data.isCorrect) { btn.classList.add('correct'); printMsg('ptb', `Верно! ${data.correctAnswers}/5`, 'win'); }
+            else { btn.classList.add('wrong'); printMsg('ptb', `Мимо — ${data.correctAnswers}/5`, 'lose'); }
             if (data.isFinished) {
                 ptbActive = false;
                 if (data.win > 0) spawnFloat('+' + data.win, innerWidth / 2 - 30, innerHeight / 2);
                 updateBalance(data.newBalance);
-                printMsg('ptb', `ИТОГ: ${data.correctAnswers}/5 верных → ${data.win > 0 ? '+' + data.win : '0'} NC`, data.win > 0 ? 'win' : 'lose');
+                printMsg('ptb', `Итог: ${data.correctAnswers}/5 верных → ${data.win > 0 ? '+' + data.win : '0'} NC`, data.win > 0 ? 'win' : 'lose');
                 const bp = document.getElementById('btnPtb'); if (bp) bp.disabled = false;
                 const pmt = document.getElementById('ptbPrompt'); if (pmt) pmt.textContent = 'Игра завершена';
             } else { setTimeout(() => ptbNextRound(), 2000); }
         } catch (e) { printMsg('ptb', 'Сбой проверки', 'err'); ptbAnswered = false; }
     }
+
     </script>
 </body>
 </html>
