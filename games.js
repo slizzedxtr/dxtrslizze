@@ -1,7 +1,3 @@
-const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
-
 const FARM_TIME_MINUTES  = [30, 25, 20, 15, 10, 5];
 const FARM_TIME_COSTS    = [750, 1500, 3000, 5000, 10000];
 const FARM_INCOME_COINS  = [2, 4, 6, 8, 10, 15, 20];
@@ -18,17 +14,14 @@ const FALLBACK_TITLES = [
 
 let musicCache = { data: [], lastFetch: 0 };
 
-module.exports = function(app, User, supabase) {
+module.exports = function(app, UserMongo, supabase) {
 
     // ══════════════════════════════════════════════════════════════
-    // БЕЗОПАСНОЕ СОХРАНЕНИЕ (Обход строгих схем Mongoose)
+    // БЕЗОПАСНОЕ СОХРАНЕНИЕ В SUPABASE
     // ══════════════════════════════════════════════════════════════
     async function saveUser(user, updates) {
-        await User.updateOne(
-            { _id: user._id },
-            { $set: updates },
-            { strict: false }
-        );
+        const { error } = await supabase.from('g_users').update(updates).eq('id', user.id);
+        if (error) console.error("Ошибка сохранения в БД:", error.message);
         Object.assign(user, updates);
     }
 
@@ -36,7 +29,7 @@ module.exports = function(app, User, supabase) {
     const safeBalance = (user) => Number(user.dscoin_balance) || 0;
 
     // ══════════════════════════════════════════════════════════════
-    // АУТЕНТИФИКАЦИЯ (С ФИКСОМ СЕССИЙ)
+    // АУТЕНТИФИКАЦИЯ ЧЕРЕЗ SUPABASE
     // ══════════════════════════════════════════════════════════════
     const authenticate = async (req, res) => {
         try {
@@ -47,21 +40,26 @@ module.exports = function(app, User, supabase) {
             }
 
             const token = authHeader.split(' ')[1];
-            const decoded = jwt.verify(token, JWT_SECRET);
+            // Проверяем токен Google/Supabase
+            const { data: { user: authUser }, error: authErr } = await supabase.auth.getUser(token);
+            if (authErr || !authUser) {
+                res.status(401).json({ error: 'Сессия истекла' });
+                return null;
+            }
 
-            // ФИКС: .lean() вытаскивает current_game из базы напрямую
-            let user = await User.findOne({ clientId: decoded.clientId }).lean();
-
-            if (!user) {
+            // Получаем запись из нашей таблицы
+            let { data: user, error: dbErr } = await supabase.from('g_users').select('*').eq('id', authUser.id).single();
+            if (dbErr || !user) {
                 res.status(401).json({ error: 'Пользователь не найден' });
                 return null;
             }
 
-            if (user.farm && user.farm.active) {
+            // Обработка пассивного дохода (Фарм)
+            if (user.farm_active) {
                 const now = Date.now();
-                const lastClaim = user.farm.lastClaim || now;
-                const intervalMs = FARM_TIME_MINUTES[user.farm.timeLevel || 0] * 60 * 1000;
-                const income = FARM_INCOME_COINS[user.farm.incomeLevel || 0];
+                const lastClaim = Number(user.farm_last_claim) || now;
+                const intervalMs = FARM_TIME_MINUTES[user.farm_time_level || 0] * 60 * 1000;
+                const income = FARM_INCOME_COINS[user.farm_income_level || 0];
                 const timePassed = now - lastClaim;
 
                 if (timePassed >= intervalMs) {
@@ -71,16 +69,14 @@ module.exports = function(app, User, supabase) {
 
                     await saveUser(user, {
                         dscoin_balance: newBalance,
-                        'farm.lastClaim': newLastClaim
+                        farm_last_claim: newLastClaim
                     });
                 }
             }
-
-            user = await User.findOne({ clientId: decoded.clientId }).lean();
             return user;
         } catch (err) {
             console.error('Auth error:', err);
-            res.status(401).json({ error: 'Сессия истекла' });
+            res.status(401).json({ error: 'Ошибка сервера' });
             return null;
         }
     };
@@ -93,7 +89,6 @@ module.exports = function(app, User, supabase) {
         if (musicCache.data.length > 0 && now - musicCache.lastFetch < 5 * 60 * 1000) {
             return musicCache.data;
         }
-
         try {
             const { data, error } = await supabase
                 .from('music')
@@ -104,28 +99,18 @@ module.exports = function(app, User, supabase) {
                 musicCache = { data, lastFetch: now };
                 return data;
             }
-        } catch(e) {
-            console.error("Supabase load error:", e);
-        }
+        } catch(e) { console.error("Supabase load error:", e); }
 
-        return [
-            { id: 1, title: 'Night City Lights', cover_url: '/dslogo.png', mp3_url: '', is_main: true }
-        ];
+        return [{ id: 1, title: 'Night City Lights', cover_url: '/dslogo.png', mp3_url: '', is_main: true }];
     };
 
     app.get('/api/tracks', async (req, res) => {
         try {
             const tracks = await getMusicCatalog();
             res.json(tracks.map(t => ({
-                id:        t.id,
-                title:     t.title,
-                cover_url: t.cover_url,
-                mp3_url:   t.mp3_url,
-                is_main:   t.is_main
+                id: t.id, title: t.title, cover_url: t.cover_url, mp3_url: t.mp3_url, is_main: t.is_main
             })));
-        } catch (e) {
-            res.status(500).json({ error: 'Ошибка загрузки треков' });
-        }
+        } catch (e) { res.status(500).json({ error: 'Ошибка загрузки треков' }); }
     });
 
     // ══════════════════════════════════════════════════════════════
@@ -150,14 +135,21 @@ module.exports = function(app, User, supabase) {
     // ══════════════════════════════════════════════════════════════
     app.get('/api/games/leaderboard', async (req, res) => {
         try {
-            const leaders = await User.find({}, 'username nickname dscoin_balance avatarUrl').sort({ dscoin_balance: -1 }).limit(5);
+            const { data, error } = await supabase
+                .from('g_users')
+                .select('id, nickname, avatar_url, dscoin_balance')
+                .order('dscoin_balance', { ascending: false })
+                .limit(5);
+
+            if (error) throw error;
+
             res.json({
                 success: true,
-                leaders: leaders.map(l => ({
-                    username:        l.username,
-                    nickname:        l.nickname,
-                    dscoin_balance:  l.dscoin_balance,
-                    avatarUrl:       l.avatarUrl && l.avatarUrl.trim() ? l.avatarUrl : '/dslogo.png'
+                leaders: data.map(l => ({
+                    id: l.id,
+                    nickname: l.nickname || 'Аноним',
+                    dscoin_balance: l.dscoin_balance || 0,
+                    avatarUrl: l.avatar_url || '/dslogo.png'
                 }))
             });
         } catch (err) {
@@ -174,13 +166,14 @@ module.exports = function(app, User, supabase) {
 
         const now = Date.now();
         const cooldown = 6 * 60 * 60 * 1000;
+        const lastClaim = Number(user.last_daily_claim) || 0;
 
-        if (now - (user.lastDaily || 0) < cooldown) {
-            const hoursLeft = Math.ceil((cooldown - (now - (user.lastDaily || 0))) / 3600000);
+        if (now - lastClaim < cooldown) {
+            const hoursLeft = Math.ceil((cooldown - (now - lastClaim)) / 3600000);
             return res.status(400).json({ error: `Следующая поставка через ${hoursLeft} ч.` });
         }
 
-        await saveUser(user, { dscoin_balance: Math.floor(safeBalance(user) + 100), lastDaily: now });
+        await saveUser(user, { dscoin_balance: Math.floor(safeBalance(user) + 100), last_daily_claim: now });
         res.json({ success: true, reward: 100, newBalance: user.dscoin_balance, message: 'ПОСТАВКА ПОЛУЧЕНА' });
     });
 
@@ -192,43 +185,61 @@ module.exports = function(app, User, supabase) {
         if (!user) return;
         const balance = safeBalance(user);
         
-        if (user.farm && user.farm.active) return res.status(400).json({ error: 'СИСТЕМА УЖЕ АКТИВИРОВАНА' });
+        if (user.farm_active) return res.status(400).json({ error: 'СИСТЕМА УЖЕ АКТИВИРОВАНА' });
         if (balance < 1000) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
-        await saveUser(user, { dscoin_balance: Math.floor(balance - 1000), farm: { active: true, timeLevel: 0, incomeLevel: 0, lastClaim: Date.now() } });
+        await saveUser(user, { 
+            dscoin_balance: Math.floor(balance - 1000), 
+            farm_active: true, 
+            farm_time_level: 0, 
+            farm_income_level: 0, 
+            farm_last_claim: Date.now() 
+        });
         res.json({ success: true, newBalance: user.dscoin_balance, message: 'ФЕРМА АКТИВИРОВАНА' });
     });
 
     app.get('/api/games/farm/status', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        res.json({ success: true, farm: user.farm || { active: false, timeLevel: 0, incomeLevel: 0 } });
+        res.json({ 
+            success: true, 
+            farm: { 
+                active: user.farm_active || false, 
+                timeLevel: user.farm_time_level || 0, 
+                incomeLevel: user.farm_income_level || 0 
+            } 
+        });
     });
 
     app.post('/api/games/farm/upgrade', async (req, res) => {
         const user = await authenticate(req, res);
         if (!user) return;
-        if (!user.farm || !user.farm.active) return res.status(400).json({ error: 'СНАЧАЛА АКТИВИРУЙТЕ СИСТЕМУ' });
+        if (!user.farm_active) return res.status(400).json({ error: 'СНАЧАЛА АКТИВИРУЙТЕ СИСТЕМУ' });
 
         const { type } = getBody(req);
         const balance = safeBalance(user);
         let cost;
+        let newTimeLevel = user.farm_time_level || 0;
+        let newIncLevel = user.farm_income_level || 0;
 
         if (type === 'time') {
-            if (user.farm.timeLevel >= FARM_TIME_COSTS.length) return res.status(400).json({ error: 'МАКС. УРОВЕНЬ' });
-            cost = FARM_TIME_COSTS[user.farm.timeLevel];
+            if (newTimeLevel >= FARM_TIME_COSTS.length) return res.status(400).json({ error: 'МАКС. УРОВЕНЬ' });
+            cost = FARM_TIME_COSTS[newTimeLevel];
+            newTimeLevel += 1;
         } else if (type === 'income') {
-            if (user.farm.incomeLevel >= FARM_INCOME_COSTS.length) return res.status(400).json({ error: 'МАКС. УРОВЕНЬ' });
-            cost = FARM_INCOME_COSTS[user.farm.incomeLevel];
+            if (newIncLevel >= FARM_INCOME_COSTS.length) return res.status(400).json({ error: 'МАКС. УРОВЕНЬ' });
+            cost = FARM_INCOME_COSTS[newIncLevel];
+            newIncLevel += 1;
         } else return res.status(400).json({ error: 'НЕВЕРНЫЙ ПАРАМЕТР' });
 
         if (balance < cost) return res.status(400).json({ error: 'НЕДОСТАТОЧНО СРЕДСТВ' });
 
-        const newFarm = { ...user.farm };
-        if (type === 'time') newFarm.timeLevel += 1;
-        else newFarm.incomeLevel += 1;
-
-        await saveUser(user, { dscoin_balance: Math.floor(balance - cost), farm: newFarm });
+        await saveUser(user, { 
+            dscoin_balance: Math.floor(balance - cost), 
+            farm_time_level: newTimeLevel,
+            farm_income_level: newIncLevel
+        });
+        
         res.json({ success: true, newBalance: user.dscoin_balance });
     });
 
@@ -613,7 +624,6 @@ module.exports = function(app, User, supabase) {
         }
 
         await saveUser(user, { dscoin_balance: safeBalance(user) + win, current_game: null });
-
         res.json({ success: true, isCorrect, win, newStreak, newBalance: user.dscoin_balance, correctTitle: game.correctTitle });
     });
 
