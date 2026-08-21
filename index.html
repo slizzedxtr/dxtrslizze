@@ -17,6 +17,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <style id="dynamicAlbumStyles"></style>
+    
     <style>
         :root {
             --bg-body: #08090d;
@@ -109,25 +111,25 @@
 
         /* БЛОК HW */
         .promo-banner {
-            background: linear-gradient(135deg, rgba(20,20,30,0.4) 0%, rgba(5,5,10,0.6) 100%);
             backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
             border-radius: 30px; padding: 30px 40px; margin-bottom: 50px; display: flex; gap: 40px; align-items: center;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), inset 0 0 30px rgba(139, 92, 246, 0.05); position: relative; overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4); position: relative; overflow: hidden;
+            transition: all 0.5s ease;
         }
-        .promo-banner::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(139,92,246,0.1) 0%, transparent 60%); animation: rotate 20s linear infinite; pointer-events: none; z-index: 0; }
+        .promo-banner::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; animation: rotate 20s linear infinite; pointer-events: none; z-index: 0; }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
         @keyframes float-cover { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-10px) rotate(2deg); } 100% { transform: translateY(0px) rotate(0deg); } }
         .promo-cover-wrap { position: relative; flex-shrink: 0; width: 250px; height: 250px; z-index: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.05); animation: float-cover 6s ease-in-out infinite; }
         .promo-cover-wrap img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
         .promo-banner:hover .promo-cover-wrap img { transform: scale(1.05); }
         .promo-info { flex: 1; z-index: 1; display: flex; flex-direction: column; gap: 15px; }
-        .promo-badge { display: inline-block; background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); padding: 6px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--accent-purple); align-self: flex-start; box-shadow: 0 0 15px var(--accent-purple-glow); }
+        .promo-badge { display: inline-block; padding: 6px 18px; border-radius: 50px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; align-self: flex-start; transition: all 0.5s ease; }
         .promo-info h2 { font-size: 3.5rem; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.2); letter-spacing: 2px; }
         .promo-info p { color: var(--text-muted); font-size: 1.1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
         .countdown { display: flex; gap: 15px; margin-top: 10px; }
         .cd-box { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 10px 15px; min-width: 80px; text-align: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
-        .cd-num { display: block; font-size: 2rem; font-weight: 900; color: var(--accent-purple); text-shadow: 0 0 15px var(--accent-purple-glow); font-variant-numeric: tabular-nums; }
+        .cd-num { display: block; font-size: 2rem; font-weight: 900; font-variant-numeric: tabular-nums; transition: all 0.5s ease; }
         .cd-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
         .cd-colon { font-size: 2rem; font-weight: 900; color: rgba(255,255,255,0.1); align-self: center; margin-top: -15px; }
 
@@ -487,14 +489,15 @@
     </header>
 
     <main>
-        <div class="promo-banner fade-in" style="animation-delay: 0.1s;">
+        <!-- ПЛАШКА АЛЬБОМА (ДИНАМИЧЕСКАЯ) -->
+        <div class="promo-banner fade-in" id="albumPromoBanner" style="display: none; animation-delay: 0.1s;">
             <div class="promo-cover-wrap">
-                <img src="logo_HW.png" alt="HW Album Cover" onerror="this.src='dslogo.png'">
+                <img src="" id="albumPromoCover" alt="Album Cover" onerror="this.src='dslogo.png'">
             </div>
             <div class="promo-info">
-                <div class="promo-badge">Скоро дроп</div>
-                <h2>Permanence</h2>
-                <p>Новый альбом • 15.09.2026</p>
+                <div class="promo-badge" id="albumPromoBadge">Скоро дроп</div>
+                <h2 id="albumPromoTitle">Загрузка...</h2>
+                <p id="albumPromoDateText">Новый альбом</p>
                 <div class="countdown" id="countdown">
                     <div class="cd-box"><span class="cd-num" id="days">00</span><span class="cd-label">Дней</span></div>
                     <div class="cd-colon">:</div>
@@ -587,45 +590,29 @@
             }, 3500);
         }
 
-        // === ЛОГИКА ТАЙМЕРА HW ===
-        const countDownDate = new Date("September 15, 2026 00:00:00").getTime();
-        const countdownTimer = setInterval(function() {
-            const now = new Date().getTime();
-            const distance = countDownDate - now;
-
-            if (distance < 0) {
-                clearInterval(countdownTimer);
-                const cdEl = document.getElementById("countdown");
-                if(cdEl) cdEl.innerHTML = "<div class='cd-num' style='font-size:1.5rem;'>АЛЬБОМ УЖЕ В СЕТИ!</div>";
-                return;
-            }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById("days").innerText = days < 10 ? '0' + days : days;
-            document.getElementById("hours").innerText = hours < 10 ? '0' + hours : hours;
-            document.getElementById("minutes").innerText = minutes < 10 ? '0' + minutes : minutes;
-            document.getElementById("seconds").innerText = seconds < 10 ? '0' + seconds : seconds;
-        }, 1000);
-
-        // === ИНТЕГРАЦИЯ SUPABASE FETCH ===
+        // === ИНТЕГРАЦИЯ SUPABASE FETCH (МУЗЫКА И АЛЬБОМ) ===
         let allTracks = [];
         let mainTrack = null;
 
+        function hexToRgba(hex, alpha) {
+            let r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
         async function fetchHomeData() {
             try {
-                const res = await fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=*&order=id.desc', {
-                    headers: {
-                        'apikey': 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h',
-                        'Authorization': 'Bearer sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'
-                    }
-                });
+                const headers = {
+                    'apikey': 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h',
+                    'Authorization': 'Bearer sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'
+                };
+
+                const [musicRes, albumRes] = await Promise.all([
+                    fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/music?select=*&order=id.desc', { headers }),
+                    fetch('https://lcbcsyvcciobmqdbonps.supabase.co/rest/v1/album_promo?select=*&id=eq.1', { headers })
+                ]);
                 
-                if (res.ok) {
-                    allTracks = await res.json();
+                if (musicRes.ok) {
+                    allTracks = await musicRes.json();
                     mainTrack = allTracks.find(t => t.is_main === true) || allTracks[0];
                     if (mainTrack) renderMainRelease(mainTrack);
                     renderRandomTracks(allTracks);
@@ -633,9 +620,114 @@
                     document.getElementById('heroTitle').innerText = "Ошибка загрузки базы данных";
                     showToast("Не удалось загрузить каталог", "error");
                 }
+
+                if (albumRes.ok) {
+                    const albumData = await albumRes.json();
+                    if (albumData && albumData.length > 0) {
+                        renderAlbumPromo(albumData[0]);
+                    } else {
+                        document.getElementById('albumPromoBanner').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('albumPromoBanner').style.display = 'none';
+                }
+
             } catch(e) {
                 document.getElementById('heroTitle').innerText = "Сервер недоступен";
             }
+        }
+
+        // === ЛОГИКА РЕНДЕРА И ТАЙМЕРА АЛЬБОМА ===
+        let countdownTimer = null;
+
+        function renderAlbumPromo(data) {
+            const banner = document.getElementById('albumPromoBanner');
+            if (!data.is_active) {
+                banner.style.display = 'none';
+                return;
+            }
+
+            banner.style.display = 'flex';
+            document.getElementById('albumPromoTitle').innerText = data.title || 'Новый альбом';
+            document.getElementById('albumPromoCover').src = data.cover_url || 'dslogo.png';
+
+            const c1 = data.color1 || '#8b5cf6';
+            const c2 = data.color2 || '#f4c745';
+            banner.style.setProperty('--promo-c1-alpha', hexToRgba(c1, 0.15));
+
+            const styleTag = document.getElementById('dynamicAlbumStyles');
+            
+            if (data.use_gradient) {
+                banner.style.setProperty('--promo-c2-alpha', hexToRgba(c2, 0.15));
+                if (data.is_dynamic) {
+                    banner.style.background = `linear-gradient(270deg, ${hexToRgba(c1, 0.4)}, ${hexToRgba(c2, 0.4)})`;
+                    banner.style.backgroundSize = '400% 400%';
+                    banner.style.animation = 'promoGradientAnim 8s ease infinite';
+                } else {
+                    banner.style.background = `linear-gradient(135deg, ${hexToRgba(c1, 0.4)}, ${hexToRgba(c2, 0.4)})`;
+                    banner.style.backgroundSize = '100% 100%';
+                    banner.style.animation = 'none';
+                }
+                styleTag.innerHTML = `
+                    #albumPromoBanner::after { background: conic-gradient(from 0deg, var(--promo-c1-alpha), var(--promo-c2-alpha), var(--promo-c1-alpha)); }
+                    @keyframes promoGradientAnim { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+                `;
+            } else {
+                banner.style.background = `linear-gradient(135deg, ${hexToRgba(c1, 0.2)}, ${hexToRgba(c1, 0.4)})`;
+                banner.style.backgroundSize = '100% 100%';
+                banner.style.animation = 'none';
+                styleTag.innerHTML = `
+                    #albumPromoBanner::after { background: radial-gradient(circle at center, var(--promo-c1-alpha) 0%, transparent 60%); }
+                `;
+            }
+
+            const badge = document.getElementById('albumPromoBadge');
+            badge.style.color = c1;
+            badge.style.borderColor = c1;
+            badge.style.background = hexToRgba(c1, 0.1);
+            badge.style.boxShadow = `0 0 15px ${hexToRgba(c1, 0.4)}`;
+
+            document.querySelectorAll('#countdown .cd-num').forEach(el => {
+                el.style.color = c1;
+                el.style.textShadow = `0 0 15px ${hexToRgba(c1, 0.4)}`;
+            });
+
+            if (data.release_date) {
+                const dateObj = new Date(data.release_date);
+                const dd = String(dateObj.getDate()).padStart(2, '0');
+                const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const yyyy = dateObj.getFullYear();
+                document.getElementById('albumPromoDateText').innerText = `Новый альбом • ${dd}.${mm}.${yyyy}`;
+                startCountdown(dateObj.getTime());
+            } else {
+                document.getElementById('countdown').style.display = 'none';
+            }
+        }
+
+        function startCountdown(countDownDate) {
+            if (countdownTimer) clearInterval(countdownTimer);
+            document.getElementById('countdown').style.display = 'flex';
+
+            countdownTimer = setInterval(function() {
+                const now = new Date().getTime();
+                const distance = countDownDate - now;
+
+                if (distance < 0) {
+                    clearInterval(countdownTimer);
+                    document.getElementById("countdown").innerHTML = "<div class='cd-num' style='font-size:1.5rem;'>АЛЬБОМ УЖЕ В СЕТИ!</div>";
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                document.getElementById("days").innerText = days < 10 ? '0' + days : days;
+                document.getElementById("hours").innerText = hours < 10 ? '0' + hours : hours;
+                document.getElementById("minutes").innerText = minutes < 10 ? '0' + minutes : minutes;
+                document.getElementById("seconds").innerText = seconds < 10 ? '0' + seconds : seconds;
+            }, 1000);
         }
 
         function extractYtId(url) {
@@ -972,14 +1064,6 @@
         const profileBtnLink = document.getElementById('profileBtnLink');
         const loginModal = document.getElementById('loginModal');
 
-        const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
-        const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'; 
-        let supabaseClient;
-        
-        if (window.supabase) {
-            supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-        }
-
         function lockChatForGuests() {
             if(chatGreeting) chatGreeting.innerHTML = "Чат тех. поддержки.<br><br><b>Для общения с поддержкой необходимо авторизоваться (иконка профиля).</b>";
             if(chatInput) {
@@ -1010,23 +1094,14 @@
         }
 
         async function getUserDataSafe(user) {
-            // Сначала проверяем, есть ли уже этот пользователь в нашей базе
-            const { data, error } = await supabaseClient
-                .from('g_users')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-
+            const { data, error } = await supabase.from('g_users').select('*').eq('id', user.id).single();
             if (data) {
-                // Если юзер уже есть в базе — возвращаем ЕГО кастомные настройки, ничего не перезаписывая!
                 return { nickname: data.nickname, avatarUrl: data.avatar_url };
             } else {
-                // Если юзера в базе нет (самый первый вход), берем данные из Гугла и сохраняем
                 const email = user.email;
                 const nickname = user.user_metadata.full_name || user.user_metadata.name || email.split('@')[0];
                 const avatarUrl = user.user_metadata.avatar_url || 'dslogo.png';
-
-                await supabaseClient.from('g_users').insert({ 
+                await supabase.from('g_users').insert({ 
                     id: user.id, 
                     email: email, 
                     nickname: nickname, 
@@ -1037,8 +1112,8 @@
         }
 
         async function checkSession() {
-            if(!supabaseClient) return;
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            if(!window.supabase) return;
+            const { data: { session }, error } = await supabase.auth.getSession();
             
             if (session) {
                 isAuthUser = true;
@@ -1064,13 +1139,12 @@
             }
         }
 
-        // Вызывается, когда Гугл возвращает токен (после нативного попапа)
         async function handleGoogleCredential(response) {
             if(loginModal) loginModal.style.display = 'none';
             showToast('Синхронизация...', 'info');
 
             const idToken = response.credential;
-            const { data, error } = await supabaseClient.auth.signInWithIdToken({
+            const { data, error } = await supabase.auth.signInWithIdToken({
                 provider: 'google',
                 token: idToken,
             });
@@ -1080,11 +1154,9 @@
                 console.error(error);
             } else {
                 showToast('Успешный вход!', 'success');
-                // checkSession() вызовется автоматически через onAuthStateChange
             }
         }
 
-        // Инициализация кнопки GIS
         function initGoogleAuth() {
             if(window.google) {
                 google.accounts.id.initialize({
@@ -1098,7 +1170,7 @@
                         type: "standard",
                         theme: "outline",
                         size: "large",
-                        width: 400 // Кнопка подстроится под размер, но не больше 400px
+                        width: 400
                     });
                 }
             }
@@ -1113,8 +1185,12 @@
             };
         }
 
-        if(supabaseClient) {
-            supabaseClient.auth.onAuthStateChange((event, session) => {
+        if(window.supabase) {
+            const supabaseUrl = 'https://lcbcsyvcciobmqdbonps.supabase.co';
+            const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h'; 
+            window.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+            window.supabase.auth.onAuthStateChange((event, session) => {
                 if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
                     checkSession();
                 } else if (event === 'SIGNED_OUT') {
