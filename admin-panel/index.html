@@ -157,7 +157,7 @@
         
         .td-user { display: flex; align-items: center; gap: 12px; }
         .td-user img { width: 45px; height: 45px; border-radius: 12px; object-fit: cover; border: 1px solid var(--glass-border); }
-        .td-actions { display: flex; gap: 8px; } /* Теперь внутри td, а не сам td */
+        .td-actions { display: flex; gap: 8px; } 
         
         .btn-sm { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; width: 35px; height: 35px; }
         .btn-sm:hover { background: rgba(255,255,255,0.15); }
@@ -293,6 +293,8 @@
             <div class="nav-item" onclick="switchSection('users', this)"><i class="fa-solid fa-users"></i> Пользователи</div>
             <div class="nav-item" onclick="switchSection('music', this)"><i class="fa-solid fa-music"></i> Муз. Каталог</div>
             <div class="nav-item" onclick="switchSection('promos', this)"><i class="fa-solid fa-ticket"></i> Промокоды</div>
+            <!-- НОВЫЙ ПУНКТ МЕНЮ ДЛЯ АЛЬБОМА -->
+            <div class="nav-item" onclick="switchSection('album', this)"><i class="fa-solid fa-compact-disc"></i> Промо Альбома</div>
         </nav>
         <div class="sidebar-footer">
             <a href="https://whuberal.com/" class="logout-btn" style="color:#fff;"><i class="fa-solid fa-door-open"></i> На сайт</a>
@@ -425,6 +427,69 @@
                 </div>
             </div>
         </section>
+
+        <!-- НОВАЯ СЕКЦИЯ: ПРОМО АЛЬБОМА -->
+        <section id="sec-album" class="admin-section">
+            <div class="table-container" style="max-width: 600px; margin: 0 auto;">
+                <div class="table-header" style="justify-content: center; text-align: center; border-bottom: 1px solid var(--glass-border); padding-bottom: 20px; margin-bottom: 20px;">
+                    <h3>Настройка промо альбома</h3>
+                </div>
+                <form id="albumForm">
+                    <div class="checkbox-group" style="justify-content: center; background: rgba(139, 92, 246, 0.1); border-color: var(--accent-purple);">
+                        <label class="checkbox-label" style="color: #fff; font-size: 1rem;"><input type="checkbox" id="aIsActive"> Активировать плашку альбома на сайте</label>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Название альбома</label>
+                        <input type="text" id="aTitle" class="form-input" placeholder="Например: Permanence">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Дата выхода</label>
+                        <input type="datetime-local" id="aDate" class="form-input">
+                    </div>
+
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px; text-align: left; text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Обложка альбома</div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                        <label class="form-file" style="flex: 1;"><i class="fa-solid fa-image"></i><span id="aCoverText">Выбрать файл</span><input type="file" id="aCover" accept="image/*"></label>
+                        <div id="aCoverPreview" style="width: 70px; height: 70px; border-radius: 12px; border: 1px solid var(--glass-border); overflow: hidden; display: none;">
+                            <img src="" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; text-align: left; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; border-bottom: 1px solid var(--glass-border); padding-bottom: 10px;">Внешний вид плашки</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Основной цвет (RGB)</label>
+                        <input type="color" id="aColor1" class="form-input" value="#8b5cf6" style="height: 50px; cursor: pointer; padding: 5px;">
+                    </div>
+
+                    <div class="checkbox-group" style="margin-bottom: 10px;">
+                        <label class="checkbox-label"><input type="checkbox" id="aUseGradient"> Использовать градиент</label>
+                    </div>
+
+                    <div id="gradientSettings" style="display: none; flex-direction: column; gap: 15px; margin-bottom: 15px; padding-left: 15px; border-left: 2px solid var(--accent-purple);">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Второй цвет градиента (RGB)</label>
+                            <input type="color" id="aColor2" class="form-input" value="#f4c745" style="height: 50px; cursor: pointer; padding: 5px;">
+                        </div>
+                        <div class="checkbox-group" style="margin-bottom: 0;">
+                            <label class="checkbox-label"><input type="checkbox" id="aDynamicBg" checked> Динамичный фон (Анимация градиента)</label>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; width: 100%;">Решает проблему с некрасивыми стыками при прокрутке фона плашки.</div>
+                        </div>
+                    </div>
+
+                    <div id="aProgressContainer" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; margin-top:10px; margin-bottom: 15px;">
+                        <div id="aProgressBar" style="height:100%; width:0%; background:var(--accent-purple); transition:width 0.2s;"></div>
+                    </div>
+
+                    <div class="modal-btns">
+                        <button type="submit" class="m-btn m-btn-confirm" id="aSubmitBtn" style="width: 100%;">Сохранить настройки альбома</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
     </main>
 
     <!-- МОДАЛКИ -->
@@ -562,13 +627,15 @@
             document.getElementById('sec-' + secId).classList.add('active');
             if (btnElement) btnElement.classList.add('active');
             
-            const titles = { 'dashboard': 'Дашборд', 'users': 'Пользователи', 'music': 'Муз. Каталог', 'promos': 'Промокоды', 'profile': 'Профиль' };
+            // ДОБАВЛЕНО ИМЯ ДЛЯ АЛЬБОМА
+            const titles = { 'dashboard': 'Дашборд', 'users': 'Пользователи', 'music': 'Муз. Каталог', 'promos': 'Промокоды', 'profile': 'Профиль', 'album': 'Промо Альбома' };
             document.getElementById('pageTitle').innerText = titles[secId] || '';
             
             if (secId === 'dashboard') loadDashboardData();
             if (secId === 'users') loadUsers();
             if (secId === 'music') loadMusic();
             if (secId === 'promos') loadPromos();
+            if (secId === 'album') loadAlbumSettings(); // НОВАЯ ФУНКЦИЯ
 
             if (window.innerWidth <= 900) { document.querySelector('.admin-sidebar').classList.remove('active'); }
         }
@@ -989,6 +1056,93 @@
 
             pBar.style.width = '100%';
             setTimeout(() => { prog.style.display = 'none'; pBar.style.width = '0%'; btn.disabled = false; btn.innerText = "Создать"; }, 500);
+        };
+
+        // ================= ПЛАШКА АЛЬБОМА (ЛОГИКА) =================
+        document.getElementById('aUseGradient').addEventListener('change', function() {
+            document.getElementById('gradientSettings').style.display = this.checked ? 'flex' : 'none';
+        });
+
+        document.getElementById('aCover').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            document.getElementById('aCoverText').textContent = file ? 'Выбрано' : 'Выбрать файл';
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const preview = document.getElementById('aCoverPreview');
+                    preview.style.display = 'block';
+                    preview.querySelector('img').src = evt.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('aCoverPreview').style.display = 'none';
+            }
+        });
+
+        async function loadAlbumSettings() {
+            try {
+                const { data, error } = await supabaseClient.from('album_promo').select('*').single();
+                if (data) {
+                    document.getElementById('aIsActive').checked = data.is_active || false;
+                    document.getElementById('aTitle').value = data.title || '';
+                    if (data.release_date) {
+                        const dateObj = new Date(data.release_date);
+                        dateObj.setMinutes(dateObj.getMinutes() - dateObj.getTimezoneOffset());
+                        document.getElementById('aDate').value = dateObj.toISOString().slice(0, 16);
+                    }
+                    if (data.cover_url) {
+                        const preview = document.getElementById('aCoverPreview');
+                        preview.style.display = 'block';
+                        preview.querySelector('img').src = data.cover_url;
+                    }
+                    document.getElementById('aColor1').value = data.color1 || '#8b5cf6';
+                    document.getElementById('aUseGradient').checked = data.use_gradient || false;
+                    document.getElementById('gradientSettings').style.display = data.use_gradient ? 'flex' : 'none';
+                    document.getElementById('aColor2').value = data.color2 || '#f4c745';
+                    document.getElementById('aDynamicBg').checked = data.is_dynamic !== false;
+                }
+            } catch(e) { console.error("Альбом еще не настроен"); }
+        }
+
+        document.getElementById('albumForm').onsubmit = async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('aSubmitBtn'); btn.disabled = true; btn.innerText = 'Сохранение...';
+            const prog = document.getElementById('aProgressContainer'); const pBar = document.getElementById('aProgressBar');
+            prog.style.display = 'block'; pBar.style.width = '30%';
+
+            try {
+                let releaseISO = null;
+                const rawDate = document.getElementById('aDate').value;
+                if (rawDate) { releaseISO = new Date(rawDate).toISOString(); }
+
+                const payload = {
+                    id: 1, // Чтобы всегда обновлялась только одна строка
+                    is_active: document.getElementById('aIsActive').checked,
+                    title: document.getElementById('aTitle').value.trim(),
+                    release_date: releaseISO,
+                    color1: document.getElementById('aColor1').value,
+                    use_gradient: document.getElementById('aUseGradient').checked,
+                    color2: document.getElementById('aColor2').value,
+                    is_dynamic: document.getElementById('aDynamicBg').checked
+                };
+
+                const coverFile = document.getElementById('aCover').files[0];
+                if (coverFile) {
+                    pBar.style.width = '60%';
+                    payload.cover_url = await uploadToSupabaseStorage(coverFile, 'album_covers');
+                }
+
+                pBar.style.width = '90%';
+                
+                const { error } = await supabaseClient.from('album_promo').upsert([payload]);
+                
+                if (!error) { showToast('Настройки альбома сохранены', 'success'); }
+                else { showToast('Ошибка сохранения: ' + error.message, 'error'); }
+
+            } catch(err) { showToast('Ошибка сети/загрузки', 'error'); }
+
+            pBar.style.width = '100%';
+            setTimeout(() => { prog.style.display = 'none'; pBar.style.width = '0%'; btn.disabled = false; btn.innerText = 'Сохранить настройки альбома'; }, 500);
         };
 
         // Запуск сессии при старте
