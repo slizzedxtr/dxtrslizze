@@ -648,6 +648,13 @@
             }
 
             banner.style.display = 'flex';
+            
+            // === ИСПРАВЛЕНИЕ: УБИРАЕМ КОНФЛИКТ АНИМАЦИЙ ===
+            banner.classList.remove('fade-in'); 
+            banner.style.opacity = '1';
+            banner.style.transform = 'none';
+            // ==============================================
+
             document.getElementById('albumPromoTitle').innerText = data.title || 'Новый альбом';
             document.getElementById('albumPromoCover').src = data.cover_url || 'dslogo.png';
 
