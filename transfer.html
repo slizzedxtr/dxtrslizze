@@ -179,7 +179,7 @@
             <input type="file" id="fileInput" multiple>
             <div class="dz-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
             <div class="dz-title">Перетащи файл сюда</div>
-            <div class="dz-sub">или <b>нажми, чтобы выбрать</b> — любой формат, без ограничений по типу</div>
+            <div class="dz-sub">или <b>нажми, чтобы выбрать</b> — любой формат и размер, крупные файлы бьются на части автоматически</div>
         </div>
 
         <div id="uploadsContainer"></div>
@@ -216,6 +216,23 @@
         // заметно более высокую и стабильную скорость на больших файлах,
         // т.к. запрос не идёт через общий API-шлюз.
         const TUS_ENDPOINT = `https://${PROJECT_ID}.storage.supabase.co/storage/v1/upload/resumable`;
+
+        /* ============================================================
+           РЕЗКА КРУПНЫХ ФАЙЛОВ НА ЧАСТИ
+           Бесплатный тариф Supabase не даёт загрузить файл больше 50 МБ
+           (это жёсткий лимит на уровне сервера, его нельзя поднять без
+           перехода на Pro). Поэтому файлы крупнее PART_SIZE режем на
+           стороне браузера на куски, заливаем каждый кусок отдельным
+           объектом (name.part001, name.part002, ...) и рядом кладём
+           маленький JSON-манифест (name.manifest.json) с оригинальным
+           именем/размером/типом и числом частей. При скачивании части
+           стягиваются обратно по порядку и склеиваются в исходный файл
+           побайтово — на выходе получается точно такой же файл, каким
+           он был загружен.
+        ============================================================ */
+        const PART_SIZE = 45 * 1024 * 1024; // с запасом от лимита в 50 МБ
+        const PART_SUFFIX_RE = /\.part(\d{3})$/;
+        const MANIFEST_SUFFIX = '.manifest.json';
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -268,6 +285,33 @@
             return `${supabaseUrl}/storage/v1/object/public/${BUCKET}/${encodeURIComponent(path)}`;
         }
 
+        function partName(base, n) {
+            return `${base}.part${String(n).padStart(3, '0')}`;
+        }
+
+        function manifestName(base) {
+            return `${base}${MANIFEST_SUFFIX}`;
+        }
+
+        function ruPlural(n, one, few, many) {
+            const mod10 = n % 10, mod100 = n % 100;
+            if (mod10 === 1 && mod100 !== 11) return one;
+            if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+            return many;
+        }
+        function partsWord(n) { return ruPlural(n, 'часть', 'части', 'частей'); }
+
+        function formatDate(iso) {
+            return iso ? new Date(iso).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        }
+
+        async function deleteObjects(names) {
+            return Promise.all(names.map(n => fetch(`${supabaseUrl}/storage/v1/object/${BUCKET}/${encodeURIComponent(n)}`, {
+                method: 'DELETE',
+                headers: { apikey: supabaseKey, authorization: `Bearer ${supabaseKey}` }
+            }).catch(() => null)));
+        }
+
         /* ================= ЗАГРУЗКА ФАЙЛОВ ================= */
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
@@ -287,115 +331,216 @@
         });
 
         function handleFiles(fileListRaw) {
-            Array.from(fileListRaw).forEach(file => uploadFile(file));
+            Array.from(fileListRaw).forEach(file => {
+                if (file.size > PART_SIZE) uploadMultipart(file);
+                else uploadSingle(file);
+            });
         }
 
-        function uploadFile(file) {
-            const path = safePath(file.name);
-            const cardId = 'up_' + Math.random().toString(36).slice(2, 9);
-
+        /* ---- переиспользуемая карточка прогресса (для загрузки и скачивания) ---- */
+        function createProgressCard(name, totalBytes, kindLabel) {
+            const cardId = 'pc_' + Math.random().toString(36).slice(2, 9);
             const card = document.createElement('div');
             card.className = 'upload-card fade-in';
             card.id = cardId;
             card.innerHTML = `
                 <div class="upload-top">
-                    <div class="upload-name" title="${file.name}">${file.name}</div>
-                    <div class="upload-stat"><span class="cur">0.0</span> МБ / ${formatMB(file.size)} МБ</div>
+                    <div class="upload-name" title="${name}">${name}</div>
+                    <div class="upload-stat"><span class="cur">0.0</span> МБ / ${formatMB(totalBytes)} МБ <span class="spd"></span></div>
                 </div>
                 <div class="upload-progress-bg"><div class="upload-progress-fill" id="${cardId}_bar"></div></div>
                 <div class="upload-bottom">
                     <div class="upload-pct" id="${cardId}_pct">0%</div>
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="upload-status" id="${cardId}_status">Загрузка...</div>
+                        <div class="upload-status" id="${cardId}_status">${kindLabel}...</div>
                         <button class="upload-cancel" id="${cardId}_cancel" title="Отменить"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                 </div>
             `;
             uploadsContainer.prepend(card);
+            return {
+                card,
+                curEl: card.querySelector('.cur'),
+                spdEl: card.querySelector('.spd'),
+                barEl: document.getElementById(`${cardId}_bar`),
+                pctEl: document.getElementById(`${cardId}_pct`),
+                statusEl: document.getElementById(`${cardId}_status`),
+                cancelBtn: document.getElementById(`${cardId}_cancel`),
+                lastLoaded: 0,
+                lastTime: Date.now(),
+                totalBytes
+            };
+        }
 
-            const curEl = card.querySelector('.cur');
-            const barEl = document.getElementById(`${cardId}_bar`);
-            const pctEl = document.getElementById(`${cardId}_pct`);
-            const statusEl = document.getElementById(`${cardId}_status`);
-            const cancelBtn = document.getElementById(`${cardId}_cancel`);
-            const speedStatEl = document.createElement('span');
-            speedStatEl.style.marginLeft = '8px';
-            speedStatEl.style.color = 'var(--text-muted)';
-            card.querySelector('.upload-stat').appendChild(speedStatEl);
+        function updateProgress(refs, loadedBytes) {
+            const pct = refs.totalBytes ? Math.min(100, Math.round((loadedBytes / refs.totalBytes) * 100)) : 0;
+            refs.curEl.textContent = formatMB(loadedBytes);
+            refs.barEl.style.width = `${pct}%`;
+            refs.pctEl.textContent = `${pct}%`;
+            const now = Date.now();
+            const dt = (now - refs.lastTime) / 1000;
+            if (dt > 0.4) {
+                const speedMBs = Math.max(0, ((loadedBytes - refs.lastLoaded) / (1024 * 1024)) / dt);
+                refs.spdEl.textContent = `· ${speedMBs.toFixed(1)} МБ/с`;
+                refs.lastLoaded = loadedBytes;
+                refs.lastTime = now;
+            }
+        }
 
-            let lastLoaded = 0, lastTime = Date.now();
+        function finishProgressOk(refs, msg) {
+            refs.barEl.style.width = '100%';
+            refs.pctEl.textContent = '100%';
+            refs.statusEl.textContent = msg || 'Готово';
+            refs.statusEl.classList.add('done');
+            refs.cancelBtn.style.display = 'none';
+            setTimeout(() => refs.card.remove(), 1500);
+        }
+
+        function finishProgressError(refs, msg) {
+            refs.statusEl.textContent = msg || 'Ошибка';
+            refs.statusEl.classList.add('error');
+            refs.barEl.style.background = 'var(--error)';
+            refs.cancelBtn.style.display = 'none';
+        }
+
+        /* ---- обычная загрузка (файл ≤ PART_SIZE, одним куском) ---- */
+        function uploadSingle(file) {
+            const path = safePath(file.name);
+            const refs = createProgressCard(file.name, file.size, 'Загрузка');
 
             // Резюмируемая (TUS) загрузка — режется на чанки по 6 МБ,
             // идёт напрямую в хранилище, докачивается при обрыве связи
             const upload = new tus.Upload(file, {
                 endpoint: TUS_ENDPOINT,
                 retryDelays: [0, 2000, 4000, 8000, 15000],
-                chunkSize: 6 * 1024 * 1024, // фиксированный размер чанка Supabase
+                chunkSize: 6 * 1024 * 1024,
                 uploadDataDuringCreation: true,
                 removeFingerprintOnSuccess: true,
-                headers: {
-                    apikey: supabaseKey,
-                    authorization: `Bearer ${supabaseKey}`,
-                    'x-upsert': 'true'
-                },
+                headers: { apikey: supabaseKey, authorization: `Bearer ${supabaseKey}`, 'x-upsert': 'true' },
                 metadata: {
                     bucketName: BUCKET,
                     objectName: path,
                     contentType: file.type || 'application/octet-stream',
                     cacheControl: '3600'
                 },
-                onProgress: (bytesUploaded, bytesTotal) => {
-                    const pct = Math.round((bytesUploaded / bytesTotal) * 100);
-                    curEl.textContent = formatMB(bytesUploaded);
-                    barEl.style.width = `${pct}%`;
-                    pctEl.textContent = `${pct}%`;
-
-                    const now = Date.now();
-                    const dt = (now - lastTime) / 1000;
-                    if (dt > 0.4) {
-                        const speedMBs = ((bytesUploaded - lastLoaded) / (1024 * 1024)) / dt;
-                        speedStatEl.textContent = `· ${speedMBs.toFixed(1)} МБ/с`;
-                        lastLoaded = bytesUploaded;
-                        lastTime = now;
-                    }
-                },
+                onProgress: (loaded) => updateProgress(refs, loaded),
                 onSuccess: () => {
-                    curEl.textContent = formatMB(file.size);
-                    barEl.style.width = '100%';
-                    pctEl.textContent = '100%';
-                    statusEl.textContent = 'Готово';
-                    statusEl.classList.add('done');
-                    cancelBtn.style.display = 'none';
+                    finishProgressOk(refs);
                     showToast(`«${file.name}» загружен`, 'success');
-                    setTimeout(() => { card.remove(); loadFiles(); }, 1500);
+                    loadFiles();
                 },
                 onError: (error) => {
-                    statusEl.textContent = 'Ошибка загрузки';
-                    statusEl.classList.add('error');
-                    barEl.style.background = 'var(--error)';
-                    cancelBtn.style.display = 'none';
+                    finishProgressError(refs, 'Ошибка загрузки');
                     showToast(`Не удалось загрузить «${file.name}»: ${error.message || error}`, 'error');
                 }
             });
 
-            cancelBtn.onclick = () => {
+            refs.cancelBtn.onclick = () => {
                 upload.abort(true);
-                card.remove();
+                refs.card.remove();
                 showToast('Загрузка отменена', 'info');
             };
 
-            // Если такая же загрузка уже была начата ранее (та же вкладка,
-            // тот же файл) — предложить продолжить с места обрыва
             upload.findPreviousUploads().then((previousUploads) => {
                 if (previousUploads.length) upload.resumeFromPreviousUpload(previousUploads[0]);
                 upload.start();
             });
         }
 
+        /* ---- загрузка крупного файла по частям + манифест ---- */
+        async function uploadMultipart(file) {
+            const base = safePath(file.name);
+            const partCount = Math.ceil(file.size / PART_SIZE);
+            const refs = createProgressCard(file.name, file.size, 'Загрузка');
+
+            let uploadedBytes = 0;
+            const uploadedParts = [];
+            let cancelled = false;
+            let currentUpload = null;
+
+            refs.cancelBtn.onclick = async () => {
+                cancelled = true;
+                if (currentUpload) currentUpload.abort(true);
+                refs.card.remove();
+                showToast('Загрузка отменена', 'info');
+                if (uploadedParts.length) await deleteObjects(uploadedParts);
+            };
+
+            try {
+                for (let i = 0; i < partCount; i++) {
+                    if (cancelled) return;
+                    const start = i * PART_SIZE;
+                    const end = Math.min(start + PART_SIZE, file.size);
+                    const blob = file.slice(start, end);
+                    const pName = partName(base, i + 1);
+                    refs.statusEl.textContent = `Часть ${i + 1} из ${partCount}`;
+                    const bytesBefore = uploadedBytes;
+
+                    await new Promise((resolve, reject) => {
+                        const upload = new tus.Upload(blob, {
+                            endpoint: TUS_ENDPOINT,
+                            retryDelays: [0, 2000, 4000, 8000, 15000],
+                            chunkSize: 6 * 1024 * 1024,
+                            uploadDataDuringCreation: true,
+                            removeFingerprintOnSuccess: true,
+                            headers: { apikey: supabaseKey, authorization: `Bearer ${supabaseKey}`, 'x-upsert': 'true' },
+                            metadata: {
+                                bucketName: BUCKET,
+                                objectName: pName,
+                                contentType: 'application/octet-stream',
+                                cacheControl: '3600'
+                            },
+                            onProgress: (loaded) => updateProgress(refs, bytesBefore + loaded),
+                            onSuccess: () => resolve(),
+                            onError: (err) => reject(err)
+                        });
+                        currentUpload = upload;
+                        upload.findPreviousUploads().then((prev) => {
+                            if (prev.length) upload.resumeFromPreviousUpload(prev[0]);
+                            upload.start();
+                        });
+                    });
+
+                    if (cancelled) return;
+                    uploadedBytes += blob.size;
+                    uploadedParts.push(pName);
+                }
+
+                // Все части легли — пишем манифест, по нему потом соберём файл обратно
+                const manifest = {
+                    originalName: file.name,
+                    size: file.size,
+                    mimeType: file.type || 'application/octet-stream',
+                    parts: partCount,
+                    createdAt: new Date().toISOString()
+                };
+                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+                const res = await fetch(`${supabaseUrl}/storage/v1/object/${BUCKET}/${encodeURIComponent(manifestName(base))}`, {
+                    method: 'POST',
+                    headers: { apikey: supabaseKey, authorization: `Bearer ${supabaseKey}`, 'x-upsert': 'true', 'Content-Type': 'application/json' },
+                    body: manifestBlob
+                });
+                if (!res.ok) throw new Error('не удалось сохранить манифест файла');
+
+                finishProgressOk(refs);
+                showToast(`«${file.name}» загружен (${partCount} ${partsWord(partCount)})`, 'success');
+                loadFiles();
+            } catch (err) {
+                if (cancelled) return;
+                finishProgressError(refs, 'Ошибка загрузки');
+                showToast(`Не удалось загрузить «${file.name}»: ${err.message || err}`, 'error');
+                if (uploadedParts.length) await deleteObjects(uploadedParts);
+            }
+        }
+
         /* ================= СПИСОК ФАЙЛОВ ================= */
         const fileListContainer = document.getElementById('fileListContainer');
         const fileCount = document.getElementById('fileCount');
         const refreshBtn = document.getElementById('refreshBtn');
+
+        // ключ -> запись о файле (для single ключ = имя объекта, для
+        // составного файла ключ = base без .partNNN/.manifest.json)
+        let entriesIndex = {};
 
         async function loadFiles() {
             refreshBtn.classList.add('spinning');
@@ -407,7 +552,7 @@
                         'Authorization': `Bearer ${supabaseKey}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ prefix: '', limit: 200, sortBy: { column: 'created_at', order: 'desc' } })
+                    body: JSON.stringify({ prefix: '', limit: 500, sortBy: { column: 'created_at', order: 'desc' } })
                 });
 
                 if (!res.ok) {
@@ -416,42 +561,119 @@
                     return;
                 }
 
-                const files = (await res.json()).filter(f => f.name && f.id);
-                fileCount.textContent = files.length;
+                const rawFiles = (await res.json()).filter(f => f.name && f.id);
 
-                if (files.length === 0) {
-                    fileListContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-inbox"></i>Пока пусто. Закинь первый файл выше.</div>`;
-                    return;
+                // Раскладываем сырые объекты хранилища на манифесты / части / обычные файлы
+                const manifestFiles = {};
+                const partFiles = {};
+                const singleFiles = [];
+
+                rawFiles.forEach(f => {
+                    if (f.name.endsWith(MANIFEST_SUFFIX)) {
+                        manifestFiles[f.name.slice(0, -MANIFEST_SUFFIX.length)] = f;
+                        return;
+                    }
+                    const m = f.name.match(PART_SUFFIX_RE);
+                    if (m) {
+                        const base = f.name.slice(0, -m[0].length);
+                        (partFiles[base] = partFiles[base] || []).push(f);
+                    } else {
+                        singleFiles.push(f);
+                    }
+                });
+
+                // Для каждого манифеста читаем его содержимое и собираем одну запись
+                const multipartEntries = [];
+                for (const base of Object.keys(manifestFiles)) {
+                    const manifestFile = manifestFiles[base];
+                    try {
+                        const mRes = await fetch(publicUrl(manifestFile.name));
+                        if (!mRes.ok) continue;
+                        const manifest = await mRes.json();
+                        const partsPresent = (partFiles[base] || []).length;
+                        multipartEntries.push({
+                            type: 'multipart',
+                            base,
+                            displayName: manifest.originalName || base,
+                            size: manifest.size,
+                            mimeType: manifest.mimeType || 'application/octet-stream',
+                            partsCount: manifest.parts || partsPresent,
+                            partsPresent,
+                            createdAt: manifest.createdAt || manifestFile.created_at
+                        });
+                    } catch (e) { /* битый манифест — пропускаем запись */ }
                 }
 
-                fileListContainer.innerHTML = '';
-                files.forEach(f => {
-                    const size = f.metadata ? f.metadata.size : null;
-                    const date = f.created_at ? new Date(f.created_at).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
-                    const displayName = f.name.replace(/^\d+_[a-z0-9]{5}_/i, '');
-                    const url = publicUrl(f.name);
+                const singleEntries = singleFiles.map(f => ({
+                    type: 'single',
+                    name: f.name,
+                    displayName: f.name.replace(/^\d+_[a-z0-9]{5}_/i, ''),
+                    size: f.metadata ? f.metadata.size : null,
+                    createdAt: f.created_at
+                }));
 
-                    const item = document.createElement('div');
-                    item.className = 'file-item fade-in';
-                    item.innerHTML = `
-                        <div class="file-icon"><i class="fa-solid ${iconForFile(displayName)}"></i></div>
-                        <div class="file-info">
-                            <div class="file-name" title="${displayName}">${displayName}</div>
-                            <div class="file-meta">${formatSize(size)} · ${date}</div>
-                        </div>
-                        <div class="file-actions">
-                            <a class="fa-btn dl" href="${url}" download title="Скачать"><i class="fa-solid fa-download"></i></a>
-                            <button class="fa-btn copy" title="Скопировать ссылку" onclick="copyLink('${url}')"><i class="fa-solid fa-link"></i></button>
-                            <button class="fa-btn del" title="Удалить" onclick="deleteFile('${f.name.replace(/'/g, "\\'")}', this)"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    `;
-                    fileListContainer.appendChild(item);
-                });
+                const entries = [...multipartEntries, ...singleEntries]
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                entriesIndex = {};
+                entries.forEach(e => { entriesIndex[e.type === 'multipart' ? e.base : e.name] = e; });
+
+                fileCount.textContent = entries.length;
+
+                if (entries.length === 0) {
+                    fileListContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-inbox"></i>Пока пусто. Закинь первый файл выше.</div>`;
+                } else {
+                    fileListContainer.innerHTML = '';
+                    entries.forEach(renderFileEntry);
+                }
+
+                maybeAutoDownload();
             } catch (e) {
                 fileListContainer.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>Сервер недоступен.</div>`;
             } finally {
                 refreshBtn.classList.remove('spinning');
             }
+        }
+
+        function renderFileEntry(entry) {
+            const item = document.createElement('div');
+            item.className = 'file-item fade-in';
+
+            if (entry.type === 'single') {
+                const url = publicUrl(entry.name);
+                item.innerHTML = `
+                    <div class="file-icon"><i class="fa-solid ${iconForFile(entry.displayName)}"></i></div>
+                    <div class="file-info">
+                        <div class="file-name" title="${entry.displayName}">${entry.displayName}</div>
+                        <div class="file-meta">${formatSize(entry.size)} · ${formatDate(entry.createdAt)}</div>
+                    </div>
+                    <div class="file-actions">
+                        <a class="fa-btn dl" href="${url}" download title="Скачать"><i class="fa-solid fa-download"></i></a>
+                        <button class="fa-btn copy" title="Скопировать ссылку" onclick="copyLink('${url}')"><i class="fa-solid fa-link"></i></button>
+                        <button class="fa-btn del" title="Удалить" onclick="deleteSingle('${entry.name.replace(/'/g, "\\'")}', this)"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            } else {
+                const broken = entry.partsPresent < entry.partsCount;
+                const shareUrl = `${location.origin}${location.pathname}?f=${encodeURIComponent(entry.base)}`;
+                const keyAttr = entry.base.replace(/'/g, "\\'");
+                item.innerHTML = `
+                    <div class="file-icon" style="position:relative;">
+                        <i class="fa-solid ${iconForFile(entry.displayName)}"></i>
+                        <span title="Собран из ${entry.partsCount} ${partsWord(entry.partsCount)}" style="position:absolute; bottom:-4px; right:-4px; background:var(--accent-purple); color:#fff; font-size:0.6rem; font-weight:900; border-radius:8px; padding:1px 5px; box-shadow:0 0 8px var(--accent-purple-glow);">${entry.partsCount}</span>
+                    </div>
+                    <div class="file-info">
+                        <div class="file-name" title="${entry.displayName}">${entry.displayName}</div>
+                        <div class="file-meta">${formatSize(entry.size)} · ${formatDate(entry.createdAt)}${broken ? ' · <span style="color:var(--error)">повреждён, не хватает частей</span>' : ''}</div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="fa-btn dl" title="${broken ? 'Файл повреждён' : 'Скачать'}" ${broken ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : ''} onclick="startMultipartDownload('${keyAttr}')"><i class="fa-solid fa-download"></i></button>
+                        <button class="fa-btn copy" title="Скопировать ссылку" onclick="copyLink('${shareUrl}')"><i class="fa-solid fa-link"></i></button>
+                        <button class="fa-btn del" title="Удалить" onclick="deleteMultipart('${keyAttr}', this)"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            }
+            fileListContainer.appendChild(item);
         }
 
         function copyLink(url) {
@@ -462,27 +684,127 @@
             });
         }
 
-        async function deleteFile(path, btn) {
+        async function deleteSingle(path, btn) {
             if (!confirm('Удалить этот файл безвозвратно?')) return;
             btn.disabled = true;
             try {
                 const res = await fetch(`${supabaseUrl}/storage/v1/object/${BUCKET}/${encodeURIComponent(path)}`, {
                     method: 'DELETE',
-                    headers: {
-                        'apikey': supabaseKey,
-                        'Authorization': `Bearer ${supabaseKey}`
-                    }
+                    headers: { apikey: supabaseKey, authorization: `Bearer ${supabaseKey}` }
                 });
-                if (res.ok) {
-                    showToast('Файл удалён', 'success');
-                    loadFiles();
-                } else {
-                    showToast('Не удалось удалить файл', 'error');
-                    btn.disabled = false;
-                }
+                if (res.ok) { showToast('Файл удалён', 'success'); loadFiles(); }
+                else { showToast('Не удалось удалить файл', 'error'); btn.disabled = false; }
             } catch (e) {
                 showToast('Ошибка сети при удалении', 'error');
                 btn.disabled = false;
+            }
+        }
+
+        async function deleteMultipart(base, btn) {
+            const entry = entriesIndex[base];
+            if (!entry) { showToast('Не удалось определить части файла — обнови страницу', 'error'); return; }
+            if (!confirm(`Удалить этот файл безвозвратно? (${entry.partsCount} ${partsWord(entry.partsCount)})`)) return;
+            btn.disabled = true;
+            const names = [manifestName(base)];
+            for (let i = 1; i <= entry.partsCount; i++) names.push(partName(base, i));
+            try {
+                await deleteObjects(names);
+                showToast('Файл удалён', 'success');
+                loadFiles();
+            } catch (e) {
+                showToast('Ошибка сети при удалении', 'error');
+                btn.disabled = false;
+            }
+        }
+
+        /* ---- скачивание составного файла: тянем части по порядку и склеиваем ---- */
+        async function startMultipartDownload(base, opts = {}) {
+            const entry = entriesIndex[base];
+            if (!entry) { showToast('Файл не найден в списке — обнови страницу', 'error'); return; }
+            if (entry.partsPresent < entry.partsCount) { showToast('Этот файл повреждён — не хватает частей', 'error'); return; }
+
+            const refs = createProgressCard(entry.displayName, entry.size, 'Скачивание');
+            refs.cancelBtn.style.display = 'none';
+
+            // Если браузер поддерживает File System Access API — пишем сразу на
+            // диск потоково, без накопления всего файла в оперативной памяти.
+            // По ссылке ?f=... (без клика пользователя) это API недоступно —
+            // тогда собираем файл в памяти и отдаём через обычную ссылку-скачивание.
+            const canStream = !opts.forceBlob && 'showSaveFilePicker' in window;
+            let writable = null;
+
+            try {
+                if (canStream) {
+                    try {
+                        const handle = await window.showSaveFilePicker({ suggestedName: entry.displayName });
+                        writable = await handle.createWritable();
+                    } catch (e) {
+                        if (e && e.name === 'AbortError') { refs.card.remove(); return; }
+                        writable = null;
+                    }
+                }
+
+                let received = 0;
+                const chunks = writable ? null : [];
+
+                for (let i = 1; i <= entry.partsCount; i++) {
+                    refs.statusEl.textContent = `Часть ${i} из ${entry.partsCount}`;
+                    const resp = await fetch(publicUrl(partName(base, i)));
+                    if (!resp.ok) throw new Error(`не удалось скачать часть ${i}`);
+                    const reader = resp.body.getReader();
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        received += value.length;
+                        if (writable) await writable.write(value);
+                        else chunks.push(value);
+                        updateProgress(refs, received);
+                    }
+                }
+
+                if (writable) {
+                    await writable.close();
+                } else {
+                    const blob = new Blob(chunks, { type: entry.mimeType });
+                    const objUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = objUrl;
+                    a.download = entry.displayName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(objUrl), 30000);
+                }
+
+                finishProgressOk(refs);
+                showToast(`«${entry.displayName}» скачан`, 'success');
+            } catch (err) {
+                if (writable) { try { await writable.abort(); } catch (e2) {} }
+                finishProgressError(refs, 'Ошибка скачивания');
+                showToast(`Не удалось скачать «${entry.displayName}»: ${err.message || err}`, 'error');
+            }
+        }
+
+        /* ---- если открыли страницу по ссылке вида ?f=ключ — качаем сразу ---- */
+        function maybeAutoDownload() {
+            const params = new URLSearchParams(location.search);
+            const key = params.get('f');
+            if (!key) return;
+            history.replaceState(null, '', location.pathname);
+
+            const entry = entriesIndex[key];
+            if (!entry) { showToast('Файл по ссылке не найден — возможно, его удалили', 'error'); return; }
+
+            showToast(`Начинаю скачивание «${entry.displayName}»...`, 'info');
+            if (entry.type === 'multipart') {
+                startMultipartDownload(key, { forceBlob: true });
+            } else {
+                const a = document.createElement('a');
+                a.href = publicUrl(entry.name);
+                a.download = entry.displayName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             }
         }
 
