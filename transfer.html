@@ -9,6 +9,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.1.0/dist/tus.min.js"></script>
 
     <style>
         :root {
@@ -209,6 +210,13 @@
         const supabaseKey = 'sb_publishable_iFmhjG3uVMu76HKSq-jj5g_MOAwpr6h';
         const BUCKET = 'transfer';
 
+        // project-id, вытащенный из supabaseUrl, нужен для прямого storage-хоста
+        const PROJECT_ID = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)[1];
+        // TUS-эндпоинт (резюмируемая загрузка). Прямой storage-хостнейм даёт
+        // заметно более высокую и стабильную скорость на больших файлах,
+        // т.к. запрос не идёт через общий API-шлюз.
+        const TUS_ENDPOINT = `https://${PROJECT_ID}.storage.supabase.co/storage/v1/upload/resumable`;
+
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -310,24 +318,48 @@
             const pctEl = document.getElementById(`${cardId}_pct`);
             const statusEl = document.getElementById(`${cardId}_status`);
             const cancelBtn = document.getElementById(`${cardId}_cancel`);
+            const speedStatEl = document.createElement('span');
+            speedStatEl.style.marginLeft = '8px';
+            speedStatEl.style.color = 'var(--text-muted)';
+            card.querySelector('.upload-stat').appendChild(speedStatEl);
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', `${supabaseUrl}/storage/v1/object/${BUCKET}/${encodeURIComponent(path)}`, true);
-            xhr.setRequestHeader('apikey', supabaseKey);
-            xhr.setRequestHeader('Authorization', `Bearer ${supabaseKey}`);
-            xhr.setRequestHeader('x-upsert', 'true');
-            xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+            let lastLoaded = 0, lastTime = Date.now();
 
-            xhr.upload.onprogress = (e) => {
-                if (!e.lengthComputable) return;
-                const pct = Math.round((e.loaded / e.total) * 100);
-                curEl.textContent = formatMB(e.loaded);
-                barEl.style.width = `${pct}%`;
-                pctEl.textContent = `${pct}%`;
-            };
+            // Резюмируемая (TUS) загрузка — режется на чанки по 6 МБ,
+            // идёт напрямую в хранилище, докачивается при обрыве связи
+            const upload = new tus.Upload(file, {
+                endpoint: TUS_ENDPOINT,
+                retryDelays: [0, 2000, 4000, 8000, 15000],
+                chunkSize: 6 * 1024 * 1024, // фиксированный размер чанка Supabase
+                uploadDataDuringCreation: true,
+                removeFingerprintOnSuccess: true,
+                headers: {
+                    apikey: supabaseKey,
+                    authorization: `Bearer ${supabaseKey}`,
+                    'x-upsert': 'true'
+                },
+                metadata: {
+                    bucketName: BUCKET,
+                    objectName: path,
+                    contentType: file.type || 'application/octet-stream',
+                    cacheControl: '3600'
+                },
+                onProgress: (bytesUploaded, bytesTotal) => {
+                    const pct = Math.round((bytesUploaded / bytesTotal) * 100);
+                    curEl.textContent = formatMB(bytesUploaded);
+                    barEl.style.width = `${pct}%`;
+                    pctEl.textContent = `${pct}%`;
 
-            xhr.onload = () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
+                    const now = Date.now();
+                    const dt = (now - lastTime) / 1000;
+                    if (dt > 0.4) {
+                        const speedMBs = ((bytesUploaded - lastLoaded) / (1024 * 1024)) / dt;
+                        speedStatEl.textContent = `· ${speedMBs.toFixed(1)} МБ/с`;
+                        lastLoaded = bytesUploaded;
+                        lastTime = now;
+                    }
+                },
+                onSuccess: () => {
                     curEl.textContent = formatMB(file.size);
                     barEl.style.width = '100%';
                     pctEl.textContent = '100%';
@@ -336,31 +368,28 @@
                     cancelBtn.style.display = 'none';
                     showToast(`«${file.name}» загружен`, 'success');
                     setTimeout(() => { card.remove(); loadFiles(); }, 1500);
-                } else {
-                    let msg = 'Ошибка загрузки';
-                    try { const j = JSON.parse(xhr.responseText); if (j.message) msg = j.message; } catch (e) {}
-                    statusEl.textContent = msg;
+                },
+                onError: (error) => {
+                    statusEl.textContent = 'Ошибка загрузки';
                     statusEl.classList.add('error');
                     barEl.style.background = 'var(--error)';
                     cancelBtn.style.display = 'none';
-                    showToast(`Не удалось загрузить «${file.name}»: ${msg}`, 'error');
+                    showToast(`Не удалось загрузить «${file.name}»: ${error.message || error}`, 'error');
                 }
-            };
-
-            xhr.onerror = () => {
-                statusEl.textContent = 'Ошибка сети';
-                statusEl.classList.add('error');
-                cancelBtn.style.display = 'none';
-                showToast(`Ошибка сети при загрузке «${file.name}»`, 'error');
-            };
+            });
 
             cancelBtn.onclick = () => {
-                xhr.abort();
+                upload.abort(true);
                 card.remove();
                 showToast('Загрузка отменена', 'info');
             };
 
-            xhr.send(file);
+            // Если такая же загрузка уже была начата ранее (та же вкладка,
+            // тот же файл) — предложить продолжить с места обрыва
+            upload.findPreviousUploads().then((previousUploads) => {
+                if (previousUploads.length) upload.resumeFromPreviousUpload(previousUploads[0]);
+                upload.start();
+            });
         }
 
         /* ================= СПИСОК ФАЙЛОВ ================= */
